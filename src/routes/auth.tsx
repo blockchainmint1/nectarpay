@@ -35,6 +35,7 @@ type Challenge = {
   expires_at: string;
   deep_link: string;
   qr_data: string;
+  message: string;
 };
 
 type Status =
