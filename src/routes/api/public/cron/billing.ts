@@ -101,7 +101,17 @@ async function rolloverBilling(): Promise<{
     }
   }
 
-  return { renewed, blocked, warned };
+  let txc_scanned = 0;
+  let txc_credited = 0;
+  try {
+    const r = await scanTxcDeposits();
+    txc_scanned = r.scanned;
+    txc_credited = r.credited;
+  } catch (e) {
+    console.error("scanTxcDeposits failed", e);
+  }
+
+  return { renewed, blocked, warned, txc_scanned, txc_credited };
 }
 
 export const Route = createFileRoute("/api/public/cron/billing")({
