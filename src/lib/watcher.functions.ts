@@ -276,30 +276,23 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           );
         }
 
-        const cfgById = new Map(configList.map((c) => [c.id, c]));
-        const { data: addrs } = await supabaseAdmin
-          .from("derived_addresses")
-          .select("address, store_id, chain_config_id")
-          .in(
-            "chain_config_id",
-            configList.map((c) => c.id),
-          );
-        r.addresses = addrs?.length ?? 0;
+        const cfgByStoreId = new Map(configList.map((c) => [c.store_id, c]));
+        const { data: openInvoices } = await supabaseAdmin
+          .from("invoices")
+          .select("id, store_id, address, fiat_amount, status, rate, crypto_amount")
+          .eq("chain", chain)
+          .in("store_id", configList.map((c) => c.store_id))
+          .in("status", ["pending", "detected", "underpaid"])
+          .not("address", "is", null);
+        r.addresses = openInvoices?.length ?? 0;
 
-        for (const a of addrs ?? []) {
-          const txs = await getAddressTxs(net, a.address).catch(() => []);
-          const credits = extractIncoming(txs, a.address, tip);
+        for (const inv of openInvoices ?? []) {
+          if (!inv.address) continue;
+          const txs = await getAddressTxs(net, inv.address).catch(() => []);
+          const credits = extractIncoming(txs, inv.address, tip);
           r.credits += credits.length;
-          const cfg = cfgById.get(a.chain_config_id);
+          const cfg = cfgByStoreId.get(inv.store_id);
           for (const credit of credits) {
-            // find matching invoice
-            const { data: inv } = await supabaseAdmin
-              .from("invoices")
-              .select("id, fiat_amount, status, rate, crypto_amount")
-              .eq("address", a.address)
-              .eq("chain", chain)
-              .maybeSingle();
-            if (!inv) continue;
             const paidCrypto = credit.amountSats / 10 ** net.decimals;
             // Settle against the rate locked at invoice creation. Otherwise a
             // tiny market move between quoting and payment makes an exact-
