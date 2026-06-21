@@ -4,11 +4,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { notifyUser } from "@/lib/notify.server";
 import { getUsdRate } from "@/lib/rates.functions";
+import { scanTxcDeposits } from "@/lib/txc-deposit-scanner.server";
 
 async function rolloverBilling(): Promise<{
   renewed: number;
   blocked: number;
   warned: number;
+  txc_scanned: number;
+  txc_credited: number;
 }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   let renewed = 0,
