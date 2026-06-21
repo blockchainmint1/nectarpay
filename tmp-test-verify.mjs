@@ -39,7 +39,7 @@ function verifyBitcoinMessage(msg, address, sigB64, prefix){
   const recId=(header-27)&3;
   const compressed=((header-27)&4)!==0 || header>=31;
   const compact=sig.subarray(1);
-  const recovered=secp.Signature.fromBytes(compact,'compact').addRecoveryBit(recId);
+  const recBuf=new Uint8Array(65);recBuf[0]=recId;recBuf.set(compact,1);const recovered=secp.Signature.fromBytes(recBuf,'recovered');
   const hash=magicHash(msg,prefix);
   const pub=secp.recoverPublicKey(recovered,hash,{prehash:false});
   const pubBytes=pub.toBytes(compressed?'compressed':'uncompressed');
