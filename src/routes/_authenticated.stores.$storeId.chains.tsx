@@ -248,6 +248,13 @@ function ChainCard({
     }
     setSaving(true);
     try {
+      const zcRaw = row.zero_conf_max_usd.trim();
+      const zcNum = zcRaw === "" ? null : Number(zcRaw);
+      if (zcNum != null && (!Number.isFinite(zcNum) || zcNum < 0)) {
+        toast.error("Mempool threshold must be a non-negative number, or blank.");
+        setSaving(false);
+        return;
+      }
       const payload = {
         store_id: storeId,
         chain: meta.key,
@@ -256,7 +263,10 @@ function ChainCard({
         xpub_or_address: v,
         enabled: row.enabled,
         confirmations_required: row.confirmations_required,
+        zero_conf_max_usd: zcNum,
+        qr_address_only: row.qr_address_only,
       };
+
       const { error } = await supabase
         .from("chain_configs")
         .upsert(payload, { onConflict: "store_id,chain" });
