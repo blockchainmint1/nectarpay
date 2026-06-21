@@ -27,6 +27,29 @@ function DashboardPage() {
     enabled: !!user,
   });
 
+  const { data: stats, isLoading: statsLoading } = useQuery({
+    queryKey: ["dashboard-stats", user?.id],
+    queryFn: async () => {
+      const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const { data, error } = await supabase
+        .from("invoices")
+        .select("fiat_amount, fiat_currency, status, created_at")
+        .gte("created_at", since)
+        .in("status", ["confirmed", "overpaid"]);
+      if (error) throw error;
+      const count = data?.length ?? 0;
+      // Assume single fiat currency per merchant for the headline; sum across all paid.
+      const volume = (data ?? []).reduce((acc, r) => acc + Number(r.fiat_amount ?? 0), 0);
+      const currency = data?.[0]?.fiat_currency ?? stores?.[0]?.fiat_currency ?? "USD";
+      return { count, volume, currency };
+    },
+    enabled: !!user,
+  });
+
+  const volumeText = stats
+    ? new Intl.NumberFormat(undefined, { style: "currency", currency: stats.currency }).format(stats.volume)
+    : "$0.00";
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 md:px-8">
       <div className="flex items-end justify-between">
@@ -45,9 +68,10 @@ function DashboardPage() {
 
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
         <Stat label="Stores" value={isLoading ? "…" : String(stores?.length ?? 0)} />
-        <Stat label="Invoices (30d)" value="0" />
-        <Stat label="Volume (30d)" value="$0.00" />
+        <Stat label="Invoices (30d)" value={statsLoading ? "…" : String(stats?.count ?? 0)} />
+        <Stat label="Volume (30d)" value={statsLoading ? "…" : volumeText} />
       </div>
+
 
       <div className="mt-10">
         <div className="flex items-center justify-between">
