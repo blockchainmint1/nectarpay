@@ -31,8 +31,8 @@ type ChainMeta = {
   key: ChainKey;
   name: string;
   // What value the merchant provides.
-  inputKind: "xpub" | "xpub-or-address" | "address";
-  placeholder: string;
+  inputKind: "xpub" | "xpub-or-address" | "address" | "mirrors-eth";
+  placeholder?: string;
   hint: string;
 };
 
@@ -61,9 +61,8 @@ const CHAINS: ChainMeta[] = [
   {
     key: "base",
     name: "Base",
-    inputKind: "xpub",
-    placeholder: "xpub6C… at m/44'/60'/0'",
-    hint: "Same xpub format as ETH (Base is EVM). Same derivation, same sweep caveat.",
+    inputKind: "mirrors-eth",
+    hint: "Base is EVM and shares ETH's derivation path — we reuse your ETH xpub automatically. Just toggle it on.",
   },
   {
     key: "tron",
@@ -80,6 +79,7 @@ const CHAINS: ChainMeta[] = [
     hint: "Single static receive address. Ed25519 + rent-exempt accounts make per-invoice derivation impractical; reconcile via order_id.",
   },
 ];
+
 
 type Row = {
   id: string | null;
