@@ -41,8 +41,9 @@ function verifyBitcoinMessage(msg, address, sigB64, prefix){
   const compact=sig.subarray(1);
   const recBuf=new Uint8Array(65);recBuf[0]=recId;recBuf.set(compact,1);const recovered=secp.Signature.fromBytes(recBuf,'recovered');
   const hash=magicHash(msg,prefix);
-  const pub=secp.recoverPublicKey(recBuf,hash,{prehash:false});
-  const pubBytes=pub.toBytes(compressed?'compressed':'uncompressed');
+  const pubCompressed=secp.recoverPublicKey(recBuf,hash,{prehash:false});
+  const point=secp.Point.fromBytes(pubCompressed);
+  const pubBytes=point.toBytes(compressed?'compressed':'uncompressed');
   const h160=hash160(pubBytes);
   // decode address
   try{
