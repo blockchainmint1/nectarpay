@@ -58,11 +58,13 @@ function AuthPage() {
   useEffect(() => {
     if (authLoading || !user) return;
     (async () => {
-      const { data: isAdmin } = await supabase.rpc("has_role", {
-        _user_id: user.id,
-        _role: "admin",
-      });
-      navigate({ to: resolvePostAuthPath(Boolean(isAdmin), search.redirect) });
+      const { data: adminRole } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      navigate({ to: resolvePostAuthPath(Boolean(adminRole), search.redirect) });
     })();
   }, [authLoading, user, navigate, search.redirect]);
 
