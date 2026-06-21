@@ -246,15 +246,20 @@ function ChainCard({
       const { error } = await supabase
         .from("chain_configs")
         .upsert(payload, { onConflict: "store_id,chain" });
-      if (error) throw error;
+      if (error) {
+        console.error("chain_configs upsert failed", { error, payload });
+        throw new Error(error.message || error.details || error.hint || "Save failed.");
+      }
       toast.success(`${meta.name} saved.`);
       onSaved();
     } catch (e) {
+      console.error("save chain failed", e);
       toast.error(e instanceof Error ? e.message : "Save failed.");
     } finally {
       setSaving(false);
     }
   }
+
 
   return (
     <div className="rounded-lg border border-border bg-card/60 p-5">
