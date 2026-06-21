@@ -314,9 +314,12 @@ function CheckoutPage() {
                     countdown={countdown}
                     txs={txs}
                     requiredConfs={requiredConfs}
+                    availableChains={availableChains}
+                    canSwitchChain={inv.status === "pending" && txs.length === 0}
                   />
 
                 )}
+
             </section>
 
             {/* footer trust strip */}
