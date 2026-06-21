@@ -80,7 +80,7 @@ export const createTelegramBindCode = createServerFn({ method: "POST" })
       .insert({ code, user_id: context.userId });
     if (error) throw error;
     // The bot username should be exposed via env or settings; using env if present.
-    const botUsername = process.env.TELEGRAM_BOT_USERNAME || "TexitPayBot";
+    const botUsername = (process.env.TELEGRAM_BOT_USERNAME || "TexitPayBot").replace(/^@+/, "");
     return {
       code,
       deepLink: `https://t.me/${botUsername}?start=${code}`,
