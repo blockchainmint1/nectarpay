@@ -9,11 +9,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  isXpubLike,
-  isSolanaAddressLike,
-  isTronAddressLike,
-} from "@/lib/chains/derive.server";
+// Inlined client-safe validators (mirror src/lib/chains/derive.server.ts).
+function isXpubLike(s: string): boolean {
+  return /^([xtuvyz]pub)[1-9A-HJ-NP-Za-km-z]{100,120}$/.test(s.trim());
+}
+function isSolanaAddressLike(s: string): boolean {
+  return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s.trim());
+}
+function isTronAddressLike(s: string): boolean {
+  return /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(s.trim());
+}
 
 export const Route = createFileRoute("/_authenticated/stores/$storeId/chains")({
   head: () => ({ meta: [{ title: "Chains · payHME" }] }),
