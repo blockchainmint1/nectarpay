@@ -22,7 +22,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
     const [users, stores, invoices, wallets] = await Promise.all([
       supabaseAdmin.from("profiles").select("user_id", { count: "exact", head: true }),
       supabaseAdmin.from("stores").select("id", { count: "exact", head: true }),
-      supabaseAdmin.from("invoices").select("id, status, amount_usd, created_at", { count: "exact" }).order("created_at", { ascending: false }).limit(10),
+      supabaseAdmin.from("invoices").select("id, status, fiat_amount, created_at", { count: "exact" }).order("created_at", { ascending: false }).limit(10),
       supabaseAdmin.from("wallet_accounts").select("wallet_address", { count: "exact", head: true }),
     ]);
 
@@ -101,7 +101,7 @@ export const listAdminInvoices = createServerFn({ method: "GET" })
     );
     const { data, error } = await supabaseAdmin
       .from("invoices")
-      .select("id, store_id, status, amount_usd, chain, created_at")
+      .select("id, store_id, status, fiat_amount, chain, created_at")
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) throw new Error(error.message);

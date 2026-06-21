@@ -41,7 +41,7 @@ function AdminInvoices() {
                 <td className="px-4 py-2">{inv.status}</td>
                 <td className="px-4 py-2 uppercase">{inv.chain}</td>
                 <td className="px-4 py-2 text-right tabular-nums">
-                  {inv.amount_usd ? `$${Number(inv.amount_usd).toFixed(2)}` : "—"}
+                  {inv.fiat_amount ? `$${Number(inv.fiat_amount).toFixed(2)}` : "—"}
                 </td>
                 <td className="px-4 py-2 font-mono text-xs text-muted-foreground">
                   {inv.id.slice(0, 8)}…
