@@ -31,13 +31,13 @@ export interface WatcherResult {
  * configured `confirmations_required`, then the network default.
  */
 function effectiveConfsRequired(
-  cfg: { confirmations_required?: number | null; zero_conf_max_usd?: number | null },
+  store: { default_confirmations_required?: number | null; mempool_max_usd?: number | null } | null | undefined,
   netDefault: number,
   paidUsd: number,
 ): number {
-  const zc = cfg.zero_conf_max_usd == null ? null : Number(cfg.zero_conf_max_usd);
+  const zc = store?.mempool_max_usd == null ? null : Number(store.mempool_max_usd);
   if (zc != null && zc > 0 && paidUsd <= zc) return 0;
-  return cfg.confirmations_required ?? netDefault;
+  return store?.default_confirmations_required ?? netDefault;
 }
 
 
@@ -193,7 +193,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
 
   const { data: configs } = await supabaseAdmin
     .from("chain_configs")
-    .select("*, stores!inner(id, owner_id)")
+    .select("*, stores!inner(id, owner_id, default_confirmations_required, mempool_max_usd)")
     .not("xpub", "is", null)
     .eq("enabled", true);
 
@@ -257,7 +257,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             const lockedRate = inv.rate == null ? null : Number(inv.rate);
             const usdRate = lockedRate && lockedRate > 0 ? lockedRate : await getUsdRate(chain);
             const paidUsd = paidCrypto * usdRate;
-            const required = effectiveConfsRequired(cfg ?? {}, net.confirmationsRequired, paidUsd);
+            const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, paidUsd);
             const isConfirmed = credit.confirmations >= required;
             await recordTransaction(
               inv.id,
@@ -337,7 +337,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               const usd = t.isNative ? human * (await getUsdRate(net.symbol)) : human;
               const confirmations = tip - t.blockNum + 1;
               const cfg = configList[0];
-              const required = effectiveConfsRequired(cfg ?? {}, net.confirmationsRequired, usd);
+              const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, usd);
               const isConfirmed = confirmations >= required;
               await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed);
               const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
