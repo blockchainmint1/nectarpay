@@ -8,7 +8,7 @@ import { HDKey } from "@scure/bip32";
 import { base58check, bech32 } from "@scure/base";
 import { sha256 } from "@noble/hashes/sha256";
 import { ripemd160 } from "@noble/hashes/ripemd160";
-import { HDNodeWallet } from "ethers";
+import { HDNodeWallet, SigningKey, keccak256, getBytes } from "ethers";
 import type { BtcLikeNetwork, EvmNetwork } from "./networks";
 
 const b58check = base58check(sha256);
@@ -52,7 +52,36 @@ export function deriveEvmAddress(xpub: string, _network: EvmNetwork, index: numb
   return child.address;
 }
 
+/**
+ * Derive a Tron address at `m/0/<index>` from an xpub.
+ * Tron uses secp256k1 + keccak256(uncompressedPubKey)[12:] (same as EVM),
+ * prefixed with 0x41 and encoded as base58check.
+ */
+export function deriveTronAddress(xpub: string, index: number): string {
+  const node = HDNodeWallet.fromExtendedKey(xpub);
+  const child = (node as { derivePath: (p: string) => { publicKey: string } }).derivePath(
+    `0/${index}`,
+  );
+  const uncompressed = SigningKey.computePublicKey(child.publicKey, false); // 0x04 || X(32) || Y(32)
+  const pubBytes = getBytes(uncompressed).slice(1); // 64 bytes
+  const hash = getBytes(keccak256(pubBytes)); // 32 bytes
+  const addrBytes = new Uint8Array(21);
+  addrBytes[0] = 0x41;
+  addrBytes.set(hash.slice(-20), 1);
+  return b58check.encode(addrBytes);
+}
+
 /** Validate that a string is a plausible xpub for the given chain. */
 export function isXpubLike(s: string): boolean {
   return /^([xtuvyz]pub)[1-9A-HJ-NP-Za-km-z]{100,120}$/.test(s.trim());
+}
+
+/** Validate a Solana address: base58, 32–44 chars, decodes to 32 bytes. */
+export function isSolanaAddressLike(s: string): boolean {
+  return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(s.trim());
+}
+
+/** Validate a Tron address: starts with T, 34 chars, base58. */
+export function isTronAddressLike(s: string): boolean {
+  return /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(s.trim());
 }
