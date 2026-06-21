@@ -561,3 +561,117 @@ function TerminalFrame({ status }: { status: string }) {
     </div>
   );
 }
+
+function ChainPickerFrame({
+  invoiceId,
+  fiatAmount,
+  fiatCurrency,
+  description,
+  countdown,
+  availableChains,
+}: {
+  invoiceId: string;
+  fiatAmount: number;
+  fiatCurrency: string;
+  description: string | null;
+  countdown: ReturnType<typeof useCountdown>;
+  availableChains: string[];
+}) {
+  const selectChain = useServerFn(selectInvoiceChain);
+  const [picking, setPicking] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  async function pick(chain: string) {
+    setErr(null);
+    setPicking(chain);
+    try {
+      await selectChain({ data: { id: invoiceId, chain: chain as never } });
+      // Polling query will refetch and the page will switch to PayingFrame.
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Could not select chain.");
+      setPicking(null);
+    }
+  }
+
+  return (
+    <div className="p-6 md:p-10">
+      <div className="flex items-center justify-between">
+        <StatusPill status="pending" />
+        {countdown && (
+          <span
+            className={cn(
+              "inline-flex items-center gap-1.5 font-mono text-xs",
+              countdown.expired ? "text-destructive" : "text-muted-foreground",
+            )}
+          >
+            <Clock className="h-3.5 w-3.5" />
+            {countdown.expired ? "Expired" : `Expires in ${countdown.label}`}
+          </span>
+        )}
+      </div>
+
+      <div className="mt-5">
+        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Amount due</p>
+        <div className="mt-2 flex items-baseline gap-3">
+          <span className="font-mono text-4xl font-semibold tracking-tight md:text-5xl">
+            {fiatAmount.toFixed(2)}
+          </span>
+          <span className="text-lg font-medium text-muted-foreground">
+            {fiatCurrency.toUpperCase()}
+          </span>
+        </div>
+        {description && (
+          <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">{description}</p>
+        )}
+      </div>
+
+      <div className="mt-7">
+        <p className="text-sm font-medium">Choose how you'd like to pay</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Pick a network — we'll generate a payment address for you.
+        </p>
+
+        {availableChains.length === 0 ? (
+          <div className="mt-4 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+            This merchant hasn't enabled any payment networks yet.
+          </div>
+        ) : (
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {availableChains.map((c) => {
+              const label = CHAIN_LABEL[c] ?? c.toUpperCase();
+              const isLoading = picking === c;
+              return (
+                <button
+                  key={c}
+                  type="button"
+                  disabled={picking !== null}
+                  onClick={() => pick(c)}
+                  className={cn(
+                    "group relative flex items-center justify-between rounded-xl border border-border/60 bg-background/40 p-4 text-left transition-all",
+                    "hover:border-primary/60 hover:bg-card disabled:opacity-50",
+                  )}
+                >
+                  <div>
+                    <p className="text-sm font-semibold">{label}</p>
+                    <p className="mt-0.5 text-[11px] uppercase tracking-wider text-muted-foreground">
+                      {c}
+                    </p>
+                  </div>
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  ) : (
+                    <Wallet className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {err && (
+          <p className="mt-3 text-xs text-destructive">{err}</p>
+        )}
+      </div>
+    </div>
+  );
+}
