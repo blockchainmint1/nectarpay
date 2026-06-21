@@ -4,6 +4,7 @@ import { LayoutDashboard, Store, BookOpen, LogOut, CreditCard, Bell } from "luci
 
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
