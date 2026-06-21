@@ -57,27 +57,40 @@ async function ensureAddresses(
 
 async function recordTransaction(
   invoiceId: string,
-  chain: string,
   txHash: string,
-  amount: string,
+  amount: number,
   confirmations: number,
-  status: string,
+  blockHeight: number | null,
+  isConfirmed: boolean,
 ) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  await supabaseAdmin
+  const { data: existing } = await supabaseAdmin
     .from("transactions")
-    .upsert(
-      {
-        invoice_id: invoiceId,
-        chain,
-        tx_hash: txHash,
-        amount,
+    .select("id")
+    .eq("invoice_id", invoiceId)
+    .eq("tx_hash", txHash)
+    .maybeSingle();
+  const now = new Date().toISOString();
+  if (existing) {
+    await supabaseAdmin
+      .from("transactions")
+      .update({
         confirmations,
-        status,
-        seen_at: new Date().toISOString(),
-      },
-      { onConflict: "chain,tx_hash" },
-    );
+        block_height: blockHeight,
+        confirmed_at: isConfirmed ? now : null,
+      })
+      .eq("id", existing.id);
+  } else {
+    await supabaseAdmin.from("transactions").insert({
+      invoice_id: invoiceId,
+      tx_hash: txHash,
+      amount,
+      confirmations,
+      block_height: blockHeight,
+      first_seen_at: now,
+      confirmed_at: isConfirmed ? now : null,
+    });
+  }
 }
 
 async function settleInvoice(
@@ -91,20 +104,21 @@ async function settleInvoice(
     .select("status, store_id, stores(owner_id)")
     .eq("id", invoiceId)
     .single();
-  if (!inv || ["paid", "expired", "canceled"].includes(inv.status)) {
+  if (!inv || ["confirmed", "expired", "cancelled"].includes(inv.status)) {
     return { status: inv?.status ?? "unknown", changed: false };
   }
 
   const isPaid = paidAmountUsd + 0.005 >= amountDueUsd;
-  const newStatus = isPaid ? "paid" : paidAmountUsd > 0 ? "underpaid" : inv.status;
+  const newStatus: "confirmed" | "underpaid" | typeof inv.status = isPaid
+    ? "confirmed"
+    : paidAmountUsd > 0
+      ? "underpaid"
+      : inv.status;
   if (newStatus === inv.status) return { status: newStatus, changed: false };
 
   await supabaseAdmin
     .from("invoices")
-    .update({
-      status: newStatus,
-      paid_at: isPaid ? new Date().toISOString() : null,
-    })
+    .update({ status: newStatus })
     .eq("id", invoiceId);
 
   const ownerId = (inv.stores as { owner_id: string } | null)?.owner_id;
