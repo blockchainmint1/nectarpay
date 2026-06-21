@@ -63,9 +63,12 @@ export type Database = {
           derivation_path: string | null
           enabled: boolean
           id: string
+          network: string
+          next_address_index: number
           next_derivation_index: number
           store_id: string
           updated_at: string
+          xpub: string | null
           xpub_or_address: string
         }
         Insert: {
@@ -75,9 +78,12 @@ export type Database = {
           derivation_path?: string | null
           enabled?: boolean
           id?: string
+          network?: string
+          next_address_index?: number
           next_derivation_index?: number
           store_id: string
           updated_at?: string
+          xpub?: string | null
           xpub_or_address: string
         }
         Update: {
@@ -87,9 +93,12 @@ export type Database = {
           derivation_path?: string | null
           enabled?: boolean
           id?: string
+          network?: string
+          next_address_index?: number
           next_derivation_index?: number
           store_id?: string
           updated_at?: string
+          xpub?: string | null
           xpub_or_address?: string
         }
         Relationships: [
@@ -102,9 +111,52 @@ export type Database = {
           },
         ]
       }
+      derived_addresses: {
+        Row: {
+          address: string
+          address_index: number
+          chain_config_id: string
+          created_at: string
+          id: string
+          store_id: string
+        }
+        Insert: {
+          address: string
+          address_index: number
+          chain_config_id: string
+          created_at?: string
+          id?: string
+          store_id: string
+        }
+        Update: {
+          address?: string
+          address_index?: number
+          chain_config_id?: string
+          created_at?: string
+          id?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "derived_addresses_chain_config_id_fkey"
+            columns: ["chain_config_id"]
+            isOneToOne: false
+            referencedRelation: "chain_configs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "derived_addresses_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoices: {
         Row: {
           address: string
+          address_index: number | null
           chain: Database["public"]["Enums"]["chain_kind"]
           created_at: string
           crypto_amount: number
@@ -123,6 +175,7 @@ export type Database = {
         }
         Insert: {
           address: string
+          address_index?: number | null
           chain: Database["public"]["Enums"]["chain_kind"]
           created_at?: string
           crypto_amount: number
@@ -141,6 +194,7 @@ export type Database = {
         }
         Update: {
           address?: string
+          address_index?: number | null
           chain?: Database["public"]["Enums"]["chain_kind"]
           created_at?: string
           crypto_amount?: number
@@ -166,6 +220,84 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notification_log: {
+        Row: {
+          body: string | null
+          channel: string
+          created_at: string
+          error: string | null
+          event: string
+          id: string
+          metadata: Json | null
+          recipient: string
+          status: string
+          subject: string | null
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          channel: string
+          created_at?: string
+          error?: string | null
+          event: string
+          id?: string
+          metadata?: Json | null
+          recipient: string
+          status?: string
+          subject?: string | null
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          channel?: string
+          created_at?: string
+          error?: string | null
+          event?: string
+          id?: string
+          metadata?: Json | null
+          recipient?: string
+          status?: string
+          subject?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notification_prefs: {
+        Row: {
+          created_at: string
+          email_address: string | null
+          email_enabled: boolean
+          events: Json
+          telegram_chat_id: string | null
+          telegram_enabled: boolean
+          telegram_username: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_address?: string | null
+          email_enabled?: boolean
+          events?: Json
+          telegram_chat_id?: string | null
+          telegram_enabled?: boolean
+          telegram_username?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_address?: string | null
+          email_enabled?: boolean
+          events?: Json
+          telegram_chat_id?: string | null
+          telegram_enabled?: boolean
+          telegram_username?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       plans: {
         Row: {
@@ -346,6 +478,30 @@ export type Database = {
           },
         ]
       }
+      telegram_bind_codes: {
+        Row: {
+          code: string
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       transactions: {
         Row: {
           amount: number
@@ -495,6 +651,33 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      watcher_cursors: {
+        Row: {
+          chain: string
+          last_error: string | null
+          last_height: number
+          last_run_at: string
+          last_status: string | null
+          updated_at: string
+        }
+        Insert: {
+          chain: string
+          last_error?: string | null
+          last_height?: number
+          last_run_at?: string
+          last_status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          chain?: string
+          last_error?: string | null
+          last_height?: number
+          last_run_at?: string
+          last_status?: string | null
+          updated_at?: string
         }
         Relationships: []
       }

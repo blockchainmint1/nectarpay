@@ -45,7 +45,11 @@ export type BillingOverview = {
   free_tier_progress: { used: number; limit: number; unit: string } | null;
 };
 
-const TXC_USD_RATE = 0.05; // TODO: replace with rates_cache lookup once oracle is wired
+async function getTxcRate(): Promise<number> {
+  const { getUsdRate } = await import("./rates.functions");
+  const r = await getUsdRate("TXC");
+  return r > 0 ? r : 0.1; // fallback if rates haven't polled yet
+}
 
 function periodStart(d = new Date()): string {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString();
@@ -93,6 +97,7 @@ export const getBillingOverview = createServerFn({ method: "GET" })
 
     await ensureUsageRow(userId);
     const depositAddress = await ensureDepositAddress(userId);
+    const txcRate = await getTxcRate();
 
     const [{ data: sub }, { data: plans }, { data: usage }, { data: ledger }, { data: balanceRow }, { data: activeRow }] =
       await Promise.all([
@@ -174,7 +179,7 @@ export const getBillingOverview = createServerFn({ method: "GET" })
         period_start: usage?.period_start ?? periodStart(),
       },
       balance_txc: Number(balanceRow ?? 0),
-      txc_usd_rate: TXC_USD_RATE,
+      txc_usd_rate: txcRate,
       deposit_address: { address: depositAddress.address, memo: depositAddress.memo },
       ledger: (ledger ?? []).map((l) => ({
         id: l.id,
@@ -241,9 +246,10 @@ export const changePlan = createServerFn({ method: "POST" })
     }
 
     // Paid plan: charge from TXC balance
+    const txcRate = await getTxcRate();
     const { data: balanceRow } = await supabaseAdmin.rpc("txc_balance", { _user_id: userId });
     const balance = Number(balanceRow ?? 0);
-    const txcOwed = Number((priceUsd / TXC_USD_RATE).toFixed(8));
+    const txcOwed = Number((priceUsd / txcRate).toFixed(8));
 
     if (balance < txcOwed) {
       throw new Error(
@@ -260,7 +266,7 @@ export const changePlan = createServerFn({ method: "POST" })
       user_id: userId,
       amount_txc: -txcOwed,
       kind: "subscription_debit",
-      txc_usd_rate: TXC_USD_RATE,
+      txc_usd_rate: txcRate,
       usd_value: priceUsd,
       reference: `${data.plan_id}:${periodStartIso}`,
       notes: `Monthly fee for ${plan.name} plan`,
@@ -294,12 +300,13 @@ export const simulateDeposit = createServerFn({ method: "POST" })
       throw new Error("Invalid amount");
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const txcRate = await getTxcRate();
     const { error } = await supabaseAdmin.from("txc_credit_ledger").insert({
       user_id: context.userId,
       amount_txc: data.amount_txc,
       kind: "deposit",
-      txc_usd_rate: TXC_USD_RATE,
-      usd_value: Number((data.amount_txc * TXC_USD_RATE).toFixed(2)),
+      txc_usd_rate: txcRate,
+      usd_value: Number((data.amount_txc * txcRate).toFixed(2)),
       reference: `sim:${Date.now()}`,
       notes: "Simulated deposit (dev)",
     });
