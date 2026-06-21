@@ -309,12 +309,13 @@ function CheckoutPage() {
                 inv.chain && inv.address && (
                   <PayingFrame
                     inv={inv as Invoice}
-                    uri={uri}
+                    memo={memo}
                     isDark={isDark}
                     countdown={countdown}
                     txs={txs}
                     requiredConfs={requiredConfs}
                   />
+
                 )}
             </section>
 
