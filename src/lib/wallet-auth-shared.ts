@@ -140,11 +140,14 @@ export function buildDeepLink(opts: {
 }): string {
   const originUrl = new URL(opts.origin);
   const cbUrl = new URL("/api/public/auth/wallet-callback", originUrl);
+  cbUrl.searchParams.set("id", opts.challengeId);
   cbUrl.searchParams.set("domain", originUrl.hostname);
+  
   const params = new URLSearchParams({
     id: opts.challengeId,
     nonce: opts.nonce,
     cb: cbUrl.toString(),
+    msg: base64UrlEncode(opts.message),
     from: originUrl.hostname,
   });
   return `${WALLET_DEEP_LINK_SCHEME}://login?${params.toString()}`;
