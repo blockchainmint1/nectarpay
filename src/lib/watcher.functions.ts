@@ -40,6 +40,22 @@ function effectiveConfsRequired(
   return store?.default_confirmations_required ?? netDefault;
 }
 
+async function markInvoiceDetected(invoiceId: string): Promise<boolean> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: inv } = await supabaseAdmin
+    .from("invoices")
+    .select("status")
+    .eq("id", invoiceId)
+    .maybeSingle();
+  if (!inv || inv.status !== "pending") return false;
+  const { error } = await supabaseAdmin
+    .from("invoices")
+    .update({ status: "detected" })
+    .eq("id", invoiceId)
+    .eq("status", "pending");
+  return !error;
+}
+
 
 async function ensureAddresses(
   chainConfigId: string,
@@ -75,7 +91,7 @@ async function ensureAddresses(
   }
 }
 
-async function recordTransaction(
+export async function recordTransaction(
   invoiceId: string,
   txHash: string,
   amount: number,
@@ -113,7 +129,7 @@ async function recordTransaction(
   }
 }
 
-async function settleInvoice(
+export async function settleInvoice(
   invoiceId: string,
   paidAmountUsd: number,
   amountDueUsd: number,
@@ -187,6 +203,40 @@ async function settleInvoice(
   return { status: newStatus, changed: true };
 }
 
+export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: inv } = await supabaseAdmin
+    .from("invoices")
+    .select("id, store_id, chain, address, fiat_amount, status, rate, stores!inner(default_confirmations_required, mempool_max_usd)")
+    .eq("id", invoiceId)
+    .maybeSingle();
+  if (!inv || !inv.address || (inv.chain !== "btc" && inv.chain !== "txc")) return false;
+  if (["confirmed", "overpaid", "expired", "cancelled", "failed"].includes(inv.status)) return false;
+
+  const net = inv.chain === "btc" ? BTC_NETWORK : TXC_NETWORK;
+  const [tip, txs] = await Promise.all([getTipHeight(net), getAddressTxs(net, inv.address)]);
+  const credits = extractIncoming(txs, inv.address, tip);
+  let changed = false;
+
+  for (const credit of credits) {
+    const paidCrypto = credit.amountSats / 10 ** net.decimals;
+    const lockedRate = inv.rate == null ? null : Number(inv.rate);
+    const usdRate = lockedRate && lockedRate > 0 ? lockedRate : await getUsdRate(inv.chain);
+    const paidUsd = paidCrypto * usdRate;
+    const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd);
+    const isConfirmed = credit.confirmations >= required;
+    await recordTransaction(inv.id, credit.txid, paidCrypto, credit.confirmations, null, isConfirmed);
+    if (isConfirmed) {
+      const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
+      changed = settled.changed || changed;
+    } else {
+      changed = (await markInvoiceDetected(inv.id)) || changed;
+    }
+  }
+
+  return changed;
+}
+
 export async function runWatcherTick(): Promise<WatcherResult[]> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const results: WatcherResult[] = [];
@@ -226,30 +276,23 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           );
         }
 
-        const cfgById = new Map(configList.map((c) => [c.id, c]));
-        const { data: addrs } = await supabaseAdmin
-          .from("derived_addresses")
-          .select("address, store_id, chain_config_id")
-          .in(
-            "chain_config_id",
-            configList.map((c) => c.id),
-          );
-        r.addresses = addrs?.length ?? 0;
+        const cfgByStoreId = new Map(configList.map((c) => [c.store_id, c]));
+        const { data: openInvoices } = await supabaseAdmin
+          .from("invoices")
+          .select("id, store_id, address, fiat_amount, status, rate, crypto_amount")
+          .eq("chain", chain)
+          .in("store_id", configList.map((c) => c.store_id))
+          .in("status", ["pending", "detected", "underpaid"])
+          .not("address", "is", null);
+        r.addresses = openInvoices?.length ?? 0;
 
-        for (const a of addrs ?? []) {
-          const txs = await getAddressTxs(net, a.address).catch(() => []);
-          const credits = extractIncoming(txs, a.address, tip);
+        for (const inv of openInvoices ?? []) {
+          if (!inv.address) continue;
+          const txs = await getAddressTxs(net, inv.address).catch(() => []);
+          const credits = extractIncoming(txs, inv.address, tip);
           r.credits += credits.length;
-          const cfg = cfgById.get(a.chain_config_id);
+          const cfg = cfgByStoreId.get(inv.store_id);
           for (const credit of credits) {
-            // find matching invoice
-            const { data: inv } = await supabaseAdmin
-              .from("invoices")
-              .select("id, fiat_amount, status, rate, crypto_amount")
-              .eq("address", a.address)
-              .eq("chain", chain)
-              .maybeSingle();
-            if (!inv) continue;
             const paidCrypto = credit.amountSats / 10 ** net.decimals;
             // Settle against the rate locked at invoice creation. Otherwise a
             // tiny market move between quoting and payment makes an exact-
@@ -267,8 +310,12 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               null,
               isConfirmed,
             );
-            const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
-            if (settled.changed) r.invoicesUpdated++;
+            if (isConfirmed) {
+              const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
+              if (settled.changed) r.invoicesUpdated++;
+            } else if (await markInvoiceDetected(inv.id)) {
+              r.invoicesUpdated++;
+            }
           }
 
         }

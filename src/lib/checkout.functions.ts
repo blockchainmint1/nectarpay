@@ -35,7 +35,7 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: inv, error } = await supabaseAdmin
+    const { data: initialInv, error } = await supabaseAdmin
       .from("invoices")
       .select(
         "id, chain, fiat_amount, fiat_currency, crypto_amount, rate, address, status, description, redirect_url, expires_at, created_at, store_id",
@@ -43,7 +43,30 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
       .eq("id", data.id)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    if (!inv) return { found: false as const };
+    if (!initialInv) return { found: false as const };
+
+    let inv = initialInv;
+    if (
+      inv.address &&
+      (inv.chain === "btc" || inv.chain === "txc") &&
+      !["confirmed", "overpaid", "expired", "cancelled", "failed"].includes(inv.status)
+    ) {
+      const { scanBtcLikeInvoiceNow } = await import("@/lib/watcher.functions");
+      const changed = await scanBtcLikeInvoiceNow(inv.id).catch((e) => {
+        console.error("instant invoice scan failed", e);
+        return false;
+      });
+      if (changed) {
+        const { data: freshInv } = await supabaseAdmin
+          .from("invoices")
+          .select(
+            "id, chain, fiat_amount, fiat_currency, crypto_amount, rate, address, status, description, redirect_url, expires_at, created_at, store_id",
+          )
+          .eq("id", data.id)
+          .maybeSingle();
+        if (freshInv) inv = freshInv;
+      }
+    }
 
     const { data: store } = await supabaseAdmin
       .from("stores")
