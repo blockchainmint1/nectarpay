@@ -55,6 +55,7 @@ function AuthenticatedLayout() {
           </NavItem>
           <NavItem to="/exports" icon={<Download className="h-4 w-4" />}>
             Exports
+          </NavItem>
           <NavItem to="/docs" icon={<BookOpen className="h-4 w-4" />}>
             Docs
           </NavItem>
