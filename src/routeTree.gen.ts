@@ -14,6 +14,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as ManifestoRouteImport } from './routes/manifesto'
 import { Route as DocsRouteImport } from './routes/docs'
+import { Route as CashOutRouteImport } from './routes/cash-out'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
@@ -58,6 +59,11 @@ const ManifestoRoute = ManifestoRouteImport.update({
 const DocsRoute = DocsRouteImport.update({
   id: '/docs',
   path: '/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CashOutRoute = CashOutRouteImport.update({
+  id: '/cash-out',
+  path: '/cash-out',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -167,6 +173,7 @@ const AuthenticatedStoresStoreIdKycRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/cash-out': typeof CashOutRoute
   '/docs': typeof DocsRouteWithChildren
   '/manifesto': typeof ManifestoRoute
   '/pricing': typeof PricingRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/cash-out': typeof CashOutRoute
   '/docs': typeof DocsRouteWithChildren
   '/manifesto': typeof ManifestoRoute
   '/pricing': typeof PricingRoute
@@ -221,6 +229,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
+  '/cash-out': typeof CashOutRoute
   '/docs': typeof DocsRouteWithChildren
   '/manifesto': typeof ManifestoRoute
   '/pricing': typeof PricingRoute
@@ -249,6 +258,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/cash-out'
     | '/docs'
     | '/manifesto'
     | '/pricing'
@@ -275,6 +285,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/cash-out'
     | '/docs'
     | '/manifesto'
     | '/pricing'
@@ -302,6 +313,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/cash-out'
     | '/docs'
     | '/manifesto'
     | '/pricing'
@@ -330,6 +342,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CashOutRoute: typeof CashOutRoute
   DocsRoute: typeof DocsRouteWithChildren
   ManifestoRoute: typeof ManifestoRoute
   PricingRoute: typeof PricingRoute
@@ -380,6 +393,13 @@ declare module '@tanstack/react-router' {
       path: '/docs'
       fullPath: '/docs'
       preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cash-out': {
+      id: '/cash-out'
+      path: '/cash-out'
+      fullPath: '/cash-out'
+      preLoaderRoute: typeof CashOutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -586,6 +606,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
+  CashOutRoute: CashOutRoute,
   DocsRoute: DocsRouteWithChildren,
   ManifestoRoute: ManifestoRoute,
   PricingRoute: PricingRoute,
