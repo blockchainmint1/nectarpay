@@ -8,7 +8,6 @@ import {
   getBillingOverview,
   setFreeTierMetric,
   changePlan,
-  simulateDeposit,
   type BillingOverview,
 } from "@/lib/billing.functions";
 import { Button } from "@/components/ui/button";
@@ -25,7 +24,7 @@ function BillingPage() {
   const fetchOverview = useServerFn(getBillingOverview);
   const setMetric = useServerFn(setFreeTierMetric);
   const changePlanFn = useServerFn(changePlan);
-  const simDeposit = useServerFn(simulateDeposit);
+  
   const qc = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -54,15 +53,6 @@ function BillingPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const depositMutation = useMutation({
-    mutationFn: (amount_txc: number) => simDeposit({ data: { amount_txc } }),
-    onSuccess: () => {
-      toast.success("Simulated deposit credited");
-      invalidate();
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
-
   if (isLoading || !data) {
     return <div className="p-8 text-sm text-muted-foreground">Loading billing…</div>;
   }
@@ -80,7 +70,7 @@ function BillingPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <CurrentPlanCard data={data} />
-        <BalanceCard data={data} onSimDeposit={(n) => depositMutation.mutate(n)} />
+        <BalanceCard data={data} />
         <UsageCard data={data} onPickMetric={(m) => metricMutation.mutate(m)} />
       </div>
 
@@ -159,10 +149,8 @@ function CurrentPlanCard({ data }: { data: BillingOverview }) {
 
 function BalanceCard({
   data,
-  onSimDeposit,
 }: {
   data: BillingOverview;
-  onSimDeposit: (n: number) => void;
 }) {
   const [copied, setCopied] = useState(false);
   const usd = (data.balance_txc * data.txc_usd_rate).toFixed(2);
@@ -196,16 +184,8 @@ function BalanceCard({
         )}
       </div>
 
-      <div className="mt-3 flex gap-2">
-        <Button size="sm" variant="outline" onClick={() => onSimDeposit(100)}>
-          + Simulate 100 TXC
-        </Button>
-        <Button size="sm" variant="outline" onClick={() => onSimDeposit(1000)}>
-          + 1,000 TXC
-        </Button>
-      </div>
-      <div className="mt-2 text-[11px] text-muted-foreground">
-        Dev shortcut. Production watcher will credit real deposits.
+      <div className="mt-3 text-[11px] text-muted-foreground">
+        Deposits to this address are credited automatically once confirmed on the TXC network.
       </div>
     </Card>
   );

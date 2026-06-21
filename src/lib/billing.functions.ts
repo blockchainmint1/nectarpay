@@ -299,26 +299,3 @@ export const changePlan = createServerFn({ method: "POST" })
     return { ok: true, charged_txc: txcOwed };
   });
 
-// DEV ONLY: simulate a TXC deposit hitting the user's address.
-// TODO: remove once the TXC watcher writes to txc_credit_ledger automatically.
-export const simulateDeposit = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: { amount_txc: number }) => d)
-  .handler(async ({ data, context }) => {
-    if (data.amount_txc <= 0 || data.amount_txc > 1_000_000) {
-      throw new Error("Invalid amount");
-    }
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const txcRate = await getTxcRate();
-    const { error } = await supabaseAdmin.from("txc_credit_ledger").insert({
-      user_id: context.userId,
-      amount_txc: data.amount_txc,
-      kind: "deposit",
-      txc_usd_rate: txcRate,
-      usd_value: Number((data.amount_txc * txcRate).toFixed(2)),
-      reference: `sim:${Date.now()}`,
-      notes: "Simulated deposit (dev)",
-    });
-    if (error) throw error;
-    return { ok: true };
-  });
