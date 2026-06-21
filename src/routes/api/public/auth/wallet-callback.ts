@@ -123,7 +123,7 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
           await supabaseAdmin
             .from("wallet_login_challenges")
             .update({ status: "expired" })
-            .eq("id", id);
+            .eq("id", ch.id);
           return Response.json({ error: "challenge expired" }, { status: 410, headers: CORS });
         }
 
@@ -156,7 +156,7 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
             one_time_token: oneTimeToken,
             signed_at: new Date().toISOString(),
           })
-          .eq("id", id)
+          .eq("id", ch.id)
           .eq("status", "pending"); // race guard
 
         if (upErr) {
