@@ -263,25 +263,28 @@ const SaveSettingsInput = z.object({
   kycBasicChecks: z.array(z.enum(["sanctions", "risk", "geo"])),
   kycBasicRequireEmail: z.boolean(),
   kycAdvancedProvider: z.enum(["none", "sumsub", "persona", "didit", "veriff"]),
-  kycAdvancedApiKey: z.string().max(512).nullable(),
-  kycAdvancedAppToken: z.string().max(512).nullable(),
+  // undefined = leave existing secret unchanged; null = clear it; string = set new value
+  kycAdvancedApiKey: z.string().max(512).nullable().optional(),
+  kycAdvancedAppToken: z.string().max(512).nullable().optional(),
 });
 
 export const saveStoreKycSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => SaveSettingsInput.parse(d))
   .handler(async ({ data, context }) => {
+    const update: Record<string, unknown> = {
+      kyc_level: data.kycLevel,
+      kyc_threshold_usd: data.kycThresholdUsd,
+      kyc_basic_checks: data.kycBasicChecks,
+      kyc_basic_require_email: data.kycBasicRequireEmail,
+      kyc_advanced_provider: data.kycAdvancedProvider,
+    };
+    if (data.kycAdvancedApiKey !== undefined) update.kyc_advanced_api_key = data.kycAdvancedApiKey;
+    if (data.kycAdvancedAppToken !== undefined) update.kyc_advanced_app_token = data.kycAdvancedAppToken;
+
     const { error } = await context.supabase
       .from("stores")
-      .update({
-        kyc_level: data.kycLevel,
-        kyc_threshold_usd: data.kycThresholdUsd,
-        kyc_basic_checks: data.kycBasicChecks,
-        kyc_basic_require_email: data.kycBasicRequireEmail,
-        kyc_advanced_provider: data.kycAdvancedProvider,
-        kyc_advanced_api_key: data.kycAdvancedApiKey,
-        kyc_advanced_app_token: data.kycAdvancedAppToken,
-      })
+      .update(update)
       .eq("id", data.storeId);
     if (error) throw new Error(error.message);
     return { ok: true };
