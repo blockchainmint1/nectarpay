@@ -71,3 +71,14 @@ console.log('addr:',address);
 console.log('sig:',sigB64);
 console.log('bitcoinjs verify:',bitcoinMessage.verify(msg,address,sigB64,network.messagePrefix,true));
 console.log('noble verify:',verifyBitcoinMessage(msg,address,sigB64,network.messagePrefix));
+
+// debug
+const sig=Buffer.from('H6bqTSEe7bVZNbpAuh4dpZ+a9V2RiBtlflEPUFctFIIlIlu8/LVpyG4av6ZlJGoGOmhbhwxRFckEKshEvKC6eio=','base64');
+console.log('header',sig[0]);
+const h=magicHash('hello-nonce-1234',network.messagePrefix);
+console.log('hash',Buffer.from(h).toString('hex'));
+import('bitcoinjs-message').then(m=>{
+  const bm=m.default;
+  const h2=bm.magicHash('hello-nonce-1234',network.messagePrefix);
+  console.log('bm hash',h2.toString('hex'));
+});
