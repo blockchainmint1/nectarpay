@@ -382,9 +382,13 @@ function ManualSignIn({
                 {copied ? "Copied!" : "Copy"}
               </button>
             </div>
-            <pre className="max-h-40 overflow-auto rounded-md border border-border bg-background/60 p-3 text-[0.7rem] leading-relaxed text-foreground whitespace-pre-wrap break-all">
-{challenge.message}
-            </pre>
+            <textarea
+              readOnly
+              value={challenge.message}
+              rows={6}
+              onFocus={(e) => e.currentTarget.select()}
+              className="max-h-40 w-full resize-none overflow-auto rounded-md border border-border bg-background/60 p-3 text-[0.7rem] leading-relaxed text-foreground whitespace-pre-wrap break-all"
+            />
           </div>
 
           <div>
