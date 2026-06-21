@@ -178,7 +178,7 @@ export const getBillingOverview = createServerFn({ method: "GET" })
         period_start: usage?.period_start ?? periodStart(),
       },
       balance_txc: Number(balanceRow ?? 0),
-      txc_usd_rate: TXC_USD_RATE,
+      txc_usd_rate: txcRate,
       deposit_address: { address: depositAddress.address, memo: depositAddress.memo },
       ledger: (ledger ?? []).map((l) => ({
         id: l.id,
@@ -247,7 +247,7 @@ export const changePlan = createServerFn({ method: "POST" })
     // Paid plan: charge from TXC balance
     const { data: balanceRow } = await supabaseAdmin.rpc("txc_balance", { _user_id: userId });
     const balance = Number(balanceRow ?? 0);
-    const txcOwed = Number((priceUsd / TXC_USD_RATE).toFixed(8));
+    const txcOwed = Number((priceUsd / txcRate).toFixed(8));
 
     if (balance < txcOwed) {
       throw new Error(
@@ -264,7 +264,7 @@ export const changePlan = createServerFn({ method: "POST" })
       user_id: userId,
       amount_txc: -txcOwed,
       kind: "subscription_debit",
-      txc_usd_rate: TXC_USD_RATE,
+      txc_usd_rate: txcRate,
       usd_value: priceUsd,
       reference: `${data.plan_id}:${periodStartIso}`,
       notes: `Monthly fee for ${plan.name} plan`,
@@ -302,8 +302,8 @@ export const simulateDeposit = createServerFn({ method: "POST" })
       user_id: context.userId,
       amount_txc: data.amount_txc,
       kind: "deposit",
-      txc_usd_rate: TXC_USD_RATE,
-      usd_value: Number((data.amount_txc * TXC_USD_RATE).toFixed(2)),
+      txc_usd_rate: txcRate,
+      usd_value: Number((data.amount_txc * txcRate).toFixed(2)),
       reference: `sim:${Date.now()}`,
       notes: "Simulated deposit (dev)",
     });
