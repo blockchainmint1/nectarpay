@@ -16,10 +16,18 @@
  */
 
 import bs58check from "bs58check";
-import { secp256k1, Point } from "@noble/secp256k1";
+import { hashes, Point, recoverPublicKey as secpRecoverPublicKey } from "@noble/secp256k1";
 import { sha256 } from "@noble/hashes/sha256";
 import { ripemd160 } from "@noble/hashes/ripemd160";
+import { hmac } from "@noble/hashes/hmac";
 import { bech32 } from "@scure/base";
+
+// @noble/secp256k1 v3 needs sync hash hooks for recoverPublicKey. Safe to set repeatedly.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(hashes as any).sha256 = (msg: Uint8Array) => sha256(msg);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(hashes as any).hmacSha256 = (key: Uint8Array, msg: Uint8Array) =>
+  hmac(sha256, key, msg);
 
 export { buildSignableMessage } from "@/lib/wallet-auth-shared";
 
