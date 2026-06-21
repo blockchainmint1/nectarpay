@@ -30,8 +30,8 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
         store: { name: "payHME demo", website: "https://pay.honest.money" },
         transactions: [] as Array<{ hash: string; amount: number | null; confirmations: number; confirmedAt: string | null; firstSeenAt: string | null }>,
         availableChains: [] as string[],
-        qrAddressOnly: false,
       };
+
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
