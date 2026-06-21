@@ -205,12 +205,9 @@ function ChainCard({
   const persisted = !!row.id;
   const showInput = !persisted || editing;
 
-
-  const mirrors = meta.inputKind === "mirrors-eth";
   const value = meta.inputKind === "xpub" ? row.xpub ?? "" : row.xpub_or_address;
 
   const validation = useMemo(() => {
-    if (mirrors) return { ok: true, msg: "" };
     const v = value.trim();
     if (!v) return { ok: false, msg: "" };
     if (meta.inputKind === "xpub") {
@@ -224,33 +221,25 @@ function ChainCard({
     // xpub-or-address (tron)
     if (isXpubLike(v) || isTronAddressLike(v)) return { ok: true, msg: "" };
     return { ok: false, msg: "Expected an xpub or a T-address." };
-  }, [value, meta.inputKind, mirrors]);
+  }, [value, meta.inputKind]);
 
   function setValue(v: string) {
     if (meta.inputKind === "xpub") {
       onChange({ ...row, xpub: v, xpub_or_address: v });
-    } else if (meta.inputKind === "xpub-or-address" || meta.inputKind === "address") {
+    } else {
       onChange({ ...row, xpub_or_address: v, xpub: meta.inputKind === "xpub-or-address" && isXpubLike(v.trim()) ? v : null });
     }
   }
 
   async function onSave() {
-    let v = value.trim();
-    if (mirrors) {
-      if (!ethXpub) {
-        toast.error("Set your Ethereum xpub first — Base reuses it.");
-        return;
-      }
-      v = ethXpub;
-    } else {
-      if (!v) {
-        toast.error("Enter an xpub or address first.");
-        return;
-      }
-      if (!validation.ok) {
-        toast.error(validation.msg || "Invalid value.");
-        return;
-      }
+    const v = value.trim();
+    if (!v) {
+      toast.error("Enter an xpub or address first.");
+      return;
+    }
+    if (!validation.ok) {
+      toast.error(validation.msg || "Invalid value.");
+      return;
     }
     setSaving(true);
     try {
@@ -273,7 +262,6 @@ function ChainCard({
       toast.success(`${meta.name} saved.`);
       setEditing(false);
       onSaved();
-
     } catch (e) {
       console.error("save chain failed", e);
       toast.error(e instanceof Error ? e.message : "Save failed.");
@@ -303,13 +291,8 @@ function ChainCard({
       </div>
 
       <div className="mt-4 grid gap-3 md:grid-cols-[1fr_120px_auto] md:items-end">
-        {mirrors ? (
-          <div className="text-xs text-muted-foreground">
-            {ethXpub
-              ? "Using your Ethereum xpub. Each invoice gets a fresh derived address."
-              : "No Ethereum xpub set yet. Add one above, then enable Base."}
-          </div>
-        ) : showInput ? (
+        {showInput ? (
+
           <div>
             <Label htmlFor={`val-${meta.key}`} className="text-xs">
               {meta.inputKind === "address"
