@@ -39,9 +39,7 @@ export const Route = createFileRoute("/api/public/auth/wallet-exchange")({
         }
         const { id, token } = parsed.data;
 
-        const { supabaseAdmin } = await import(
-          "@/integrations/supabase/client.server"
-        );
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
         const { data: ch, error: chErr } = await supabaseAdmin
           .from("wallet_login_challenges")
@@ -84,7 +82,10 @@ export const Route = createFileRoute("/api/public/auth/wallet-exchange")({
           });
           if (created.error || !created.data.user) {
             console.error("[wallet-exchange] createUser failed:", created.error);
-            return Response.json({ error: "could not create user" }, { status: 500, headers: CORS });
+            return Response.json(
+              { error: "could not create user" },
+              { status: 500, headers: CORS },
+            );
           }
           userId = created.data.user.id;
           await supabaseAdmin
@@ -136,7 +137,10 @@ export const Route = createFileRoute("/api/public/auth/wallet-exchange")({
         });
         if (link.error || !link.data?.properties) {
           console.error("[wallet-exchange] generateLink failed:", link.error);
-          return Response.json({ error: "could not issue session" }, { status: 500, headers: CORS });
+          return Response.json(
+            { error: "could not issue session" },
+            { status: 500, headers: CORS },
+          );
         }
 
         return Response.json(
