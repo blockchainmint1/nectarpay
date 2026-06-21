@@ -1,112 +1,115 @@
+# Wallet-Only Auth + Admin Panel
 
-# TEXITcoin Pay — Crypto Payment Gateway MVP
+## Decisions locked in
+- **Wallet**: TXC mobile app, QR code + `payhme://` deep link (no extension)
+- **Existing users**: wiped, wallet-only going forward (clean slate)
+- **Admin role**: comma-separated `ADMIN_WALLETS` env var, auto-promoted on login
+- **Merchant panel**: reuse existing `/dashboard` + `/stores/*` (already there, no rename)
+- **New `/admin`**: built fresh
 
-A non-custodial, multi-chain payment gateway. Merchants register, paste an xpub per chain, get API credentials, and drop a plugin into WooCommerce (or call our REST API from any platform with open gateway settings). We never touch funds.
+## QR login — yes, this is a real pattern
 
-## Scope of this build
-
-**Live (end-to-end) in v1:** BTC, EVM stablecoins (USDC/USDT on Ethereum + a low-fee L2 like Base), TEXITcoin (TXC).
-**Stubbed (UI + "coming soon"):** ISK, ZCU, DOGE, plus future chains. The architecture treats every chain as a pluggable adapter so adding them later is config-only.
-
-**Custody:** non-custodial only. Merchant supplies xpub (BTC) / extended pub or single address (EVM) / TXC pub. Private keys never leave the merchant. We derive deposit addresses, watch them, and notify.
-
-## Visual direction
-
-No brand provided, so I'll go with a serious "infra fintech" look modeled on BitPay / CoinGate / OpenNode dashboards: near-black background, single bright accent (electric green `#00E07A`), monospaced numerals (JetBrains Mono) for hashes/amounts, Inter for UI. Dense data tables, status pills, no marketing fluff inside the app. A light public marketing/docs surface uses the same palette inverted. If you want a different aesthetic, say so before I implement and I'll generate design directions.
-
-## User-facing flow (merchant)
-
-1. **Sign up** — email + password, Google sign-in.
-2. **Create a store** — name, website, default fiat currency, webhook URL.
-3. **Add chains** — for each chain, paste xpub (BTC), extended/static address (EVM), or TXC pub. We derive + verify a sample address client-side so they confirm ownership before saving.
-4. **Get credentials** — publishable key + secret API key (shown once), plus webhook signing secret.
-5. **Invoices & transactions** — list, filter, drill-down: requested amount in fiat, locked crypto amount, deposit address, derivation index, confirmations, tx hashes, status timeline, webhook delivery log with retry.
-6. **Settings** — fee rules, confirmation thresholds per chain, allowed currencies, rate-source preference, webhook secret rotation, team members.
-
-## Public API (what merchants/plugins call)
-
-```
-POST /api/public/v1/invoices          create invoice, returns address + amounts
-GET  /api/public/v1/invoices/:id      poll status
-POST /api/public/v1/invoices/:id/cancel
-GET  /api/public/v1/rates?fiat=USD    current rates
-POST webhook  → merchant URL, HMAC-SHA256 signed (Stripe-style)
-```
-
-Auth: `Authorization: Bearer sk_live_…`. All `/api/public/*` handlers verify the API key against a hashed secret and rate-limit per key.
-
-## Watcher service (the hard part)
-
-A scheduled job (pg_cron hitting an internal `/api/public/watcher/tick` endpoint with a shared secret) every ~30s:
-
-- **BTC:** query a public Esplora/Blockstream/Mempool API for each active deposit address; on first-seen mark `detected`, on N confirmations mark `confirmed`.
-- **EVM stables:** query an RPC (Alchemy/Infura — merchant-agnostic, our key) for ERC-20 `Transfer` logs to deposit address; track confirmations.
-- **TXC:** assume an Esplora-compatible explorer endpoint (will need a URL from you — see Open questions); same flow as BTC.
-
-Each adapter implements `deriveAddress(xpub, index)`, `getIncomingTxs(address, sinceBlock)`, `confirmations(tx)`. Adding DOGE/ISK/ZCU later = new adapter file.
-
-Underpayment, overpayment, and late payment have explicit states. Exchange rate locked at invoice creation with a configurable expiry window (default 15 min).
-
-## WooCommerce plugin
-
-A small PHP plugin (`txc-pay-woocommerce/`) generated as a downloadable zip from the dashboard. Implements `WC_Payment_Gateway`:
-- Settings page for API key + webhook secret.
-- On checkout: call `POST /invoices`, redirect to our hosted payment page (`/pay/:invoiceId` — chain picker, QR code, live status via polling).
-- Webhook listener at `/?wc-api=txc_pay` verifies HMAC, marks order paid/failed.
-
-Plugin is shipped as static files under `public/plugins/` for download; not built/compiled.
-
-## Technical plan
-
-**Stack:** existing TanStack Start + Lovable Cloud (Postgres + Auth + storage). All chain/secret code in server functions or `/api/public/*` server routes — never the browser.
-
-**Data model (public schema, with grants + RLS):**
+Standard flow (Sign-In-With-Wallet, mobile-scans-desktop variant):
 
 ```text
-profiles(user_id pk → auth.users, email, name)
-user_roles(user_id, role)                          -- admin/merchant
-stores(id, owner_id, name, website, fiat, webhook_url, webhook_secret_hash)
-api_keys(id, store_id, prefix, secret_hash, last_used_at, revoked_at)
-chain_configs(id, store_id, chain, xpub_or_addr, next_derivation_index, confirmations_required, enabled)
-invoices(id, store_id, chain, fiat_amount, fiat_currency, crypto_amount, rate, address, derivation_index, status, expires_at, created_at)
-transactions(id, invoice_id, tx_hash, amount, confirmations, first_seen_at, confirmed_at)
-webhook_deliveries(id, invoice_id, url, status_code, attempt, payload, signature, delivered_at, next_retry_at)
-rates_cache(chain, fiat, rate, fetched_at)
+Desktop /auth                                TXC Mobile Wallet
+─────────────────                            ─────────────────
+1. POST /challenge                           
+   ← { id, nonce, expires_at }               
+2. Render QR with                            
+   payhme://login?id=…&nonce=…&cb=…  ─scan→  3. Show "Sign in to payHME?"
+                                             4. User taps Approve
+                                             5. Sign: nonce + domain + ts
+3a. Poll /status?id=…                ←POST── 6. POST /callback {id, address, sig}
+                                             ←── { ok }
+4. /status returns { token }
+5. Exchange token → Supabase session
+6. Navigate to /dashboard or /admin
 ```
 
-All tables: `GRANT` block + RLS. Merchant policies scope by `store_id IN (SELECT id FROM stores WHERE owner_id = auth.uid())`. `api_keys.secret_hash`, `webhook_secret_hash`, and `chain_configs.xpub_or_addr` are server-read only (no `anon`/`authenticated` SELECT of the secret columns — read via security-definer functions that strip them).
+Same desktop-with-extension path (future): skip QR, `window.txc.signMessage(nonce)` inline, same callback.
 
-**Server modules:**
-- `src/lib/chains/{btc,evm,txc}.adapter.ts` — pure derivation + watching logic.
-- `src/lib/chains/index.ts` — registry, exposes uniform interface.
-- `src/lib/invoices.functions.ts` — `createInvoice`, `getInvoice`, `cancelInvoice` (merchant-authenticated server fns).
-- `src/lib/webhooks.server.ts` — HMAC sign + send + retry with backoff.
-- `src/routes/api/public/v1/invoices.ts`, `…/invoices.$id.ts`, `…/rates.ts` — external REST surface, API-key auth + Zod validation.
-- `src/routes/api/public/watcher/tick.ts` — cron entry, shared-secret guarded.
-- `src/routes/pay/$invoiceId.tsx` — hosted payment page (chain picker, QR via `qrcode`, live status).
+## Database changes (single migration)
 
-**Frontend routes (under `_authenticated/`):**
-`/dashboard`, `/stores`, `/stores/$id`, `/stores/$id/chains`, `/stores/$id/keys`, `/stores/$id/invoices`, `/stores/$id/invoices/$invoiceId`, `/stores/$id/settings`, `/docs`.
+1. **Drop email/password users**: truncate `auth.users` cascade (wipes profiles, stores, invoices, everything — clean slate as requested)
+2. **New table `wallet_accounts`**: `(wallet_address PK, user_id FK auth.users, chain text default 'TXC', first_seen_at, last_login_at)` — one wallet ↔ one auth.users row
+3. **New table `wallet_login_challenges`**: `(id uuid PK, nonce text, wallet_address text nullable, status enum[pending|signed|consumed|expired], one_time_token text nullable, expires_at, created_at)` — short-lived (5 min)
+4. **Update `handle_new_user` trigger**: stop assuming email; pull display name from `wallet_address` truncated
+5. **Add `admin` role to existing `app_role` enum** (already there as `'admin'`)
+6. RLS + GRANTs on both new tables
 
-**Marketing routes (public):** `/`, `/pricing`, `/docs`, `/integrations/woocommerce`, `/auth`.
+## TXC signature verification
 
-**Key npm packages:** `@scure/bip32` + `@scure/btc-signer` (BTC xpub derivation, Worker-safe), `viem` (EVM addresses + RPC), `qrcode`, `zod`, `@fontsource/inter`, `@fontsource/jetbrains-mono`. TXC adapter wraps the same BIP32 path if TXC is a BTC fork (very likely — please confirm).
+TEXITcoin is a Bitcoin-derivative. Use Bitcoin-style message signing (`\x18Bitcoin Signed Message:\n` prefix + recoverable ECDSA, base64). Pure-JS, Worker-safe via `bitcoinjs-message` package.
 
-**Build phases (so the first deploy is usable):**
-1. Auth, profiles, stores, dashboard shell, marketing pages, design system.
-2. Chain config CRUD + xpub validation + address preview (client-side derivation).
-3. API key issuance + public REST endpoints + rate fetching (CoinGecko for BTC/EVM; TXC rate source TBD).
-4. Hosted payment page + invoice lifecycle (status still manual).
-5. Watcher adapters (BTC via Mempool.space, EVM via RPC, TXC via explorer URL) + cron.
-6. Webhook delivery with retry + delivery log UI.
-7. WooCommerce PHP plugin + downloadable zip + `/integrations/woocommerce` docs page.
+**Open question for the TXC wallet team**: confirm
+- Exact magic-string prefix (default `\x18TEXITcoin Signed Message:\n` matching their daemon's `signmessage` RPC)
+- Address format (P2PKH base58 vs bech32) and version byte
+- Whether they sign the raw nonce or a SIWE-style structured message
 
-## Open questions (won't block starting, but I'll need these before phases 3/5/7)
+I'll build with sensible defaults (BTC-compatible) + a clearly-marked `verifyTxcSignature()` function so swapping the spec later is one file.
 
-1. **TXC explorer / RPC endpoint URL** and whether it's Esplora-, Bitcoin-Core-, or custom-API-compatible. Also TXC rate source (is it on any exchange API, or do you self-publish a price feed?).
-2. **EVM RPC provider:** OK if I default to a public RPC and add an Alchemy/Infura key later via `add_secret`?
-3. **L2 choice for stables:** Base + Ethereum mainnet to start, or also Polygon/Arbitrum?
-4. **Pricing/fees:** flat % per invoice? free during beta? (affects dashboard + marketing copy)
-5. **Brand name** — I'll use "TEXITcoin Pay" as a working title; change anytime.
+## Server routes (all under `/api/public/auth/`)
 
-If you're good with this, approve and I'll start with phase 1 (auth + stores + dashboard shell + marketing). I'll come back for the open questions when each phase needs them.
+| Route | Method | Purpose |
+|---|---|---|
+| `/api/public/auth/wallet-challenge` | POST | Create nonce, return `{id, nonce, deep_link, qr_data, expires_at}` |
+| `/api/public/auth/wallet-callback` | POST | Wallet posts `{id, address, signature}`, server verifies, marks challenge `signed`, mints one-time token |
+| `/api/public/auth/wallet-status` | GET `?id=` | Desktop polls; returns `pending` or `{status:'signed', token}` once |
+| `/api/public/auth/wallet-exchange` | POST | Desktop posts one-time token → server creates/loads `auth.users` row for wallet, issues Supabase session via admin API, returns session tokens |
+
+All public-prefix bypasses auth at the edge; each handler validates input with Zod and uses constant-time compare on the one-time token.
+
+## Frontend
+
+1. **Replace `/auth`**: rip out email/password forms. Show:
+   - Big QR (renders the `payhme://` URI)
+   - Deep-link button for same-device mobile
+   - "Don't have TXC wallet?" link → wallet download page
+   - Polling indicator + 5-min countdown
+   - On success: store session, redirect to `search.redirect ?? /dashboard` (or `/admin` if wallet is in `ADMIN_WALLETS`)
+2. **`src/lib/wallet-auth.functions.ts`**: client helpers (`createChallenge`, `pollStatus`, `exchange`)
+3. **Update `_authenticated/route.tsx` gate**: no functional change — Supabase session check still works; wallet just becomes the login method
+4. **New `/admin` layout**: pathless `_admin` group under `_authenticated`, `beforeLoad` checks `has_role('admin')`, redirects non-admins to `/dashboard`
+5. **`/admin` pages (skeleton, expand later)**:
+   - `/admin` — overview (users, stores, invoice volume, errors)
+   - `/admin/users` — list, search, suspend
+   - `/admin/stores` — global store list
+   - `/admin/invoices` — global invoice search
+   - `/admin/system` — chain configs, rate cache, watcher cursors, KYC provider toggles
+
+## Admin role promotion
+
+On every wallet exchange, server fn:
+```ts
+const admins = (process.env.ADMIN_WALLETS ?? '').split(',').map(s => s.trim().toLowerCase());
+if (admins.includes(address.toLowerCase())) {
+  await supabaseAdmin.from('user_roles').upsert({ user_id, role: 'admin' });
+}
+```
+You add `ADMIN_WALLETS` once (your TXC address); next login auto-promotes.
+
+## What I'll build now vs defer
+
+**This turn (foundation):**
+- Migration (drop users, new tables, RLS, GRANTs)
+- All 4 server routes with Zod validation + Bitcoin-message-style signature verification stub
+- New `/auth` page with QR + polling
+- `/admin` layout gate + overview placeholder + 4 child pages with real data tables
+- `ADMIN_WALLETS` secret added
+
+**Defer (needs TXC wallet team input):**
+- Final signature spec (magic prefix, address encoding)
+- Wallet download page content
+- WebSocket replacement for polling (nice-to-have)
+- Multi-wallet-per-user, wallet rotation
+
+## Risks
+- **Anyone with TXC wallet can sign up** — that's the design, but no email = no rate-limit-by-identity. Mitigation: per-IP rate limit on `/wallet-challenge`.
+- **Signature spec drift**: if TXC wallet implements signing differently than `bitcoinjs-message` expects, login breaks. Mitigation: `verifyTxcSignature()` is isolated; spec change = 1-file fix.
+- **Wiping users**: this is a hard reset. If there's anyone real in the DB right now, they're gone. Confirm before I run the migration.
+
+## Confirm before I build
+1. **Wipe is OK?** Truncate `auth.users` cascade — destroys all stores, invoices, KYC records. Y/N
+2. **Your admin TXC wallet address** — I need it (or a placeholder) to seed `ADMIN_WALLETS`. Or I'll add the secret empty and you fill it in via the secrets UI.
+3. **Deep link scheme**: `payhme://login?...` OK? Or `txc://`?

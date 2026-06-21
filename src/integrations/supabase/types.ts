@@ -752,6 +752,75 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_accounts: {
+        Row: {
+          chain: string
+          first_seen_at: string
+          last_login_at: string
+          user_id: string
+          wallet_address: string
+        }
+        Insert: {
+          chain?: string
+          first_seen_at?: string
+          last_login_at?: string
+          user_id: string
+          wallet_address: string
+        }
+        Update: {
+          chain?: string
+          first_seen_at?: string
+          last_login_at?: string
+          user_id?: string
+          wallet_address?: string
+        }
+        Relationships: []
+      }
+      wallet_login_challenges: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          ip_address: string | null
+          nonce: string
+          one_time_token: string | null
+          signature: string | null
+          signed_at: string | null
+          status: Database["public"]["Enums"]["wallet_challenge_status"]
+          user_agent: string | null
+          wallet_address: string | null
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          ip_address?: string | null
+          nonce: string
+          one_time_token?: string | null
+          signature?: string | null
+          signed_at?: string | null
+          status?: Database["public"]["Enums"]["wallet_challenge_status"]
+          user_agent?: string | null
+          wallet_address?: string | null
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          ip_address?: string | null
+          nonce?: string
+          one_time_token?: string | null
+          signature?: string | null
+          signed_at?: string | null
+          status?: Database["public"]["Enums"]["wallet_challenge_status"]
+          user_agent?: string | null
+          wallet_address?: string | null
+        }
+        Relationships: []
+      }
       watcher_cursors: {
         Row: {
           chain: string
@@ -843,6 +912,7 @@ export type Database = {
       }
       is_subscription_active: { Args: { _user_id: string }; Returns: boolean }
       owns_store: { Args: { _store_id: string }; Returns: boolean }
+      purge_expired_wallet_challenges: { Args: never; Returns: undefined }
       txc_balance: { Args: { _user_id: string }; Returns: number }
     }
     Enums: {
@@ -869,6 +939,7 @@ export type Database = {
       kyc_level: "none" | "basic" | "advanced"
       kyc_provider: "none" | "sumsub" | "persona" | "didit" | "veriff"
       kyc_status: "not_required" | "pending" | "passed" | "failed"
+      wallet_challenge_status: "pending" | "signed" | "consumed" | "expired"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1021,6 +1092,7 @@ export const Constants = {
       kyc_level: ["none", "basic", "advanced"],
       kyc_provider: ["none", "sumsub", "persona", "didit", "veriff"],
       kyc_status: ["not_required", "pending", "passed", "failed"],
+      wallet_challenge_status: ["pending", "signed", "consumed", "expired"],
     },
   },
 } as const
