@@ -26,8 +26,7 @@ import { bech32 } from "@scure/base";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (hashes as any).sha256 = (msg: Uint8Array) => sha256(msg);
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(hashes as any).hmacSha256 = (key: Uint8Array, msg: Uint8Array) =>
-  hmac(sha256, key, msg);
+(hashes as any).hmacSha256 = (key: Uint8Array, msg: Uint8Array) => hmac(sha256, key, msg);
 
 export { buildSignableMessage } from "@/lib/wallet-auth-shared";
 
@@ -61,9 +60,7 @@ function magicHash(message: string, prefix: string): Uint8Array {
   const prefixBytes = new TextEncoder().encode(prefix);
   const messageBytes = new TextEncoder().encode(message);
   const len = varInt(messageBytes.length);
-  const buf = new Uint8Array(
-    prefixBytes.length + len.length + messageBytes.length,
-  );
+  const buf = new Uint8Array(prefixBytes.length + len.length + messageBytes.length);
   let off = 0;
   buf.set(prefixBytes, off);
   off += prefixBytes.length;
@@ -146,12 +143,7 @@ export function verifyTxcSignature(opts: {
     const hash = magicHash(opts.message, prefix);
     let publicKey: Uint8Array;
     try {
-      publicKey = recoverPublicKey(
-        hash,
-        parsed.signature,
-        parsed.recovery,
-        parsed.compressed,
-      );
+      publicKey = recoverPublicKey(hash, parsed.signature, parsed.recovery, parsed.compressed);
     } catch {
       continue;
     }
@@ -206,10 +198,7 @@ export function verifyTxcSignature(opts: {
         redeemScript[1] = 0x14;
         redeemScript.set(publicKeyHash, 2);
         const redeemHash = hash160(redeemScript);
-        if (
-          arraysEqual(publicKeyHash, expected) ||
-          arraysEqual(redeemHash, expected)
-        ) {
+        if (arraysEqual(publicKeyHash, expected) || arraysEqual(redeemHash, expected)) {
           return true;
         }
       }
@@ -256,7 +245,10 @@ export function recoverAddressesFromSignature(opts: {
       const payload = new Uint8Array(21);
       payload[0] = 0x42; // TXC P2PKH version byte
       payload.set(pkh, 1);
-      out.push({ prefix: prefix.replace(/\x18/, "\\x18"), address: bs58check.encode(payload) });
+      out.push({
+        prefix: prefix.replaceAll("\x18", "\\x18").replaceAll("\x1a", "\\x1a"),
+        address: bs58check.encode(payload),
+      });
     } catch {
       // skip
     }
