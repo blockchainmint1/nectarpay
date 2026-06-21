@@ -23,6 +23,24 @@ export interface WatcherResult {
   error?: string;
 }
 
+/**
+ * Effective confirmations required for this credit. If the merchant has
+ * opted into mempool acceptance for small payments (`zero_conf_max_usd`)
+ * and the paid USD amount is at or under that threshold, treat 0-conf
+ * (mempool-visible) as good. Otherwise fall back to the merchant's
+ * configured `confirmations_required`, then the network default.
+ */
+function effectiveConfsRequired(
+  cfg: { confirmations_required?: number | null; zero_conf_max_usd?: number | null },
+  netDefault: number,
+  paidUsd: number,
+): number {
+  const zc = cfg.zero_conf_max_usd == null ? null : Number(cfg.zero_conf_max_usd);
+  if (zc != null && zc > 0 && paidUsd <= zc) return 0;
+  return cfg.confirmations_required ?? netDefault;
+}
+
+
 async function ensureAddresses(
   chainConfigId: string,
   storeId: string,
