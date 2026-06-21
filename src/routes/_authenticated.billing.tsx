@@ -196,16 +196,8 @@ function BalanceCard({
         )}
       </div>
 
-      <div className="mt-3 flex gap-2">
-        <Button size="sm" variant="outline" onClick={() => onSimDeposit(100)}>
-          + Simulate 100 TXC
-        </Button>
-        <Button size="sm" variant="outline" onClick={() => onSimDeposit(1000)}>
-          + 1,000 TXC
-        </Button>
-      </div>
-      <div className="mt-2 text-[11px] text-muted-foreground">
-        Dev shortcut. Production watcher will credit real deposits.
+      <div className="mt-3 text-[11px] text-muted-foreground">
+        Deposits to this address are credited automatically once confirmed on the TXC network.
       </div>
     </Card>
   );
