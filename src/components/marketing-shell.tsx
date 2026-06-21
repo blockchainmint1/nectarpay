@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function MarketingNav() {
   const { user, loading } = useAuth();
@@ -19,6 +20,7 @@ export function MarketingNav() {
           <Link to="/integrations/woocommerce" className="hover:text-foreground">WooCommerce</Link>
         </nav>
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           {loading ? null : user ? (
             <Button asChild size="sm">
               <Link to="/dashboard">Dashboard</Link>
