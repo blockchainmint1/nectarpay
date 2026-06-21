@@ -59,14 +59,19 @@ function isLocalHostname(hostname: string): boolean {
   return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "0.0.0.0";
 }
 
-function isLovablePreviewHostname(hostname: string): boolean {
-  return hostname.endsWith(".lovableproject.com") || hostname.endsWith(".lovable.app");
+function stableLovablePreviewOrigin(hostname: string): string | null {
+  if (!hostname.endsWith(".lovableproject.com")) return null;
+  const previewId = hostname.slice(0, -".lovableproject.com".length);
+  if (!/^[0-9a-f-]{36}$/i.test(previewId)) return null;
+  return `https://id-preview--${previewId}.lovable.app`;
 }
 
 function publicOrPreferredOrigin(origin: string): string {
   try {
     const parsed = new URL(origin);
-    if (isLocalHostname(parsed.hostname) || isLovablePreviewHostname(parsed.hostname)) {
+    const stablePreview = stableLovablePreviewOrigin(parsed.hostname);
+    if (stablePreview) return stablePreview;
+    if (isLocalHostname(parsed.hostname)) {
       return WALLET_AUTH_PUBLIC_ORIGIN;
     }
     return parsed.origin;
@@ -139,16 +144,50 @@ export function buildDeepLink(opts: {
   message: string;
 }): string {
   const originUrl = new URL(opts.origin);
-  const cbUrl = new URL("/api/public/auth/wallet-callback", originUrl);
-  cbUrl.searchParams.set("id", opts.challengeId);
-  cbUrl.searchParams.set("domain", originUrl.hostname);
+  const cbUrl = buildWalletCallbackUrl({
+    challengeId: opts.challengeId,
+    origin: opts.origin,
+  });
   
   const params = new URLSearchParams({
     id: opts.challengeId,
     nonce: opts.nonce,
-    cb: cbUrl.toString(),
+    cb: cbUrl,
     msg: base64UrlEncode(opts.message),
     from: originUrl.hostname,
   });
   return `${WALLET_DEEP_LINK_SCHEME}://login?${params.toString()}`;
+}
+
+export function buildWalletCallbackUrl(opts: {
+  challengeId: string;
+  origin: string;
+}): string {
+  const originUrl = new URL(opts.origin);
+  const cbUrl = new URL("/api/public/auth/wallet-callback", originUrl);
+  cbUrl.searchParams.set("id", opts.challengeId);
+  cbUrl.searchParams.set("domain", originUrl.hostname);
+  return cbUrl.toString();
+}
+
+export function buildWalletLoginEnvelope(opts: {
+  challengeId: string;
+  nonce: string;
+  origin: string;
+  expiresAt: string;
+}): string {
+  const originUrl = new URL(opts.origin);
+  return JSON.stringify({
+    v: 1,
+    type: "hm-login",
+    origin: originUrl.hostname,
+    nonce: opts.nonce,
+    callback: buildWalletCallbackUrl({
+      challengeId: opts.challengeId,
+      origin: opts.origin,
+    }),
+    statement: "This signature does not authorize any payment.",
+    expiresAt: new Date(opts.expiresAt).getTime(),
+    chain: "txc",
+  });
 }
