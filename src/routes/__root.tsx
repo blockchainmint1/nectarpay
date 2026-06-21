@@ -12,7 +12,6 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "../lib/auth-context";
-import { ThemeProvider, themeBootstrapScript } from "../lib/theme";
 import { Toaster } from "../components/ui/sonner";
 
 function NotFoundComponent() {
@@ -94,9 +93,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "payHME — non-custodial crypto payments for any store" },
-      { name: "description", content: "CoinFlow Gateway enables web stores to accept payments in various cryptocurrencies." },
-      { property: "og:description", content: "CoinFlow Gateway enables web stores to accept payments in various cryptocurrencies." },
-      { name: "twitter:description", content: "CoinFlow Gateway enables web stores to accept payments in various cryptocurrencies." },
+      { name: "description", content: "payHME Gateway enables web stores to accept payments in various cryptocurrencies." },
+      { property: "og:description", content: "payHME Gateway enables web stores to accept payments in various cryptocurrencies." },
+      { name: "twitter:description", content: "payHME Gateway enables web stores to accept payments in various cryptocurrencies." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1fe402e2-5334-4652-98b5-cc8bdff11260/id-preview-981aa997--faa7c23e-4f75-4eed-8c8c-23234e4242f7.lovable.app-1782008798025.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1fe402e2-5334-4652-98b5-cc8bdff11260/id-preview-981aa997--faa7c23e-4f75-4eed-8c8c-23234e4242f7.lovable.app-1782008798025.png" },
     ],
@@ -110,9 +109,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
         <HeadContent />
       </head>
       <body>
@@ -128,13 +126,11 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AuthProvider>
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
-          <Toaster richColors position="top-right" />
-        </AuthProvider>
-      </ThemeProvider>
+      <AuthProvider>
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+        <Toaster richColors position="top-right" />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
