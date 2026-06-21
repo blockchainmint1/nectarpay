@@ -155,13 +155,13 @@ export type Database = {
       }
       invoices: {
         Row: {
-          address: string
+          address: string | null
           address_index: number | null
           buyer_email: string | null
-          chain: Database["public"]["Enums"]["chain_kind"]
+          chain: Database["public"]["Enums"]["chain_kind"] | null
           created_at: string
-          crypto_amount: number
-          derivation_index: number
+          crypto_amount: number | null
+          derivation_index: number | null
           description: string | null
           expires_at: string
           external_order_id: string | null
@@ -171,20 +171,20 @@ export type Database = {
           kyc_level_override: Database["public"]["Enums"]["kyc_level"] | null
           kyc_reference: string | null
           kyc_status: Database["public"]["Enums"]["kyc_status"]
-          rate: number
+          rate: number | null
           redirect_url: string | null
           status: Database["public"]["Enums"]["invoice_status"]
           store_id: string
           updated_at: string
         }
         Insert: {
-          address: string
+          address?: string | null
           address_index?: number | null
           buyer_email?: string | null
-          chain: Database["public"]["Enums"]["chain_kind"]
+          chain?: Database["public"]["Enums"]["chain_kind"] | null
           created_at?: string
-          crypto_amount: number
-          derivation_index: number
+          crypto_amount?: number | null
+          derivation_index?: number | null
           description?: string | null
           expires_at: string
           external_order_id?: string | null
@@ -194,20 +194,20 @@ export type Database = {
           kyc_level_override?: Database["public"]["Enums"]["kyc_level"] | null
           kyc_reference?: string | null
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
-          rate: number
+          rate?: number | null
           redirect_url?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           store_id: string
           updated_at?: string
         }
         Update: {
-          address?: string
+          address?: string | null
           address_index?: number | null
           buyer_email?: string | null
-          chain?: Database["public"]["Enums"]["chain_kind"]
+          chain?: Database["public"]["Enums"]["chain_kind"] | null
           created_at?: string
-          crypto_amount?: number
-          derivation_index?: number
+          crypto_amount?: number | null
+          derivation_index?: number | null
           description?: string | null
           expires_at?: string
           external_order_id?: string | null
@@ -217,7 +217,7 @@ export type Database = {
           kyc_level_override?: Database["public"]["Enums"]["kyc_level"] | null
           kyc_reference?: string | null
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
-          rate?: number
+          rate?: number | null
           redirect_url?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           store_id?: string
