@@ -193,10 +193,12 @@ function CheckoutPage() {
   const network = inv ? (ALL_NETWORKS as Record<string, { confirmationsRequired: number }>)[inv.chain] : null;
   const requiredConfs = network?.confirmationsRequired ?? 1;
 
+  const memo = inv ? inv.id.slice(0, 8) : null;
   const uri = useMemo(
-    () => (inv ? paymentUri(inv.chain, inv.address, inv.cryptoAmount) : ""),
-    [inv],
+    () => (inv ? paymentUri(inv.chain, inv.address, inv.cryptoAmount, memo) : ""),
+    [inv, memo],
   );
+
 
   // ----- frames -----
   return (
