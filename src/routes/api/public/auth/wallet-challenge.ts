@@ -3,6 +3,7 @@ import { randomBytes } from "crypto";
 import {
   authDomainFromRequest,
   buildDeepLink,
+  buildWalletLoginEnvelope,
   buildSignableMessage,
   publicOriginFromRequest,
 } from "@/lib/wallet-auth-shared";
@@ -56,6 +57,12 @@ export const Route = createFileRoute("/api/public/auth/wallet-challenge")({
           origin,
           message,
         });
+        const qrData = buildWalletLoginEnvelope({
+          challengeId: data.id,
+          nonce: data.nonce,
+          origin,
+          expiresAt: data.expires_at,
+        });
 
         // Opportunistic cleanup of expired rows (cheap, fire-and-forget)
         void supabaseAdmin.rpc("purge_expired_wallet_challenges");
@@ -67,7 +74,7 @@ export const Route = createFileRoute("/api/public/auth/wallet-challenge")({
             expires_at: data.expires_at,
             message,
             deep_link: deepLink,
-            qr_data: deepLink,
+            qr_data: qrData,
           },
           { headers: CORS },
         );
