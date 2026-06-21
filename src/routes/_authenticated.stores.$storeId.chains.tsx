@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, Link2, Save } from "lucide-react";
+import { ChevronLeft, Link2, Save, Pencil, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +19,12 @@ function isSolanaAddressLike(s: string): boolean {
 function isTronAddressLike(s: string): boolean {
   return /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(s.trim());
 }
+function maskSecret(s: string): string {
+  const v = (s ?? "").trim();
+  if (v.length <= 12) return v;
+  return `${v.slice(0, 6)}…${v.slice(-4)}`;
+}
+
 
 export const Route = createFileRoute("/_authenticated/stores/$storeId/chains")({
   head: () => ({ meta: [{ title: "Chains · payHME" }] }),
@@ -199,6 +205,11 @@ function ChainCard({
   onSaved: () => void;
 }) {
   const [saving, setSaving] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const persisted = !!row.id;
+  const showInput = !persisted || editing;
+
 
   const mirrors = meta.inputKind === "mirrors-eth";
   const value = meta.inputKind === "xpub" ? row.xpub ?? "" : row.xpub_or_address;
@@ -265,7 +276,9 @@ function ChainCard({
         throw new Error(error.message || error.details || error.hint || "Save failed.");
       }
       toast.success(`${meta.name} saved.`);
+      setEditing(false);
       onSaved();
+
     } catch (e) {
       console.error("save chain failed", e);
       toast.error(e instanceof Error ? e.message : "Save failed.");
@@ -301,7 +314,7 @@ function ChainCard({
               ? "Using your Ethereum xpub. Each invoice gets a fresh derived address."
               : "No Ethereum xpub set yet. Add one above, then enable Base."}
           </div>
-        ) : (
+        ) : showInput ? (
           <div>
             <Label htmlFor={`val-${meta.key}`} className="text-xs">
               {meta.inputKind === "address"
@@ -323,7 +336,39 @@ function ChainCard({
               <p className="mt-1 text-xs text-destructive">{validation.msg}</p>
             )}
           </div>
+        ) : (
+          <div>
+            <Label className="text-xs">
+              {meta.inputKind === "address" ? "Receive address" : "Saved"}
+            </Label>
+            <div className="flex items-center gap-2 rounded-md border border-border bg-background/40 px-3 py-2">
+              <code className="flex-1 truncate font-mono text-xs text-muted-foreground">
+                {maskSecret(value)}
+              </code>
+              <button
+                type="button"
+                onClick={async () => {
+                  await navigator.clipboard.writeText(value);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 1500);
+                }}
+                className="text-muted-foreground hover:text-foreground"
+                title="Copy"
+              >
+                {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditing(true)}
+                className="text-muted-foreground hover:text-foreground"
+                title="Replace"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
         )}
+
         <div>
           <Label htmlFor={`conf-${meta.key}`} className="text-xs">
             Confirmations
