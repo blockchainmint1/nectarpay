@@ -35,7 +35,7 @@ function DashboardPage() {
         .from("invoices")
         .select("fiat_amount, fiat_currency, status, created_at")
         .gte("created_at", since)
-        .in("status", ["confirmed", "paid", "settled"]);
+        .in("status", ["confirmed", "overpaid"]);
       if (error) throw error;
       const count = data?.length ?? 0;
       // Assume single fiat currency per merchant for the headline; sum across all paid.
