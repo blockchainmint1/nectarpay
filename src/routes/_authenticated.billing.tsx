@@ -159,10 +159,8 @@ function CurrentPlanCard({ data }: { data: BillingOverview }) {
 
 function BalanceCard({
   data,
-  onSimDeposit,
 }: {
   data: BillingOverview;
-  onSimDeposit: (n: number) => void;
 }) {
   const [copied, setCopied] = useState(false);
   const usd = (data.balance_txc * data.txc_usd_rate).toFixed(2);
