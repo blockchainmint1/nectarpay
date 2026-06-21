@@ -103,7 +103,7 @@ async function settleInvoice(
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
-    .select("status, store_id, stores(owner_id)")
+    .select("id, status, store_id, chain, address, fiat_amount, fiat_currency, external_order_id, stores(owner_id, webhook_url, webhook_secret)")
     .eq("id", invoiceId)
     .single();
   if (!inv || ["confirmed", "expired", "cancelled"].includes(inv.status)) {
@@ -123,7 +123,8 @@ async function settleInvoice(
     .update({ status: newStatus })
     .eq("id", invoiceId);
 
-  const ownerId = (inv.stores as { owner_id: string } | null)?.owner_id;
+  const store = inv.stores as { owner_id: string; webhook_url: string | null; webhook_secret: string | null } | null;
+  const ownerId = store?.owner_id;
   if (ownerId) {
     await notifyUser(ownerId, {
       event: isPaid ? "invoice_paid" : "invoice_underpaid",
@@ -134,6 +135,37 @@ async function settleInvoice(
       metadata: { invoiceId },
     });
   }
+
+  // Outbound signed webhook to the merchant's server, if configured.
+  if (store?.webhook_url && store.webhook_secret && (newStatus === "confirmed" || newStatus === "underpaid")) {
+    const { deliverWebhook } = await import("./webhooks.server");
+    const eventType = newStatus === "confirmed" ? "invoice.paid" : "invoice.underpaid";
+    const eventId = (crypto as { randomUUID: () => string }).randomUUID();
+    const result = await deliverWebhook({
+      url: store.webhook_url,
+      secret: store.webhook_secret,
+      event: {
+        id: eventId,
+        type: eventType,
+        created_at: new Date().toISOString(),
+        data: {
+          invoice_id: inv.id,
+          store_id: inv.store_id,
+          status: newStatus,
+          chain: inv.chain,
+          address: inv.address,
+          fiat_amount: Number(inv.fiat_amount),
+          fiat_currency: inv.fiat_currency,
+          paid_amount_usd: paidAmountUsd,
+          order_id: inv.external_order_id ?? null,
+        },
+      },
+    });
+    if (!result.ok) {
+      console.error(`webhook delivery failed (invoice ${inv.id}):`, result.status, result.error);
+    }
+  }
+
   return { status: newStatus, changed: true };
 }
 

@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ChevronLeft, KeyRound, Copy, Check, Trash2, Plus } from "lucide-react";
+import { ChevronLeft, KeyRound, Copy, Check, Trash2, Plus, Webhook, RotateCw } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { listApiKeys, createApiKey, revokeApiKey } from "@/lib/api-keys.functions";
+import { getWebhookConfig, setWebhookUrl, rotateWebhookSecret } from "@/lib/webhooks.functions";
 
 export const Route = createFileRoute("/_authenticated/stores/$storeId/keys")({
   head: () => ({ meta: [{ title: "API keys · payHME" }] }),
@@ -165,6 +166,126 @@ function KeysPage() {
           ))
         )}
       </div>
+
+      <WebhookSection storeId={storeId} />
     </div>
+  );
+}
+
+function WebhookSection({ storeId }: { storeId: string }) {
+  const getCfg = useServerFn(getWebhookConfig);
+  const setUrl = useServerFn(setWebhookUrl);
+  const rotate = useServerFn(rotateWebhookSecret);
+
+  const { data: cfg, refetch } = useQuery({
+    queryKey: ["webhook-config", storeId],
+    queryFn: () => getCfg({ data: { storeId } }),
+  });
+
+  const [url, setUrlVal] = useState("");
+  const [freshSecret, setFreshSecret] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (cfg?.webhook_url != null) setUrlVal(cfg.webhook_url);
+  }, [cfg?.webhook_url]);
+
+  const saveMut = useMutation({
+    mutationFn: () => setUrl({ data: { storeId, url } }),
+    onSuccess: () => { toast.success("Webhook URL saved."); refetch(); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const rotateMut = useMutation({
+    mutationFn: () => rotate({ data: { storeId } }),
+    onSuccess: (res) => { setFreshSecret(res.secret); refetch(); },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <>
+      <div className="mt-10 flex items-center gap-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary">
+          <Webhook className="h-4 w-4" />
+        </div>
+        <h2 className="text-2xl font-semibold tracking-tight">Webhook</h2>
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground">
+        We POST a signed JSON event to this URL when an invoice is paid or underpaid.
+        Verify the <code className="font-mono">X-TXCPay-Signature</code> header using your
+        webhook secret. See{" "}
+        <Link to="/docs" className="text-primary underline">the docs</Link> for the exact
+        signing format and a Node verification snippet.
+      </p>
+
+      <div className="mt-4 rounded-lg border border-border bg-card/60 p-5">
+        <Label htmlFor="whurl" className="text-xs">Webhook URL</Label>
+        <div className="mt-1 flex gap-2">
+          <Input
+            id="whurl"
+            value={url}
+            onChange={(e) => setUrlVal(e.target.value)}
+            placeholder="https://your-store.example.com/api/payhme/webhook"
+          />
+          <Button onClick={() => saveMut.mutate()} disabled={saveMut.isPending}>
+            {saveMut.isPending ? "Saving…" : "Save"}
+          </Button>
+        </div>
+
+        <div className="mt-5 flex items-center justify-between">
+          <div className="min-w-0">
+            <div className="text-xs font-medium">Webhook signing secret</div>
+            <div className="mt-0.5 text-xs text-muted-foreground">
+              {cfg?.has_secret
+                ? "A secret is configured. Rotating it invalidates the old one."
+                : "No secret yet — generate one to start receiving signed webhooks."}
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (!cfg?.has_secret || confirm("Rotate the webhook secret? Old signatures will stop verifying.")) {
+                rotateMut.mutate();
+              }
+            }}
+            disabled={rotateMut.isPending}
+          >
+            <RotateCw className="mr-2 h-3.5 w-3.5" />
+            {cfg?.has_secret ? "Rotate" : "Generate"}
+          </Button>
+        </div>
+
+        {freshSecret && (
+          <div className="mt-4 rounded-md border border-primary/40 bg-primary/5 p-4">
+            <p className="text-xs font-medium text-primary">
+              Copy this now — it will not be shown again.
+            </p>
+            <div className="mt-2 flex items-center gap-2 rounded-md border border-border bg-background/60 px-3 py-2">
+              <code className="flex-1 break-all font-mono text-xs">{freshSecret}</code>
+              <button
+                type="button"
+                onClick={async () => {
+                  await navigator.clipboard.writeText(freshSecret);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 1500);
+                }}
+                className="text-muted-foreground hover:text-foreground"
+                title="Copy"
+              >
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => setFreshSecret(null)}
+              className="mt-2 text-xs text-muted-foreground hover:text-foreground"
+            >
+              I've saved it — dismiss
+            </button>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

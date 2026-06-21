@@ -476,6 +476,7 @@ export type Database = {
           name: string
           owner_id: string
           updated_at: string
+          webhook_secret: string | null
           webhook_secret_hash: string | null
           webhook_url: string | null
           website: string | null
@@ -495,6 +496,7 @@ export type Database = {
           name: string
           owner_id: string
           updated_at?: string
+          webhook_secret?: string | null
           webhook_secret_hash?: string | null
           webhook_url?: string | null
           website?: string | null
@@ -514,6 +516,7 @@ export type Database = {
           name?: string
           owner_id?: string
           updated_at?: string
+          webhook_secret?: string | null
           webhook_secret_hash?: string | null
           webhook_url?: string | null
           website?: string | null
