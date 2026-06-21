@@ -18,6 +18,7 @@ import { Route as CashOutRouteImport } from './routes/cash-out'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as IntegrationsIndexRouteImport } from './routes/integrations.index'
 import { Route as SdkPayhmeDotjsRouteImport } from './routes/sdk.payhme[.]js'
 import { Route as IntegrationsWoocommerceRouteImport } from './routes/integrations.woocommerce'
 import { Route as IInvoiceIdRouteImport } from './routes/i.$invoiceId'
@@ -87,6 +88,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntegrationsIndexRoute = IntegrationsIndexRouteImport.update({
+  id: '/integrations/',
+  path: '/integrations/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SdkPayhmeDotjsRoute = SdkPayhmeDotjsRouteImport.update({
@@ -249,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
+  '/integrations/': typeof IntegrationsIndexRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/stores': typeof AuthenticatedAdminStoresRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -284,6 +291,7 @@ export interface FileRoutesByTo {
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
+  '/integrations': typeof IntegrationsIndexRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/stores': typeof AuthenticatedAdminStoresRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -322,6 +330,7 @@ export interface FileRoutesById {
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
+  '/integrations/': typeof IntegrationsIndexRoute
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/_authenticated/admin/stores': typeof AuthenticatedAdminStoresRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -360,6 +369,7 @@ export interface FileRouteTypes {
     | '/i/$invoiceId'
     | '/integrations/woocommerce'
     | '/sdk/payhme.js'
+    | '/integrations/'
     | '/admin/invoices'
     | '/admin/stores'
     | '/admin/users'
@@ -395,6 +405,7 @@ export interface FileRouteTypes {
     | '/i/$invoiceId'
     | '/integrations/woocommerce'
     | '/sdk/payhme.js'
+    | '/integrations'
     | '/admin/invoices'
     | '/admin/stores'
     | '/admin/users'
@@ -432,6 +443,7 @@ export interface FileRouteTypes {
     | '/i/$invoiceId'
     | '/integrations/woocommerce'
     | '/sdk/payhme.js'
+    | '/integrations/'
     | '/_authenticated/admin/invoices'
     | '/_authenticated/admin/stores'
     | '/_authenticated/admin/users'
@@ -463,6 +475,7 @@ export interface RootRouteChildren {
   IInvoiceIdRoute: typeof IInvoiceIdRoute
   IntegrationsWoocommerceRoute: typeof IntegrationsWoocommerceRoute
   SdkPayhmeDotjsRoute: typeof SdkPayhmeDotjsRoute
+  IntegrationsIndexRoute: typeof IntegrationsIndexRoute
   ApiPublicAuthWalletCallbackRoute: typeof ApiPublicAuthWalletCallbackRoute
   ApiPublicAuthWalletChallengeRoute: typeof ApiPublicAuthWalletChallengeRoute
   ApiPublicAuthWalletExchangeRoute: typeof ApiPublicAuthWalletExchangeRoute
@@ -537,6 +550,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/integrations/': {
+      id: '/integrations/'
+      path: '/integrations'
+      fullPath: '/integrations/'
+      preLoaderRoute: typeof IntegrationsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sdk/payhme.js': {
@@ -813,6 +833,7 @@ const rootRouteChildren: RootRouteChildren = {
   IInvoiceIdRoute: IInvoiceIdRoute,
   IntegrationsWoocommerceRoute: IntegrationsWoocommerceRoute,
   SdkPayhmeDotjsRoute: SdkPayhmeDotjsRoute,
+  IntegrationsIndexRoute: IntegrationsIndexRoute,
   ApiPublicAuthWalletCallbackRoute: ApiPublicAuthWalletCallbackRoute,
   ApiPublicAuthWalletChallengeRoute: ApiPublicAuthWalletChallengeRoute,
   ApiPublicAuthWalletExchangeRoute: ApiPublicAuthWalletExchangeRoute,
