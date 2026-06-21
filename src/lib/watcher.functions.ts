@@ -299,6 +299,132 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             last_error: null,
           })
           .eq("chain", chain);
+      } else if (chain === "tron") {
+        const net = TRON_NETWORK;
+        const key = process.env.ALCHEMY_API_KEY;
+        if (!key) throw new Error("ALCHEMY_API_KEY not configured");
+        const tip = await getTronBlockNumber(net, key);
+
+        // Tron: support both xpub (derive 0/i) and single static address (xpub_or_address).
+        for (const cfg of configList) {
+          if (cfg.xpub) {
+            await ensureAddresses(
+              cfg.id,
+              cfg.store_id,
+              cfg.xpub,
+              (i) => deriveTronAddress(cfg.xpub!, i),
+              0,
+              (cfg.next_address_index ?? 0) + ADDRESS_WINDOW,
+            );
+          } else if (cfg.xpub_or_address) {
+            // single-address mode
+            const { supabaseAdmin: sb2 } = await import("@/integrations/supabase/client.server");
+            await sb2
+              .from("derived_addresses")
+              .upsert(
+                { chain_config_id: cfg.id, store_id: cfg.store_id, address: cfg.xpub_or_address, address_index: 0 },
+                { onConflict: "address" },
+              );
+          }
+        }
+
+        const { data: addrs } = await supabaseAdmin
+          .from("derived_addresses")
+          .select("address")
+          .in("chain_config_id", configList.map((c) => c.id));
+        r.addresses = addrs?.length ?? 0;
+
+        for (const a of addrs ?? []) {
+          const credits = await getTronTransfersTo(net, key, a.address).catch(() => []);
+          r.credits += credits.length;
+          for (const t of credits) {
+            const { data: inv } = await supabaseAdmin
+              .from("invoices")
+              .select("id, fiat_amount, status")
+              .eq("address", a.address)
+              .eq("chain", "tron")
+              .maybeSingle();
+            if (!inv) continue;
+            const human = Number(BigInt(t.rawValue)) / 10 ** t.decimals;
+            const usd = t.isNative ? human * (await getUsdRate("TRX")) : human;
+            await recordTransaction(inv.id, t.txHash, human, net.confirmationsRequired, null, true);
+            const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
+            if (settled.changed) r.invoicesUpdated++;
+          }
+        }
+
+        await supabaseAdmin
+          .from("watcher_cursors")
+          .update({ last_height: tip, last_run_at: new Date().toISOString(), last_status: "ok", last_error: null })
+          .eq("chain", "tron");
+      } else if (chain === "sol") {
+        // Solana: single-address mode only (no xpub derivation for ed25519 keys).
+        // Invoices are matched by memo containing the invoice id prefix (first 8 chars).
+        const net = SOL_NETWORK;
+        const key = process.env.ALCHEMY_API_KEY;
+        if (!key) throw new Error("ALCHEMY_API_KEY not configured");
+        const tip = await getSolanaSlot(net, key);
+
+        for (const cfg of configList) {
+          if (!cfg.xpub_or_address) continue;
+          const { supabaseAdmin: sb2 } = await import("@/integrations/supabase/client.server");
+          await sb2
+            .from("derived_addresses")
+            .upsert(
+              { chain_config_id: cfg.id, store_id: cfg.store_id, address: cfg.xpub_or_address, address_index: 0 },
+              { onConflict: "address" },
+            );
+        }
+
+        const { data: addrs } = await supabaseAdmin
+          .from("derived_addresses")
+          .select("address, store_id")
+          .in("chain_config_id", configList.map((c) => c.id));
+        r.addresses = addrs?.length ?? 0;
+
+        for (const a of addrs ?? []) {
+          const credits = await getSolanaCreditsTo(net, key, a.address).catch(() => []);
+          r.credits += credits.length;
+          for (const c of credits) {
+            // Match by memo (invoice id prefix) within this store, or fall back to single open invoice on the address.
+            let inv: { id: string; fiat_amount: number; status: string } | null = null;
+            if (c.memo) {
+              const prefix = c.memo.trim().slice(0, 8);
+              const { data } = await supabaseAdmin
+                .from("invoices")
+                .select("id, fiat_amount, status")
+                .eq("store_id", a.store_id)
+                .eq("chain", "sol")
+                .ilike("id", `${prefix}%`)
+                .maybeSingle();
+              inv = data as typeof inv;
+            }
+            if (!inv) {
+              const { data } = await supabaseAdmin
+                .from("invoices")
+                .select("id, fiat_amount, status")
+                .eq("address", a.address)
+                .eq("chain", "sol")
+                .in("status", ["pending", "underpaid"])
+                .order("created_at", { ascending: false })
+                .limit(1)
+                .maybeSingle();
+              inv = data as typeof inv;
+            }
+            if (!inv) continue;
+            const human = Number(BigInt(c.rawValue)) / 10 ** c.decimals;
+            const usd = c.isNative ? human * (await getUsdRate("SOL")) : human;
+            const isConfirmed = c.confirmations >= net.confirmationsRequired;
+            await recordTransaction(inv.id, c.signature, human, c.confirmations, c.slot, isConfirmed);
+            const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
+            if (settled.changed) r.invoicesUpdated++;
+          }
+        }
+
+        await supabaseAdmin
+          .from("watcher_cursors")
+          .update({ last_height: tip, last_run_at: new Date().toISOString(), last_status: "ok", last_error: null })
+          .eq("chain", "sol");
       }
     } catch (e) {
       r.error = (e as Error).message;

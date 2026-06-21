@@ -29,6 +29,8 @@ const CHAINS = [
   { label: "USDC", code: "ERC-20", live: true },
   { label: "USDT", code: "ERC-20", live: true },
   { label: "Base", code: "L2", live: true },
+  { label: "Tron", code: "TRX + TRC-20", live: true },
+  { label: "Solana", code: "SOL + SPL", live: true },
   { label: "Dogecoin", code: "DOGE", live: false },
   { label: "Iskander Coin", code: "ISK", live: false },
   { label: "ZCU", code: "ZCU", live: false },
