@@ -266,7 +266,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
         for (const t of transfers) {
           const { data: inv } = await supabaseAdmin
             .from("invoices")
-            .select("id, amount, status, asset")
+            .select("id, fiat_amount, status")
             .eq("address", t.to.toLowerCase())
             .eq("chain", chain)
             .maybeSingle();
@@ -274,15 +274,17 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           const rawAmount = BigInt(t.rawValue);
           const human = Number(rawAmount) / 10 ** t.decimals;
           const usd = t.isNative ? human * (await getUsdRate(chain)) : human; // stables ~ $1
+          const confirmations = tip - t.blockNum + 1;
+          const isConfirmed = confirmations >= net.confirmationsRequired;
           await recordTransaction(
             inv.id,
-            chain,
             t.txHash,
-            String(rawAmount),
-            tip - t.blockNum + 1,
-            tip - t.blockNum + 1 >= net.confirmationsRequired ? "confirmed" : "pending",
+            human,
+            confirmations,
+            t.blockNum,
+            isConfirmed,
           );
-          const settled = await settleInvoice(inv.id, usd, Number(inv.amount));
+          const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
           if (settled.changed) r.invoicesUpdated++;
         }
 
