@@ -19,6 +19,7 @@ import { getPublicInvoice } from "@/lib/checkout.functions";
 import { ALL_NETWORKS } from "@/lib/chains/networks";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { KycGate } from "@/components/kyc-gate";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/i/$invoiceId")({
@@ -253,6 +254,7 @@ function CheckoutPage() {
 
         {inv && (
           <div className="space-y-6">
+            <KycGate invoiceId={inv.id} onPassed={() => { /* unlocked */ }} />
             {/* hero card */}
             <section
               className={cn(
