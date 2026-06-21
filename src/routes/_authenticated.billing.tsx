@@ -70,7 +70,7 @@ function BillingPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <CurrentPlanCard data={data} />
-        <BalanceCard data={data} onSimDeposit={(n) => depositMutation.mutate(n)} />
+        <BalanceCard data={data} />
         <UsageCard data={data} onPickMetric={(m) => metricMutation.mutate(m)} />
       </div>
 
