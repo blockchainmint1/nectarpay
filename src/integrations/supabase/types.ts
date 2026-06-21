@@ -157,6 +157,7 @@ export type Database = {
         Row: {
           address: string
           address_index: number | null
+          buyer_email: string | null
           chain: Database["public"]["Enums"]["chain_kind"]
           created_at: string
           crypto_amount: number
@@ -167,6 +168,9 @@ export type Database = {
           fiat_amount: number
           fiat_currency: string
           id: string
+          kyc_level_override: Database["public"]["Enums"]["kyc_level"] | null
+          kyc_reference: string | null
+          kyc_status: Database["public"]["Enums"]["kyc_status"]
           rate: number
           redirect_url: string | null
           status: Database["public"]["Enums"]["invoice_status"]
@@ -176,6 +180,7 @@ export type Database = {
         Insert: {
           address: string
           address_index?: number | null
+          buyer_email?: string | null
           chain: Database["public"]["Enums"]["chain_kind"]
           created_at?: string
           crypto_amount: number
@@ -186,6 +191,9 @@ export type Database = {
           fiat_amount: number
           fiat_currency: string
           id?: string
+          kyc_level_override?: Database["public"]["Enums"]["kyc_level"] | null
+          kyc_reference?: string | null
+          kyc_status?: Database["public"]["Enums"]["kyc_status"]
           rate: number
           redirect_url?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
@@ -195,6 +203,7 @@ export type Database = {
         Update: {
           address?: string
           address_index?: number | null
+          buyer_email?: string | null
           chain?: Database["public"]["Enums"]["chain_kind"]
           created_at?: string
           crypto_amount?: number
@@ -205,6 +214,9 @@ export type Database = {
           fiat_amount?: number
           fiat_currency?: string
           id?: string
+          kyc_level_override?: Database["public"]["Enums"]["kyc_level"] | null
+          kyc_reference?: string | null
+          kyc_status?: Database["public"]["Enums"]["kyc_status"]
           rate?: number
           redirect_url?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
@@ -217,6 +229,71 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kyc_verifications: {
+        Row: {
+          country_code: string | null
+          created_at: string
+          email_verified: boolean | null
+          id: string
+          invoice_id: string
+          ip_blocked: boolean | null
+          level: Database["public"]["Enums"]["kyc_level"]
+          notes: string | null
+          provider: Database["public"]["Enums"]["kyc_provider"]
+          reference: string | null
+          risk_label: string | null
+          risk_score: number | null
+          sanctions_flag: boolean | null
+          status: Database["public"]["Enums"]["kyc_status"]
+          updated_at: string
+          wallet_address: string | null
+        }
+        Insert: {
+          country_code?: string | null
+          created_at?: string
+          email_verified?: boolean | null
+          id?: string
+          invoice_id: string
+          ip_blocked?: boolean | null
+          level: Database["public"]["Enums"]["kyc_level"]
+          notes?: string | null
+          provider?: Database["public"]["Enums"]["kyc_provider"]
+          reference?: string | null
+          risk_label?: string | null
+          risk_score?: number | null
+          sanctions_flag?: boolean | null
+          status?: Database["public"]["Enums"]["kyc_status"]
+          updated_at?: string
+          wallet_address?: string | null
+        }
+        Update: {
+          country_code?: string | null
+          created_at?: string
+          email_verified?: boolean | null
+          id?: string
+          invoice_id?: string
+          ip_blocked?: boolean | null
+          level?: Database["public"]["Enums"]["kyc_level"]
+          notes?: string | null
+          provider?: Database["public"]["Enums"]["kyc_provider"]
+          reference?: string | null
+          risk_label?: string | null
+          risk_score?: number | null
+          sanctions_flag?: boolean | null
+          status?: Database["public"]["Enums"]["kyc_status"]
+          updated_at?: string
+          wallet_address?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kyc_verifications_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
             referencedColumns: ["id"]
           },
         ]
@@ -389,6 +466,13 @@ export type Database = {
           fiat_currency: string
           id: string
           invoice_ttl_seconds: number
+          kyc_advanced_api_key: string | null
+          kyc_advanced_app_token: string | null
+          kyc_advanced_provider: Database["public"]["Enums"]["kyc_provider"]
+          kyc_basic_checks: string[]
+          kyc_basic_require_email: boolean
+          kyc_level: Database["public"]["Enums"]["kyc_level"]
+          kyc_threshold_usd: number | null
           name: string
           owner_id: string
           updated_at: string
@@ -401,6 +485,13 @@ export type Database = {
           fiat_currency?: string
           id?: string
           invoice_ttl_seconds?: number
+          kyc_advanced_api_key?: string | null
+          kyc_advanced_app_token?: string | null
+          kyc_advanced_provider?: Database["public"]["Enums"]["kyc_provider"]
+          kyc_basic_checks?: string[]
+          kyc_basic_require_email?: boolean
+          kyc_level?: Database["public"]["Enums"]["kyc_level"]
+          kyc_threshold_usd?: number | null
           name: string
           owner_id: string
           updated_at?: string
@@ -413,6 +504,13 @@ export type Database = {
           fiat_currency?: string
           id?: string
           invoice_ttl_seconds?: number
+          kyc_advanced_api_key?: string | null
+          kyc_advanced_app_token?: string | null
+          kyc_advanced_provider?: Database["public"]["Enums"]["kyc_provider"]
+          kyc_basic_checks?: string[]
+          kyc_basic_require_email?: boolean
+          kyc_level?: Database["public"]["Enums"]["kyc_level"]
+          kyc_threshold_usd?: number | null
           name?: string
           owner_id?: string
           updated_at?: string
@@ -768,6 +866,9 @@ export type Database = {
         | "expired"
         | "cancelled"
         | "failed"
+      kyc_level: "none" | "basic" | "advanced"
+      kyc_provider: "none" | "sumsub" | "persona" | "didit" | "veriff"
+      kyc_status: "not_required" | "pending" | "passed" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -917,6 +1018,9 @@ export const Constants = {
         "cancelled",
         "failed",
       ],
+      kyc_level: ["none", "basic", "advanced"],
+      kyc_provider: ["none", "sumsub", "persona", "didit", "veriff"],
+      kyc_status: ["not_required", "pending", "passed", "failed"],
     },
   },
 } as const
