@@ -19,6 +19,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as IntegrationsWoocommerceRouteImport } from './routes/integrations.woocommerce'
 import { Route as IInvoiceIdRouteImport } from './routes/i.$invoiceId'
+import { Route as DocsWalletSetupRouteImport } from './routes/docs.wallet-setup'
 import { Route as AuthenticatedStoresRouteImport } from './routes/_authenticated.stores'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated.notifications'
 import { Route as AuthenticatedExportsRouteImport } from './routes/_authenticated.exports'
@@ -80,6 +81,11 @@ const IInvoiceIdRoute = IInvoiceIdRouteImport.update({
   id: '/i/$invoiceId',
   path: '/i/$invoiceId',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DocsWalletSetupRoute = DocsWalletSetupRouteImport.update({
+  id: '/wallet-setup',
+  path: '/wallet-setup',
+  getParentRoute: () => DocsRoute,
 } as any)
 const AuthenticatedStoresRoute = AuthenticatedStoresRouteImport.update({
   id: '/stores',
@@ -149,7 +155,7 @@ const AuthenticatedStoresStoreIdKycRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/docs': typeof DocsRoute
+  '/docs': typeof DocsRouteWithChildren
   '/manifesto': typeof ManifestoRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -159,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/exports': typeof AuthenticatedExportsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/stores': typeof AuthenticatedStoresRouteWithChildren
+  '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
@@ -172,7 +179,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/docs': typeof DocsRoute
+  '/docs': typeof DocsRouteWithChildren
   '/manifesto': typeof ManifestoRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -182,6 +189,7 @@ export interface FileRoutesByTo {
   '/exports': typeof AuthenticatedExportsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/stores': typeof AuthenticatedStoresRouteWithChildren
+  '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
@@ -197,7 +205,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
-  '/docs': typeof DocsRoute
+  '/docs': typeof DocsRouteWithChildren
   '/manifesto': typeof ManifestoRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -207,6 +215,7 @@ export interface FileRoutesById {
   '/_authenticated/exports': typeof AuthenticatedExportsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/stores': typeof AuthenticatedStoresRouteWithChildren
+  '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
@@ -232,6 +241,7 @@ export interface FileRouteTypes {
     | '/exports'
     | '/notifications'
     | '/stores'
+    | '/docs/wallet-setup'
     | '/i/$invoiceId'
     | '/integrations/woocommerce'
     | '/stores/$storeId'
@@ -255,6 +265,7 @@ export interface FileRouteTypes {
     | '/exports'
     | '/notifications'
     | '/stores'
+    | '/docs/wallet-setup'
     | '/i/$invoiceId'
     | '/integrations/woocommerce'
     | '/stores/$storeId'
@@ -279,6 +290,7 @@ export interface FileRouteTypes {
     | '/_authenticated/exports'
     | '/_authenticated/notifications'
     | '/_authenticated/stores'
+    | '/docs/wallet-setup'
     | '/i/$invoiceId'
     | '/integrations/woocommerce'
     | '/_authenticated/stores/$storeId'
@@ -294,7 +306,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
-  DocsRoute: typeof DocsRoute
+  DocsRoute: typeof DocsRouteWithChildren
   ManifestoRoute: typeof ManifestoRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -378,6 +390,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/i/$invoiceId'
       preLoaderRoute: typeof IInvoiceIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/docs/wallet-setup': {
+      id: '/docs/wallet-setup'
+      path: '/wallet-setup'
+      fullPath: '/docs/wallet-setup'
+      preLoaderRoute: typeof DocsWalletSetupRouteImport
+      parentRoute: typeof DocsRoute
     }
     '/_authenticated/stores': {
       id: '/_authenticated/stores'
@@ -513,11 +532,21 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface DocsRouteChildren {
+  DocsWalletSetupRoute: typeof DocsWalletSetupRoute
+}
+
+const DocsRouteChildren: DocsRouteChildren = {
+  DocsWalletSetupRoute: DocsWalletSetupRoute,
+}
+
+const DocsRouteWithChildren = DocsRoute._addFileChildren(DocsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
-  DocsRoute: DocsRoute,
+  DocsRoute: DocsRouteWithChildren,
   ManifestoRoute: ManifestoRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
