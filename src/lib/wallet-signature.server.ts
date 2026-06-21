@@ -12,7 +12,8 @@
  * To swap the spec later, this is the only file that needs to change.
  */
 
-// @ts-expect-error — bitcoinjs-message ships no types
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore — bitcoinjs-message ships no types
 import bitcoinMessage from "bitcoinjs-message";
 
 const TXC_MESSAGE_PREFIX = "\x18TEXITcoin Signed Message:\n";

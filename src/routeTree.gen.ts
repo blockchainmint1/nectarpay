@@ -34,6 +34,10 @@ import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/publi
 import { Route as ApiPublicCronWatcherRouteImport } from './routes/api/public/cron/watcher'
 import { Route as ApiPublicCronRatesRouteImport } from './routes/api/public/cron/rates'
 import { Route as ApiPublicCronBillingRouteImport } from './routes/api/public/cron/billing'
+import { Route as ApiPublicAuthWalletStatusRouteImport } from './routes/api/public/auth/wallet-status'
+import { Route as ApiPublicAuthWalletExchangeRouteImport } from './routes/api/public/auth/wallet-exchange'
+import { Route as ApiPublicAuthWalletChallengeRouteImport } from './routes/api/public/auth/wallet-challenge'
+import { Route as ApiPublicAuthWalletCallbackRouteImport } from './routes/api/public/auth/wallet-callback'
 import { Route as AuthenticatedStoresStoreIdKycRouteImport } from './routes/_authenticated.stores.$storeId.kyc'
 
 const TermsRoute = TermsRouteImport.update({
@@ -163,6 +167,30 @@ const ApiPublicCronBillingRoute = ApiPublicCronBillingRouteImport.update({
   path: '/api/public/cron/billing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAuthWalletStatusRoute =
+  ApiPublicAuthWalletStatusRouteImport.update({
+    id: '/api/public/auth/wallet-status',
+    path: '/api/public/auth/wallet-status',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicAuthWalletExchangeRoute =
+  ApiPublicAuthWalletExchangeRouteImport.update({
+    id: '/api/public/auth/wallet-exchange',
+    path: '/api/public/auth/wallet-exchange',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicAuthWalletChallengeRoute =
+  ApiPublicAuthWalletChallengeRouteImport.update({
+    id: '/api/public/auth/wallet-challenge',
+    path: '/api/public/auth/wallet-challenge',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicAuthWalletCallbackRoute =
+  ApiPublicAuthWalletCallbackRouteImport.update({
+    id: '/api/public/auth/wallet-callback',
+    path: '/api/public/auth/wallet-callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedStoresStoreIdKycRoute =
   AuthenticatedStoresStoreIdKycRouteImport.update({
     id: '/kyc',
@@ -191,6 +219,10 @@ export interface FileRoutesByFullPath {
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
+  '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
+  '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
+  '/api/public/auth/wallet-exchange': typeof ApiPublicAuthWalletExchangeRoute
+  '/api/public/auth/wallet-status': typeof ApiPublicAuthWalletStatusRoute
   '/api/public/cron/billing': typeof ApiPublicCronBillingRoute
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
@@ -218,6 +250,10 @@ export interface FileRoutesByTo {
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
+  '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
+  '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
+  '/api/public/auth/wallet-exchange': typeof ApiPublicAuthWalletExchangeRoute
+  '/api/public/auth/wallet-status': typeof ApiPublicAuthWalletStatusRoute
   '/api/public/cron/billing': typeof ApiPublicCronBillingRoute
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
@@ -247,6 +283,10 @@ export interface FileRoutesById {
   '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/_authenticated/stores/new': typeof AuthenticatedStoresNewRoute
   '/_authenticated/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
+  '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
+  '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
+  '/api/public/auth/wallet-exchange': typeof ApiPublicAuthWalletExchangeRoute
+  '/api/public/auth/wallet-status': typeof ApiPublicAuthWalletStatusRoute
   '/api/public/cron/billing': typeof ApiPublicCronBillingRoute
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
@@ -276,6 +316,10 @@ export interface FileRouteTypes {
     | '/stores/$storeId'
     | '/stores/new'
     | '/stores/$storeId/kyc'
+    | '/api/public/auth/wallet-callback'
+    | '/api/public/auth/wallet-challenge'
+    | '/api/public/auth/wallet-exchange'
+    | '/api/public/auth/wallet-status'
     | '/api/public/cron/billing'
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
@@ -303,6 +347,10 @@ export interface FileRouteTypes {
     | '/stores/$storeId'
     | '/stores/new'
     | '/stores/$storeId/kyc'
+    | '/api/public/auth/wallet-callback'
+    | '/api/public/auth/wallet-challenge'
+    | '/api/public/auth/wallet-exchange'
+    | '/api/public/auth/wallet-status'
     | '/api/public/cron/billing'
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
@@ -331,6 +379,10 @@ export interface FileRouteTypes {
     | '/_authenticated/stores/$storeId'
     | '/_authenticated/stores/new'
     | '/_authenticated/stores/$storeId/kyc'
+    | '/api/public/auth/wallet-callback'
+    | '/api/public/auth/wallet-challenge'
+    | '/api/public/auth/wallet-exchange'
+    | '/api/public/auth/wallet-status'
     | '/api/public/cron/billing'
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
@@ -351,6 +403,10 @@ export interface RootRouteChildren {
   IInvoiceIdRoute: typeof IInvoiceIdRoute
   IntegrationsWoocommerceRoute: typeof IntegrationsWoocommerceRoute
   SdkPayhmeDotjsRoute: typeof SdkPayhmeDotjsRoute
+  ApiPublicAuthWalletCallbackRoute: typeof ApiPublicAuthWalletCallbackRoute
+  ApiPublicAuthWalletChallengeRoute: typeof ApiPublicAuthWalletChallengeRoute
+  ApiPublicAuthWalletExchangeRoute: typeof ApiPublicAuthWalletExchangeRoute
+  ApiPublicAuthWalletStatusRoute: typeof ApiPublicAuthWalletStatusRoute
   ApiPublicCronBillingRoute: typeof ApiPublicCronBillingRoute
   ApiPublicCronRatesRoute: typeof ApiPublicCronRatesRoute
   ApiPublicCronWatcherRoute: typeof ApiPublicCronWatcherRoute
@@ -535,6 +591,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronBillingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/auth/wallet-status': {
+      id: '/api/public/auth/wallet-status'
+      path: '/api/public/auth/wallet-status'
+      fullPath: '/api/public/auth/wallet-status'
+      preLoaderRoute: typeof ApiPublicAuthWalletStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/auth/wallet-exchange': {
+      id: '/api/public/auth/wallet-exchange'
+      path: '/api/public/auth/wallet-exchange'
+      fullPath: '/api/public/auth/wallet-exchange'
+      preLoaderRoute: typeof ApiPublicAuthWalletExchangeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/auth/wallet-challenge': {
+      id: '/api/public/auth/wallet-challenge'
+      path: '/api/public/auth/wallet-challenge'
+      fullPath: '/api/public/auth/wallet-challenge'
+      preLoaderRoute: typeof ApiPublicAuthWalletChallengeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/auth/wallet-callback': {
+      id: '/api/public/auth/wallet-callback'
+      path: '/api/public/auth/wallet-callback'
+      fullPath: '/api/public/auth/wallet-callback'
+      preLoaderRoute: typeof ApiPublicAuthWalletCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/stores/$storeId/kyc': {
       id: '/_authenticated/stores/$storeId/kyc'
       path: '/kyc'
@@ -615,6 +699,10 @@ const rootRouteChildren: RootRouteChildren = {
   IInvoiceIdRoute: IInvoiceIdRoute,
   IntegrationsWoocommerceRoute: IntegrationsWoocommerceRoute,
   SdkPayhmeDotjsRoute: SdkPayhmeDotjsRoute,
+  ApiPublicAuthWalletCallbackRoute: ApiPublicAuthWalletCallbackRoute,
+  ApiPublicAuthWalletChallengeRoute: ApiPublicAuthWalletChallengeRoute,
+  ApiPublicAuthWalletExchangeRoute: ApiPublicAuthWalletExchangeRoute,
+  ApiPublicAuthWalletStatusRoute: ApiPublicAuthWalletStatusRoute,
   ApiPublicCronBillingRoute: ApiPublicCronBillingRoute,
   ApiPublicCronRatesRoute: ApiPublicCronRatesRoute,
   ApiPublicCronWatcherRoute: ApiPublicCronWatcherRoute,
