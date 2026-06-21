@@ -68,7 +68,6 @@ function AuthPage() {
     return () => {
       cancelled.current = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function createChallenge() {
@@ -126,9 +125,7 @@ function AuthPage() {
         await new Promise((r) => setTimeout(r, WALLET_POLL_INTERVAL_MS));
         if (stopped) return;
         try {
-          const res = await fetch(
-            `/api/public/auth/wallet-status?id=${challengeId}`,
-          );
+          const res = await fetch(`/api/public/auth/wallet-status?id=${challengeId}`);
           if (!res.ok) continue;
           const data = (await res.json()) as {
             status: string;
@@ -150,9 +147,7 @@ function AuthPage() {
       }
     }
 
-    setStatus((s) =>
-      s.kind === "waiting" ? { kind: "waiting", challenge: s.challenge } : s,
-    );
+    setStatus((s) => (s.kind === "waiting" ? { kind: "waiting", challenge: s.challenge } : s));
     void poll();
     return () => {
       stopped = true;
@@ -160,9 +155,7 @@ function AuthPage() {
   }, [status.kind === "waiting" ? status.challenge.id : null]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function exchange(challengeId: string, token: string) {
-    setStatus((s) =>
-      s.kind === "waiting" ? { kind: "signing", challenge: s.challenge } : s,
-    );
+    setStatus((s) => (s.kind === "waiting" ? { kind: "signing", challenge: s.challenge } : s));
     try {
       const res = await fetch("/api/public/auth/wallet-exchange", {
         method: "POST",
@@ -210,17 +203,14 @@ function AuthPage() {
               Sign in with your TXC wallet
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Scan this QR with your TEXITcoin mobile wallet and approve the
-              sign-in request.
+              Scan this QR with your TEXITcoin mobile wallet and approve the sign-in request.
             </p>
           </div>
 
           <div className="mt-8 flex flex-col items-center">
             {status.kind === "loading" ? (
               <div className="flex h-[280px] w-[280px] items-center justify-center rounded-lg border border-border bg-muted/20">
-                <span className="text-xs text-muted-foreground">
-                  Generating challenge…
-                </span>
+                <span className="text-xs text-muted-foreground">Generating challenge…</span>
               </div>
             ) : status.kind === "expired" ? (
               <div className="flex h-[280px] w-[280px] flex-col items-center justify-center gap-3 rounded-lg border border-destructive/40 bg-destructive/5">
@@ -284,9 +274,8 @@ function AuthPage() {
               </a>
             </p>
             <p>
-              Signing a sign-in request{" "}
-              <strong className="text-foreground">does not</strong> move any
-              funds. payHME never holds your keys or your crypto.
+              Signing a sign-in request <strong className="text-foreground">does not</strong> move
+              any funds. payHME never holds your keys or your crypto.
             </p>
           </div>
         </div>
@@ -364,9 +353,9 @@ function ManualSignIn({
       {open && (
         <div className="space-y-4 border-t border-border/60 p-4">
           <p className="text-xs text-muted-foreground">
-            Use this if your wallet can&apos;t scan the QR. Copy the message
-            below, sign it in your TXC wallet (Tools → Sign Message), then
-            paste your wallet address and the resulting signature here.
+            Use this if your wallet can&apos;t scan the QR. Copy the message below, sign it in your
+            TXC wallet (Tools → Sign Message), then paste your wallet address and the resulting
+            signature here.
           </p>
 
           <div>
@@ -382,9 +371,13 @@ function ManualSignIn({
                 {copied ? "Copied!" : "Copy"}
               </button>
             </div>
-            <pre className="max-h-40 overflow-auto rounded-md border border-border bg-background/60 p-3 text-[0.7rem] leading-relaxed text-foreground whitespace-pre-wrap break-all">
-{challenge.message}
-            </pre>
+            <textarea
+              readOnly
+              value={challenge.message}
+              rows={6}
+              onFocus={(e) => e.currentTarget.select()}
+              className="max-h-40 w-full resize-none overflow-auto rounded-md border border-border bg-background/60 p-3 text-[0.7rem] leading-relaxed text-foreground whitespace-pre-wrap break-all"
+            />
           </div>
 
           <div>
@@ -418,12 +411,7 @@ function ManualSignIn({
             />
           </div>
 
-          <Button
-            type="button"
-            onClick={submit}
-            disabled={submitting}
-            className="w-full"
-          >
+          <Button type="button" onClick={submit} disabled={submitting} className="w-full">
             {submitting ? "Verifying…" : "Submit signature"}
           </Button>
         </div>
