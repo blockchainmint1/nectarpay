@@ -325,6 +325,27 @@ function UsageRow({
   );
 }
 
+const PLAN_COPY: Record<string, { tagline: string; footnote: string; cta: string; highlight?: boolean }> = {
+  free: {
+    tagline: "Get started. Limited transactions per month.",
+    footnote: "Monthly transaction limit set by us — designed for hobby stores and pilots.",
+    cta: "Downgrade to Free",
+  },
+  cheap: {
+    tagline: "For growing stores. Higher limits.",
+    footnote: "Billed monthly in TEXITcoin. Pay from any TXC wallet.",
+    cta: "Be Cheap",
+    highlight: true,
+  },
+  unlimited: {
+    tagline: "No transaction caps. Built for scale.",
+    footnote: "Billed monthly in TEXITcoin. Cancel anytime.",
+    cta: "Go Unlimited",
+  },
+};
+
+const PLAN_ORDER = ["free", "cheap", "unlimited"] as const;
+
 function PlansGrid({
   data,
   onChoose,
@@ -334,47 +355,63 @@ function PlansGrid({
   onChoose: (id: string) => void;
   busy: boolean;
 }) {
+  const ordered = PLAN_ORDER
+    .map((id) => data.plans.find((p) => p.id === id))
+    .filter((p): p is NonNullable<typeof p> => Boolean(p));
+
   return (
     <section>
       <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-muted-foreground">
         Change plan
       </h2>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {data.plans.map((p) => {
+      <div className="grid gap-6 md:grid-cols-3">
+        {ordered.map((p) => {
+          const copy = PLAN_COPY[p.id] ?? { tagline: "", footnote: "", cta: "Choose" };
           const isCurrent = p.id === data.plan.id;
           const txc = p.monthly_price_usd / data.txc_usd_rate;
           return (
-            <Card
+            <div
               key={p.id}
-              className={`flex flex-col p-5 ${isCurrent ? "border-primary" : ""}`}
+              className={`flex flex-col rounded-xl border p-6 ${
+                copy.highlight ? "border-primary/40 bg-primary/[0.04]" : "border-border bg-card/60"
+              } ${isCurrent ? "ring-1 ring-primary" : ""}`}
             >
-              <div className="text-sm font-medium">{p.name}</div>
-              <div className="mt-1 font-mono text-2xl font-semibold">
-                ${p.monthly_price_usd}
-                <span className="text-sm font-normal text-muted-foreground">/mo</span>
+              <div className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+                {p.name}
+              </div>
+              <div className="mt-2 flex items-baseline gap-1">
+                <span className="font-mono text-4xl tracking-tight">${p.monthly_price_usd}</span>
+                {p.monthly_price_usd > 0 ? (
+                  <span className="text-sm text-muted-foreground">/mo</span>
+                ) : null}
               </div>
               {p.monthly_price_usd > 0 && (
-                <div className="font-mono text-xs text-muted-foreground">
+                <div className="mt-0.5 font-mono text-xs text-muted-foreground">
                   ≈ {txc.toFixed(2)} TXC/mo
                 </div>
               )}
-              <ul className="mt-3 flex-1 space-y-1 text-xs text-muted-foreground">
+              <p className="mt-2 text-sm text-muted-foreground">{copy.tagline}</p>
+              <ul className="mt-6 space-y-2 text-sm">
                 {p.features.map((f) => (
-                  <li key={f} className="flex gap-1.5">
-                    <Check className="mt-0.5 h-3 w-3 shrink-0 text-primary" /> {f}
+                  <li key={f} className="flex items-start gap-2">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <span>{f}</span>
                   </li>
                 ))}
               </ul>
+              <div className="mt-6 flex-1" />
               <Button
-                className="mt-4"
-                size="sm"
+                className="mt-2 w-full"
                 disabled={isCurrent || busy}
-                variant={isCurrent ? "outline" : "default"}
+                variant={isCurrent ? "outline" : copy.highlight ? "default" : "outline"}
                 onClick={() => onChoose(p.id)}
               >
-                {isCurrent ? "Current" : p.monthly_price_usd === 0 ? "Downgrade" : "Choose"}
+                {isCurrent ? "Current plan" : copy.cta}
               </Button>
-            </Card>
+              {copy.footnote ? (
+                <p className="mt-3 text-xs text-muted-foreground">{copy.footnote}</p>
+              ) : null}
+            </div>
           );
         })}
       </div>
