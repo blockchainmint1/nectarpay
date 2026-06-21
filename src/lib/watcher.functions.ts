@@ -91,7 +91,7 @@ async function ensureAddresses(
   }
 }
 
-async function recordTransaction(
+export async function recordTransaction(
   invoiceId: string,
   txHash: string,
   amount: number,
@@ -129,7 +129,7 @@ async function recordTransaction(
   }
 }
 
-async function settleInvoice(
+export async function settleInvoice(
   invoiceId: string,
   paidAmountUsd: number,
   amountDueUsd: number,
