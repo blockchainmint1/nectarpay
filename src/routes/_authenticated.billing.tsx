@@ -24,7 +24,7 @@ function BillingPage() {
   const fetchOverview = useServerFn(getBillingOverview);
   const setMetric = useServerFn(setFreeTierMetric);
   const changePlanFn = useServerFn(changePlan);
-  const simDeposit = useServerFn(simulateDeposit);
+  
   const qc = useQueryClient();
 
   const { data, isLoading } = useQuery({
