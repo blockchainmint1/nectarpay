@@ -140,12 +140,15 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
         const ok = verifyTxcSignature({ address, message, signature });
         if (!ok) {
           // Diagnostic: recover address-from-signature for both prefixes so we can compare.
-          const { recoverAddressesFromSignature } = await import(
-            "@/lib/wallet-signature.server"
-          );
+          const { recoverAddressesFromSignature } = await import("@/lib/wallet-signature.server");
           let recovered: unknown = null;
+          let recoveredAddress: string | null = null;
           try {
-            recovered = recoverAddressesFromSignature({ message, signature });
+            const recoveredCandidates = recoverAddressesFromSignature({ message, signature });
+            recovered = recoveredCandidates;
+            recoveredAddress =
+              recoveredCandidates.find((candidate) => candidate.prefix.includes("TEXITcoin"))
+                ?.address ?? null;
           } catch (e) {
             recovered = `recover_failed: ${(e as Error).message}`;
           }
@@ -157,6 +160,14 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
             signaturePrefix: signature.slice(0, 10),
             recovered,
           });
+          if (recoveredAddress && recoveredAddress.toLowerCase() !== address.toLowerCase()) {
+            return Response.json(
+              {
+                error: `signature was made by ${recoveredAddress}, not ${address}`,
+              },
+              { status: 401, headers: CORS },
+            );
+          }
           return Response.json({ error: "bad signature" }, { status: 401, headers: CORS });
         }
 
