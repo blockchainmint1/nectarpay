@@ -245,19 +245,24 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             // find matching invoice
             const { data: inv } = await supabaseAdmin
               .from("invoices")
-              .select("id, fiat_amount, status")
+              .select("id, fiat_amount, status, rate, crypto_amount")
               .eq("address", a.address)
               .eq("chain", chain)
               .maybeSingle();
             if (!inv) continue;
-            const usdRate = await getUsdRate(chain);
-            const paidUsd = (credit.amountSats / 10 ** net.decimals) * usdRate;
+            const paidCrypto = credit.amountSats / 10 ** net.decimals;
+            // Settle against the rate locked at invoice creation. Otherwise a
+            // tiny market move between quoting and payment makes an exact-
+            // amount payment look "underpaid" forever.
+            const lockedRate = inv.rate == null ? null : Number(inv.rate);
+            const usdRate = lockedRate && lockedRate > 0 ? lockedRate : await getUsdRate(chain);
+            const paidUsd = paidCrypto * usdRate;
             const required = effectiveConfsRequired(cfg ?? {}, net.confirmationsRequired, paidUsd);
             const isConfirmed = credit.confirmations >= required;
             await recordTransaction(
               inv.id,
               credit.txid,
-              credit.amountSats / 10 ** net.decimals,
+              paidCrypto,
               credit.confirmations,
               null,
               isConfirmed,
@@ -265,6 +270,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
             if (settled.changed) r.invoicesUpdated++;
           }
+
         }
 
 
