@@ -27,7 +27,7 @@ export const Route = createFileRoute("/api/public/auth/wallet-challenge")({
         const { data, error } = await supabaseAdmin
           .from("wallet_login_challenges")
           .insert({ nonce, ip_address: ip, user_agent: ua })
-          .select("id, nonce, expires_at")
+          .select("id, nonce, expires_at, created_at")
           .single();
 
         if (error || !data) {
