@@ -1,6 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { randomBytes } from "crypto";
-import { buildDeepLink, buildSignableMessage } from "@/lib/wallet-auth-shared";
+import {
+  authDomainFromRequest,
+  buildDeepLink,
+  buildSignableMessage,
+  publicOriginFromRequest,
+} from "@/lib/wallet-auth-shared";
 
 const CORS = {
   "access-control-allow-origin": "*",
@@ -38,10 +43,11 @@ export const Route = createFileRoute("/api/public/auth/wallet-challenge")({
           );
         }
 
-        const origin = new URL(request.url).origin;
+        const origin = publicOriginFromRequest(request);
+        const domain = authDomainFromRequest(request);
         const message = buildSignableMessage({
           nonce: data.nonce,
-          domain: new URL(request.url).hostname,
+          domain,
           issuedAt: data.created_at ?? new Date().toISOString(),
         });
         const deepLink = buildDeepLink({
