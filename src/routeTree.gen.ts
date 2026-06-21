@@ -11,8 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as DocsRouteImport } from './routes/docs'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as IntegrationsWoocommerceRouteImport } from './routes/integrations.woocommerce'
+import { Route as AuthenticatedStoresRouteImport } from './routes/_authenticated.stores'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
+import { Route as AuthenticatedStoresNewRouteImport } from './routes/_authenticated.stores.new'
+import { Route as AuthenticatedStoresStoreIdRouteImport } from './routes/_authenticated.stores.$storeId'
 
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
@@ -22,6 +28,15 @@ const PricingRoute = PricingRouteImport.update({
 const DocsRoute = DocsRouteImport.update({
   id: '/docs',
   path: '/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -34,36 +49,104 @@ const IntegrationsWoocommerceRoute = IntegrationsWoocommerceRouteImport.update({
   path: '/integrations/woocommerce',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedStoresRoute = AuthenticatedStoresRouteImport.update({
+  id: '/stores',
+  path: '/stores',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedStoresNewRoute = AuthenticatedStoresNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AuthenticatedStoresRoute,
+} as any)
+const AuthenticatedStoresStoreIdRoute =
+  AuthenticatedStoresStoreIdRouteImport.update({
+    id: '/$storeId',
+    path: '/$storeId',
+    getParentRoute: () => AuthenticatedStoresRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/docs': typeof DocsRoute
   '/pricing': typeof PricingRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/stores': typeof AuthenticatedStoresRouteWithChildren
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
+  '/stores/$storeId': typeof AuthenticatedStoresStoreIdRoute
+  '/stores/new': typeof AuthenticatedStoresNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/docs': typeof DocsRoute
   '/pricing': typeof PricingRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/stores': typeof AuthenticatedStoresRouteWithChildren
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
+  '/stores/$storeId': typeof AuthenticatedStoresStoreIdRoute
+  '/stores/new': typeof AuthenticatedStoresNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/auth': typeof AuthRoute
   '/docs': typeof DocsRoute
   '/pricing': typeof PricingRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/stores': typeof AuthenticatedStoresRouteWithChildren
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
+  '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRoute
+  '/_authenticated/stores/new': typeof AuthenticatedStoresNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/docs' | '/pricing' | '/integrations/woocommerce'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/docs'
+    | '/pricing'
+    | '/dashboard'
+    | '/stores'
+    | '/integrations/woocommerce'
+    | '/stores/$storeId'
+    | '/stores/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/docs' | '/pricing' | '/integrations/woocommerce'
-  id: '__root__' | '/' | '/docs' | '/pricing' | '/integrations/woocommerce'
+  to:
+    | '/'
+    | '/auth'
+    | '/docs'
+    | '/pricing'
+    | '/dashboard'
+    | '/stores'
+    | '/integrations/woocommerce'
+    | '/stores/$storeId'
+    | '/stores/new'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/docs'
+    | '/pricing'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/stores'
+    | '/integrations/woocommerce'
+    | '/_authenticated/stores/$storeId'
+    | '/_authenticated/stores/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AuthRoute: typeof AuthRoute
   DocsRoute: typeof DocsRoute
   PricingRoute: typeof PricingRoute
   IntegrationsWoocommerceRoute: typeof IntegrationsWoocommerceRoute
@@ -85,6 +168,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -99,11 +196,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IntegrationsWoocommerceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/stores': {
+      id: '/_authenticated/stores'
+      path: '/stores'
+      fullPath: '/stores'
+      preLoaderRoute: typeof AuthenticatedStoresRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/stores/new': {
+      id: '/_authenticated/stores/new'
+      path: '/new'
+      fullPath: '/stores/new'
+      preLoaderRoute: typeof AuthenticatedStoresNewRouteImport
+      parentRoute: typeof AuthenticatedStoresRoute
+    }
+    '/_authenticated/stores/$storeId': {
+      id: '/_authenticated/stores/$storeId'
+      path: '/$storeId'
+      fullPath: '/stores/$storeId'
+      preLoaderRoute: typeof AuthenticatedStoresStoreIdRouteImport
+      parentRoute: typeof AuthenticatedStoresRoute
+    }
   }
 }
 
+interface AuthenticatedStoresRouteChildren {
+  AuthenticatedStoresStoreIdRoute: typeof AuthenticatedStoresStoreIdRoute
+  AuthenticatedStoresNewRoute: typeof AuthenticatedStoresNewRoute
+}
+
+const AuthenticatedStoresRouteChildren: AuthenticatedStoresRouteChildren = {
+  AuthenticatedStoresStoreIdRoute: AuthenticatedStoresStoreIdRoute,
+  AuthenticatedStoresNewRoute: AuthenticatedStoresNewRoute,
+}
+
+const AuthenticatedStoresRouteWithChildren =
+  AuthenticatedStoresRoute._addFileChildren(AuthenticatedStoresRouteChildren)
+
+interface AuthenticatedRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedStoresRoute: typeof AuthenticatedStoresRouteWithChildren
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedStoresRoute: AuthenticatedStoresRouteWithChildren,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AuthRoute: AuthRoute,
   DocsRoute: DocsRoute,
   PricingRoute: PricingRoute,
   IntegrationsWoocommerceRoute: IntegrationsWoocommerceRoute,
