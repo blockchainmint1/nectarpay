@@ -89,7 +89,8 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
           );
         }
         const payload = parsed.data;
-        const { address, signature } = payload;
+        const address = payload.address.trim();
+        const signature = payload.signature.replace(/\s+/g, "");
 
         const { supabaseAdmin } = await import(
           "@/integrations/supabase/client.server"
