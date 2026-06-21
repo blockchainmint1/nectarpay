@@ -39,10 +39,17 @@ function DocsPage() {
           </p>
         </Section>
 
-        <Section title="2. Add an xpub">
+        <Section title="2. Add an xpub or receive address">
           <p>
-            We support BIP32 extended public keys for BTC and TXC, and a single EVM address for
-            Ethereum/Base stablecoins. Your private keys never leave your wallet.
+            We support BIP32 extended public keys for UTXO chains (BTC, TXC, DOGE, ISK, ZCU)
+            and a single receive address for account-based chains (ETH, Base, Tron, Solana).
+            Your private keys never leave your wallet.
+          </p>
+          <p>
+            New to xpubs?{" "}
+            <Link to="/docs/wallet-setup" className="text-primary underline">
+              Step-by-step wallet setup guide for every supported chain →
+            </Link>
           </p>
         </Section>
 
