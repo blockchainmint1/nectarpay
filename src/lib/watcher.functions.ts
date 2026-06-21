@@ -157,7 +157,7 @@ async function settleInvoice(
           fiat_amount: Number(inv.fiat_amount),
           fiat_currency: inv.fiat_currency,
           paid_amount_usd: paidAmountUsd,
-          order_id: inv.order_id ?? null,
+          order_id: inv.external_order_id ?? null,
         },
       },
     });
