@@ -203,17 +203,14 @@ function AuthPage() {
               Sign in with your TXC wallet
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Scan this QR with your TEXITcoin mobile wallet and approve the
-              sign-in request.
+              Scan this QR with your TEXITcoin mobile wallet and approve the sign-in request.
             </p>
           </div>
 
           <div className="mt-8 flex flex-col items-center">
             {status.kind === "loading" ? (
               <div className="flex h-[280px] w-[280px] items-center justify-center rounded-lg border border-border bg-muted/20">
-                <span className="text-xs text-muted-foreground">
-                  Generating challenge…
-                </span>
+                <span className="text-xs text-muted-foreground">Generating challenge…</span>
               </div>
             ) : status.kind === "expired" ? (
               <div className="flex h-[280px] w-[280px] flex-col items-center justify-center gap-3 rounded-lg border border-destructive/40 bg-destructive/5">
@@ -277,9 +274,8 @@ function AuthPage() {
               </a>
             </p>
             <p>
-              Signing a sign-in request{" "}
-              <strong className="text-foreground">does not</strong> move any
-              funds. payHME never holds your keys or your crypto.
+              Signing a sign-in request <strong className="text-foreground">does not</strong> move
+              any funds. payHME never holds your keys or your crypto.
             </p>
           </div>
         </div>
@@ -357,9 +353,9 @@ function ManualSignIn({
       {open && (
         <div className="space-y-4 border-t border-border/60 p-4">
           <p className="text-xs text-muted-foreground">
-            Use this if your wallet can&apos;t scan the QR. Copy the message
-            below, sign it in your TXC wallet (Tools → Sign Message), then
-            paste your wallet address and the resulting signature here.
+            Use this if your wallet can&apos;t scan the QR. Copy the message below, sign it in your
+            TXC wallet (Tools → Sign Message), then paste your wallet address and the resulting
+            signature here.
           </p>
 
           <div>
@@ -415,12 +411,7 @@ function ManualSignIn({
             />
           </div>
 
-          <Button
-            type="button"
-            onClick={submit}
-            disabled={submitting}
-            className="w-full"
-          >
+          <Button type="button" onClick={submit} disabled={submitting} className="w-full">
             {submitting ? "Verifying…" : "Submit signature"}
           </Button>
         </div>

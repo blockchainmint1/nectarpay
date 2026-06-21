@@ -37,9 +37,7 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
         if (!id || !/^[0-9a-f-]{36}$/i.test(id)) {
           return Response.json({ error: "invalid id" }, { status: 400, headers: CORS });
         }
-        const { supabaseAdmin } = await import(
-          "@/integrations/supabase/client.server"
-        );
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: ch, error } = await supabaseAdmin
           .from("wallet_login_challenges")
           .select("id, nonce, status, expires_at, created_at")
@@ -92,9 +90,7 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
         const address = payload.address.trim();
         const signature = payload.signature.replace(/\s+/g, "");
 
-        const { supabaseAdmin } = await import(
-          "@/integrations/supabase/client.server"
-        );
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { buildSignableMessage, verifyTxcSignature, looksLikeTxcAddress } =
           await import("@/lib/wallet-signature.server");
 
@@ -162,7 +158,10 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
 
         if (upErr) {
           console.error("[wallet-callback] update failed:", upErr);
-          return Response.json({ error: "could not record signature" }, { status: 500, headers: CORS });
+          return Response.json(
+            { error: "could not record signature" },
+            { status: 500, headers: CORS },
+          );
         }
 
         return Response.json({ ok: true }, { headers: CORS });
