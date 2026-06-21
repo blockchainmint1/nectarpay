@@ -354,8 +354,8 @@ function ManualSignIn({
         <div className="space-y-4 border-t border-border/60 p-4">
           <p className="text-xs text-muted-foreground">
             Use this if your wallet can&apos;t scan the QR. Copy the message below, sign it in your
-            TXC wallet (Tools → Sign Message), then paste your wallet address and the resulting
-            signature here.
+            TXC wallet (Tools → Sign Message), then paste the exact address shown by that signing
+            tool and the resulting signature here.
           </p>
 
           <div>
