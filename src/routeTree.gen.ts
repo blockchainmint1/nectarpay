@@ -46,6 +46,7 @@ import { Route as ApiPublicAuthWalletExchangeRouteImport } from './routes/api/pu
 import { Route as ApiPublicAuthWalletChallengeRouteImport } from './routes/api/public/auth/wallet-challenge'
 import { Route as ApiPublicAuthWalletCallbackRouteImport } from './routes/api/public/auth/wallet-callback'
 import { Route as AuthenticatedStoresStoreIdKycRouteImport } from './routes/_authenticated.stores.$storeId.kyc'
+import { Route as AuthenticatedStoresStoreIdKeysRouteImport } from './routes/_authenticated.stores.$storeId.keys'
 import { Route as AuthenticatedStoresStoreIdChainsRouteImport } from './routes/_authenticated.stores.$storeId.chains'
 
 const TermsRoute = TermsRouteImport.update({
@@ -244,6 +245,12 @@ const AuthenticatedStoresStoreIdKycRoute =
     path: '/kyc',
     getParentRoute: () => AuthenticatedStoresStoreIdRoute,
   } as any)
+const AuthenticatedStoresStoreIdKeysRoute =
+  AuthenticatedStoresStoreIdKeysRouteImport.update({
+    id: '/keys',
+    path: '/keys',
+    getParentRoute: () => AuthenticatedStoresStoreIdRoute,
+  } as any)
 const AuthenticatedStoresStoreIdChainsRoute =
   AuthenticatedStoresStoreIdChainsRouteImport.update({
     id: '/chains',
@@ -278,6 +285,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/stores/': typeof AuthenticatedStoresIndexRoute
   '/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
+  '/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
@@ -315,6 +323,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/stores': typeof AuthenticatedStoresIndexRoute
   '/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
+  '/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
@@ -356,6 +365,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/stores/': typeof AuthenticatedStoresIndexRoute
   '/_authenticated/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
+  '/_authenticated/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/_authenticated/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
@@ -397,6 +407,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/stores/'
     | '/stores/$storeId/chains'
+    | '/stores/$storeId/keys'
     | '/stores/$storeId/kyc'
     | '/api/public/auth/wallet-callback'
     | '/api/public/auth/wallet-challenge'
@@ -434,6 +445,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/stores'
     | '/stores/$storeId/chains'
+    | '/stores/$storeId/keys'
     | '/stores/$storeId/kyc'
     | '/api/public/auth/wallet-callback'
     | '/api/public/auth/wallet-challenge'
@@ -474,6 +486,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/stores/'
     | '/_authenticated/stores/$storeId/chains'
+    | '/_authenticated/stores/$storeId/keys'
     | '/_authenticated/stores/$storeId/kyc'
     | '/api/public/auth/wallet-callback'
     | '/api/public/auth/wallet-challenge'
@@ -773,6 +786,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStoresStoreIdKycRouteImport
       parentRoute: typeof AuthenticatedStoresStoreIdRoute
     }
+    '/_authenticated/stores/$storeId/keys': {
+      id: '/_authenticated/stores/$storeId/keys'
+      path: '/keys'
+      fullPath: '/stores/$storeId/keys'
+      preLoaderRoute: typeof AuthenticatedStoresStoreIdKeysRouteImport
+      parentRoute: typeof AuthenticatedStoresStoreIdRoute
+    }
     '/_authenticated/stores/$storeId/chains': {
       id: '/_authenticated/stores/$storeId/chains'
       path: '/chains'
@@ -802,6 +822,7 @@ const AuthenticatedAdminRouteWithChildren =
 
 interface AuthenticatedStoresStoreIdRouteChildren {
   AuthenticatedStoresStoreIdChainsRoute: typeof AuthenticatedStoresStoreIdChainsRoute
+  AuthenticatedStoresStoreIdKeysRoute: typeof AuthenticatedStoresStoreIdKeysRoute
   AuthenticatedStoresStoreIdKycRoute: typeof AuthenticatedStoresStoreIdKycRoute
   AuthenticatedStoresStoreIdIndexRoute: typeof AuthenticatedStoresStoreIdIndexRoute
 }
@@ -810,6 +831,7 @@ const AuthenticatedStoresStoreIdRouteChildren: AuthenticatedStoresStoreIdRouteCh
   {
     AuthenticatedStoresStoreIdChainsRoute:
       AuthenticatedStoresStoreIdChainsRoute,
+    AuthenticatedStoresStoreIdKeysRoute: AuthenticatedStoresStoreIdKeysRoute,
     AuthenticatedStoresStoreIdKycRoute: AuthenticatedStoresStoreIdKycRoute,
     AuthenticatedStoresStoreIdIndexRoute: AuthenticatedStoresStoreIdIndexRoute,
   }
