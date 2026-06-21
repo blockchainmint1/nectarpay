@@ -167,6 +167,42 @@ export type Database = {
           },
         ]
       }
+      plans: {
+        Row: {
+          active: boolean
+          created_at: string
+          features: Json
+          id: string
+          invoice_limit: number | null
+          monthly_price_usd: number
+          name: string
+          sort_order: number
+          volume_limit_usd: number | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          features?: Json
+          id: string
+          invoice_limit?: number | null
+          monthly_price_usd?: number
+          name: string
+          sort_order?: number
+          volume_limit_usd?: number | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          features?: Json
+          id?: string
+          invoice_limit?: number | null
+          monthly_price_usd?: number
+          name?: string
+          sort_order?: number
+          volume_limit_usd?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -254,6 +290,62 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          canceled_at: string | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          free_tier_metric: string | null
+          free_tier_started_at: string
+          grace_period_ends_at: string | null
+          id: string
+          last_charged_at: string | null
+          plan_id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          canceled_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          free_tier_metric?: string | null
+          free_tier_started_at?: string
+          grace_period_ends_at?: string | null
+          id?: string
+          last_charged_at?: string | null
+          plan_id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          canceled_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          free_tier_metric?: string | null
+          free_tier_started_at?: string
+          grace_period_ends_at?: string | null
+          id?: string
+          last_charged_at?: string | null
+          plan_id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           amount: number
@@ -297,6 +389,96 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      txc_credit_ledger: {
+        Row: {
+          amount_txc: number
+          created_at: string
+          id: string
+          kind: string
+          notes: string | null
+          reference: string | null
+          txc_usd_rate: number | null
+          usd_value: number | null
+          user_id: string
+        }
+        Insert: {
+          amount_txc: number
+          created_at?: string
+          id?: string
+          kind: string
+          notes?: string | null
+          reference?: string | null
+          txc_usd_rate?: number | null
+          usd_value?: number | null
+          user_id: string
+        }
+        Update: {
+          amount_txc?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          notes?: string | null
+          reference?: string | null
+          txc_usd_rate?: number | null
+          usd_value?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      txc_deposit_addresses: {
+        Row: {
+          address: string
+          created_at: string
+          memo: string | null
+          user_id: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          memo?: string | null
+          user_id: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          memo?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      usage_counters: {
+        Row: {
+          created_at: string
+          id: string
+          invoice_count: number
+          period_end: string | null
+          period_start: string
+          updated_at: string
+          user_id: string
+          volume_usd: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invoice_count?: number
+          period_end?: string | null
+          period_start: string
+          updated_at?: string
+          user_id: string
+          volume_usd?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invoice_count?: number
+          period_end?: string | null
+          period_start?: string
+          updated_at?: string
+          user_id?: string
+          volume_usd?: number
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -378,7 +560,9 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_subscription_active: { Args: { _user_id: string }; Returns: boolean }
       owns_store: { Args: { _store_id: string }; Returns: boolean }
+      txc_balance: { Args: { _user_id: string }; Returns: number }
     }
     Enums: {
       app_role: "admin" | "merchant"
