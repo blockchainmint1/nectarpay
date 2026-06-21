@@ -8,7 +8,6 @@ import {
   getBillingOverview,
   setFreeTierMetric,
   changePlan,
-  simulateDeposit,
   type BillingOverview,
 } from "@/lib/billing.functions";
 import { Button } from "@/components/ui/button";
