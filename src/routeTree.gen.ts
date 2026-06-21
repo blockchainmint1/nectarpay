@@ -17,6 +17,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as IntegrationsWoocommerceRouteImport } from './routes/integrations.woocommerce'
 import { Route as AuthenticatedStoresRouteImport } from './routes/_authenticated.stores'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
+import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated.billing'
 import { Route as AuthenticatedStoresNewRouteImport } from './routes/_authenticated.stores.new'
 import { Route as AuthenticatedStoresStoreIdRouteImport } from './routes/_authenticated.stores.$storeId'
 
@@ -59,6 +60,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedStoresNewRoute = AuthenticatedStoresNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/docs': typeof DocsRoute
   '/pricing': typeof PricingRoute
+  '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/stores': typeof AuthenticatedStoresRouteWithChildren
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/docs': typeof DocsRoute
   '/pricing': typeof PricingRoute
+  '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/stores': typeof AuthenticatedStoresRouteWithChildren
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/docs': typeof DocsRoute
   '/pricing': typeof PricingRoute
+  '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/stores': typeof AuthenticatedStoresRouteWithChildren
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/docs'
     | '/pricing'
+    | '/billing'
     | '/dashboard'
     | '/stores'
     | '/integrations/woocommerce'
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/docs'
     | '/pricing'
+    | '/billing'
     | '/dashboard'
     | '/stores'
     | '/integrations/woocommerce'
@@ -136,6 +147,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/docs'
     | '/pricing'
+    | '/_authenticated/billing'
     | '/_authenticated/dashboard'
     | '/_authenticated/stores'
     | '/integrations/woocommerce'
@@ -210,6 +222,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/billing': {
+      id: '/_authenticated/billing'
+      path: '/billing'
+      fullPath: '/billing'
+      preLoaderRoute: typeof AuthenticatedBillingRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/stores/new': {
       id: '/_authenticated/stores/new'
       path: '/new'
@@ -241,11 +260,13 @@ const AuthenticatedStoresRouteWithChildren =
   AuthenticatedStoresRoute._addFileChildren(AuthenticatedStoresRouteChildren)
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedStoresRoute: typeof AuthenticatedStoresRouteWithChildren
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedStoresRoute: AuthenticatedStoresRouteWithChildren,
 }
