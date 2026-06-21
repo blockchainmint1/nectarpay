@@ -503,7 +503,21 @@ function PayingFrame({
         <p className="text-center text-[11px] leading-snug text-muted-foreground">
           Scan with your phone or tap to open your installed {CHAIN_LABEL[inv.chain] ?? "crypto"} wallet.
         </p>
+
+        <label className="mt-1 flex w-full cursor-pointer items-start gap-2 rounded-md border border-border/60 bg-background/40 px-3 py-2 text-left">
+          <input
+            type="checkbox"
+            checked={addressOnlyQr}
+            onChange={(e) => setAddressOnlyQr(e.target.checked)}
+            className="mt-0.5 h-3.5 w-3.5 accent-primary"
+          />
+          <span className="text-[11px] leading-snug text-muted-foreground">
+            <span className="font-medium text-foreground">Address-only QR.</span> Turn on if your wallet
+            won't scan — it'll get just the address, and you enter the chain &amp; amount yourself.
+          </span>
+        </label>
       </div>
+
     </div>
   );
 }
