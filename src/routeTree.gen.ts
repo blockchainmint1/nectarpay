@@ -20,6 +20,10 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated.billing'
 import { Route as AuthenticatedStoresNewRouteImport } from './routes/_authenticated.stores.new'
 import { Route as AuthenticatedStoresStoreIdRouteImport } from './routes/_authenticated.stores.$storeId'
+import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
+import { Route as ApiPublicCronWatcherRouteImport } from './routes/api/public/cron/watcher'
+import { Route as ApiPublicCronRatesRouteImport } from './routes/api/public/cron/rates'
+import { Route as ApiPublicCronBillingRouteImport } from './routes/api/public/cron/billing'
 
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
@@ -76,6 +80,27 @@ const AuthenticatedStoresStoreIdRoute =
     path: '/$storeId',
     getParentRoute: () => AuthenticatedStoresRoute,
   } as any)
+const ApiPublicTelegramWebhookRoute =
+  ApiPublicTelegramWebhookRouteImport.update({
+    id: '/api/public/telegram/webhook',
+    path: '/api/public/telegram/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicCronWatcherRoute = ApiPublicCronWatcherRouteImport.update({
+  id: '/api/public/cron/watcher',
+  path: '/api/public/cron/watcher',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCronRatesRoute = ApiPublicCronRatesRouteImport.update({
+  id: '/api/public/cron/rates',
+  path: '/api/public/cron/rates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCronBillingRoute = ApiPublicCronBillingRouteImport.update({
+  id: '/api/public/cron/billing',
+  path: '/api/public/cron/billing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -88,6 +113,10 @@ export interface FileRoutesByFullPath {
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRoute
   '/stores/new': typeof AuthenticatedStoresNewRoute
+  '/api/public/cron/billing': typeof ApiPublicCronBillingRoute
+  '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
+  '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
+  '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -100,6 +129,10 @@ export interface FileRoutesByTo {
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRoute
   '/stores/new': typeof AuthenticatedStoresNewRoute
+  '/api/public/cron/billing': typeof ApiPublicCronBillingRoute
+  '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
+  '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
+  '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -114,6 +147,10 @@ export interface FileRoutesById {
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRoute
   '/_authenticated/stores/new': typeof AuthenticatedStoresNewRoute
+  '/api/public/cron/billing': typeof ApiPublicCronBillingRoute
+  '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
+  '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
+  '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -128,6 +165,10 @@ export interface FileRouteTypes {
     | '/integrations/woocommerce'
     | '/stores/$storeId'
     | '/stores/new'
+    | '/api/public/cron/billing'
+    | '/api/public/cron/rates'
+    | '/api/public/cron/watcher'
+    | '/api/public/telegram/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -140,6 +181,10 @@ export interface FileRouteTypes {
     | '/integrations/woocommerce'
     | '/stores/$storeId'
     | '/stores/new'
+    | '/api/public/cron/billing'
+    | '/api/public/cron/rates'
+    | '/api/public/cron/watcher'
+    | '/api/public/telegram/webhook'
   id:
     | '__root__'
     | '/'
@@ -153,6 +198,10 @@ export interface FileRouteTypes {
     | '/integrations/woocommerce'
     | '/_authenticated/stores/$storeId'
     | '/_authenticated/stores/new'
+    | '/api/public/cron/billing'
+    | '/api/public/cron/rates'
+    | '/api/public/cron/watcher'
+    | '/api/public/telegram/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -162,6 +211,10 @@ export interface RootRouteChildren {
   DocsRoute: typeof DocsRoute
   PricingRoute: typeof PricingRoute
   IntegrationsWoocommerceRoute: typeof IntegrationsWoocommerceRoute
+  ApiPublicCronBillingRoute: typeof ApiPublicCronBillingRoute
+  ApiPublicCronRatesRoute: typeof ApiPublicCronRatesRoute
+  ApiPublicCronWatcherRoute: typeof ApiPublicCronWatcherRoute
+  ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -243,6 +296,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStoresStoreIdRouteImport
       parentRoute: typeof AuthenticatedStoresRoute
     }
+    '/api/public/telegram/webhook': {
+      id: '/api/public/telegram/webhook'
+      path: '/api/public/telegram/webhook'
+      fullPath: '/api/public/telegram/webhook'
+      preLoaderRoute: typeof ApiPublicTelegramWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/watcher': {
+      id: '/api/public/cron/watcher'
+      path: '/api/public/cron/watcher'
+      fullPath: '/api/public/cron/watcher'
+      preLoaderRoute: typeof ApiPublicCronWatcherRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/rates': {
+      id: '/api/public/cron/rates'
+      path: '/api/public/cron/rates'
+      fullPath: '/api/public/cron/rates'
+      preLoaderRoute: typeof ApiPublicCronRatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/billing': {
+      id: '/api/public/cron/billing'
+      path: '/api/public/cron/billing'
+      fullPath: '/api/public/cron/billing'
+      preLoaderRoute: typeof ApiPublicCronBillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -282,6 +363,10 @@ const rootRouteChildren: RootRouteChildren = {
   DocsRoute: DocsRoute,
   PricingRoute: PricingRoute,
   IntegrationsWoocommerceRoute: IntegrationsWoocommerceRoute,
+  ApiPublicCronBillingRoute: ApiPublicCronBillingRoute,
+  ApiPublicCronRatesRoute: ApiPublicCronRatesRoute,
+  ApiPublicCronWatcherRoute: ApiPublicCronWatcherRoute,
+  ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
