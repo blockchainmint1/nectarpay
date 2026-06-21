@@ -68,7 +68,6 @@ function AuthPage() {
     return () => {
       cancelled.current = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function createChallenge() {
@@ -126,9 +125,7 @@ function AuthPage() {
         await new Promise((r) => setTimeout(r, WALLET_POLL_INTERVAL_MS));
         if (stopped) return;
         try {
-          const res = await fetch(
-            `/api/public/auth/wallet-status?id=${challengeId}`,
-          );
+          const res = await fetch(`/api/public/auth/wallet-status?id=${challengeId}`);
           if (!res.ok) continue;
           const data = (await res.json()) as {
             status: string;
@@ -150,9 +147,7 @@ function AuthPage() {
       }
     }
 
-    setStatus((s) =>
-      s.kind === "waiting" ? { kind: "waiting", challenge: s.challenge } : s,
-    );
+    setStatus((s) => (s.kind === "waiting" ? { kind: "waiting", challenge: s.challenge } : s));
     void poll();
     return () => {
       stopped = true;
@@ -160,9 +155,7 @@ function AuthPage() {
   }, [status.kind === "waiting" ? status.challenge.id : null]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function exchange(challengeId: string, token: string) {
-    setStatus((s) =>
-      s.kind === "waiting" ? { kind: "signing", challenge: s.challenge } : s,
-    );
+    setStatus((s) => (s.kind === "waiting" ? { kind: "signing", challenge: s.challenge } : s));
     try {
       const res = await fetch("/api/public/auth/wallet-exchange", {
         method: "POST",
