@@ -12,8 +12,10 @@ function randomSecret(bytes = 32): string {
     .join("");
 }
 
+type AuthSupabase = Awaited<ReturnType<typeof import("@/integrations/supabase/auth-middleware").requireSupabaseAuth>> extends never ? never : never;
+
 async function assertOwnsStore(
-  supabase: { from: (t: string) => { select: (s: string) => { eq: (k: string, v: string) => { maybeSingle: () => Promise<{ data: unknown; error: { message: string } | null }> } } } },
+  supabase: { from: typeof import("@supabase/supabase-js").SupabaseClient.prototype.from } | any,
   storeId: string,
 ) {
   const { data, error } = await supabase.from("stores").select("id").eq("id", storeId).maybeSingle();
