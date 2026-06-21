@@ -48,6 +48,8 @@ function KycSettingsPage() {
   const [provider, setProvider] = useState<Provider>("none");
   const [apiKey, setApiKey] = useState("");
   const [appToken, setAppToken] = useState("");
+  const [apiKeySaved, setApiKeySaved] = useState(false);
+  const [appTokenSaved, setAppTokenSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -57,8 +59,10 @@ function KycSettingsPage() {
     setBasicChecks(data.kyc_basic_checks ?? ["sanctions", "risk", "geo"]);
     setRequireEmail(!!data.kyc_basic_require_email);
     setProvider((data.kyc_advanced_provider as Provider) ?? "none");
-    setApiKey(data.kyc_advanced_api_key ?? "");
-    setAppToken(data.kyc_advanced_app_token ?? "");
+    setApiKey("");
+    setAppToken("");
+    setApiKeySaved(!!data.kyc_advanced_api_key_set);
+    setAppTokenSaved(!!data.kyc_advanced_app_token_set);
   }, [data]);
 
   async function onSave() {
@@ -72,11 +76,17 @@ function KycSettingsPage() {
           kycBasicChecks: basicChecks as ("sanctions" | "risk" | "geo")[],
           kycBasicRequireEmail: requireEmail,
           kycAdvancedProvider: provider,
-          kycAdvancedApiKey: apiKey || null,
-          kycAdvancedAppToken: appToken || null,
+          // Only send when the user typed something; otherwise leave existing
+          // secret untouched. Empty string clears (only when previously set).
+          ...(apiKey ? { kycAdvancedApiKey: apiKey } : {}),
+          ...(appToken ? { kycAdvancedAppToken: appToken } : {}),
         },
       });
       toast.success("KYC settings saved.");
+      if (apiKey) setApiKeySaved(true);
+      if (appToken) setAppTokenSaved(true);
+      setApiKey("");
+      setAppToken("");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to save.");
     } finally {
@@ -206,25 +216,38 @@ function KycSettingsPage() {
               </Select>
             </div>
             <div>
-              <Label htmlFor="appToken" className="text-sm">App / Template / Level ID</Label>
+              <Label htmlFor="appToken" className="text-sm">
+                App / Template / Level ID{appTokenSaved && !appToken ? " · saved" : ""}
+              </Label>
               <Input
                 id="appToken"
                 value={appToken}
                 onChange={(e) => setAppToken(e.target.value)}
-                placeholder="e.g. Sumsub levelName, Persona template-id, Didit app_id"
+                placeholder={
+                  appTokenSaved
+                    ? "•••••• (leave blank to keep)"
+                    : "e.g. Sumsub levelName, Persona template-id, Didit app_id"
+                }
                 className="mt-2 font-mono"
               />
             </div>
             <div>
-              <Label htmlFor="apiKey" className="text-sm">API key (stored encrypted at rest)</Label>
+              <Label htmlFor="apiKey" className="text-sm">
+                API key{apiKeySaved && !apiKey ? " · saved" : ""}
+              </Label>
               <Input
                 id="apiKey"
                 type="password"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                placeholder="Paste your provider API key"
+                placeholder={
+                  apiKeySaved ? "•••••• (leave blank to keep)" : "Paste your provider API key"
+                }
                 className="mt-2 font-mono"
               />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Stored server-side. For security, the saved value is never shown back to the browser.
+              </p>
             </div>
           </div>
         </section>

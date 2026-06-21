@@ -263,25 +263,36 @@ const SaveSettingsInput = z.object({
   kycBasicChecks: z.array(z.enum(["sanctions", "risk", "geo"])),
   kycBasicRequireEmail: z.boolean(),
   kycAdvancedProvider: z.enum(["none", "sumsub", "persona", "didit", "veriff"]),
-  kycAdvancedApiKey: z.string().max(512).nullable(),
-  kycAdvancedAppToken: z.string().max(512).nullable(),
+  // undefined = leave existing secret unchanged; null = clear it; string = set new value
+  kycAdvancedApiKey: z.string().max(512).nullable().optional(),
+  kycAdvancedAppToken: z.string().max(512).nullable().optional(),
 });
 
 export const saveStoreKycSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => SaveSettingsInput.parse(d))
   .handler(async ({ data, context }) => {
+    const update: {
+      kyc_level: typeof data.kycLevel;
+      kyc_threshold_usd: number | null;
+      kyc_basic_checks: string[];
+      kyc_basic_require_email: boolean;
+      kyc_advanced_provider: typeof data.kycAdvancedProvider;
+      kyc_advanced_api_key?: string | null;
+      kyc_advanced_app_token?: string | null;
+    } = {
+      kyc_level: data.kycLevel,
+      kyc_threshold_usd: data.kycThresholdUsd,
+      kyc_basic_checks: data.kycBasicChecks,
+      kyc_basic_require_email: data.kycBasicRequireEmail,
+      kyc_advanced_provider: data.kycAdvancedProvider,
+    };
+    if (data.kycAdvancedApiKey !== undefined) update.kyc_advanced_api_key = data.kycAdvancedApiKey;
+    if (data.kycAdvancedAppToken !== undefined) update.kyc_advanced_app_token = data.kycAdvancedAppToken;
+
     const { error } = await context.supabase
       .from("stores")
-      .update({
-        kyc_level: data.kycLevel,
-        kyc_threshold_usd: data.kycThresholdUsd,
-        kyc_basic_checks: data.kycBasicChecks,
-        kyc_basic_require_email: data.kycBasicRequireEmail,
-        kyc_advanced_provider: data.kycAdvancedProvider,
-        kyc_advanced_api_key: data.kycAdvancedApiKey,
-        kyc_advanced_app_token: data.kycAdvancedAppToken,
-      })
+      .update(update)
       .eq("id", data.storeId);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -291,7 +302,19 @@ export const getStoreKycSettings = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ storeId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: store, error } = await context.supabase
+    // Verify ownership using the user-scoped client (RLS enforced).
+    const { data: own, error: ownErr } = await context.supabase
+      .from("stores")
+      .select("id")
+      .eq("id", data.storeId)
+      .maybeSingle();
+    if (ownErr) throw new Error(ownErr.message);
+    if (!own) throw new Error("Store not found");
+
+    // Read sensitive columns via admin, but never return the raw secrets
+    // to the client. Only return "is it set" booleans.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: store, error } = await supabaseAdmin
       .from("stores")
       .select(
         "kyc_level, kyc_threshold_usd, kyc_basic_checks, kyc_basic_require_email, kyc_advanced_provider, kyc_advanced_api_key, kyc_advanced_app_token",
@@ -299,5 +322,14 @@ export const getStoreKycSettings = createServerFn({ method: "GET" })
       .eq("id", data.storeId)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    return store;
+    if (!store) return null;
+    return {
+      kyc_level: store.kyc_level,
+      kyc_threshold_usd: store.kyc_threshold_usd,
+      kyc_basic_checks: store.kyc_basic_checks,
+      kyc_basic_require_email: store.kyc_basic_require_email,
+      kyc_advanced_provider: store.kyc_advanced_provider,
+      kyc_advanced_api_key_set: Boolean(store.kyc_advanced_api_key),
+      kyc_advanced_app_token_set: Boolean(store.kyc_advanced_app_token),
+    };
   });
