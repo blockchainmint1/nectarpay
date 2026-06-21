@@ -171,11 +171,13 @@ function ChainsPage() {
               meta={meta}
               row={rows[meta.key]}
               storeId={storeId}
+              ethXpub={rows.eth?.xpub ?? null}
               onChange={(r) => setRows((prev) => ({ ...prev, [meta.key]: r }))}
               onSaved={() => refetch()}
             />
           ))}
         </div>
+
       )}
     </div>
   );
