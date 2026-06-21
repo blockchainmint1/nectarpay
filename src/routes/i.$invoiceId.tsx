@@ -59,14 +59,31 @@ function chainAccent(chain: string): string {
   }
 }
 
-function paymentUri(chain: string, address: string, amount: number | null): string {
+function paymentUri(
+  chain: string,
+  address: string,
+  amount: number | null,
+  memo: string | null = null,
+): string {
   if (chain === "btc") return `bitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
   if (chain === "txc") return `texitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
   if (chain === "eth" || chain === "base") return `ethereum:${address}`;
   if (chain === "tron") return `tron:${address}`;
-  if (chain === "sol") return `solana:${address}${amount ? `?amount=${amount}` : ""}`;
+  if (chain === "sol") {
+    // Solana Pay URI: solana:<address>?amount=<sol>&memo=<text>&label=<text>
+    const params = new URLSearchParams();
+    if (amount) params.set("amount", String(amount));
+    if (memo) {
+      params.set("memo", memo);
+      params.set("reference", memo);
+    }
+    params.set("label", "payHME");
+    const qs = params.toString();
+    return `solana:${address}${qs ? `?${qs}` : ""}`;
+  }
   return address;
 }
+
 
 function useCountdown(target: string | null) {
   const [now, setNow] = useState(() => Date.now());
@@ -176,10 +193,12 @@ function CheckoutPage() {
   const network = inv ? (ALL_NETWORKS as Record<string, { confirmationsRequired: number }>)[inv.chain] : null;
   const requiredConfs = network?.confirmationsRequired ?? 1;
 
+  const memo = inv ? inv.id.slice(0, 8) : null;
   const uri = useMemo(
-    () => (inv ? paymentUri(inv.chain, inv.address, inv.cryptoAmount) : ""),
-    [inv],
+    () => (inv ? paymentUri(inv.chain, inv.address, inv.cryptoAmount, memo) : ""),
+    [inv, memo],
   );
+
 
   // ----- frames -----
   return (
