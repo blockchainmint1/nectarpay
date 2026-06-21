@@ -4,7 +4,7 @@ import { z } from "zod";
 
 const CORS = {
   "access-control-allow-origin": "*",
-  "access-control-allow-methods": "POST, OPTIONS",
+  "access-control-allow-methods": "GET, POST, OPTIONS",
   "access-control-allow-headers": "content-type",
 } as const;
 
@@ -20,6 +20,48 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
+      GET: async ({ request }) => {
+        const url = new URL(request.url);
+        const id = url.searchParams.get("id");
+        if (!id || !/^[0-9a-f-]{36}$/i.test(id)) {
+          return Response.json({ error: "invalid id" }, { status: 400, headers: CORS });
+        }
+        const { supabaseAdmin } = await import(
+          "@/integrations/supabase/client.server"
+        );
+        const { data: ch, error } = await supabaseAdmin
+          .from("wallet_login_challenges")
+          .select("id, nonce, status, expires_at, created_at")
+          .eq("id", id)
+          .single();
+        if (error || !ch) {
+          return Response.json({ error: "unknown challenge" }, { status: 404, headers: CORS });
+        }
+        const { buildSignableMessage } = await import("@/lib/wallet-auth-shared");
+        const domain = url.hostname;
+        const message = buildSignableMessage({
+          nonce: ch.nonce,
+          domain,
+          issuedAt: ch.created_at,
+        });
+        return Response.json(
+          {
+            id: ch.id,
+            nonce: ch.nonce,
+            domain,
+            issued_at: ch.created_at,
+            expires_at: ch.expires_at,
+            status: ch.status,
+            message,
+          },
+          {
+            headers: {
+              ...CORS,
+              "cache-control": "no-store",
+            },
+          },
+        );
+      },
       POST: async ({ request }) => {
         let body: unknown;
         try {
