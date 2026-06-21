@@ -102,7 +102,7 @@ function recoverPublicKey(
   const recoveredSig = new Uint8Array(65);
   recoveredSig[0] = recovery;
   recoveredSig.set(signature, 1);
-  const compressedPub = secp256k1.recoverPublicKey(recoveredSig, hash, {
+  const compressedPub = secpRecoverPublicKey(recoveredSig, hash, {
     prehash: false,
   });
   if (compressed) return compressedPub;
