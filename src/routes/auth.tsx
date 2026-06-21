@@ -264,6 +264,13 @@ function AuthPage() {
             )}
           </div>
 
+          {(status.kind === "waiting" || status.kind === "signing") && (
+            <ManualSignIn
+              challenge={status.challenge}
+              onError={(message) => setStatus({ kind: "error", message })}
+            />
+          )}
+
           <div className="mt-8 space-y-3 border-t border-border/60 pt-6 text-xs text-muted-foreground">
             <p>
               <strong className="text-foreground">No TXC wallet yet?</strong>{" "}
@@ -284,6 +291,143 @@ function AuthPage() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function ManualSignIn({
+  challenge,
+  onError,
+}: {
+  challenge: Challenge;
+  onError: (message: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [address, setAddress] = useState("");
+  const [signature, setSignature] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  async function copyMessage() {
+    try {
+      await navigator.clipboard.writeText(challenge.message);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast.error("Could not copy");
+    }
+  }
+
+  async function submit() {
+    const addr = address.trim();
+    const sig = signature.trim();
+    if (!addr || !sig) {
+      toast.error("Address and signature required");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/public/auth/wallet-callback", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          id: challenge.id,
+          address: addr,
+          signature: sig,
+          message: challenge.message,
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      if (!res.ok) {
+        const msg = data.error ?? `Sign-in failed (${res.status})`;
+        toast.error(msg);
+        onError(msg);
+        return;
+      }
+      toast.success("Signature accepted — finishing sign-in…");
+      // The QR polling loop will pick up the signed status and complete the exchange.
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="mt-6 rounded-lg border border-border/60 bg-muted/10">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between px-4 py-3 text-left text-xs uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground"
+      >
+        <span>Sign in by pasting a signature</span>
+        <span>{open ? "−" : "+"}</span>
+      </button>
+      {open && (
+        <div className="space-y-4 border-t border-border/60 p-4">
+          <p className="text-xs text-muted-foreground">
+            Use this if your wallet can&apos;t scan the QR. Copy the message
+            below, sign it in your TXC wallet (Tools → Sign Message), then
+            paste your wallet address and the resulting signature here.
+          </p>
+
+          <div>
+            <div className="mb-1 flex items-center justify-between">
+              <label className="text-[0.65rem] uppercase tracking-[0.3em] text-muted-foreground">
+                Message to sign
+              </label>
+              <button
+                type="button"
+                onClick={copyMessage}
+                className="text-xs text-primary hover:underline"
+              >
+                {copied ? "Copied!" : "Copy"}
+              </button>
+            </div>
+            <pre className="max-h-40 overflow-auto rounded-md border border-border bg-background/60 p-3 text-[0.7rem] leading-relaxed text-foreground whitespace-pre-wrap break-all">
+{challenge.message}
+            </pre>
+          </div>
+
+          <div>
+            <label className="text-[0.65rem] uppercase tracking-[0.3em] text-muted-foreground">
+              Your TXC wallet address
+            </label>
+            <input
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Tabc…"
+              spellCheck={false}
+              autoCapitalize="none"
+              autoCorrect="off"
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs"
+            />
+          </div>
+
+          <div>
+            <label className="text-[0.65rem] uppercase tracking-[0.3em] text-muted-foreground">
+              Signature (base64)
+            </label>
+            <textarea
+              value={signature}
+              onChange={(e) => setSignature(e.target.value)}
+              placeholder="Hxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx="
+              spellCheck={false}
+              autoCapitalize="none"
+              autoCorrect="off"
+              rows={3}
+              className="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs"
+            />
+          </div>
+
+          <Button
+            type="button"
+            onClick={submit}
+            disabled={submitting}
+            className="w-full"
+          >
+            {submitting ? "Verifying…" : "Submit signature"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
