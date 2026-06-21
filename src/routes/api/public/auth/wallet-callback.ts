@@ -140,9 +140,7 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
         const ok = verifyTxcSignature({ address, message, signature });
         if (!ok) {
           // Diagnostic: recover address-from-signature for both prefixes so we can compare.
-          const { recoverAddressesFromSignature } = await import(
-            "@/lib/wallet-signature.server"
-          );
+          const { recoverAddressesFromSignature } = await import("@/lib/wallet-signature.server");
           let recovered: unknown = null;
           let recoveredAddress: string | null = null;
           try {
