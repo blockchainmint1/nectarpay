@@ -53,15 +53,6 @@ function BillingPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  const depositMutation = useMutation({
-    mutationFn: (amount_txc: number) => simDeposit({ data: { amount_txc } }),
-    onSuccess: () => {
-      toast.success("Simulated deposit credited");
-      invalidate();
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
-
   if (isLoading || !data) {
     return <div className="p-8 text-sm text-muted-foreground">Loading billing…</div>;
   }
