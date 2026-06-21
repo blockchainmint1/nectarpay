@@ -190,6 +190,21 @@ function CheckoutPage() {
   const txs = data?.found ? data.transactions : [];
   const store = data?.found ? data.store : null;
 
+  // SDK postMessage: when embedded in the payHME iframe modal, notify the parent
+  // window on terminal status transitions so merchants can listen for "paid".
+  const lastStatusRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!inv) return;
+    if (lastStatusRef.current === inv.status) return;
+    lastStatusRef.current = inv.status;
+    if (typeof window === "undefined" || window.parent === window) return;
+    if (inv.status === "confirmed" || inv.status === "overpaid") {
+      window.parent.postMessage({ source: "payhme", type: "paid", invoiceId: inv.id, tx: txs[0]?.hash ?? null }, "*");
+    } else if (inv.status === "expired" || inv.status === "cancelled" || inv.status === "failed") {
+      window.parent.postMessage({ source: "payhme", type: "expired", invoiceId: inv.id, status: inv.status }, "*");
+    }
+  }, [inv, txs]);
+
   const countdown = useCountdown(inv?.expiresAt ?? null);
   const network = inv ? (ALL_NETWORKS as Record<string, { confirmationsRequired: number }>)[inv.chain] : null;
   const requiredConfs = network?.confirmationsRequired ?? 1;
