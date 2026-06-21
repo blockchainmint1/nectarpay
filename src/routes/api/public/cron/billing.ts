@@ -4,11 +4,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { notifyUser } from "@/lib/notify.server";
 import { getUsdRate } from "@/lib/rates.functions";
+import { scanTxcDeposits } from "@/lib/txc-deposit-scanner.server";
 
 async function rolloverBilling(): Promise<{
   renewed: number;
   blocked: number;
   warned: number;
+  txc_scanned: number;
+  txc_credited: number;
 }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   let renewed = 0,
@@ -98,7 +101,17 @@ async function rolloverBilling(): Promise<{
     }
   }
 
-  return { renewed, blocked, warned };
+  let txc_scanned = 0;
+  let txc_credited = 0;
+  try {
+    const r = await scanTxcDeposits();
+    txc_scanned = r.scanned;
+    txc_credited = r.credited;
+  } catch (e) {
+    console.error("scanTxcDeposits failed", e);
+  }
+
+  return { renewed, blocked, warned, txc_scanned, txc_credited };
 }
 
 export const Route = createFileRoute("/api/public/cron/billing")({

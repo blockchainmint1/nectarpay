@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { createHash } from "crypto";
+
 
 export type BillingOverview = {
   subscription: {
@@ -64,14 +64,23 @@ async function ensureDepositAddress(userId: string) {
     .maybeSingle();
   if (existing) return existing;
 
-  // Deterministic placeholder address derived from user_id.
-  // TODO: replace with real TXC HD-derived address from platform xpub.
-  const hash = createHash("sha256").update(userId).digest("hex").slice(0, 33);
-  const address = `TXC1${hash}`;
+  // Derive a unique TXC address per user from the platform xpub at m/0/<seq>.
+  const xpub = process.env.TXC_PLATFORM_XPUB;
+  if (!xpub) throw new Error("TXC_PLATFORM_XPUB is not configured");
+  const { deriveBtcLikeAddress } = await import("./chains/derive.server");
+  const { TXC_NETWORK } = await import("./chains/networks");
+
+  const { data: idxRow, error: idxErr } = await supabaseAdmin.rpc(
+    "next_txc_deposit_index" as never,
+  );
+  if (idxErr) throw idxErr;
+  const index = Number(idxRow as unknown as number);
+
+  const address = deriveBtcLikeAddress(xpub, TXC_NETWORK, index);
   const memo = userId.slice(0, 8);
   const { data, error } = await supabaseAdmin
     .from("txc_deposit_addresses")
-    .insert({ user_id: userId, address, memo })
+    .insert({ user_id: userId, address, memo, address_index: index })
     .select("*")
     .single();
   if (error) throw error;
