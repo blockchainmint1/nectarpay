@@ -213,6 +213,45 @@ export function verifyTxcSignature(opts: {
 }
 
 /**
+ * Diagnostic helper: recover candidate TXC P2PKH addresses (v=0x42) the
+ * signature could have come from, across both prefixes. Use only for logging
+ * — never as a verification path.
+ */
+export function recoverAddressesFromSignature(opts: {
+  message: string;
+  signature: string;
+}): Array<{ prefix: string; address: string }> {
+  let sigBytes: Uint8Array;
+  try {
+    sigBytes = Uint8Array.from(atob(opts.signature), (c) => c.charCodeAt(0));
+  } catch {
+    return [];
+  }
+  if (sigBytes.length !== 65) return [];
+  let parsed;
+  try {
+    parsed = decodeSignature(sigBytes);
+  } catch {
+    return [];
+  }
+  const out: Array<{ prefix: string; address: string }> = [];
+  for (const prefix of [TXC_MESSAGE_PREFIX, TXC_LEGACY_PREFIX, "\x18Bitcoin Signed Message:\n"]) {
+    const hash = magicHash(opts.message, prefix);
+    try {
+      const pub = recoverPublicKey(hash, parsed.signature, parsed.recovery, parsed.compressed);
+      const pkh = hash160(pub);
+      const payload = new Uint8Array(21);
+      payload[0] = 0x42; // TXC P2PKH version byte
+      payload.set(pkh, 1);
+      out.push({ prefix: prefix.replace(/\x18/, "\\x18"), address: bs58check.encode(payload) });
+    } catch {
+      // skip
+    }
+  }
+  return out;
+}
+
+/**
  * Basic TXC address sanity check. Real validation happens via signature
  * verification (a bad address won't recover to the signature).
  */

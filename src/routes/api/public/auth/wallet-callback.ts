@@ -139,6 +139,24 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
 
         const ok = verifyTxcSignature({ address, message, signature });
         if (!ok) {
+          // Diagnostic: recover address-from-signature for both prefixes so we can compare.
+          const { recoverAddressesFromSignature } = await import(
+            "@/lib/wallet-signature.server"
+          );
+          let recovered: unknown = null;
+          try {
+            recovered = recoverAddressesFromSignature({ message, signature });
+          } catch (e) {
+            recovered = `recover_failed: ${(e as Error).message}`;
+          }
+          console.error("[wallet-callback] bad signature", {
+            address,
+            messageLen: message.length,
+            messagePreview: message.slice(0, 60),
+            messageBytesHex: Buffer.from(message, "utf8").toString("hex").slice(0, 160),
+            signaturePrefix: signature.slice(0, 10),
+            recovered,
+          });
           return Response.json({ error: "bad signature" }, { status: 401, headers: CORS });
         }
 
