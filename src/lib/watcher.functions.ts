@@ -191,22 +191,23 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             // find matching invoice
             const { data: inv } = await supabaseAdmin
               .from("invoices")
-              .select("id, amount, status")
+              .select("id, fiat_amount, status")
               .eq("address", a.address)
               .eq("chain", chain)
               .maybeSingle();
             if (!inv) continue;
             const usdRate = await getUsdRate(chain);
             const paidUsd = (credit.amountSats / 10 ** net.decimals) * usdRate;
+            const isConfirmed = credit.confirmations >= net.confirmationsRequired;
             await recordTransaction(
               inv.id,
-              chain,
               credit.txid,
-              String(credit.amountSats),
+              credit.amountSats / 10 ** net.decimals,
               credit.confirmations,
-              credit.confirmations >= net.confirmationsRequired ? "confirmed" : "pending",
+              null,
+              isConfirmed,
             );
-            const settled = await settleInvoice(inv.id, paidUsd, Number(inv.amount));
+            const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
             if (settled.changed) r.invoicesUpdated++;
           }
         }
