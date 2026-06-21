@@ -16,6 +16,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as IntegrationsWoocommerceRouteImport } from './routes/integrations.woocommerce'
 import { Route as AuthenticatedStoresRouteImport } from './routes/_authenticated.stores'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated.notifications'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated.billing'
 import { Route as AuthenticatedStoresNewRouteImport } from './routes/_authenticated.stores.new'
@@ -59,6 +60,12 @@ const AuthenticatedStoresRoute = AuthenticatedStoresRouteImport.update({
   path: '/stores',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -109,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/stores': typeof AuthenticatedStoresRouteWithChildren
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRoute
@@ -125,6 +133,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/stores': typeof AuthenticatedStoresRouteWithChildren
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRoute
@@ -143,6 +152,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/stores': typeof AuthenticatedStoresRouteWithChildren
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRoute
@@ -161,6 +171,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/billing'
     | '/dashboard'
+    | '/notifications'
     | '/stores'
     | '/integrations/woocommerce'
     | '/stores/$storeId'
@@ -177,6 +188,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/billing'
     | '/dashboard'
+    | '/notifications'
     | '/stores'
     | '/integrations/woocommerce'
     | '/stores/$storeId'
@@ -194,6 +206,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/_authenticated/billing'
     | '/_authenticated/dashboard'
+    | '/_authenticated/notifications'
     | '/_authenticated/stores'
     | '/integrations/woocommerce'
     | '/_authenticated/stores/$storeId'
@@ -266,6 +279,13 @@ declare module '@tanstack/react-router' {
       path: '/stores'
       fullPath: '/stores'
       preLoaderRoute: typeof AuthenticatedStoresRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/dashboard': {
@@ -343,12 +363,14 @@ const AuthenticatedStoresRouteWithChildren =
 interface AuthenticatedRouteChildren {
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedStoresRoute: typeof AuthenticatedStoresRouteWithChildren
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedStoresRoute: AuthenticatedStoresRouteWithChildren,
 }
 
