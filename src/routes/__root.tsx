@@ -79,19 +79,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "TEXITcoin Pay — non-custodial crypto payments for any store" },
+      { title: "payHME — non-custodial crypto payments for any store" },
       {
         name: "description",
         content:
           "Accept BTC, TEXITcoin and EVM stablecoins on WooCommerce and any open ecommerce platform. Non-custodial. You hold the keys.",
       },
-      { property: "og:title", content: "TEXITcoin Pay" },
+      { property: "og:title", content: "payHME — non-custodial crypto payments for any store" },
       {
         property: "og:description",
         content: "Non-custodial crypto payment gateway. Plug into WooCommerce in minutes.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "payHME — non-custodial crypto payments for any store" },
+      { name: "description", content: "CoinFlow Gateway enables web stores to accept payments in various cryptocurrencies." },
+      { property: "og:description", content: "CoinFlow Gateway enables web stores to accept payments in various cryptocurrencies." },
+      { name: "twitter:description", content: "CoinFlow Gateway enables web stores to accept payments in various cryptocurrencies." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1fe402e2-5334-4652-98b5-cc8bdff11260/id-preview-981aa997--faa7c23e-4f75-4eed-8c8c-23234e4242f7.lovable.app-1782008798025.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1fe402e2-5334-4652-98b5-cc8bdff11260/id-preview-981aa997--faa7c23e-4f75-4eed-8c8c-23234e4242f7.lovable.app-1782008798025.png" },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
   }),
