@@ -97,6 +97,7 @@ export const getBillingOverview = createServerFn({ method: "GET" })
 
     await ensureUsageRow(userId);
     const depositAddress = await ensureDepositAddress(userId);
+    const txcRate = await getTxcRate();
 
     const [{ data: sub }, { data: plans }, { data: usage }, { data: ledger }, { data: balanceRow }, { data: activeRow }] =
       await Promise.all([
@@ -245,6 +246,7 @@ export const changePlan = createServerFn({ method: "POST" })
     }
 
     // Paid plan: charge from TXC balance
+    const txcRate = await getTxcRate();
     const { data: balanceRow } = await supabaseAdmin.rpc("txc_balance", { _user_id: userId });
     const balance = Number(balanceRow ?? 0);
     const txcOwed = Number((priceUsd / txcRate).toFixed(8));
@@ -298,6 +300,7 @@ export const simulateDeposit = createServerFn({ method: "POST" })
       throw new Error("Invalid amount");
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const txcRate = await getTxcRate();
     const { error } = await supabaseAdmin.from("txc_credit_ledger").insert({
       user_id: context.userId,
       amount_txc: data.amount_txc,
