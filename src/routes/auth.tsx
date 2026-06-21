@@ -267,7 +267,7 @@ function AuthPage() {
             <p>
               <strong className="text-foreground">No TXC wallet yet?</strong>{" "}
               <a
-                href="https://texitcoin.org"
+                href="https://wallet.honest.money"
                 target="_blank"
                 rel="noreferrer"
                 className="text-primary hover:underline"
