@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as IntegrationsWoocommerceRouteImport } from './routes/integrations.woocommerce'
+import { Route as IInvoiceIdRouteImport } from './routes/i.$invoiceId'
 import { Route as AuthenticatedStoresRouteImport } from './routes/_authenticated.stores'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated.notifications'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
@@ -53,6 +54,11 @@ const IndexRoute = IndexRouteImport.update({
 const IntegrationsWoocommerceRoute = IntegrationsWoocommerceRouteImport.update({
   id: '/integrations/woocommerce',
   path: '/integrations/woocommerce',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IInvoiceIdRoute = IInvoiceIdRouteImport.update({
+  id: '/i/$invoiceId',
+  path: '/i/$invoiceId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedStoresRoute = AuthenticatedStoresRouteImport.update({
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/stores': typeof AuthenticatedStoresRouteWithChildren
+  '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRoute
   '/stores/new': typeof AuthenticatedStoresNewRoute
@@ -135,6 +142,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/stores': typeof AuthenticatedStoresRouteWithChildren
+  '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRoute
   '/stores/new': typeof AuthenticatedStoresNewRoute
@@ -154,6 +162,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/stores': typeof AuthenticatedStoresRouteWithChildren
+  '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRoute
   '/_authenticated/stores/new': typeof AuthenticatedStoresNewRoute
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/notifications'
     | '/stores'
+    | '/i/$invoiceId'
     | '/integrations/woocommerce'
     | '/stores/$storeId'
     | '/stores/new'
@@ -190,6 +200,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/notifications'
     | '/stores'
+    | '/i/$invoiceId'
     | '/integrations/woocommerce'
     | '/stores/$storeId'
     | '/stores/new'
@@ -208,6 +219,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/notifications'
     | '/_authenticated/stores'
+    | '/i/$invoiceId'
     | '/integrations/woocommerce'
     | '/_authenticated/stores/$storeId'
     | '/_authenticated/stores/new'
@@ -223,6 +235,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   DocsRoute: typeof DocsRoute
   PricingRoute: typeof PricingRoute
+  IInvoiceIdRoute: typeof IInvoiceIdRoute
   IntegrationsWoocommerceRoute: typeof IntegrationsWoocommerceRoute
   ApiPublicCronBillingRoute: typeof ApiPublicCronBillingRoute
   ApiPublicCronRatesRoute: typeof ApiPublicCronRatesRoute
@@ -272,6 +285,13 @@ declare module '@tanstack/react-router' {
       path: '/integrations/woocommerce'
       fullPath: '/integrations/woocommerce'
       preLoaderRoute: typeof IntegrationsWoocommerceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/i/$invoiceId': {
+      id: '/i/$invoiceId'
+      path: '/i/$invoiceId'
+      fullPath: '/i/$invoiceId'
+      preLoaderRoute: typeof IInvoiceIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/stores': {
@@ -384,6 +404,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   DocsRoute: DocsRoute,
   PricingRoute: PricingRoute,
+  IInvoiceIdRoute: IInvoiceIdRoute,
   IntegrationsWoocommerceRoute: IntegrationsWoocommerceRoute,
   ApiPublicCronBillingRoute: ApiPublicCronBillingRoute,
   ApiPublicCronRatesRoute: ApiPublicCronRatesRoute,
