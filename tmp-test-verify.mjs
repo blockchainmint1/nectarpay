@@ -55,10 +55,10 @@ function verifyBitcoinMessage(msg, address, sigB64, prefix){
 }
 
 // Generate a real sig with bitcoinjs-message, P2PKH compressed.
-import bitcoin from 'bitcoinjs-lib';
-import ECPairFactory from 'ecpair';
+import * as bitcoin from 'bitcoinjs-lib';
+import {ECPairFactory} from 'ecpair';
 import * as tinysecp from 'tiny-secp256k1';
-const ECPair=ECPairFactory.default(tinysecp);
+const ECPair=ECPairFactory(tinysecp);
 const network={messagePrefix:'\x18TEXITcoin Signed Message:\n',bech32:'tc',bip32:{public:0x0488b21e,private:0x0488ade4},pubKeyHash:0x41,scriptHash:0x05,wif:0x80};
 const kp=ECPair.makeRandom({network,rng:()=>randomBytes(32)});
 const pub=Buffer.from(kp.publicKey);
