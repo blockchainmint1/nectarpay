@@ -20,13 +20,13 @@ function varint(n){
 }
 
 function magicHash(msg, prefix){
-  const pb = new TextEncoder().encode(prefix);
+  const pb = typeof prefix==='string'?new TextEncoder().encode(prefix):prefix;
   const mb = new TextEncoder().encode(msg);
-  const buf = new Uint8Array(varint(pb.length).length + pb.length + varint(mb.length).length + mb.length);
+  const mv = varint(mb.length);
+  const buf = new Uint8Array(pb.length + mv.length + mb.length);
   let o=0;
-  const pv=varint(pb.length); buf.set(pv,o);o+=pv.length;
   buf.set(pb,o);o+=pb.length;
-  const mv=varint(mb.length); buf.set(mv,o);o+=mv.length;
+  buf.set(mv,o);o+=mv.length;
   buf.set(mb,o);
   return dsha256(buf);
 }
