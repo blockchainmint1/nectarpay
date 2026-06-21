@@ -11,7 +11,7 @@ export function MarketingNav() {
         <Link to="/" className="flex items-center gap-2 font-semibold tracking-tight">
           <span className="inline-block h-2.5 w-2.5 rounded-sm bg-primary glow" />
           <span>
-            TEXIT<span className="text-primary">coin</span> Pay
+            pay<span className="text-primary">HME</span>
           </span>
         </Link>
         <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
