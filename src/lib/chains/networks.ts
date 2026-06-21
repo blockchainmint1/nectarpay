@@ -1,29 +1,34 @@
 // Chain network parameters. Confirmed for BTC, TXC (Litecoin-fork, Scrypt PoW,
-// SLIP-44 696969, P2PKH 0x42, BIP32 standard Bitcoin version bytes), and EVM (ETH + Base).
+// SLIP-44 696969, P2PKH 0x42, BIP32 standard Bitcoin version bytes), EVM (ETH + Base),
+// Tron (secp256k1 + base58check 0x41 prefix), and Solana (static address + SPL tokens).
 
-export type ChainKind = "btc" | "txc" | "eth" | "base" | "doge" | "isk" | "zcu";
+export type ChainKind =
+  | "btc"
+  | "txc"
+  | "eth"
+  | "base"
+  | "doge"
+  | "isk"
+  | "zcu"
+  | "tron"
+  | "sol";
 
 export interface BtcLikeNetwork {
   kind: "btc-like";
   symbol: ChainKind;
   name: string;
-  /** Esplora-compatible base URL with `/api` already appended. */
   esploraBase: string;
   explorerTx: (txid: string) => string;
   explorerAddr: (addr: string) => string;
-  /** Address byte params. */
   pubKeyHash: number;
   scriptHash: number;
   bech32Hrp: string;
   wif: number;
   bip32Public: number;
   bip32Private: number;
-  /** SLIP-44 coin type. */
   coinType: number;
   decimals: number;
-  /** Default external-chain derivation suffix appended to the xpub: `0/i`. */
   receiveBranch: number;
-  /** Address type for derivation. "p2pkh" → legacy "T…"/"1…"; "p2wpkh" → bech32. */
   defaultAddressType: "p2pkh" | "p2wpkh";
   confirmationsRequired: number;
 }
@@ -33,13 +38,36 @@ export interface EvmNetwork {
   symbol: ChainKind;
   name: string;
   chainId: number;
-  /** Returns the JSON-RPC URL after substituting the Alchemy key. */
   rpcUrl: (alchemyKey: string) => string;
   explorerTx: (txid: string) => string;
   explorerAddr: (addr: string) => string;
-  /** Stable-coin contracts watched on this chain. */
   stables: { symbol: string; address: string; decimals: number }[];
   confirmationsRequired: number;
+}
+
+export interface TronNetwork {
+  kind: "tron";
+  symbol: ChainKind;
+  name: string;
+  /** Alchemy Tron base URL with key — TronGrid-compatible REST API lives under this. */
+  apiBase: (alchemyKey: string) => string;
+  explorerTx: (txid: string) => string;
+  explorerAddr: (addr: string) => string;
+  decimals: number; // TRX = 6
+  stables: { symbol: string; address: string; decimals: number }[];
+  confirmationsRequired: number;
+}
+
+export interface SolanaNetwork {
+  kind: "solana";
+  symbol: ChainKind;
+  name: string;
+  rpcUrl: (alchemyKey: string) => string;
+  explorerTx: (sig: string) => string;
+  explorerAddr: (addr: string) => string;
+  decimals: number; // SOL = 9
+  stables: { symbol: string; mint: string; decimals: number }[];
+  confirmationsRequired: number; // ~ "confirmed" commitment
 }
 
 export const BTC_NETWORK: BtcLikeNetwork = {
@@ -69,7 +97,7 @@ export const TXC_NETWORK: BtcLikeNetwork = {
   esploraBase: "https://mempool.texitcoin.org/api",
   explorerTx: (t) => `https://mempool.texitcoin.org/tx/${t}`,
   explorerAddr: (a) => `https://mempool.texitcoin.org/address/${a}`,
-  pubKeyHash: 0x42, // T...
+  pubKeyHash: 0x42,
   scriptHash: 0x32,
   bech32Hrp: "txc",
   wif: 0xc1,
@@ -78,7 +106,7 @@ export const TXC_NETWORK: BtcLikeNetwork = {
   coinType: 696969,
   decimals: 8,
   receiveBranch: 0,
-  defaultAddressType: "p2pkh", // most TXC wallets are legacy "T…"
+  defaultAddressType: "p2pkh",
   confirmationsRequired: 1,
 };
 
@@ -111,13 +139,47 @@ export const BASE_NETWORK: EvmNetwork = {
   confirmationsRequired: 3,
 };
 
+export const TRON_NETWORK: TronNetwork = {
+  kind: "tron",
+  symbol: "tron",
+  name: "Tron",
+  apiBase: (k) => `https://tron-mainnet.g.alchemy.com/v2/${k}`,
+  explorerTx: (t) => `https://tronscan.org/#/transaction/${t}`,
+  explorerAddr: (a) => `https://tronscan.org/#/address/${a}`,
+  decimals: 6,
+  stables: [
+    { symbol: "USDT", address: "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t", decimals: 6 },
+    { symbol: "USDC", address: "TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8", decimals: 6 },
+  ],
+  confirmationsRequired: 19, // Tron finality ~ 19 SR confirmations
+};
+
+export const SOL_NETWORK: SolanaNetwork = {
+  kind: "solana",
+  symbol: "sol",
+  name: "Solana",
+  rpcUrl: (k) => `https://solana-mainnet.g.alchemy.com/v2/${k}`,
+  explorerTx: (s) => `https://solscan.io/tx/${s}`,
+  explorerAddr: (a) => `https://solscan.io/account/${a}`,
+  decimals: 9,
+  stables: [
+    { symbol: "USDC", mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", decimals: 6 },
+    { symbol: "USDT", mint: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", decimals: 6 },
+  ],
+  confirmationsRequired: 1, // "confirmed" commitment
+};
+
 export const ALL_NETWORKS = {
   btc: BTC_NETWORK,
   txc: TXC_NETWORK,
   eth: ETH_NETWORK,
   base: BASE_NETWORK,
+  tron: TRON_NETWORK,
+  sol: SOL_NETWORK,
 } as const;
 
 export function getNetwork(chain: ChainKind) {
-  return (ALL_NETWORKS as Record<string, BtcLikeNetwork | EvmNetwork>)[chain];
+  return (ALL_NETWORKS as Record<string, BtcLikeNetwork | EvmNetwork | TronNetwork | SolanaNetwork>)[
+    chain
+  ];
 }

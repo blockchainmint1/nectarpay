@@ -9,6 +9,8 @@ const CMC_ID_MAP: Record<string, number> = {
   BTC: 1,
   ETH: 1027,
   TXC: 32744, // confirmed: https://coinmarketcap.com/currencies/texitcoin/ UCID 32744
+  TRX: 1958,
+  SOL: 5426,
 };
 
 export async function pollRates(): Promise<{
@@ -37,7 +39,8 @@ export async function pollRates(): Promise<{
         const row = json.data?.[String(CMC_ID_MAP[sym])];
         const price = row?.quote?.USD?.price;
         if (typeof price === "number" && price > 0) {
-          const chain = sym.toLowerCase() as "btc" | "eth" | "txc";
+          const chainSym = sym === "TRX" ? "tron" : sym.toLowerCase();
+          const chain = chainSym as "btc" | "eth" | "txc" | "tron" | "sol";
           const { error } = await supabaseAdmin
             .from("rates_cache")
             .upsert(
@@ -84,7 +87,9 @@ export async function getUsdRate(symbol: string): Promise<number> {
   const up = symbol.toUpperCase();
   if (up === "USDC" || up === "USDT" || up === "DAI") return 1;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const chain = up.toLowerCase() as "btc" | "eth" | "txc" | "base" | "doge" | "isk" | "zcu";
+  // TRX is stored under chain="tron"; everything else lowercases.
+  const chain = (up === "TRX" ? "tron" : up.toLowerCase()) as
+    | "btc" | "eth" | "txc" | "base" | "doge" | "isk" | "zcu" | "tron" | "sol";
   const { data } = await supabaseAdmin
     .from("rates_cache")
     .select("rate")

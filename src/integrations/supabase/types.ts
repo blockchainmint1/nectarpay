@@ -749,7 +749,16 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "merchant"
-      chain_kind: "btc" | "eth" | "base" | "txc" | "doge" | "isk" | "zcu"
+      chain_kind:
+        | "btc"
+        | "eth"
+        | "base"
+        | "txc"
+        | "doge"
+        | "isk"
+        | "zcu"
+        | "tron"
+        | "sol"
       invoice_status:
         | "pending"
         | "detected"
@@ -887,7 +896,17 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "merchant"],
-      chain_kind: ["btc", "eth", "base", "txc", "doge", "isk", "zcu"],
+      chain_kind: [
+        "btc",
+        "eth",
+        "base",
+        "txc",
+        "doge",
+        "isk",
+        "zcu",
+        "tron",
+        "sol",
+      ],
       invoice_status: [
         "pending",
         "detected",
