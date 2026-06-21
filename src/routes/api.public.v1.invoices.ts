@@ -1,17 +1,16 @@
 // Public invoice creation endpoint.
 // POST /api/public/v1/invoices  — Bearer sk_live_<key>
 // Returns { id, address, crypto_amount, checkout_url, expires_at }
+//
+// `chain` is OPTIONAL — if omitted, the customer picks their preferred
+// payment network on the hosted checkout page from the merchant's enabled
+// chains. When omitted, `address` / `crypto_amount` / `rate` are null until
+// the customer makes a selection.
 
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
-import { getNetwork } from "@/lib/chains/networks";
-import {
-  deriveBtcLikeAddress,
-  deriveEvmAddress,
-  deriveTronAddress,
-} from "@/lib/chains/derive.server";
-import { getUsdRate } from "@/lib/rates.functions";
+import { deriveInvoiceAddress } from "@/lib/invoice-derive.server";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -27,7 +26,7 @@ function json(body: unknown, status = 200, extra: Record<string, string> = {}) {
 }
 
 const Body = z.object({
-  chain: z.enum(["btc", "txc", "eth", "base", "tron", "sol", "doge", "isk", "zcu"]),
+  chain: z.enum(["btc", "txc", "eth", "base", "tron", "sol", "doge", "isk", "zcu"]).optional().nullable(),
   amount: z.number().positive().max(1_000_000),
   currency: z.string().min(3).max(8).default("USD"),
   order_id: z.string().max(128).nullable().optional(),
@@ -53,7 +52,6 @@ export const Route = createFileRoute("/api/public/v1/invoices")({
           const m = auth.match(/^Bearer\s+(sk_(?:live|test)_[A-Za-z0-9_-]+)$/);
           if (!m) return json({ error: "Missing or malformed Authorization header." }, 401);
           const fullKey = m[1];
-          // We store `prefix` (first 12 chars including 'sk_live_') and sha256 of the whole key.
           const prefix = fullKey.slice(0, 16);
           const keyHash = await sha256Hex(fullKey);
 
@@ -67,13 +65,11 @@ export const Route = createFileRoute("/api/public/v1/invoices")({
             return json({ error: "Invalid API key." }, 401);
           }
 
-          // ---- Validate body ----
           const raw = await request.json().catch(() => null);
           const parse = Body.safeParse(raw);
           if (!parse.success) return json({ error: parse.error.errors[0]?.message ?? "Invalid body" }, 400);
           const body = parse.data;
 
-          // ---- Load store + chain config ----
           const { data: store } = await supabaseAdmin
             .from("stores")
             .select("id, fiat_currency, invoice_ttl_seconds")
@@ -81,53 +77,61 @@ export const Route = createFileRoute("/api/public/v1/invoices")({
             .maybeSingle();
           if (!store) return json({ error: "Store not found." }, 404);
 
-          const { data: cfg } = await supabaseAdmin
-            .from("chain_configs")
-            .select("id, chain, xpub_or_address, xpub, next_address_index, enabled")
-            .eq("store_id", store.id)
-            .eq("chain", body.chain)
-            .maybeSingle();
-          if (!cfg || !cfg.enabled) {
-            return json({ error: `Chain '${body.chain}' is not configured for this store.` }, 400);
-          }
-
-          // ---- Derive address ----
-          const net = getNetwork(body.chain);
-          if (!net) return json({ error: "Unsupported chain." }, 400);
-          let address: string;
-          let index = cfg.next_address_index ?? 0;
-          const xpub = cfg.xpub ?? cfg.xpub_or_address;
-
-          if (net.kind === "btc-like") {
-            address = deriveBtcLikeAddress(xpub, net, index);
-          } else if (net.kind === "evm") {
-            address = deriveEvmAddress(xpub, net, index);
-          } else if (net.kind === "tron") {
-            // tron supports xpub-derived OR single static
-            address = xpub.startsWith("T") ? xpub : deriveTronAddress(xpub, index);
-            if (xpub.startsWith("T")) index = 0;
-          } else {
-            // solana — single static address
-            address = cfg.xpub_or_address;
-            index = 0;
-          }
-
-          // ---- Quote crypto amount ----
-          const baseSymbol =
-            body.chain === "base" ? "eth" :
-            body.chain === "tron" ? "trx" :
-            body.chain === "sol"  ? "sol" :
-            body.chain;
-          let rate = await getUsdRate(baseSymbol).catch(() => 0);
-          // For USD-pegged stablecoin invoices on EVM/Tron/Sol we'd ideally accept the stable
-          // directly; for now we quote the native asset. Merchants can override later.
-          if (!rate || rate <= 0) return json({ error: "Could not fetch exchange rate." }, 502);
-          const fiatAmount = body.amount;
-          const cryptoAmount = Number((fiatAmount / rate).toFixed(8));
-
-          // ---- Persist ----
           const ttl = body.expires_in_seconds ?? store.invoice_ttl_seconds ?? 900;
           const expiresAt = new Date(Date.now() + ttl * 1000).toISOString();
+          const fiatAmount = body.amount;
+          const currency = body.currency || store.fiat_currency;
+
+          // If the merchant did NOT specify a chain, create a "pending-chain"
+          // invoice and let the customer pick on the checkout page.
+          if (!body.chain) {
+            const { data: inserted, error: insErr } = await supabaseAdmin
+              .from("invoices")
+              .insert({
+                store_id: store.id,
+                chain: null,
+                fiat_amount: fiatAmount,
+                fiat_currency: currency,
+                crypto_amount: null,
+                rate: null,
+                address: null,
+                derivation_index: null,
+                address_index: null,
+                status: "pending",
+                external_order_id: body.order_id ?? null,
+                description: body.description ?? null,
+                redirect_url: body.redirect_url ?? null,
+                buyer_email: body.buyer_email ?? null,
+                expires_at: expiresAt,
+              })
+              .select("id")
+              .single();
+            if (insErr || !inserted) return json({ error: insErr?.message ?? "Insert failed." }, 500);
+
+            await supabaseAdmin.from("api_keys").update({ last_used_at: new Date().toISOString() }).eq("id", keyRow.id);
+
+            const origin = new URL(request.url).origin;
+            return json({
+              id: inserted.id,
+              address: null,
+              crypto_amount: null,
+              rate: null,
+              fiat_amount: fiatAmount,
+              currency,
+              chain: null,
+              status: "pending",
+              expires_at: expiresAt,
+              checkout_url: `${origin}/i/${inserted.id}`,
+            }, 201);
+          }
+
+          // Merchant pre-selected the chain — derive immediately.
+          let derived;
+          try {
+            derived = await deriveInvoiceAddress(store.id, body.chain, fiatAmount);
+          } catch (e) {
+            return json({ error: e instanceof Error ? e.message : "Derivation failed" }, 400);
+          }
 
           const { data: inserted, error: insErr } = await supabaseAdmin
             .from("invoices")
@@ -135,12 +139,12 @@ export const Route = createFileRoute("/api/public/v1/invoices")({
               store_id: store.id,
               chain: body.chain,
               fiat_amount: fiatAmount,
-              fiat_currency: body.currency || store.fiat_currency,
-              crypto_amount: cryptoAmount,
-              rate,
-              address,
-              derivation_index: index,
-              address_index: index,
+              fiat_currency: currency,
+              crypto_amount: derived.cryptoAmount,
+              rate: derived.rate,
+              address: derived.address,
+              derivation_index: derived.index,
+              address_index: derived.index,
               status: "pending",
               external_order_id: body.order_id ?? null,
               description: body.description ?? null,
@@ -152,34 +156,16 @@ export const Route = createFileRoute("/api/public/v1/invoices")({
             .single();
           if (insErr || !inserted) return json({ error: insErr?.message ?? "Insert failed." }, 500);
 
-          // Bump the address counter + log the derivation.
-          if (net.kind !== "solana" && !(net.kind === "tron" && xpub.startsWith("T"))) {
-            await supabaseAdmin
-              .from("chain_configs")
-              .update({ next_address_index: index + 1, next_derivation_index: index + 1 })
-              .eq("id", cfg.id);
-            await supabaseAdmin
-              .from("derived_addresses")
-              .insert({
-                chain_config_id: cfg.id,
-                store_id: store.id,
-                address,
-                address_index: index,
-              })
-              .select()
-              .maybeSingle();
-          }
-
           await supabaseAdmin.from("api_keys").update({ last_used_at: new Date().toISOString() }).eq("id", keyRow.id);
 
           const origin = new URL(request.url).origin;
           return json({
             id: inserted.id,
-            address,
-            crypto_amount: cryptoAmount,
-            rate,
+            address: derived.address,
+            crypto_amount: derived.cryptoAmount,
+            rate: derived.rate,
             fiat_amount: fiatAmount,
-            currency: body.currency || store.fiat_currency,
+            currency,
             chain: body.chain,
             status: "pending",
             expires_at: expiresAt,
