@@ -58,7 +58,6 @@ export type Database = {
       chain_configs: {
         Row: {
           chain: Database["public"]["Enums"]["chain_kind"]
-          confirmations_required: number
           created_at: string
           derivation_path: string | null
           enabled: boolean
@@ -71,11 +70,9 @@ export type Database = {
           updated_at: string
           xpub: string | null
           xpub_or_address: string
-          zero_conf_max_usd: number | null
         }
         Insert: {
           chain: Database["public"]["Enums"]["chain_kind"]
-          confirmations_required?: number
           created_at?: string
           derivation_path?: string | null
           enabled?: boolean
@@ -88,11 +85,9 @@ export type Database = {
           updated_at?: string
           xpub?: string | null
           xpub_or_address: string
-          zero_conf_max_usd?: number | null
         }
         Update: {
           chain?: Database["public"]["Enums"]["chain_kind"]
-          confirmations_required?: number
           created_at?: string
           derivation_path?: string | null
           enabled?: boolean
@@ -105,7 +100,6 @@ export type Database = {
           updated_at?: string
           xpub?: string | null
           xpub_or_address?: string
-          zero_conf_max_usd?: number | null
         }
         Relationships: [
           {
@@ -469,6 +463,7 @@ export type Database = {
       stores: {
         Row: {
           created_at: string
+          default_confirmations_required: number
           fiat_currency: string
           id: string
           invoice_ttl_seconds: number
@@ -479,6 +474,7 @@ export type Database = {
           kyc_basic_require_email: boolean
           kyc_level: Database["public"]["Enums"]["kyc_level"]
           kyc_threshold_usd: number | null
+          mempool_max_usd: number | null
           name: string
           owner_id: string
           updated_at: string
@@ -489,6 +485,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          default_confirmations_required?: number
           fiat_currency?: string
           id?: string
           invoice_ttl_seconds?: number
@@ -499,6 +496,7 @@ export type Database = {
           kyc_basic_require_email?: boolean
           kyc_level?: Database["public"]["Enums"]["kyc_level"]
           kyc_threshold_usd?: number | null
+          mempool_max_usd?: number | null
           name: string
           owner_id: string
           updated_at?: string
@@ -509,6 +507,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          default_confirmations_required?: number
           fiat_currency?: string
           id?: string
           invoice_ttl_seconds?: number
@@ -519,6 +518,7 @@ export type Database = {
           kyc_basic_require_email?: boolean
           kyc_level?: Database["public"]["Enums"]["kyc_level"]
           kyc_threshold_usd?: number | null
+          mempool_max_usd?: number | null
           name?: string
           owner_id?: string
           updated_at?: string
