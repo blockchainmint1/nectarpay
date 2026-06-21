@@ -39,9 +39,7 @@ export const Route = createFileRoute("/api/public/auth/wallet-exchange")({
         }
         const { id, token } = parsed.data;
 
-        const { supabaseAdmin } = await import(
-          "@/integrations/supabase/client.server"
-        );
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
         const { data: ch, error: chErr } = await supabaseAdmin
           .from("wallet_login_challenges")
@@ -84,7 +82,10 @@ export const Route = createFileRoute("/api/public/auth/wallet-exchange")({
           });
           if (created.error || !created.data.user) {
             console.error("[wallet-exchange] createUser failed:", created.error);
-            return Response.json({ error: "could not create user" }, { status: 500, headers: CORS });
+            return Response.json(
+              { error: "could not create user" },
+              { status: 500, headers: CORS },
+            );
           }
           userId = created.data.user.id;
           await supabaseAdmin
@@ -97,11 +98,21 @@ export const Route = createFileRoute("/api/public/auth/wallet-exchange")({
           .split(",")
           .map((s) => s.trim().toLowerCase())
           .filter(Boolean);
-        if (admins.includes(lowerAddr)) {
-          await supabaseAdmin
+        const isConfiguredAdmin = admins.includes(lowerAddr);
+        if (isConfiguredAdmin) {
+          const { error: roleErr } = await supabaseAdmin
             .from("user_roles")
             .upsert({ user_id: userId, role: "admin" }, { onConflict: "user_id,role" });
+          if (roleErr) console.error("[wallet-exchange] admin role upsert failed:", roleErr);
         }
+
+        const { data: adminRole } = await supabaseAdmin
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .eq("role", "admin")
+          .maybeSingle();
+        const isAdmin = isConfiguredAdmin || Boolean(adminRole);
 
         // 3. Update last_login + mark challenge consumed
         await Promise.all([
@@ -126,7 +137,10 @@ export const Route = createFileRoute("/api/public/auth/wallet-exchange")({
         });
         if (link.error || !link.data?.properties) {
           console.error("[wallet-exchange] generateLink failed:", link.error);
-          return Response.json({ error: "could not issue session" }, { status: 500, headers: CORS });
+          return Response.json(
+            { error: "could not issue session" },
+            { status: 500, headers: CORS },
+          );
         }
 
         return Response.json(
@@ -134,7 +148,7 @@ export const Route = createFileRoute("/api/public/auth/wallet-exchange")({
             email: synthEmail,
             token_hash: link.data.properties.hashed_token,
             wallet_address: address,
-            is_admin: admins.includes(lowerAddr),
+            is_admin: isAdmin,
           },
           { headers: CORS },
         );
