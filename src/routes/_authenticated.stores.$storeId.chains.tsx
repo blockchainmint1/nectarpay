@@ -262,8 +262,8 @@ function ChainCard({
         enabled: row.enabled,
         confirmations_required: row.confirmations_required,
         zero_conf_max_usd: zcNum,
-        qr_address_only: row.qr_address_only,
       };
+
 
       const { error } = await supabase
         .from("chain_configs")
