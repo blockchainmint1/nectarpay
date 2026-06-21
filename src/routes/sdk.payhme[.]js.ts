@@ -4,7 +4,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PAYHME_SDK_SOURCE } from "@/lib/sdk-source";
 
-export const Route = createFileRoute("/sdk/payhme[.]js")({
+export const Route = createFileRoute("/sdk/payhme.js")({
   server: {
     handlers: {
       GET: async () =>
