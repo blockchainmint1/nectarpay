@@ -26,8 +26,10 @@ import bs58check from "bs58check";
 
 // Wire the synchronous hash hooks @noble/secp256k1 v3 needs for recovery.
 // Safe to assign repeatedly; the module is a singleton.
-secp.hashes.hmacSha256 = (key: Uint8Array, msg: Uint8Array) => hmac(sha256, key, msg);
-secp.hashes.sha256 = (msg: Uint8Array) => sha256(msg);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(secp.hashes as any).hmacSha256 = (key: Uint8Array, msg: Uint8Array) => hmac(sha256, key, msg);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(secp.hashes as any).sha256 = (msg: Uint8Array) => sha256(msg);
 
 export { buildSignableMessage } from "@/lib/wallet-auth-shared";
 
