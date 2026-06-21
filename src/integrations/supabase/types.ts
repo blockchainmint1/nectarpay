@@ -914,6 +914,7 @@ export type Database = {
         Returns: boolean
       }
       is_subscription_active: { Args: { _user_id: string }; Returns: boolean }
+      next_txc_deposit_index: { Args: never; Returns: number }
       owns_store: { Args: { _store_id: string }; Returns: boolean }
       purge_expired_wallet_challenges: { Args: never; Returns: undefined }
       txc_balance: { Args: { _user_id: string }; Returns: number }
