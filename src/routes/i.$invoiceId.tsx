@@ -15,7 +15,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { getPublicInvoice } from "@/lib/checkout.functions";
+import { getPublicInvoice, selectInvoiceChain } from "@/lib/checkout.functions";
 import { ALL_NETWORKS } from "@/lib/chains/networks";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -189,6 +189,7 @@ function CheckoutPage() {
   const inv = data?.found ? data.invoice : null;
   const txs = data?.found ? data.transactions : [];
   const store = data?.found ? data.store : null;
+  const availableChains = data?.found ? data.availableChains : [];
 
   // SDK postMessage: when embedded in the payHME iframe modal, notify the parent
   // window on terminal status transitions so merchants can listen for "paid".
@@ -206,12 +207,14 @@ function CheckoutPage() {
   }, [inv, txs]);
 
   const countdown = useCountdown(inv?.expiresAt ?? null);
-  const network = inv ? (ALL_NETWORKS as Record<string, { confirmationsRequired: number }>)[inv.chain] : null;
+  const network = inv?.chain
+    ? (ALL_NETWORKS as Record<string, { confirmationsRequired: number }>)[inv.chain]
+    : null;
   const requiredConfs = network?.confirmationsRequired ?? 1;
 
   const memo = inv ? inv.id.slice(0, 8) : null;
   const uri = useMemo(
-    () => (inv ? paymentUri(inv.chain, inv.address, inv.cryptoAmount, memo) : ""),
+    () => (inv && inv.chain && inv.address ? paymentUri(inv.chain, inv.address, inv.cryptoAmount, memo) : ""),
     [inv, memo],
   );
 
