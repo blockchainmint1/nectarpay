@@ -272,7 +272,15 @@ export const saveStoreKycSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => SaveSettingsInput.parse(d))
   .handler(async ({ data, context }) => {
-    const update: Record<string, unknown> = {
+    const update: {
+      kyc_level: typeof data.kycLevel;
+      kyc_threshold_usd: number | null;
+      kyc_basic_checks: string[];
+      kyc_basic_require_email: boolean;
+      kyc_advanced_provider: typeof data.kycAdvancedProvider;
+      kyc_advanced_api_key?: string | null;
+      kyc_advanced_app_token?: string | null;
+    } = {
       kyc_level: data.kycLevel,
       kyc_threshold_usd: data.kycThresholdUsd,
       kyc_basic_checks: data.kycBasicChecks,
