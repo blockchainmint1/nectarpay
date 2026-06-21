@@ -89,6 +89,8 @@ type Row = {
   xpub_or_address: string;
   enabled: boolean;
   confirmations_required: number;
+  zero_conf_max_usd: string; // free text in the form; "" = disabled
+  qr_address_only: boolean;
 };
 
 function emptyRow(chain: ChainKey): Row {
@@ -99,6 +101,8 @@ function emptyRow(chain: ChainKey): Row {
     xpub_or_address: "",
     enabled: false,
     confirmations_required: 1,
+    zero_conf_max_usd: "",
+    qr_address_only: false,
   };
 }
 
@@ -110,7 +114,7 @@ function ChainsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("chain_configs")
-        .select("id, chain, xpub, xpub_or_address, enabled, confirmations_required")
+        .select("id, chain, xpub, xpub_or_address, enabled, confirmations_required, zero_conf_max_usd, qr_address_only")
         .eq("store_id", storeId);
       if (error) throw error;
       return data ?? [];
@@ -136,10 +140,13 @@ function ChainsPage() {
         xpub_or_address: r.xpub_or_address ?? "",
         enabled: r.enabled,
         confirmations_required: r.confirmations_required ?? 1,
+        zero_conf_max_usd: r.zero_conf_max_usd == null ? "" : String(r.zero_conf_max_usd),
+        qr_address_only: !!r.qr_address_only,
       };
     }
     setRows(next as Record<ChainKey, Row>);
   }, [data]);
+
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 md:px-8">
