@@ -199,6 +199,11 @@ function ChainCard({
   onSaved: () => void;
 }) {
   const [saving, setSaving] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const persisted = !!row.id;
+  const showInput = !persisted || editing;
+
 
   const mirrors = meta.inputKind === "mirrors-eth";
   const value = meta.inputKind === "xpub" ? row.xpub ?? "" : row.xpub_or_address;
