@@ -45,7 +45,11 @@ export type BillingOverview = {
   free_tier_progress: { used: number; limit: number; unit: string } | null;
 };
 
-const TXC_USD_RATE = 0.05; // TODO: replace with rates_cache lookup once oracle is wired
+async function getTxcRate(): Promise<number> {
+  const { getUsdRate } = await import("./rates.functions");
+  const r = await getUsdRate("TXC");
+  return r > 0 ? r : 0.1; // fallback if rates haven't polled yet
+}
 
 function periodStart(d = new Date()): string {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString();
