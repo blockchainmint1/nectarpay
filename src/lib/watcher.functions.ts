@@ -223,82 +223,86 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             last_error: null,
           })
           .eq("chain", chain);
-      } else if (chain === "eth" || chain === "base") {
-        const net = chain === "eth" ? ETH_NETWORK : BASE_NETWORK;
+      } else if (chain === "eth") {
+        // One EVM xpub covers Ethereum, Base, BSC, etc. — same derivation, same addresses.
+        // Scan every EVM network we support against the same derived address set.
         const key = process.env.ALCHEMY_API_KEY;
         if (!key) throw new Error("ALCHEMY_API_KEY not configured");
-        const tip = await getBlockNumber(net, key);
 
+        // Derive addresses once (EVM derivation is network-agnostic).
         for (const cfg of configList) {
           if (!cfg.xpub) continue;
           await ensureAddresses(
             cfg.id,
             cfg.store_id,
             cfg.xpub,
-            (i) => deriveEvmAddress(cfg.xpub!, net, i),
+            (i) => deriveEvmAddress(cfg.xpub!, ETH_NETWORK, i),
             0,
             (cfg.next_address_index ?? 0) + ADDRESS_WINDOW,
           );
         }
 
-        const { data: cursor } = await supabaseAdmin
-          .from("watcher_cursors")
-          .select("last_height")
-          .eq("chain", chain)
-          .single();
-        const fromBlock = Math.max(0, Number(cursor?.last_height ?? 0) - 5); // small replay margin
-
         const { data: addrs } = await supabaseAdmin
           .from("derived_addresses")
           .select("address")
-          .in(
-            "chain_config_id",
-            configList.map((c) => c.id),
-          );
+          .in("chain_config_id", configList.map((c) => c.id));
         r.addresses = addrs?.length ?? 0;
+        const addrList = (addrs ?? []).map((a) => a.address);
 
-        const transfers = await getTransfersTo(
-          net,
-          key,
-          (addrs ?? []).map((a) => a.address),
-          fromBlock,
-        );
-        r.credits = transfers.length;
+        for (const net of EVM_NETWORKS) {
+          try {
+            const tip = await getBlockNumber(net, key);
+            const { data: cursor } = await supabaseAdmin
+              .from("watcher_cursors")
+              .select("last_height")
+              .eq("chain", net.symbol)
+              .maybeSingle();
+            const fromBlock = Math.max(0, Number(cursor?.last_height ?? 0) - 5);
 
-        for (const t of transfers) {
-          const { data: inv } = await supabaseAdmin
-            .from("invoices")
-            .select("id, fiat_amount, status")
-            .eq("address", t.to.toLowerCase())
-            .eq("chain", chain)
-            .maybeSingle();
-          if (!inv) continue;
-          const rawAmount = BigInt(t.rawValue);
-          const human = Number(rawAmount) / 10 ** t.decimals;
-          const usd = t.isNative ? human * (await getUsdRate(chain)) : human; // stables ~ $1
-          const confirmations = tip - t.blockNum + 1;
-          const isConfirmed = confirmations >= net.confirmationsRequired;
-          await recordTransaction(
-            inv.id,
-            t.txHash,
-            human,
-            confirmations,
-            t.blockNum,
-            isConfirmed,
-          );
-          const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
-          if (settled.changed) r.invoicesUpdated++;
+            const transfers = await getTransfersTo(net, key, addrList, fromBlock);
+            r.credits += transfers.length;
+
+            for (const t of transfers) {
+              // Invoice may be issued on this specific EVM chain (eth/base/bsc),
+              // or on "eth" as the catch-all if the merchant only sells in ETH terms.
+              const { data: inv } = await supabaseAdmin
+                .from("invoices")
+                .select("id, fiat_amount, status, chain")
+                .eq("address", t.to.toLowerCase())
+                .in("chain", [net.symbol, "eth"])
+                .maybeSingle();
+              if (!inv) continue;
+              const rawAmount = BigInt(t.rawValue);
+              const human = Number(rawAmount) / 10 ** t.decimals;
+              const usd = t.isNative ? human * (await getUsdRate(net.symbol)) : human;
+              const confirmations = tip - t.blockNum + 1;
+              const isConfirmed = confirmations >= net.confirmationsRequired;
+              await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed);
+              const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
+              if (settled.changed) r.invoicesUpdated++;
+            }
+
+            await supabaseAdmin
+              .from("watcher_cursors")
+              .update({
+                last_height: tip,
+                last_run_at: new Date().toISOString(),
+                last_status: "ok",
+                last_error: null,
+              })
+              .eq("chain", net.symbol);
+          } catch (e) {
+            console.error(`EVM scan failed on ${net.symbol}`, e);
+            await supabaseAdmin
+              .from("watcher_cursors")
+              .update({
+                last_run_at: new Date().toISOString(),
+                last_status: "error",
+                last_error: (e as Error).message,
+              })
+              .eq("chain", net.symbol);
+          }
         }
-
-        await supabaseAdmin
-          .from("watcher_cursors")
-          .update({
-            last_height: tip,
-            last_run_at: new Date().toISOString(),
-            last_status: "ok",
-            last_error: null,
-          })
-          .eq("chain", chain);
       } else if (chain === "tron") {
         const net = TRON_NETWORK;
         const key = process.env.ALCHEMY_API_KEY;
