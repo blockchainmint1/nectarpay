@@ -7,6 +7,7 @@ export type ChainKind =
   | "txc"
   | "eth"
   | "base"
+  | "bsc"
   | "doge"
   | "isk"
   | "zcu"
