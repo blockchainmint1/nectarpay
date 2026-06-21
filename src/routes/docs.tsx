@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
@@ -92,6 +93,33 @@ const expected = crypto
 if (!crypto.timingSafeEqual(Buffer.from(v1), Buffer.from(expected))) reject();`}</Pre>
         </Section>
 
+        <Section title="Drop-in JS button">
+          <p>
+            One <code className="font-mono">&lt;script&gt;</code> tag and a button —
+            crypto checkout opens in a modal, no redirect, works on any site.
+          </p>
+          <Pre>{`<script src="https://pay.honest.money/sdk/payhme.js" defer></script>
+
+<button
+  data-payhme
+  data-api-key="sk_live_..."
+  data-chain="btc"
+  data-amount="49.00"
+  data-currency="USD"
+  data-order-id="ORDER_1234"
+>Pay $49 with Bitcoin</button>`}</Pre>
+          <p>Or call it programmatically:</p>
+          <Pre>{`PayHME.checkout({
+  apiKey: "sk_live_...",
+  chain: "base", amount: 49, currency: "USD",
+  orderId: "ORDER_1234",
+}).then(result => {
+  // result.status: "paid" | "closed" | "expired"
+  if (result.status === "paid") console.log("Got it:", result.tx);
+});`}</Pre>
+          <LiveDemo />
+        </Section>
+
         <Section title="WooCommerce">
           <p>
             See the <Link to="/integrations/woocommerce" className="text-primary underline">
@@ -120,5 +148,58 @@ function Pre({ children }: { children: React.ReactNode }) {
     <pre className="overflow-x-auto rounded-lg border border-border bg-card/60 p-4 text-xs leading-relaxed text-foreground">
       <code>{children}</code>
     </pre>
+  );
+}
+
+// Loads the real SDK and renders a working button. Uses the merchant's most-recent
+// pending invoice via the public demo path so visitors see the real checkout UI.
+function LiveDemo() {
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    // Inject the SDK once.
+    if (!document.getElementById("payhme-sdk")) {
+      const s = document.createElement("script");
+      s.id = "payhme-sdk";
+      s.src = "/sdk/payhme.js";
+      s.defer = true;
+      document.head.appendChild(s);
+    }
+    // Re-scan in case the SDK loaded before our button mounted.
+    const t = setInterval(() => {
+      const PayHME = (window as unknown as { PayHME?: { scan: () => void } }).PayHME;
+      if (PayHME) { PayHME.scan(); clearInterval(t); }
+    }, 200);
+    const onResult = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      console.log("[payhme demo] result:", detail);
+    };
+    document.addEventListener("payhme:result", onResult);
+    return () => { clearInterval(t); document.removeEventListener("payhme:result", onResult); };
+  }, []);
+
+  return (
+    <div className="mt-4 rounded-lg border border-border bg-card/60 p-5">
+      <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        Live demo
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Click below — this is the actual SDK, opening a real (test-mode) checkout in a modal.
+        No payment will be processed; close the modal at any time.
+      </p>
+      <div className="mt-3">
+        <button
+          data-payhme
+          data-invoice-id="demo"
+          data-chain="btc"
+          data-amount="1"
+          data-currency="USD"
+        >
+          Try the payHME button
+        </button>
+      </div>
+      <p className="mt-3 text-[11px] text-muted-foreground">
+        Tip: open your browser console to see the <code className="font-mono">payhme:result</code> event payload when the modal closes.
+      </p>
+    </div>
   );
 }
