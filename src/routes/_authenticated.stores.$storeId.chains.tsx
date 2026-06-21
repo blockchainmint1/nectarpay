@@ -37,7 +37,7 @@ type ChainMeta = {
   key: ChainKey;
   name: string;
   // What value the merchant provides.
-  inputKind: "xpub" | "xpub-or-address" | "address" | "mirrors-eth";
+  inputKind: "xpub" | "xpub-or-address" | "address";
   placeholder?: string;
   hint: string;
 };
@@ -59,16 +59,10 @@ const CHAINS: ChainMeta[] = [
   },
   {
     key: "eth",
-    name: "Ethereum (ETH)",
+    name: "EVM (Ethereum, Base, BSC, etc.)",
     inputKind: "xpub",
     placeholder: "xpub6C… at m/44'/60'/0'",
-    hint: "Account-level xpub. Each invoice gets a fresh derived address (m/0/n). Treasury sweeping comes later — for now funds sit on the derived addresses.",
-  },
-  {
-    key: "base",
-    name: "Base",
-    inputKind: "mirrors-eth",
-    hint: "Base is EVM and shares ETH's derivation path — we reuse your ETH xpub automatically. Just toggle it on.",
+    hint: "One account-level xpub covers every EVM chain — same derivation path (m/0/n), same addresses. Enable the chains you accept; we watch them all against this xpub.",
   },
   {
     key: "tron",
@@ -85,6 +79,7 @@ const CHAINS: ChainMeta[] = [
     hint: "Single static receive address. Ed25519 + rent-exempt accounts make per-invoice derivation impractical; reconcile via order_id.",
   },
 ];
+
 
 
 type Row = {
@@ -177,7 +172,6 @@ function ChainsPage() {
               meta={meta}
               row={rows[meta.key]}
               storeId={storeId}
-              ethXpub={rows.eth?.xpub ?? null}
               onChange={(r) => setRows((prev) => ({ ...prev, [meta.key]: r }))}
               onSaved={() => refetch()}
             />
@@ -193,16 +187,15 @@ function ChainCard({
   meta,
   row,
   storeId,
-  ethXpub,
   onChange,
   onSaved,
 }: {
   meta: ChainMeta;
   row: Row;
   storeId: string;
-  ethXpub: string | null;
   onChange: (r: Row) => void;
   onSaved: () => void;
+
 }) {
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -210,12 +203,9 @@ function ChainCard({
   const persisted = !!row.id;
   const showInput = !persisted || editing;
 
-
-  const mirrors = meta.inputKind === "mirrors-eth";
   const value = meta.inputKind === "xpub" ? row.xpub ?? "" : row.xpub_or_address;
 
   const validation = useMemo(() => {
-    if (mirrors) return { ok: true, msg: "" };
     const v = value.trim();
     if (!v) return { ok: false, msg: "" };
     if (meta.inputKind === "xpub") {
@@ -229,33 +219,25 @@ function ChainCard({
     // xpub-or-address (tron)
     if (isXpubLike(v) || isTronAddressLike(v)) return { ok: true, msg: "" };
     return { ok: false, msg: "Expected an xpub or a T-address." };
-  }, [value, meta.inputKind, mirrors]);
+  }, [value, meta.inputKind]);
 
   function setValue(v: string) {
     if (meta.inputKind === "xpub") {
       onChange({ ...row, xpub: v, xpub_or_address: v });
-    } else if (meta.inputKind === "xpub-or-address" || meta.inputKind === "address") {
+    } else {
       onChange({ ...row, xpub_or_address: v, xpub: meta.inputKind === "xpub-or-address" && isXpubLike(v.trim()) ? v : null });
     }
   }
 
   async function onSave() {
-    let v = value.trim();
-    if (mirrors) {
-      if (!ethXpub) {
-        toast.error("Set your Ethereum xpub first — Base reuses it.");
-        return;
-      }
-      v = ethXpub;
-    } else {
-      if (!v) {
-        toast.error("Enter an xpub or address first.");
-        return;
-      }
-      if (!validation.ok) {
-        toast.error(validation.msg || "Invalid value.");
-        return;
-      }
+    const v = value.trim();
+    if (!v) {
+      toast.error("Enter an xpub or address first.");
+      return;
+    }
+    if (!validation.ok) {
+      toast.error(validation.msg || "Invalid value.");
+      return;
     }
     setSaving(true);
     try {
@@ -278,7 +260,6 @@ function ChainCard({
       toast.success(`${meta.name} saved.`);
       setEditing(false);
       onSaved();
-
     } catch (e) {
       console.error("save chain failed", e);
       toast.error(e instanceof Error ? e.message : "Save failed.");
@@ -308,13 +289,8 @@ function ChainCard({
       </div>
 
       <div className="mt-4 grid gap-3 md:grid-cols-[1fr_120px_auto] md:items-end">
-        {mirrors ? (
-          <div className="text-xs text-muted-foreground">
-            {ethXpub
-              ? "Using your Ethereum xpub. Each invoice gets a fresh derived address."
-              : "No Ethereum xpub set yet. Add one above, then enable Base."}
-          </div>
-        ) : showInput ? (
+        {showInput ? (
+
           <div>
             <Label htmlFor={`val-${meta.key}`} className="text-xs">
               {meta.inputKind === "address"
@@ -383,7 +359,7 @@ function ChainCard({
             }
           />
         </div>
-        <Button onClick={onSave} disabled={saving || (mirrors && !ethXpub)}>
+        <Button onClick={onSave} disabled={saving}>
           <Save className="mr-2 h-4 w-4" />
           {saving ? "Saving…" : "Save"}
         </Button>
