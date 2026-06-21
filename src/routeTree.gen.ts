@@ -30,6 +30,7 @@ import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/publi
 import { Route as ApiPublicCronWatcherRouteImport } from './routes/api/public/cron/watcher'
 import { Route as ApiPublicCronRatesRouteImport } from './routes/api/public/cron/rates'
 import { Route as ApiPublicCronBillingRouteImport } from './routes/api/public/cron/billing'
+import { Route as AuthenticatedStoresStoreIdKycRouteImport } from './routes/_authenticated.stores.$storeId.kyc'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -138,6 +139,12 @@ const ApiPublicCronBillingRoute = ApiPublicCronBillingRouteImport.update({
   path: '/api/public/cron/billing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedStoresStoreIdKycRoute =
+  AuthenticatedStoresStoreIdKycRouteImport.update({
+    id: '/kyc',
+    path: '/kyc',
+    getParentRoute: () => AuthenticatedStoresStoreIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -154,8 +161,9 @@ export interface FileRoutesByFullPath {
   '/stores': typeof AuthenticatedStoresRouteWithChildren
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
-  '/stores/$storeId': typeof AuthenticatedStoresStoreIdRoute
+  '/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/stores/new': typeof AuthenticatedStoresNewRoute
+  '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/api/public/cron/billing': typeof ApiPublicCronBillingRoute
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
@@ -176,8 +184,9 @@ export interface FileRoutesByTo {
   '/stores': typeof AuthenticatedStoresRouteWithChildren
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
-  '/stores/$storeId': typeof AuthenticatedStoresStoreIdRoute
+  '/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/stores/new': typeof AuthenticatedStoresNewRoute
+  '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/api/public/cron/billing': typeof ApiPublicCronBillingRoute
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
@@ -200,8 +209,9 @@ export interface FileRoutesById {
   '/_authenticated/stores': typeof AuthenticatedStoresRouteWithChildren
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
-  '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRoute
+  '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/_authenticated/stores/new': typeof AuthenticatedStoresNewRoute
+  '/_authenticated/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/api/public/cron/billing': typeof ApiPublicCronBillingRoute
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
@@ -226,6 +236,7 @@ export interface FileRouteTypes {
     | '/integrations/woocommerce'
     | '/stores/$storeId'
     | '/stores/new'
+    | '/stores/$storeId/kyc'
     | '/api/public/cron/billing'
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
@@ -248,6 +259,7 @@ export interface FileRouteTypes {
     | '/integrations/woocommerce'
     | '/stores/$storeId'
     | '/stores/new'
+    | '/stores/$storeId/kyc'
     | '/api/public/cron/billing'
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
@@ -271,6 +283,7 @@ export interface FileRouteTypes {
     | '/integrations/woocommerce'
     | '/_authenticated/stores/$storeId'
     | '/_authenticated/stores/new'
+    | '/_authenticated/stores/$storeId/kyc'
     | '/api/public/cron/billing'
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
@@ -443,16 +456,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronBillingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/stores/$storeId/kyc': {
+      id: '/_authenticated/stores/$storeId/kyc'
+      path: '/kyc'
+      fullPath: '/stores/$storeId/kyc'
+      preLoaderRoute: typeof AuthenticatedStoresStoreIdKycRouteImport
+      parentRoute: typeof AuthenticatedStoresStoreIdRoute
+    }
   }
 }
 
+interface AuthenticatedStoresStoreIdRouteChildren {
+  AuthenticatedStoresStoreIdKycRoute: typeof AuthenticatedStoresStoreIdKycRoute
+}
+
+const AuthenticatedStoresStoreIdRouteChildren: AuthenticatedStoresStoreIdRouteChildren =
+  {
+    AuthenticatedStoresStoreIdKycRoute: AuthenticatedStoresStoreIdKycRoute,
+  }
+
+const AuthenticatedStoresStoreIdRouteWithChildren =
+  AuthenticatedStoresStoreIdRoute._addFileChildren(
+    AuthenticatedStoresStoreIdRouteChildren,
+  )
+
 interface AuthenticatedStoresRouteChildren {
-  AuthenticatedStoresStoreIdRoute: typeof AuthenticatedStoresStoreIdRoute
+  AuthenticatedStoresStoreIdRoute: typeof AuthenticatedStoresStoreIdRouteWithChildren
   AuthenticatedStoresNewRoute: typeof AuthenticatedStoresNewRoute
 }
 
 const AuthenticatedStoresRouteChildren: AuthenticatedStoresRouteChildren = {
-  AuthenticatedStoresStoreIdRoute: AuthenticatedStoresStoreIdRoute,
+  AuthenticatedStoresStoreIdRoute: AuthenticatedStoresStoreIdRouteWithChildren,
   AuthenticatedStoresNewRoute: AuthenticatedStoresNewRoute,
 }
 

@@ -73,7 +73,7 @@ const BasicInput = z.object({
 export const runBasicKyc = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => BasicInput.parse(d))
   .handler(async ({ data, context }) => {
-    const headers = (context as { request?: Request })?.request?.headers;
+    const headers = (context as unknown as { request?: Request })?.request?.headers;
     const ip =
       headers?.get("cf-connecting-ip") ||
       headers?.get("x-forwarded-for")?.split(",")[0]?.trim() ||
