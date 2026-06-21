@@ -64,14 +64,37 @@ async function ensureDepositAddress(userId: string) {
     .maybeSingle();
   if (existing) return existing;
 
-  // Deterministic placeholder address derived from user_id.
-  // TODO: replace with real TXC HD-derived address from platform xpub.
-  const hash = createHash("sha256").update(userId).digest("hex").slice(0, 33);
-  const address = `TXC1${hash}`;
+  // Derive a unique TXC address per user from the platform xpub at m/0/<seq>.
+  const xpub = process.env.TXC_PLATFORM_XPUB;
+  if (!xpub) throw new Error("TXC_PLATFORM_XPUB is not configured");
+  const { deriveBtcLikeAddress } = await import("./chains/derive.server");
+  const { TXC_NETWORK } = await import("./chains/networks");
+
+  const { data: seqRow, error: seqErr } = await supabaseAdmin
+    .rpc("nextval" as never, { _seq: "public.txc_deposit_address_index_seq" } as never)
+    // Fallback: call via raw SQL since nextval isn't an exposed RPC by default.
+    .single<{ nextval: number }>()
+    .then((r) => r, () => ({ data: null, error: { message: "fallback" } as { message: string } }));
+
+  let index: number;
+  if (!seqErr && seqRow && typeof (seqRow as { nextval: number }).nextval === "number") {
+    index = (seqRow as { nextval: number }).nextval;
+  } else {
+    // Raw SQL fallback
+    const { data: maxRow } = await supabaseAdmin
+      .from("txc_deposit_addresses")
+      .select("address_index")
+      .order("address_index", { ascending: false, nullsFirst: false })
+      .limit(1)
+      .maybeSingle();
+    index = ((maxRow?.address_index as number | null) ?? -1) + 1;
+  }
+
+  const address = deriveBtcLikeAddress(xpub, TXC_NETWORK, index);
   const memo = userId.slice(0, 8);
   const { data, error } = await supabaseAdmin
     .from("txc_deposit_addresses")
-    .insert({ user_id: userId, address, memo })
+    .insert({ user_id: userId, address, memo, address_index: index })
     .select("*")
     .single();
   if (error) throw error;
