@@ -80,17 +80,17 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
       .eq("invoice_id", inv.id)
       .order("first_seen_at", { ascending: false });
 
-    // When chain hasn't been selected yet, surface the merchant's enabled
-    // chains so the customer can choose on the hosted checkout.
+    // Surface the merchant's enabled chains so the customer can switch
+    // networks before paying (even when a chain was pre-selected by the
+    // merchant or by an earlier customer click).
     let availableChains: string[] = [];
-    if (!inv.chain) {
-      const { data: cfgs } = await supabaseAdmin
-        .from("chain_configs")
-        .select("chain")
-        .eq("store_id", inv.store_id)
-        .eq("enabled", true);
-      availableChains = (cfgs ?? []).map((c) => c.chain as string);
-    }
+    const { data: cfgs } = await supabaseAdmin
+      .from("chain_configs")
+      .select("chain")
+      .eq("store_id", inv.store_id)
+      .eq("enabled", true);
+    availableChains = (cfgs ?? []).map((c) => c.chain as string);
+
 
     return {
       found: true as const,
@@ -142,10 +142,23 @@ export const selectInvoiceChain = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!inv) throw new Error("Invoice not found.");
-    if (inv.chain) throw new Error("Invoice already has a chain selected.");
     if (inv.status !== "pending") throw new Error("Invoice is no longer pending.");
     if (new Date(inv.expires_at).getTime() < Date.now()) {
       throw new Error("Invoice has expired.");
+    }
+
+    // Allow switching networks before any on-chain payment has been seen.
+    if (inv.chain) {
+      const { count } = await supabaseAdmin
+        .from("transactions")
+        .select("id", { count: "exact", head: true })
+        .eq("invoice_id", inv.id);
+      if ((count ?? 0) > 0) {
+        throw new Error("A payment has already been detected — chain can't be changed.");
+      }
+      if (inv.chain === data.chain) {
+        return { ok: true as const };
+      }
     }
 
     const derived = await deriveInvoiceAddress(inv.store_id, data.chain, Number(inv.fiat_amount));
@@ -165,3 +178,44 @@ export const selectInvoiceChain = createServerFn({ method: "POST" })
 
     return { ok: true as const };
   });
+
+// Reset chain to null so the customer can re-pick. Only allowed while pending
+// and before any transaction has been observed.
+const ClearSchema = z.object({ id: z.string().min(4).max(64) });
+export const clearInvoiceChain = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => ClearSchema.parse(d))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: inv, error } = await supabaseAdmin
+      .from("invoices")
+      .select("id, status, expires_at")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!inv) throw new Error("Invoice not found.");
+    if (inv.status !== "pending") throw new Error("Invoice is no longer pending.");
+    if (new Date(inv.expires_at).getTime() < Date.now()) {
+      throw new Error("Invoice has expired.");
+    }
+    const { count } = await supabaseAdmin
+      .from("transactions")
+      .select("id", { count: "exact", head: true })
+      .eq("invoice_id", inv.id);
+    if ((count ?? 0) > 0) {
+      throw new Error("A payment has already been detected — chain can't be changed.");
+    }
+    const { error: updErr } = await supabaseAdmin
+      .from("invoices")
+      .update({
+        chain: null,
+        address: null,
+        crypto_amount: null,
+        rate: null,
+        derivation_index: null,
+        address_index: null,
+      })
+      .eq("id", inv.id);
+    if (updErr) throw new Error(updErr.message);
+    return { ok: true as const };
+  });
+

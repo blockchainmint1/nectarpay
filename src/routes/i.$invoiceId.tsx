@@ -15,7 +15,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { getPublicInvoice, selectInvoiceChain } from "@/lib/checkout.functions";
+import { getPublicInvoice, selectInvoiceChain, clearInvoiceChain } from "@/lib/checkout.functions";
 import { ALL_NETWORKS } from "@/lib/chains/networks";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -314,9 +314,12 @@ function CheckoutPage() {
                     countdown={countdown}
                     txs={txs}
                     requiredConfs={requiredConfs}
+                    availableChains={availableChains}
+                    canSwitchChain={inv.status === "pending" && txs.length === 0}
                   />
 
                 )}
+
             </section>
 
             {/* footer trust strip */}
@@ -370,6 +373,8 @@ function PayingFrame({
   countdown,
   txs,
   requiredConfs,
+  availableChains,
+  canSwitchChain,
 }: {
   inv: Invoice;
   memo: string | null;
@@ -377,10 +382,28 @@ function PayingFrame({
   countdown: ReturnType<typeof useCountdown>;
   txs: Tx[];
   requiredConfs: number;
+  availableChains: string[];
+  canSwitchChain: boolean;
 }) {
   const isDetected = inv.status === "detected" || inv.status === "underpaid";
   const latestTx = txs[0];
   const progress = latestTx ? Math.min(100, (latestTx.confirmations / requiredConfs) * 100) : 0;
+  const clearChain = useServerFn(clearInvoiceChain);
+  const [switching, setSwitching] = useState(false);
+
+  const otherChains = availableChains.filter((c) => c !== inv.chain);
+  const showSwitch = canSwitchChain && otherChains.length > 0;
+
+  async function onSwitch() {
+    setSwitching(true);
+    try {
+      await clearChain({ data: { id: inv.id } });
+      // Polling query will refetch and the page will switch to ChainPickerFrame.
+    } catch (e) {
+      setSwitching(false);
+      alert(e instanceof Error ? e.message : "Could not switch chain.");
+    }
+  }
 
   // Customer-side QR format toggle. Some wallets can't parse the chain URI
   // (e.g. `texitcoin:…?amount=…`) and need the bare address instead. Persisted
@@ -397,6 +420,7 @@ function PayingFrame({
   const uri = addressOnlyQr
     ? inv.address
     : paymentUri(inv.chain, inv.address, inv.cryptoAmount, memo);
+
 
 
   return (
@@ -516,7 +540,19 @@ function PayingFrame({
             won't scan — it'll get just the address, and you enter the chain &amp; amount yourself.
           </span>
         </label>
+
+        {showSwitch && (
+          <button
+            type="button"
+            onClick={onSwitch}
+            disabled={switching}
+            className="mt-1 text-[11px] font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline disabled:opacity-50"
+          >
+            {switching ? "Switching…" : `Pay with a different network (${otherChains.length} available)`}
+          </button>
+        )}
       </div>
+
 
     </div>
   );
