@@ -387,7 +387,8 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           r.credits += credits.length;
           for (const c of credits) {
             // Match by memo (invoice id prefix) within this store, or fall back to single open invoice on the address.
-            let inv: { id: string; fiat_amount: number; status: string } | null = null;
+            type InvMatch = { id: string; fiat_amount: number; status: string };
+            let inv: InvMatch | null = null;
             if (c.memo) {
               const prefix = c.memo.trim().slice(0, 8);
               const { data } = await supabaseAdmin
