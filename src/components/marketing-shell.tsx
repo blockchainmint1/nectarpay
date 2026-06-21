@@ -20,6 +20,7 @@ export function MarketingNav() {
           <Link to="/integrations/woocommerce" className="hover:text-foreground">WooCommerce</Link>
         </nav>
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           {loading ? null : user ? (
             <Button asChild size="sm">
               <Link to="/dashboard">Dashboard</Link>
