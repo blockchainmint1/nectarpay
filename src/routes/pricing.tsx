@@ -58,7 +58,7 @@ function PricingPage() {
               price="$19"
               priceSuffix="/mo"
               tagline="For growing stores. Higher limits."
-              cta="Choose Cheap"
+              cta="Be Cheap"
               highlight
               features={[
                 "Everything in Free",
