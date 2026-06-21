@@ -103,7 +103,7 @@ async function settleInvoice(
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
-    .select("id, status, store_id, chain, address, fiat_amount, fiat_currency, order_id, stores(owner_id, webhook_url, webhook_secret)")
+    .select("id, status, store_id, chain, address, fiat_amount, fiat_currency, external_order_id, stores(owner_id, webhook_url, webhook_secret)")
     .eq("id", invoiceId)
     .single();
   if (!inv || ["confirmed", "expired", "cancelled"].includes(inv.status)) {
