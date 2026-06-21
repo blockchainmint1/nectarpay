@@ -3,6 +3,7 @@
 export const WALLET_DEEP_LINK_SCHEME = "payhme";
 export const WALLET_CHALLENGE_TTL_SECONDS = 300; // 5 minutes
 export const WALLET_POLL_INTERVAL_MS = 2000;
+const WALLET_AUTH_PUBLIC_ORIGIN = "https://pay.honest.money";
 
 /**
  * Human-readable, SIWE-flavored message the wallet displays and signs verbatim.
@@ -36,17 +37,115 @@ export function base64UrlEncode(input: string): string {
   return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
+function firstHeaderValue(value: string | null): string | null {
+  return value?.split(",")[0]?.trim().replace(/^"|"$/g, "") || null;
+}
+
+function forwardedHost(headers: Headers): string | null {
+  const forwarded = firstHeaderValue(headers.get("forwarded"));
+  const match = forwarded?.match(/(?:^|;)\s*host=([^;]+)/i);
+  return match?.[1]?.trim().replace(/^"|"$/g, "") || null;
+}
+
+function hostnameFromHost(host: string): string {
+  try {
+    return new URL(`https://${host}`).hostname;
+  } catch {
+    return host.split(":")[0] || host;
+  }
+}
+
+function isLocalHostname(hostname: string): boolean {
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "0.0.0.0";
+}
+
+function isLovablePreviewHostname(hostname: string): boolean {
+  return hostname.endsWith(".lovableproject.com") || hostname.endsWith(".lovable.app");
+}
+
+function publicOrPreferredOrigin(origin: string): string {
+  try {
+    const parsed = new URL(origin);
+    if (isLocalHostname(parsed.hostname) || isLovablePreviewHostname(parsed.hostname)) {
+      return WALLET_AUTH_PUBLIC_ORIGIN;
+    }
+    return parsed.origin;
+  } catch {
+    return origin;
+  }
+}
+
+export function publicOriginFromRequest(request: Request): string {
+  const url = new URL(request.url);
+  const origin = request.headers.get("origin");
+  if (origin) {
+    try {
+      const parsed = new URL(origin);
+      if (!isLocalHostname(parsed.hostname)) return publicOrPreferredOrigin(parsed.origin);
+    } catch {
+      // Ignore malformed origin headers and fall through.
+    }
+  }
+
+  const referer = request.headers.get("referer");
+  if (referer) {
+    try {
+      const parsed = new URL(referer);
+      if (!isLocalHostname(parsed.hostname)) return publicOrPreferredOrigin(parsed.origin);
+    } catch {
+      // Ignore malformed referer headers and fall through.
+    }
+  }
+
+  const host =
+    forwardedHost(request.headers) ??
+    firstHeaderValue(request.headers.get("x-forwarded-host")) ??
+    firstHeaderValue(request.headers.get("host"));
+  if (host) {
+    const hostname = hostnameFromHost(host);
+    if (!isLocalHostname(hostname)) {
+      const proto = firstHeaderValue(request.headers.get("x-forwarded-proto")) ?? "https";
+      return publicOrPreferredOrigin(`${proto}://${host}`);
+    }
+  }
+
+  return publicOrPreferredOrigin(url.origin);
+}
+
+export function authDomainFromRequest(request: Request): string {
+  const url = new URL(request.url);
+  const queryDomain = url.searchParams.get("domain");
+  if (queryDomain && !isLocalHostname(queryDomain)) return queryDomain;
+
+  try {
+    return new URL(publicOriginFromRequest(request)).hostname;
+  } catch {
+    // Fall through to raw host parsing.
+  }
+
+  const host =
+    forwardedHost(request.headers) ??
+    firstHeaderValue(request.headers.get("x-forwarded-host")) ??
+    firstHeaderValue(request.headers.get("host")) ??
+    url.host;
+
+  return hostnameFromHost(host);
+}
+
 export function buildDeepLink(opts: {
   challengeId: string;
   nonce: string;
   origin: string;
   message: string;
 }): string {
-  const cb = `${opts.origin}/api/public/auth/wallet-callback`;
+  const originUrl = new URL(opts.origin);
+  const cbUrl = new URL("/api/public/auth/wallet-callback", originUrl);
+  cbUrl.searchParams.set("domain", originUrl.hostname);
   const params = new URLSearchParams({
     id: opts.challengeId,
     nonce: opts.nonce,
-    cb,
+    cb: cbUrl.toString(),
+    from: originUrl.hostname,
   });
   return `${WALLET_DEEP_LINK_SCHEME}://login?${params.toString()}`;
 }

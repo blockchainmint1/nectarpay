@@ -84,7 +84,7 @@ function AuthPage() {
         type: "svg",
         margin: 1,
         width: 280,
-        color: { dark: "#ffffff", light: "#00000000" },
+        color: { dark: "#020617", light: "#ffffff" },
       });
       if (cancelled.current) return;
       setQrSvg(svg);
@@ -238,7 +238,7 @@ function AuthPage() {
             ) : (
               <>
                 <div
-                  className="rounded-lg border border-border bg-card p-4"
+                  className="rounded-lg border border-border bg-white p-4"
                   dangerouslySetInnerHTML={{ __html: qrSvg }}
                 />
                 <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">

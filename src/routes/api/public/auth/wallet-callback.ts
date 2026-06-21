@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { randomBytes } from "crypto";
 import { z } from "zod";
+import { authDomainFromRequest } from "@/lib/wallet-auth-shared";
 
 const CORS = {
   "access-control-allow-origin": "*",
@@ -38,7 +39,7 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
           return Response.json({ error: "unknown challenge" }, { status: 404, headers: CORS });
         }
         const { buildSignableMessage } = await import("@/lib/wallet-auth-shared");
-        const domain = url.hostname;
+        const domain = authDomainFromRequest(request);
         const message = buildSignableMessage({
           nonce: ch.nonce,
           domain,
@@ -110,7 +111,7 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
           return Response.json({ error: "challenge expired" }, { status: 410, headers: CORS });
         }
 
-        const origin = new URL(request.url).hostname;
+        const origin = authDomainFromRequest(request);
         const message = buildSignableMessage({
           nonce: ch.nonce,
           domain: origin,
