@@ -9,6 +9,29 @@ const InputSchema = z.object({ id: z.string().min(8).max(64) });
 export const getPublicInvoice = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => InputSchema.parse(d))
   .handler(async ({ data }) => {
+    // Synthetic demo invoice — powers the live SDK demo on /docs without DB seeding.
+    if (data.id === "demo") {
+      return {
+        found: true as const,
+        invoice: {
+          id: "demo",
+          chain: "btc",
+          fiatAmount: 1,
+          fiatCurrency: "USD",
+          cryptoAmount: 0.00001,
+          rate: 100000,
+          address: "bc1qexampledemoaddressxxxxxxxxxxxxxxxxxxx",
+          status: "pending" as const,
+          description: "payHME live demo — no payment will be processed",
+          redirectUrl: null,
+          expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+          createdAt: new Date().toISOString(),
+        },
+        store: { name: "payHME demo", website: "https://pay.honest.money" },
+        transactions: [],
+      };
+    }
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: inv, error } = await supabaseAdmin
       .from("invoices")
