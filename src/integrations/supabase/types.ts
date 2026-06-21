@@ -683,18 +683,21 @@ export type Database = {
       txc_deposit_addresses: {
         Row: {
           address: string
+          address_index: number | null
           created_at: string
           memo: string | null
           user_id: string
         }
         Insert: {
           address: string
+          address_index?: number | null
           created_at?: string
           memo?: string | null
           user_id: string
         }
         Update: {
           address?: string
+          address_index?: number | null
           created_at?: string
           memo?: string | null
           user_id?: string
