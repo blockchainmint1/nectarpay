@@ -361,7 +361,7 @@ function ChainCard({
             }
           />
         </div>
-        <Button onClick={onSave} disabled={saving || (mirrors && !ethXpub)}>
+        <Button onClick={onSave} disabled={saving}>
           <Save className="mr-2 h-4 w-4" />
           {saving ? "Saving…" : "Save"}
         </Button>
