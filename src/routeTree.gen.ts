@@ -9,7 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as ManifestoRouteImport } from './routes/manifesto'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -28,9 +31,24 @@ import { Route as ApiPublicCronWatcherRouteImport } from './routes/api/public/cr
 import { Route as ApiPublicCronRatesRouteImport } from './routes/api/public/cron/rates'
 import { Route as ApiPublicCronBillingRouteImport } from './routes/api/public/cron/billing'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManifestoRoute = ManifestoRouteImport.update({
+  id: '/manifesto',
+  path: '/manifesto',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsRoute = DocsRouteImport.update({
@@ -125,7 +143,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/docs': typeof DocsRoute
+  '/manifesto': typeof ManifestoRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exports': typeof AuthenticatedExportsRoute
@@ -144,7 +165,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/docs': typeof DocsRoute
+  '/manifesto': typeof ManifestoRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exports': typeof AuthenticatedExportsRoute
@@ -165,7 +189,10 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
   '/docs': typeof DocsRoute
+  '/manifesto': typeof ManifestoRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/exports': typeof AuthenticatedExportsRoute
@@ -186,7 +213,10 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/docs'
+    | '/manifesto'
     | '/pricing'
+    | '/privacy'
+    | '/terms'
     | '/billing'
     | '/dashboard'
     | '/exports'
@@ -205,7 +235,10 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/docs'
+    | '/manifesto'
     | '/pricing'
+    | '/privacy'
+    | '/terms'
     | '/billing'
     | '/dashboard'
     | '/exports'
@@ -225,7 +258,10 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/docs'
+    | '/manifesto'
     | '/pricing'
+    | '/privacy'
+    | '/terms'
     | '/_authenticated/billing'
     | '/_authenticated/dashboard'
     | '/_authenticated/exports'
@@ -246,7 +282,10 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
   DocsRoute: typeof DocsRoute
+  ManifestoRoute: typeof ManifestoRoute
   PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
+  TermsRoute: typeof TermsRoute
   IInvoiceIdRoute: typeof IInvoiceIdRoute
   IntegrationsWoocommerceRoute: typeof IntegrationsWoocommerceRoute
   ApiPublicCronBillingRoute: typeof ApiPublicCronBillingRoute
@@ -257,11 +296,32 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pricing': {
       id: '/pricing'
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manifesto': {
+      id: '/manifesto'
+      path: '/manifesto'
+      fullPath: '/manifesto'
+      preLoaderRoute: typeof ManifestoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs': {
@@ -424,7 +484,10 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
   DocsRoute: DocsRoute,
+  ManifestoRoute: ManifestoRoute,
   PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
+  TermsRoute: TermsRoute,
   IInvoiceIdRoute: IInvoiceIdRoute,
   IntegrationsWoocommerceRoute: IntegrationsWoocommerceRoute,
   ApiPublicCronBillingRoute: ApiPublicCronBillingRoute,
