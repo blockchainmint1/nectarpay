@@ -61,17 +61,20 @@ function AuthenticatedLayout() {
         <div className="mt-auto border-t border-border/60 pt-4">
           <div className="px-2 text-xs text-muted-foreground">Signed in as</div>
           <div className="truncate px-2 text-sm">{user.email}</div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mt-2 w-full justify-start"
-            onClick={async () => {
-              await signOut();
-              navigate({ to: "/" });
-            }}
-          >
-            <LogOut className="mr-2 h-4 w-4" /> Sign out
-          </Button>
+          <div className="mt-2 flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1 justify-start"
+              onClick={async () => {
+                await signOut();
+                navigate({ to: "/" });
+              }}
+            >
+              <LogOut className="mr-2 h-4 w-4" /> Sign out
+            </Button>
+            <ThemeToggle />
+          </div>
         </div>
       </aside>
 
