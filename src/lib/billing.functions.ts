@@ -70,25 +70,11 @@ async function ensureDepositAddress(userId: string) {
   const { deriveBtcLikeAddress } = await import("./chains/derive.server");
   const { TXC_NETWORK } = await import("./chains/networks");
 
-  const { data: seqRow, error: seqErr } = await supabaseAdmin
-    .rpc("nextval" as never, { _seq: "public.txc_deposit_address_index_seq" } as never)
-    // Fallback: call via raw SQL since nextval isn't an exposed RPC by default.
-    .single<{ nextval: number }>()
-    .then((r) => r, () => ({ data: null, error: { message: "fallback" } as { message: string } }));
-
-  let index: number;
-  if (!seqErr && seqRow && typeof (seqRow as { nextval: number }).nextval === "number") {
-    index = (seqRow as { nextval: number }).nextval;
-  } else {
-    // Raw SQL fallback
-    const { data: maxRow } = await supabaseAdmin
-      .from("txc_deposit_addresses")
-      .select("address_index")
-      .order("address_index", { ascending: false, nullsFirst: false })
-      .limit(1)
-      .maybeSingle();
-    index = ((maxRow?.address_index as number | null) ?? -1) + 1;
-  }
+  const { data: idxRow, error: idxErr } = await supabaseAdmin.rpc(
+    "next_txc_deposit_index" as never,
+  );
+  if (idxErr) throw idxErr;
+  const index = Number(idxRow as unknown as number);
 
   const address = deriveBtcLikeAddress(xpub, TXC_NETWORK, index);
   const memo = userId.slice(0, 8);
