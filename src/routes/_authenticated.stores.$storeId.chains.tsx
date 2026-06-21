@@ -172,7 +172,6 @@ function ChainsPage() {
               meta={meta}
               row={rows[meta.key]}
               storeId={storeId}
-              ethXpub={rows.eth?.xpub ?? null}
               onChange={(r) => setRows((prev) => ({ ...prev, [meta.key]: r }))}
               onSaved={() => refetch()}
             />
@@ -188,16 +187,15 @@ function ChainCard({
   meta,
   row,
   storeId,
-  ethXpub,
   onChange,
   onSaved,
 }: {
   meta: ChainMeta;
   row: Row;
   storeId: string;
-  ethXpub: string | null;
   onChange: (r: Row) => void;
   onSaved: () => void;
+
 }) {
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
