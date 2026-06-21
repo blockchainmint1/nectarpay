@@ -19,6 +19,12 @@ function isSolanaAddressLike(s: string): boolean {
 function isTronAddressLike(s: string): boolean {
   return /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(s.trim());
 }
+function maskSecret(s: string): string {
+  const v = (s ?? "").trim();
+  if (v.length <= 12) return v;
+  return `${v.slice(0, 6)}…${v.slice(-4)}`;
+}
+
 
 export const Route = createFileRoute("/_authenticated/stores/$storeId/chains")({
   head: () => ({ meta: [{ title: "Chains · payHME" }] }),
