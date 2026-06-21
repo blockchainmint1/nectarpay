@@ -46,18 +46,32 @@ export function MarketingNav() {
 export function MarketingFooter() {
   return (
     <footer className="border-t border-border/60">
-      <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 px-4 py-8 text-sm text-muted-foreground md:flex-row md:items-center">
-        <div className="flex items-center gap-2">
+      <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-3 px-4 py-8 text-xs text-muted-foreground md:flex-row md:items-center">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="inline-block h-2 w-2 rounded-sm bg-primary" />
-          <span>© {new Date().getFullYear()} TEXITcoin Pay. Non-custodial by design.</span>
+          <span>© {new Date().getFullYear()} payHME · Non-custodial by design.</span>
+          <span className="hidden md:inline">·</span>
+          <span>
+            Part of the{" "}
+            <a
+              href="https://honest.money"
+              className="underline-offset-4 hover:text-foreground hover:underline"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Honest Money Ecosystem
+            </a>
+          </span>
         </div>
-        <nav className="flex flex-wrap gap-6">
+        <nav className="flex flex-wrap gap-4">
+          <Link to="/manifesto" className="hover:text-foreground">Manifesto</Link>
           <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
           <Link to="/docs" className="hover:text-foreground">Docs</Link>
-          <Link to="/integrations/woocommerce" className="hover:text-foreground">WooCommerce</Link>
-          <Link to="/auth" className="hover:text-foreground">Sign in</Link>
+          <Link to="/terms" className="hover:text-foreground">Terms</Link>
+          <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
         </nav>
       </div>
     </footer>
   );
 }
+
