@@ -2,11 +2,14 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 /** Throws 403 if caller is not an admin. */
-async function assertAdmin(supabase: any, userId: string) {
-  const { data, error } = await supabase.rpc("has_role", {
-    _user_id: userId,
-    _role: "admin",
-  });
+async function assertAdmin(userId: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data) throw new Response("Forbidden", { status: 403 });
 }
@@ -14,7 +17,7 @@ async function assertAdmin(supabase: any, userId: string) {
 export const getAdminOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
@@ -38,7 +41,7 @@ export const getAdminOverview = createServerFn({ method: "GET" })
 export const listAdminUsers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
@@ -79,7 +82,7 @@ export const listAdminUsers = createServerFn({ method: "GET" })
 export const listAdminStores = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
@@ -95,7 +98,7 @@ export const listAdminStores = createServerFn({ method: "GET" })
 export const listAdminInvoices = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.userId);
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
