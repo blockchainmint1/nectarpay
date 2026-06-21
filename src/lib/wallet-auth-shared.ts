@@ -3,6 +3,7 @@
 export const WALLET_DEEP_LINK_SCHEME = "payhme";
 export const WALLET_CHALLENGE_TTL_SECONDS = 300; // 5 minutes
 export const WALLET_POLL_INTERVAL_MS = 2000;
+const WALLET_AUTH_PUBLIC_ORIGIN = "https://pay.honest.money";
 
 /**
  * Human-readable, SIWE-flavored message the wallet displays and signs verbatim.
@@ -58,13 +59,29 @@ function isLocalHostname(hostname: string): boolean {
   return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "0.0.0.0";
 }
 
+function isLovablePreviewHostname(hostname: string): boolean {
+  return hostname.endsWith(".lovableproject.com") || hostname.endsWith(".lovable.app");
+}
+
+function publicOrPreferredOrigin(origin: string): string {
+  try {
+    const parsed = new URL(origin);
+    if (isLocalHostname(parsed.hostname) || isLovablePreviewHostname(parsed.hostname)) {
+      return WALLET_AUTH_PUBLIC_ORIGIN;
+    }
+    return parsed.origin;
+  } catch {
+    return origin;
+  }
+}
+
 export function publicOriginFromRequest(request: Request): string {
   const url = new URL(request.url);
   const origin = request.headers.get("origin");
   if (origin) {
     try {
       const parsed = new URL(origin);
-      if (!isLocalHostname(parsed.hostname)) return parsed.origin;
+      if (!isLocalHostname(parsed.hostname)) return publicOrPreferredOrigin(parsed.origin);
     } catch {
       // Ignore malformed origin headers and fall through.
     }
@@ -74,7 +91,7 @@ export function publicOriginFromRequest(request: Request): string {
   if (referer) {
     try {
       const parsed = new URL(referer);
-      if (!isLocalHostname(parsed.hostname)) return parsed.origin;
+      if (!isLocalHostname(parsed.hostname)) return publicOrPreferredOrigin(parsed.origin);
     } catch {
       // Ignore malformed referer headers and fall through.
     }
@@ -88,17 +105,23 @@ export function publicOriginFromRequest(request: Request): string {
     const hostname = hostnameFromHost(host);
     if (!isLocalHostname(hostname)) {
       const proto = firstHeaderValue(request.headers.get("x-forwarded-proto")) ?? "https";
-      return `${proto}://${host}`;
+      return publicOrPreferredOrigin(`${proto}://${host}`);
     }
   }
 
-  return url.origin;
+  return publicOrPreferredOrigin(url.origin);
 }
 
 export function authDomainFromRequest(request: Request): string {
   const url = new URL(request.url);
   const queryDomain = url.searchParams.get("domain");
   if (queryDomain && !isLocalHostname(queryDomain)) return queryDomain;
+
+  try {
+    return new URL(publicOriginFromRequest(request)).hostname;
+  } catch {
+    // Fall through to raw host parsing.
+  }
 
   const host =
     forwardedHost(request.headers) ??
