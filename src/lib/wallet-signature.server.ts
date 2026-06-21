@@ -18,7 +18,10 @@ import bitcoinMessage from "bitcoinjs-message";
 
 export { buildSignableMessage } from "@/lib/wallet-auth-shared";
 
-const TXC_MESSAGE_PREFIX = "\x18TEXITcoin Signed Message:\n";
+// NOTE: bitcoinjs-message prepends the varint length byte itself.
+// The prefix string must NOT include the leading \x18 — passing it produces
+// a double-length-prefixed hash, and every signature fails to verify.
+const TXC_MESSAGE_PREFIX = "TEXITcoin Signed Message:\n";
 
 export function verifyTxcSignature(opts: {
   address: string;
