@@ -31,7 +31,7 @@ export const Route = createFileRoute("/_authenticated/stores/$storeId/chains")({
   component: ChainsPage,
 });
 
-type ChainKey = "btc" | "txc" | "eth" | "base" | "tron" | "sol";
+type ChainKey = "btc" | "txc" | "eth" | "tron" | "sol";
 
 type ChainMeta = {
   key: ChainKey;

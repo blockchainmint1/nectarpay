@@ -927,6 +927,7 @@ export type Database = {
         | "zcu"
         | "tron"
         | "sol"
+        | "bsc"
       invoice_status:
         | "pending"
         | "detected"
@@ -1078,6 +1079,7 @@ export const Constants = {
         "zcu",
         "tron",
         "sol",
+        "bsc",
       ],
       invoice_status: [
         "pending",
