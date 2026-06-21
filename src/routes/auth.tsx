@@ -54,11 +54,22 @@ function AuthPage() {
   const [remaining, setRemaining] = useState<number>(0);
   const cancelled = useRef(false);
 
-  // Already signed in → bounce
+  // Already signed in → bounce (admins to /admin)
   useEffect(() => {
-    if (!authLoading && user) {
-      navigate({ to: search.redirect ?? "/dashboard" });
+    if (authLoading || !user) return;
+    if (search.redirect) {
+      navigate({ to: search.redirect });
+      return;
     }
+    (async () => {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      navigate({ to: data ? "/admin" : "/dashboard" });
+    })();
   }, [authLoading, user, navigate, search.redirect]);
 
   // Create challenge on mount
