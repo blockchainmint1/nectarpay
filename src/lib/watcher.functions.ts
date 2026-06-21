@@ -203,6 +203,40 @@ export async function settleInvoice(
   return { status: newStatus, changed: true };
 }
 
+export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: inv } = await supabaseAdmin
+    .from("invoices")
+    .select("id, store_id, chain, address, fiat_amount, status, rate, stores!inner(default_confirmations_required, mempool_max_usd)")
+    .eq("id", invoiceId)
+    .maybeSingle();
+  if (!inv || !inv.address || (inv.chain !== "btc" && inv.chain !== "txc")) return false;
+  if (["confirmed", "overpaid", "expired", "cancelled", "failed"].includes(inv.status)) return false;
+
+  const net = inv.chain === "btc" ? BTC_NETWORK : TXC_NETWORK;
+  const [tip, txs] = await Promise.all([getTipHeight(net), getAddressTxs(net, inv.address)]);
+  const credits = extractIncoming(txs, inv.address, tip);
+  let changed = false;
+
+  for (const credit of credits) {
+    const paidCrypto = credit.amountSats / 10 ** net.decimals;
+    const lockedRate = inv.rate == null ? null : Number(inv.rate);
+    const usdRate = lockedRate && lockedRate > 0 ? lockedRate : await getUsdRate(inv.chain);
+    const paidUsd = paidCrypto * usdRate;
+    const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd);
+    const isConfirmed = credit.confirmations >= required;
+    await recordTransaction(inv.id, credit.txid, paidCrypto, credit.confirmations, null, isConfirmed);
+    if (isConfirmed) {
+      const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
+      changed = settled.changed || changed;
+    } else {
+      changed = (await markInvoiceDetected(inv.id)) || changed;
+    }
+  }
+
+  return changed;
+}
+
 export async function runWatcherTick(): Promise<WatcherResult[]> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const results: WatcherResult[] = [];
