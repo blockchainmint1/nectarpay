@@ -48,6 +48,8 @@ function KycSettingsPage() {
   const [provider, setProvider] = useState<Provider>("none");
   const [apiKey, setApiKey] = useState("");
   const [appToken, setAppToken] = useState("");
+  const [apiKeySaved, setApiKeySaved] = useState(false);
+  const [appTokenSaved, setAppTokenSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -57,8 +59,10 @@ function KycSettingsPage() {
     setBasicChecks(data.kyc_basic_checks ?? ["sanctions", "risk", "geo"]);
     setRequireEmail(!!data.kyc_basic_require_email);
     setProvider((data.kyc_advanced_provider as Provider) ?? "none");
-    setApiKey(data.kyc_advanced_api_key ?? "");
-    setAppToken(data.kyc_advanced_app_token ?? "");
+    setApiKey("");
+    setAppToken("");
+    setApiKeySaved(!!data.kyc_advanced_api_key_set);
+    setAppTokenSaved(!!data.kyc_advanced_app_token_set);
   }, [data]);
 
   async function onSave() {
