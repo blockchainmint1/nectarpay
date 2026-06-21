@@ -57,18 +57,12 @@ function AuthPage() {
   // Already signed in → bounce (admins to /admin)
   useEffect(() => {
     if (authLoading || !user) return;
-    if (search.redirect) {
-      navigate({ to: search.redirect });
-      return;
-    }
     (async () => {
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-      navigate({ to: data ? "/admin" : "/dashboard" });
+      const { data: isAdmin } = await supabase.rpc("has_role", {
+        _user_id: user.id,
+        _role: "admin",
+      });
+      navigate({ to: resolvePostAuthPath(Boolean(isAdmin), search.redirect) });
     })();
   }, [authLoading, user, navigate, search.redirect]);
 
@@ -191,7 +185,7 @@ function AuthPage() {
 
       toast.success("Signed in");
       navigate({
-        to: search.redirect ?? (data.is_admin ? "/admin" : "/dashboard"),
+        to: resolvePostAuthPath(data.is_admin, search.redirect),
       });
     } catch (err) {
       setStatus({
@@ -293,6 +287,11 @@ function AuthPage() {
       </div>
     </div>
   );
+}
+
+function resolvePostAuthPath(isAdmin: boolean, redirect?: string) {
+  if (isAdmin && (!redirect || redirect === "/dashboard")) return "/admin";
+  return redirect ?? (isAdmin ? "/admin" : "/dashboard");
 }
 
 function ManualSignIn({
