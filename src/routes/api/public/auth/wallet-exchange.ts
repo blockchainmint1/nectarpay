@@ -97,11 +97,21 @@ export const Route = createFileRoute("/api/public/auth/wallet-exchange")({
           .split(",")
           .map((s) => s.trim().toLowerCase())
           .filter(Boolean);
-        if (admins.includes(lowerAddr)) {
-          await supabaseAdmin
+        const isConfiguredAdmin = admins.includes(lowerAddr);
+        if (isConfiguredAdmin) {
+          const { error: roleErr } = await supabaseAdmin
             .from("user_roles")
             .upsert({ user_id: userId, role: "admin" }, { onConflict: "user_id,role" });
+          if (roleErr) console.error("[wallet-exchange] admin role upsert failed:", roleErr);
         }
+
+        const { data: adminRole } = await supabaseAdmin
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .eq("role", "admin")
+          .maybeSingle();
+        const isAdmin = isConfiguredAdmin || Boolean(adminRole);
 
         // 3. Update last_login + mark challenge consumed
         await Promise.all([
@@ -134,7 +144,7 @@ export const Route = createFileRoute("/api/public/auth/wallet-exchange")({
             email: synthEmail,
             token_hash: link.data.properties.hashed_token,
             wallet_address: address,
-            is_admin: admins.includes(lowerAddr),
+            is_admin: isAdmin,
           },
           { headers: CORS },
         );
