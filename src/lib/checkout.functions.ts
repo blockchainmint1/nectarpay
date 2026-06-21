@@ -80,17 +80,17 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
       .eq("invoice_id", inv.id)
       .order("first_seen_at", { ascending: false });
 
-    // When chain hasn't been selected yet, surface the merchant's enabled
-    // chains so the customer can choose on the hosted checkout.
+    // Surface the merchant's enabled chains so the customer can switch
+    // networks before paying (even when a chain was pre-selected by the
+    // merchant or by an earlier customer click).
     let availableChains: string[] = [];
-    if (!inv.chain) {
-      const { data: cfgs } = await supabaseAdmin
-        .from("chain_configs")
-        .select("chain")
-        .eq("store_id", inv.store_id)
-        .eq("enabled", true);
-      availableChains = (cfgs ?? []).map((c) => c.chain as string);
-    }
+    const { data: cfgs } = await supabaseAdmin
+      .from("chain_configs")
+      .select("chain")
+      .eq("store_id", inv.store_id)
+      .eq("enabled", true);
+    availableChains = (cfgs ?? []).map((c) => c.chain as string);
+
 
     return {
       found: true as const,
