@@ -145,6 +145,7 @@ export function buildDeepLink(opts: {
     id: opts.challengeId,
     nonce: opts.nonce,
     cb: cbUrl.toString(),
+    msg: base64UrlEncode(opts.message),
     from: originUrl.hostname,
   });
   return `${WALLET_DEEP_LINK_SCHEME}://login?${params.toString()}`;
