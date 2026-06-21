@@ -10,7 +10,7 @@
  * it depends on Node-only crypto modules.
  *
  * SPEC:
- *   - Magic prefix: TEXITcoin Signed Message:\n   (matches wallet signing.ts)
+ *   - Magic prefixes: TEXITcoin/Texitcoin Signed Message:\n variants used by TXC wallets
  *   - Address: P2PKH / P2SH-P2WPKH / P2WPKH (legacy + segwit)
  *   - Message format: the raw SIWE-style string the wallet signs verbatim
  */
@@ -34,6 +34,8 @@ export { buildSignableMessage } from "@/lib/wallet-auth-shared";
 // TXC network params. Keep in sync with the mobile wallet's src/lib/chains/index.ts.
 const TXC_MESSAGE_PREFIX = "TEXITcoin Signed Message:\n";
 const TXC_LEGACY_PREFIX = "\x18TEXITcoin Signed Message:\n";
+const TXC_WEB_WALLET_PREFIX = "\x1aTexitcoin Signed Message:\n";
+const TXC_STANDARD_PREFIX = "\x1aTEXITcoin Signed Message:\n";
 const TXC_BECH32_HRP = "txc";
 
 function varInt(n: number): Uint8Array {
@@ -135,7 +137,12 @@ export function verifyTxcSignature(opts: {
     return false;
   }
 
-  for (const prefix of [TXC_MESSAGE_PREFIX, TXC_LEGACY_PREFIX]) {
+  for (const prefix of [
+    TXC_MESSAGE_PREFIX,
+    TXC_LEGACY_PREFIX,
+    TXC_WEB_WALLET_PREFIX,
+    TXC_STANDARD_PREFIX,
+  ]) {
     const hash = magicHash(opts.message, prefix);
     let publicKey: Uint8Array;
     try {
@@ -235,7 +242,13 @@ export function recoverAddressesFromSignature(opts: {
     return [];
   }
   const out: Array<{ prefix: string; address: string }> = [];
-  for (const prefix of [TXC_MESSAGE_PREFIX, TXC_LEGACY_PREFIX, "\x18Bitcoin Signed Message:\n"]) {
+  for (const prefix of [
+    TXC_MESSAGE_PREFIX,
+    TXC_LEGACY_PREFIX,
+    TXC_WEB_WALLET_PREFIX,
+    TXC_STANDARD_PREFIX,
+    "\x18Bitcoin Signed Message:\n",
+  ]) {
     const hash = magicHash(opts.message, prefix);
     try {
       const pub = recoverPublicKey(hash, parsed.signature, parsed.recovery, parsed.compressed);
