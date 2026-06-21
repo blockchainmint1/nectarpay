@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, Link2, Save, Pencil, Copy, Check } from "lucide-react";
+import { ChevronLeft, Link2, Save, Pencil, Copy, Check, Settings } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -36,7 +36,6 @@ type ChainKey = "btc" | "txc" | "eth" | "tron" | "sol";
 type ChainMeta = {
   key: ChainKey;
   name: string;
-  // What value the merchant provides.
   inputKind: "xpub" | "xpub-or-address" | "address";
   placeholder?: string;
   hint: string;
@@ -88,8 +87,6 @@ type Row = {
   xpub: string | null;
   xpub_or_address: string;
   enabled: boolean;
-  confirmations_required: number;
-  zero_conf_max_usd: string; // free text in the form; "" = disabled
 };
 
 function emptyRow(chain: ChainKey): Row {
@@ -99,8 +96,6 @@ function emptyRow(chain: ChainKey): Row {
     xpub: null,
     xpub_or_address: "",
     enabled: false,
-    confirmations_required: 1,
-    zero_conf_max_usd: "",
   };
 }
 
@@ -112,7 +107,7 @@ function ChainsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("chain_configs")
-        .select("id, chain, xpub, xpub_or_address, enabled, confirmations_required, zero_conf_max_usd")
+        .select("id, chain, xpub, xpub_or_address, enabled")
         .eq("store_id", storeId);
       if (error) throw error;
       return data ?? [];
@@ -137,8 +132,6 @@ function ChainsPage() {
         xpub: r.xpub,
         xpub_or_address: r.xpub_or_address ?? "",
         enabled: r.enabled,
-        confirmations_required: r.confirmations_required ?? 1,
-        zero_conf_max_usd: r.zero_conf_max_usd == null ? "" : String(r.zero_conf_max_usd),
       };
     }
     setRows(next as Record<ChainKey, Row>);
@@ -167,10 +160,12 @@ function ChainsPage() {
         unique per-invoice addresses) or a single static receive address.
       </p>
 
+      <StoreSettingsCard storeId={storeId} />
+
       {isLoading ? (
         <div className="mt-8 text-sm text-muted-foreground">Loading…</div>
       ) : (
-        <div className="mt-8 space-y-4">
+        <div className="mt-6 space-y-4">
           {CHAINS.map((meta) => (
             <ChainCard
               key={meta.key}
@@ -184,6 +179,101 @@ function ChainsPage() {
         </div>
 
       )}
+    </div>
+  );
+}
+
+function StoreSettingsCard({ storeId }: { storeId: string }) {
+  const { data, refetch } = useQuery({
+    queryKey: ["store-payment-settings", storeId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("stores")
+        .select("default_confirmations_required, mempool_max_usd")
+        .eq("id", storeId)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const [confs, setConfs] = useState<number>(1);
+  const [mempool, setMempool] = useState<string>("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!data) return;
+    setConfs(data.default_confirmations_required ?? 1);
+    setMempool(data.mempool_max_usd == null ? "" : String(data.mempool_max_usd));
+  }, [data]);
+
+  async function onSave() {
+    const mRaw = mempool.trim();
+    const mNum = mRaw === "" ? null : Number(mRaw);
+    if (mNum != null && (!Number.isFinite(mNum) || mNum < 0)) {
+      toast.error("Mempool threshold must be a non-negative number, or blank.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("stores")
+        .update({
+          default_confirmations_required: Math.max(0, Number(confs) || 0),
+          mempool_max_usd: mNum,
+        })
+        .eq("id", storeId);
+      if (error) throw error;
+      toast.success("Payment settings saved.");
+      refetch();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Save failed.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="mt-6 rounded-lg border border-border bg-card/60 p-5">
+      <div className="flex items-center gap-2">
+        <Settings className="h-4 w-4 text-muted-foreground" />
+        <h2 className="text-sm font-medium">Payment confirmation</h2>
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Account-wide settings — applied to every chain on this store.
+      </p>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-[160px_1fr_auto] md:items-end">
+        <div>
+          <Label htmlFor="default-confs" className="text-xs">Confirmations required</Label>
+          <Input
+            id="default-confs"
+            type="number"
+            min={0}
+            value={confs}
+            onChange={(e) => setConfs(Math.max(0, Number(e.target.value) || 0))}
+          />
+          <p className="mt-1 text-xs text-muted-foreground">Blocks before settlement.</p>
+        </div>
+        <div>
+          <Label htmlFor="mempool-max" className="text-xs">Accept mempool (0-conf) up to (USD)</Label>
+          <Input
+            id="mempool-max"
+            inputMode="decimal"
+            placeholder="e.g. 100 — leave blank to always require confirmations"
+            value={mempool}
+            onChange={(e) => setMempool(e.target.value)}
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            Payments at or under this USD value clear as soon as we see them in the mempool. Above it,
+            we wait for the confirmations.
+          </p>
+        </div>
+        <Button onClick={onSave} disabled={saving}>
+          <Save className="mr-2 h-4 w-4" />
+          {saving ? "Saving…" : "Save"}
+        </Button>
+      </div>
     </div>
   );
 }
@@ -221,7 +311,6 @@ function ChainCard({
         ? { ok: true, msg: "" }
         : { ok: false, msg: "Not a valid Solana address." };
     }
-    // xpub-or-address (tron)
     if (isXpubLike(v) || isTronAddressLike(v)) return { ok: true, msg: "" };
     return { ok: false, msg: "Expected an xpub or a T-address." };
   }, [value, meta.inputKind]);
@@ -246,13 +335,6 @@ function ChainCard({
     }
     setSaving(true);
     try {
-      const zcRaw = row.zero_conf_max_usd.trim();
-      const zcNum = zcRaw === "" ? null : Number(zcRaw);
-      if (zcNum != null && (!Number.isFinite(zcNum) || zcNum < 0)) {
-        toast.error("Mempool threshold must be a non-negative number, or blank.");
-        setSaving(false);
-        return;
-      }
       const payload = {
         store_id: storeId,
         chain: meta.key,
@@ -260,10 +342,7 @@ function ChainCard({
         xpub: meta.inputKind === "address" ? null : (isXpubLike(v) ? v : null),
         xpub_or_address: v,
         enabled: row.enabled,
-        confirmations_required: row.confirmations_required,
-        zero_conf_max_usd: zcNum,
       };
-
 
       const { error } = await supabase
         .from("chain_configs")
@@ -303,7 +382,7 @@ function ChainCard({
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-[1fr_120px_auto] md:items-end">
+      <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
         {showInput ? (
 
           <div>
@@ -360,47 +439,11 @@ function ChainCard({
           </div>
         )}
 
-        <div>
-          <Label htmlFor={`conf-${meta.key}`} className="text-xs">
-            Confirmations
-          </Label>
-          <Input
-            id={`conf-${meta.key}`}
-            type="number"
-            min={0}
-            value={row.confirmations_required}
-            onChange={(e) =>
-              onChange({ ...row, confirmations_required: Math.max(0, Number(e.target.value) || 0) })
-            }
-          />
-        </div>
         <Button onClick={onSave} disabled={saving}>
           <Save className="mr-2 h-4 w-4" />
           {saving ? "Saving…" : "Save"}
         </Button>
       </div>
-
-      {/* Advanced merchant controls */}
-      <div className="mt-4 grid gap-4 border-t border-border/60 pt-4 md:grid-cols-2">
-        <div>
-          <Label htmlFor={`zc-${meta.key}`} className="text-xs">
-            Accept mempool (0-conf) up to (USD)
-          </Label>
-          <Input
-            id={`zc-${meta.key}`}
-            inputMode="decimal"
-            placeholder="e.g. 25 — leave blank to always require confirmations"
-            value={row.zero_conf_max_usd}
-            onChange={(e) => onChange({ ...row, zero_conf_max_usd: e.target.value })}
-          />
-          <p className="mt-1 text-xs text-muted-foreground">
-            Payments at or under this USD value clear as soon as we see them in the mempool. Above it, we wait for the confirmations above.
-          </p>
-        </div>
-
-      </div>
     </div>
   );
 }
-
-
