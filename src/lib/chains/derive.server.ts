@@ -6,8 +6,8 @@
 
 import { HDKey } from "@scure/bip32";
 import { base58check, bech32 } from "@scure/base";
-import { sha256 } from "@noble/hashes/sha2.js";
-import { ripemd160 } from "@noble/hashes/legacy.js";
+import { sha256 } from "@noble/hashes/sha256";
+import { ripemd160 } from "@noble/hashes/ripemd160";
 import { HDNodeWallet } from "ethers";
 import type { BtcLikeNetwork, EvmNetwork } from "./networks";
 
