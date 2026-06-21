@@ -283,8 +283,12 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               null,
               isConfirmed,
             );
-            const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
-            if (settled.changed) r.invoicesUpdated++;
+            if (isConfirmed) {
+              const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
+              if (settled.changed) r.invoicesUpdated++;
+            } else if (await markInvoiceDetected(inv.id)) {
+              r.invoicesUpdated++;
+            }
           }
 
         }
