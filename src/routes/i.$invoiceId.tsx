@@ -181,7 +181,7 @@ function CheckoutPage() {
       if (!d || !d.found) return false;
       // Stop polling on terminal states.
       const terminal = ["confirmed", "expired", "cancelled", "failed", "overpaid"];
-      return terminal.includes(d.invoice.status) ? false : 6000;
+      return terminal.includes(d.invoice.status) ? false : 1500;
     },
     refetchOnWindowFocus: true,
   });
