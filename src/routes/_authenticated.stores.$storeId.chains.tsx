@@ -308,7 +308,7 @@ function ChainCard({
               ? "Using your Ethereum xpub. Each invoice gets a fresh derived address."
               : "No Ethereum xpub set yet. Add one above, then enable Base."}
           </div>
-        ) : (
+        ) : showInput ? (
           <div>
             <Label htmlFor={`val-${meta.key}`} className="text-xs">
               {meta.inputKind === "address"
@@ -330,7 +330,39 @@ function ChainCard({
               <p className="mt-1 text-xs text-destructive">{validation.msg}</p>
             )}
           </div>
+        ) : (
+          <div>
+            <Label className="text-xs">
+              {meta.inputKind === "address" ? "Receive address" : "Saved"}
+            </Label>
+            <div className="flex items-center gap-2 rounded-md border border-border bg-background/40 px-3 py-2">
+              <code className="flex-1 truncate font-mono text-xs text-muted-foreground">
+                {maskSecret(value)}
+              </code>
+              <button
+                type="button"
+                onClick={async () => {
+                  await navigator.clipboard.writeText(value);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 1500);
+                }}
+                className="text-muted-foreground hover:text-foreground"
+                title="Copy"
+              >
+                {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditing(true)}
+                className="text-muted-foreground hover:text-foreground"
+                title="Replace"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
         )}
+
         <div>
           <Label htmlFor={`conf-${meta.key}`} className="text-xs">
             Confirmations
