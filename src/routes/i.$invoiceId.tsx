@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -190,7 +190,6 @@ function CheckoutPage() {
   const txs = data?.found ? data.transactions : [];
   const store = data?.found ? data.store : null;
   const availableChains = data?.found ? data.availableChains : [];
-  const qrAddressOnly = data?.found ? !!data.qrAddressOnly : false;
 
   // SDK postMessage: when embedded in the payHME iframe modal, notify the parent
   // window on terminal status transitions so merchants can listen for "paid".
@@ -214,14 +213,7 @@ function CheckoutPage() {
   const requiredConfs = network?.confirmationsRequired ?? 1;
 
   const memo = inv ? inv.id.slice(0, 8) : null;
-  const uri = useMemo(
-    () => {
-      if (!inv || !inv.chain || !inv.address) return "";
-      if (qrAddressOnly) return inv.address;
-      return paymentUri(inv.chain, inv.address, inv.cryptoAmount, memo);
-    },
-    [inv, memo, qrAddressOnly],
-  );
+
 
 
 
@@ -317,12 +309,13 @@ function CheckoutPage() {
                 inv.chain && inv.address && (
                   <PayingFrame
                     inv={inv as Invoice}
-                    uri={uri}
+                    memo={memo}
                     isDark={isDark}
                     countdown={countdown}
                     txs={txs}
                     requiredConfs={requiredConfs}
                   />
+
                 )}
             </section>
 
@@ -372,14 +365,14 @@ type Tx = {
 
 function PayingFrame({
   inv,
-  uri,
+  memo,
   isDark,
   countdown,
   txs,
   requiredConfs,
 }: {
   inv: Invoice;
-  uri: string;
+  memo: string | null;
   isDark: boolean;
   countdown: ReturnType<typeof useCountdown>;
   txs: Tx[];
@@ -388,6 +381,23 @@ function PayingFrame({
   const isDetected = inv.status === "detected" || inv.status === "underpaid";
   const latestTx = txs[0];
   const progress = latestTx ? Math.min(100, (latestTx.confirmations / requiredConfs) * 100) : 0;
+
+  // Customer-side QR format toggle. Some wallets can't parse the chain URI
+  // (e.g. `texitcoin:…?amount=…`) and need the bare address instead. Persisted
+  // per browser so a customer who flips it once doesn't have to do it again.
+  const [addressOnlyQr, setAddressOnlyQr] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("payhme.qrAddressOnly") === "1";
+  });
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("payhme.qrAddressOnly", addressOnlyQr ? "1" : "0");
+  }, [addressOnlyQr]);
+
+  const uri = addressOnlyQr
+    ? inv.address
+    : paymentUri(inv.chain, inv.address, inv.cryptoAmount, memo);
+
 
   return (
     <div className="grid gap-0 md:grid-cols-[1fr_320px]">
@@ -493,7 +503,21 @@ function PayingFrame({
         <p className="text-center text-[11px] leading-snug text-muted-foreground">
           Scan with your phone or tap to open your installed {CHAIN_LABEL[inv.chain] ?? "crypto"} wallet.
         </p>
+
+        <label className="mt-1 flex w-full cursor-pointer items-start gap-2 rounded-md border border-border/60 bg-background/40 px-3 py-2 text-left">
+          <input
+            type="checkbox"
+            checked={addressOnlyQr}
+            onChange={(e) => setAddressOnlyQr(e.target.checked)}
+            className="mt-0.5 h-3.5 w-3.5 accent-primary"
+          />
+          <span className="text-[11px] leading-snug text-muted-foreground">
+            <span className="font-medium text-foreground">Address-only QR.</span> Turn on if your wallet
+            won't scan — it'll get just the address, and you enter the chain &amp; amount yourself.
+          </span>
+        </label>
       </div>
+
     </div>
   );
 }

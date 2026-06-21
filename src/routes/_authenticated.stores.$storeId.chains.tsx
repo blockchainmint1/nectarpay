@@ -90,7 +90,6 @@ type Row = {
   enabled: boolean;
   confirmations_required: number;
   zero_conf_max_usd: string; // free text in the form; "" = disabled
-  qr_address_only: boolean;
 };
 
 function emptyRow(chain: ChainKey): Row {
@@ -102,7 +101,6 @@ function emptyRow(chain: ChainKey): Row {
     enabled: false,
     confirmations_required: 1,
     zero_conf_max_usd: "",
-    qr_address_only: false,
   };
 }
 
@@ -114,7 +112,7 @@ function ChainsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("chain_configs")
-        .select("id, chain, xpub, xpub_or_address, enabled, confirmations_required, zero_conf_max_usd, qr_address_only")
+        .select("id, chain, xpub, xpub_or_address, enabled, confirmations_required, zero_conf_max_usd")
         .eq("store_id", storeId);
       if (error) throw error;
       return data ?? [];
@@ -141,11 +139,11 @@ function ChainsPage() {
         enabled: r.enabled,
         confirmations_required: r.confirmations_required ?? 1,
         zero_conf_max_usd: r.zero_conf_max_usd == null ? "" : String(r.zero_conf_max_usd),
-        qr_address_only: !!r.qr_address_only,
       };
     }
     setRows(next as Record<ChainKey, Row>);
   }, [data]);
+
 
 
   return (
@@ -264,8 +262,8 @@ function ChainCard({
         enabled: row.enabled,
         confirmations_required: row.confirmations_required,
         zero_conf_max_usd: zcNum,
-        qr_address_only: row.qr_address_only,
       };
+
 
       const { error } = await supabase
         .from("chain_configs")
@@ -399,21 +397,7 @@ function ChainCard({
             Payments at or under this USD value clear as soon as we see them in the mempool. Above it, we wait for the confirmations above.
           </p>
         </div>
-        <div className="flex items-start justify-between gap-3 rounded-md border border-border/60 bg-background/40 px-3 py-2">
-          <div>
-            <Label htmlFor={`qr-${meta.key}`} className="text-xs">
-              Address-only QR
-            </Label>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Off: QR includes the chain URI and amount (e.g. <code className="font-mono">texitcoin:…?amount=…</code>). On: QR contains just the address — for wallets that can't parse advanced URIs.
-            </p>
-          </div>
-          <Switch
-            id={`qr-${meta.key}`}
-            checked={row.qr_address_only}
-            onCheckedChange={(checked) => onChange({ ...row, qr_address_only: checked })}
-          />
-        </div>
+
       </div>
     </div>
   );
