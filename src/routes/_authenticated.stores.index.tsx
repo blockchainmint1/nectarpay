@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/_authenticated/stores")({
+export const Route = createFileRoute("/_authenticated/stores/")({
   head: () => ({ meta: [{ title: "Stores · TEXITcoin Pay" }] }),
   component: StoresIndex,
 });
