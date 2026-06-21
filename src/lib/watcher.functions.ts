@@ -330,7 +330,9 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               const human = Number(rawAmount) / 10 ** t.decimals;
               const usd = t.isNative ? human * (await getUsdRate(net.symbol)) : human;
               const confirmations = tip - t.blockNum + 1;
-              const isConfirmed = confirmations >= net.confirmationsRequired;
+              const cfg = configList[0];
+              const required = effectiveConfsRequired(cfg ?? {}, net.confirmationsRequired, usd);
+              const isConfirmed = confirmations >= required;
               await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed);
               const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
               if (settled.changed) r.invoicesUpdated++;
