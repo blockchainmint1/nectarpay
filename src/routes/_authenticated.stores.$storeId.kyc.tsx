@@ -216,25 +216,38 @@ function KycSettingsPage() {
               </Select>
             </div>
             <div>
-              <Label htmlFor="appToken" className="text-sm">App / Template / Level ID</Label>
+              <Label htmlFor="appToken" className="text-sm">
+                App / Template / Level ID{appTokenSaved && !appToken ? " · saved" : ""}
+              </Label>
               <Input
                 id="appToken"
                 value={appToken}
                 onChange={(e) => setAppToken(e.target.value)}
-                placeholder="e.g. Sumsub levelName, Persona template-id, Didit app_id"
+                placeholder={
+                  appTokenSaved
+                    ? "•••••• (leave blank to keep)"
+                    : "e.g. Sumsub levelName, Persona template-id, Didit app_id"
+                }
                 className="mt-2 font-mono"
               />
             </div>
             <div>
-              <Label htmlFor="apiKey" className="text-sm">API key (stored encrypted at rest)</Label>
+              <Label htmlFor="apiKey" className="text-sm">
+                API key{apiKeySaved && !apiKey ? " · saved" : ""}
+              </Label>
               <Input
                 id="apiKey"
                 type="password"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                placeholder="Paste your provider API key"
+                placeholder={
+                  apiKeySaved ? "•••••• (leave blank to keep)" : "Paste your provider API key"
+                }
                 className="mt-2 font-mono"
               />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Stored server-side. For security, the saved value is never shown back to the browser.
+              </p>
             </div>
           </div>
         </section>
