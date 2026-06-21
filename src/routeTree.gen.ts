@@ -35,6 +35,7 @@ import { Route as AuthenticatedStoresStoreIdRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated.admin.users'
 import { Route as AuthenticatedAdminStoresRouteImport } from './routes/_authenticated.admin.stores'
 import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated.admin.invoices'
+import { Route as AuthenticatedStoresStoreIdIndexRouteImport } from './routes/_authenticated.stores.$storeId.index'
 import { Route as ApiPublicV1InvoicesRouteImport } from './routes/api.public.v1.invoices'
 import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
 import { Route as ApiPublicCronWatcherRouteImport } from './routes/api/public/cron/watcher'
@@ -181,6 +182,12 @@ const AuthenticatedAdminInvoicesRoute =
     path: '/invoices',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedStoresStoreIdIndexRoute =
+  AuthenticatedStoresStoreIdIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedStoresStoreIdRoute,
+  } as any)
 const ApiPublicV1InvoicesRoute = ApiPublicV1InvoicesRouteImport.update({
   id: '/api/public/v1/invoices',
   path: '/api/public/v1/invoices',
@@ -281,6 +288,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
+  '/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -303,7 +311,6 @@ export interface FileRoutesByTo {
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/stores': typeof AuthenticatedAdminStoresRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
-  '/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/stores': typeof AuthenticatedStoresIndexRoute
@@ -318,6 +325,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
+  '/stores/$storeId': typeof AuthenticatedStoresStoreIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -358,6 +366,7 @@ export interface FileRoutesById {
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
+  '/_authenticated/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -398,6 +407,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/watcher'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
+    | '/stores/$storeId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -420,7 +430,6 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/stores'
     | '/admin/users'
-    | '/stores/$storeId'
     | '/stores/new'
     | '/admin'
     | '/stores'
@@ -435,6 +444,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/watcher'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
+    | '/stores/$storeId'
   id:
     | '__root__'
     | '/'
@@ -474,6 +484,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/watcher'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
+    | '/_authenticated/stores/$storeId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -685,6 +696,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminInvoicesRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/stores/$storeId/': {
+      id: '/_authenticated/stores/$storeId/'
+      path: '/'
+      fullPath: '/stores/$storeId/'
+      preLoaderRoute: typeof AuthenticatedStoresStoreIdIndexRouteImport
+      parentRoute: typeof AuthenticatedStoresStoreIdRoute
+    }
     '/api/public/v1/invoices': {
       id: '/api/public/v1/invoices'
       path: '/api/public/v1/invoices'
@@ -785,6 +803,7 @@ const AuthenticatedAdminRouteWithChildren =
 interface AuthenticatedStoresStoreIdRouteChildren {
   AuthenticatedStoresStoreIdChainsRoute: typeof AuthenticatedStoresStoreIdChainsRoute
   AuthenticatedStoresStoreIdKycRoute: typeof AuthenticatedStoresStoreIdKycRoute
+  AuthenticatedStoresStoreIdIndexRoute: typeof AuthenticatedStoresStoreIdIndexRoute
 }
 
 const AuthenticatedStoresStoreIdRouteChildren: AuthenticatedStoresStoreIdRouteChildren =
@@ -792,6 +811,7 @@ const AuthenticatedStoresStoreIdRouteChildren: AuthenticatedStoresStoreIdRouteCh
     AuthenticatedStoresStoreIdChainsRoute:
       AuthenticatedStoresStoreIdChainsRoute,
     AuthenticatedStoresStoreIdKycRoute: AuthenticatedStoresStoreIdKycRoute,
+    AuthenticatedStoresStoreIdIndexRoute: AuthenticatedStoresStoreIdIndexRoute,
   }
 
 const AuthenticatedStoresStoreIdRouteWithChildren =
