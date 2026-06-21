@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, KeyRound, Link2, Receipt, Settings as SettingsIcon } from "lucide-react";
+import { ChevronLeft, KeyRound, Link2, Receipt, Settings as SettingsIcon, ShieldCheck } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -78,6 +78,12 @@ function StoreDetailPage() {
           body="Browse incoming payments and statuses."
           to={`/stores/${storeId}/invoices`}
           comingSoon
+        />
+        <CardLink
+          icon={<ShieldCheck className="h-4 w-4" />}
+          title="Buyer verification (KYC)"
+          body="Optional: sanctions screen, wallet risk, geo block, or BYO advanced provider."
+          to={`/stores/${storeId}/kyc`}
         />
         <CardLink
           icon={<SettingsIcon className="h-4 w-4" />}
