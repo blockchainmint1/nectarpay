@@ -365,14 +365,14 @@ type Tx = {
 
 function PayingFrame({
   inv,
-  uri,
+  memo,
   isDark,
   countdown,
   txs,
   requiredConfs,
 }: {
   inv: Invoice;
-  uri: string;
+  memo: string | null;
   isDark: boolean;
   countdown: ReturnType<typeof useCountdown>;
   txs: Tx[];
@@ -381,6 +381,23 @@ function PayingFrame({
   const isDetected = inv.status === "detected" || inv.status === "underpaid";
   const latestTx = txs[0];
   const progress = latestTx ? Math.min(100, (latestTx.confirmations / requiredConfs) * 100) : 0;
+
+  // Customer-side QR format toggle. Some wallets can't parse the chain URI
+  // (e.g. `texitcoin:…?amount=…`) and need the bare address instead. Persisted
+  // per browser so a customer who flips it once doesn't have to do it again.
+  const [addressOnlyQr, setAddressOnlyQr] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("payhme.qrAddressOnly") === "1";
+  });
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem("payhme.qrAddressOnly", addressOnlyQr ? "1" : "0");
+  }, [addressOnlyQr]);
+
+  const uri = addressOnlyQr
+    ? inv.address
+    : paymentUri(inv.chain, inv.address, inv.cryptoAmount, memo);
+
 
   return (
     <div className="grid gap-0 md:grid-cols-[1fr_320px]">
