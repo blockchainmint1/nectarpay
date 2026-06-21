@@ -54,7 +54,7 @@ export async function scanTxcDeposits(): Promise<{ scanned: number; credited: nu
       }
       credited++;
       await notifyUser(a.user_id, {
-        event: "txc_deposit_received",
+        event: "deposit_received",
         subject: `Received ${amountTxc} TXC`,
         text: `${amountTxc} TXC ($${(amountTxc * rate).toFixed(2)}) was credited to your subscription balance.`,
       }).catch(() => {});
