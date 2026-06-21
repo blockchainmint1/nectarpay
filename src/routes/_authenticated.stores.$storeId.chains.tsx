@@ -397,21 +397,7 @@ function ChainCard({
             Payments at or under this USD value clear as soon as we see them in the mempool. Above it, we wait for the confirmations above.
           </p>
         </div>
-        <div className="flex items-start justify-between gap-3 rounded-md border border-border/60 bg-background/40 px-3 py-2">
-          <div>
-            <Label htmlFor={`qr-${meta.key}`} className="text-xs">
-              Address-only QR
-            </Label>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Off: QR includes the chain URI and amount (e.g. <code className="font-mono">texitcoin:…?amount=…</code>). On: QR contains just the address — for wallets that can't parse advanced URIs.
-            </p>
-          </div>
-          <Switch
-            id={`qr-${meta.key}`}
-            checked={row.qr_address_only}
-            onCheckedChange={(checked) => onChange({ ...row, qr_address_only: checked })}
-          />
-        </div>
+
       </div>
     </div>
   );
