@@ -40,6 +40,22 @@ function effectiveConfsRequired(
   return store?.default_confirmations_required ?? netDefault;
 }
 
+async function markInvoiceDetected(invoiceId: string): Promise<boolean> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: inv } = await supabaseAdmin
+    .from("invoices")
+    .select("status")
+    .eq("id", invoiceId)
+    .maybeSingle();
+  if (!inv || inv.status !== "pending") return false;
+  const { error } = await supabaseAdmin
+    .from("invoices")
+    .update({ status: "detected" })
+    .eq("id", invoiceId)
+    .eq("status", "pending");
+  return !error;
+}
+
 
 async function ensureAddresses(
   chainConfigId: string,
