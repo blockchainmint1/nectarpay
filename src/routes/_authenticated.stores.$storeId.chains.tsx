@@ -89,6 +89,8 @@ type Row = {
   xpub_or_address: string;
   enabled: boolean;
   confirmations_required: number;
+  zero_conf_max_usd: string; // free text in the form; "" = disabled
+  qr_address_only: boolean;
 };
 
 function emptyRow(chain: ChainKey): Row {
@@ -99,6 +101,8 @@ function emptyRow(chain: ChainKey): Row {
     xpub_or_address: "",
     enabled: false,
     confirmations_required: 1,
+    zero_conf_max_usd: "",
+    qr_address_only: false,
   };
 }
 
@@ -110,7 +114,7 @@ function ChainsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("chain_configs")
-        .select("id, chain, xpub, xpub_or_address, enabled, confirmations_required")
+        .select("id, chain, xpub, xpub_or_address, enabled, confirmations_required, zero_conf_max_usd, qr_address_only")
         .eq("store_id", storeId);
       if (error) throw error;
       return data ?? [];
@@ -136,10 +140,13 @@ function ChainsPage() {
         xpub_or_address: r.xpub_or_address ?? "",
         enabled: r.enabled,
         confirmations_required: r.confirmations_required ?? 1,
+        zero_conf_max_usd: r.zero_conf_max_usd == null ? "" : String(r.zero_conf_max_usd),
+        qr_address_only: !!r.qr_address_only,
       };
     }
     setRows(next as Record<ChainKey, Row>);
   }, [data]);
+
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 md:px-8">
@@ -241,6 +248,13 @@ function ChainCard({
     }
     setSaving(true);
     try {
+      const zcRaw = row.zero_conf_max_usd.trim();
+      const zcNum = zcRaw === "" ? null : Number(zcRaw);
+      if (zcNum != null && (!Number.isFinite(zcNum) || zcNum < 0)) {
+        toast.error("Mempool threshold must be a non-negative number, or blank.");
+        setSaving(false);
+        return;
+      }
       const payload = {
         store_id: storeId,
         chain: meta.key,
@@ -249,7 +263,10 @@ function ChainCard({
         xpub_or_address: v,
         enabled: row.enabled,
         confirmations_required: row.confirmations_required,
+        zero_conf_max_usd: zcNum,
+        qr_address_only: row.qr_address_only,
       };
+
       const { error } = await supabase
         .from("chain_configs")
         .upsert(payload, { onConflict: "store_id,chain" });
@@ -364,7 +381,42 @@ function ChainCard({
           {saving ? "Saving…" : "Save"}
         </Button>
       </div>
+
+      {/* Advanced merchant controls */}
+      <div className="mt-4 grid gap-4 border-t border-border/60 pt-4 md:grid-cols-2">
+        <div>
+          <Label htmlFor={`zc-${meta.key}`} className="text-xs">
+            Accept mempool (0-conf) up to (USD)
+          </Label>
+          <Input
+            id={`zc-${meta.key}`}
+            inputMode="decimal"
+            placeholder="e.g. 25 — leave blank to always require confirmations"
+            value={row.zero_conf_max_usd}
+            onChange={(e) => onChange({ ...row, zero_conf_max_usd: e.target.value })}
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            Payments at or under this USD value clear as soon as we see them in the mempool. Above it, we wait for the confirmations above.
+          </p>
+        </div>
+        <div className="flex items-start justify-between gap-3 rounded-md border border-border/60 bg-background/40 px-3 py-2">
+          <div>
+            <Label htmlFor={`qr-${meta.key}`} className="text-xs">
+              Address-only QR
+            </Label>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Off: QR includes the chain URI and amount (e.g. <code className="font-mono">texitcoin:…?amount=…</code>). On: QR contains just the address — for wallets that can't parse advanced URIs.
+            </p>
+          </div>
+          <Switch
+            id={`qr-${meta.key}`}
+            checked={row.qr_address_only}
+            onCheckedChange={(checked) => onChange({ ...row, qr_address_only: checked })}
+          />
+        </div>
+      </div>
     </div>
   );
 }
+
 

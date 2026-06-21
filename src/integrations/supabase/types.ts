@@ -66,10 +66,12 @@ export type Database = {
           network: string
           next_address_index: number
           next_derivation_index: number
+          qr_address_only: boolean
           store_id: string
           updated_at: string
           xpub: string | null
           xpub_or_address: string
+          zero_conf_max_usd: number | null
         }
         Insert: {
           chain: Database["public"]["Enums"]["chain_kind"]
@@ -81,10 +83,12 @@ export type Database = {
           network?: string
           next_address_index?: number
           next_derivation_index?: number
+          qr_address_only?: boolean
           store_id: string
           updated_at?: string
           xpub?: string | null
           xpub_or_address: string
+          zero_conf_max_usd?: number | null
         }
         Update: {
           chain?: Database["public"]["Enums"]["chain_kind"]
@@ -96,10 +100,12 @@ export type Database = {
           network?: string
           next_address_index?: number
           next_derivation_index?: number
+          qr_address_only?: boolean
           store_id?: string
           updated_at?: string
           xpub?: string | null
           xpub_or_address?: string
+          zero_conf_max_usd?: number | null
         }
         Relationships: [
           {

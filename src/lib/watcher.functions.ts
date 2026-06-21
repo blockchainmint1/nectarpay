@@ -23,6 +23,24 @@ export interface WatcherResult {
   error?: string;
 }
 
+/**
+ * Effective confirmations required for this credit. If the merchant has
+ * opted into mempool acceptance for small payments (`zero_conf_max_usd`)
+ * and the paid USD amount is at or under that threshold, treat 0-conf
+ * (mempool-visible) as good. Otherwise fall back to the merchant's
+ * configured `confirmations_required`, then the network default.
+ */
+function effectiveConfsRequired(
+  cfg: { confirmations_required?: number | null; zero_conf_max_usd?: number | null },
+  netDefault: number,
+  paidUsd: number,
+): number {
+  const zc = cfg.zero_conf_max_usd == null ? null : Number(cfg.zero_conf_max_usd);
+  if (zc != null && zc > 0 && paidUsd <= zc) return 0;
+  return cfg.confirmations_required ?? netDefault;
+}
+
+
 async function ensureAddresses(
   chainConfigId: string,
   storeId: string,
@@ -208,9 +226,10 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           );
         }
 
+        const cfgById = new Map(configList.map((c) => [c.id, c]));
         const { data: addrs } = await supabaseAdmin
           .from("derived_addresses")
-          .select("address, store_id")
+          .select("address, store_id, chain_config_id")
           .in(
             "chain_config_id",
             configList.map((c) => c.id),
@@ -221,6 +240,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           const txs = await getAddressTxs(net, a.address).catch(() => []);
           const credits = extractIncoming(txs, a.address, tip);
           r.credits += credits.length;
+          const cfg = cfgById.get(a.chain_config_id);
           for (const credit of credits) {
             // find matching invoice
             const { data: inv } = await supabaseAdmin
@@ -232,7 +252,8 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             if (!inv) continue;
             const usdRate = await getUsdRate(chain);
             const paidUsd = (credit.amountSats / 10 ** net.decimals) * usdRate;
-            const isConfirmed = credit.confirmations >= net.confirmationsRequired;
+            const required = effectiveConfsRequired(cfg ?? {}, net.confirmationsRequired, paidUsd);
+            const isConfirmed = credit.confirmations >= required;
             await recordTransaction(
               inv.id,
               credit.txid,
@@ -245,6 +266,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             if (settled.changed) r.invoicesUpdated++;
           }
         }
+
 
         await supabaseAdmin
           .from("watcher_cursors")
@@ -308,7 +330,9 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               const human = Number(rawAmount) / 10 ** t.decimals;
               const usd = t.isNative ? human * (await getUsdRate(net.symbol)) : human;
               const confirmations = tip - t.blockNum + 1;
-              const isConfirmed = confirmations >= net.confirmationsRequired;
+              const cfg = configList[0];
+              const required = effectiveConfsRequired(cfg ?? {}, net.confirmationsRequired, usd);
+              const isConfirmed = confirmations >= required;
               await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed);
               const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
               if (settled.changed) r.invoicesUpdated++;
