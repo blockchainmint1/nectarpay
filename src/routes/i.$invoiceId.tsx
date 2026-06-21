@@ -373,6 +373,8 @@ function PayingFrame({
   countdown,
   txs,
   requiredConfs,
+  availableChains,
+  canSwitchChain,
 }: {
   inv: Invoice;
   memo: string | null;
@@ -380,10 +382,28 @@ function PayingFrame({
   countdown: ReturnType<typeof useCountdown>;
   txs: Tx[];
   requiredConfs: number;
+  availableChains: string[];
+  canSwitchChain: boolean;
 }) {
   const isDetected = inv.status === "detected" || inv.status === "underpaid";
   const latestTx = txs[0];
   const progress = latestTx ? Math.min(100, (latestTx.confirmations / requiredConfs) * 100) : 0;
+  const clearChain = useServerFn(clearInvoiceChain);
+  const [switching, setSwitching] = useState(false);
+
+  const otherChains = availableChains.filter((c) => c !== inv.chain);
+  const showSwitch = canSwitchChain && otherChains.length > 0;
+
+  async function onSwitch() {
+    setSwitching(true);
+    try {
+      await clearChain({ data: { id: inv.id } });
+      // Polling query will refetch and the page will switch to ChainPickerFrame.
+    } catch (e) {
+      setSwitching(false);
+      alert(e instanceof Error ? e.message : "Could not switch chain.");
+    }
+  }
 
   // Customer-side QR format toggle. Some wallets can't parse the chain URI
   // (e.g. `texitcoin:…?amount=…`) and need the bare address instead. Persisted
@@ -400,6 +420,7 @@ function PayingFrame({
   const uri = addressOnlyQr
     ? inv.address
     : paymentUri(inv.chain, inv.address, inv.cryptoAmount, memo);
+
 
 
   return (
