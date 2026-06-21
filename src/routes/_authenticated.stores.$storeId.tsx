@@ -121,5 +121,6 @@ function CardLink({
     </div>
   );
   if (comingSoon) return <div className="cursor-not-allowed opacity-60">{inner}</div>;
-  return <Link to={to}>{inner}</Link>;
+  // Plain anchor: these child routes will be added in later phases.
+  return <a href={to}>{inner}</a>;
 }
