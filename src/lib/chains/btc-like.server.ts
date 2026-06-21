@@ -29,7 +29,21 @@ export async function getTipHeight(net: BtcLikeNetwork): Promise<number> {
 }
 
 export async function getAddressTxs(net: BtcLikeNetwork, address: string): Promise<EsploraTx[]> {
-  return fetchJson<EsploraTx[]>(`${net.esploraBase}/address/${address}/txs`);
+  const [confirmedOrRecent, mempool] = await Promise.allSettled([
+    fetchJson<EsploraTx[]>(`${net.esploraBase}/address/${address}/txs`),
+    fetchJson<EsploraTx[]>(`${net.esploraBase}/address/${address}/txs/mempool`),
+  ]);
+  if (confirmedOrRecent.status === "rejected" && mempool.status === "rejected") {
+    throw confirmedOrRecent.reason;
+  }
+  const byTxid = new Map<string, EsploraTx>();
+  for (const tx of confirmedOrRecent.status === "fulfilled" ? confirmedOrRecent.value : []) {
+    byTxid.set(tx.txid, tx);
+  }
+  for (const tx of mempool.status === "fulfilled" ? mempool.value : []) {
+    byTxid.set(tx.txid, tx);
+  }
+  return [...byTxid.values()];
 }
 
 /**
