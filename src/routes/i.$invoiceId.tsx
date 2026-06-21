@@ -540,7 +540,19 @@ function PayingFrame({
             won't scan — it'll get just the address, and you enter the chain &amp; amount yourself.
           </span>
         </label>
+
+        {showSwitch && (
+          <button
+            type="button"
+            onClick={onSwitch}
+            disabled={switching}
+            className="mt-1 text-[11px] font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline disabled:opacity-50"
+          >
+            {switching ? "Switching…" : `Pay with a different network (${otherChains.length} available)`}
+          </button>
+        )}
       </div>
+
 
     </div>
   );
