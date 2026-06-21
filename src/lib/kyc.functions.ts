@@ -291,7 +291,19 @@ export const getStoreKycSettings = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ storeId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: store, error } = await context.supabase
+    // Verify ownership using the user-scoped client (RLS enforced).
+    const { data: own, error: ownErr } = await context.supabase
+      .from("stores")
+      .select("id")
+      .eq("id", data.storeId)
+      .maybeSingle();
+    if (ownErr) throw new Error(ownErr.message);
+    if (!own) throw new Error("Store not found");
+
+    // Read sensitive columns via admin, but never return the raw secrets
+    // to the client. Only return "is it set" booleans.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: store, error } = await supabaseAdmin
       .from("stores")
       .select(
         "kyc_level, kyc_threshold_usd, kyc_basic_checks, kyc_basic_require_email, kyc_advanced_provider, kyc_advanced_api_key, kyc_advanced_app_token",
@@ -299,5 +311,14 @@ export const getStoreKycSettings = createServerFn({ method: "GET" })
       .eq("id", data.storeId)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    return store;
+    if (!store) return null;
+    return {
+      kyc_level: store.kyc_level,
+      kyc_threshold_usd: store.kyc_threshold_usd,
+      kyc_basic_checks: store.kyc_basic_checks,
+      kyc_basic_require_email: store.kyc_basic_require_email,
+      kyc_advanced_provider: store.kyc_advanced_provider,
+      kyc_advanced_api_key_set: Boolean(store.kyc_advanced_api_key),
+      kyc_advanced_app_token_set: Boolean(store.kyc_advanced_app_token),
+    };
   });
