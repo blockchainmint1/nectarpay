@@ -76,11 +76,17 @@ function KycSettingsPage() {
           kycBasicChecks: basicChecks as ("sanctions" | "risk" | "geo")[],
           kycBasicRequireEmail: requireEmail,
           kycAdvancedProvider: provider,
-          kycAdvancedApiKey: apiKey || null,
-          kycAdvancedAppToken: appToken || null,
+          // Only send when the user typed something; otherwise leave existing
+          // secret untouched. Empty string clears (only when previously set).
+          ...(apiKey ? { kycAdvancedApiKey: apiKey } : {}),
+          ...(appToken ? { kycAdvancedAppToken: appToken } : {}),
         },
       });
       toast.success("KYC settings saved.");
+      if (apiKey) setApiKeySaved(true);
+      if (appToken) setAppTokenSaved(true);
+      setApiKey("");
+      setAppToken("");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to save.");
     } finally {
