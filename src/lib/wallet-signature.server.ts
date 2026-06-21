@@ -18,28 +18,39 @@ import bitcoinMessage from "bitcoinjs-message";
 
 export { buildSignableMessage } from "@/lib/wallet-auth-shared";
 
-// NOTE: bitcoinjs-message prepends the varint length byte itself.
-// The prefix string must NOT include the leading \x18 — passing it produces
-// a double-length-prefixed hash, and every signature fails to verify.
-const TXC_MESSAGE_PREFIX = "TEXITcoin Signed Message:\n";
+// The wallet has existed in both bitcoinjs-message prefix conventions:
+// - the current app config: "TEXITcoin Signed Message:\n"
+// - older/custom-network builds: "\x18TEXITcoin Signed Message:\n"
+// Accept both so deployed wallet builds can authenticate while they converge.
+const TXC_MESSAGE_PREFIXES = [
+  "TEXITcoin Signed Message:\n",
+  "\x18TEXITcoin Signed Message:\n",
+] as const;
 
 export function verifyTxcSignature(opts: {
   address: string;
   message: string;
   signature: string;
 }): boolean {
-  try {
-    return bitcoinMessage.verify(
-      opts.message,
-      opts.address,
-      opts.signature,
-      TXC_MESSAGE_PREFIX,
-      true, // checkSegwitAlways — tolerates both legacy and segwit
-    );
-  } catch (err) {
-    console.error("[wallet-signature] verify threw:", err);
-    return false;
+  for (const prefix of TXC_MESSAGE_PREFIXES) {
+    try {
+      if (
+        bitcoinMessage.verify(
+          opts.message,
+          opts.address,
+          opts.signature,
+          prefix,
+          true, // checkSegwitAlways — tolerates legacy, p2sh-segwit, and bech32
+        )
+      ) {
+        return true;
+      }
+    } catch {
+      // Try the next historical prefix variant.
+    }
   }
+
+  return false;
 }
 
 /**
