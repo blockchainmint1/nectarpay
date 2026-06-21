@@ -4,7 +4,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-const InputSchema = z.object({ id: z.string().min(8).max(64) });
+const InputSchema = z.object({ id: z.string().min(4).max(64) });
 
 export const getPublicInvoice = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => InputSchema.parse(d))
