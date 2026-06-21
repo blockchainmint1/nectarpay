@@ -16,23 +16,9 @@
 // @ts-ignore — bitcoinjs-message ships no types
 import bitcoinMessage from "bitcoinjs-message";
 
-const TXC_MESSAGE_PREFIX = "\x18TEXITcoin Signed Message:\n";
+export { buildSignableMessage } from "@/lib/wallet-auth-shared";
 
-export function buildSignableMessage(opts: {
-  nonce: string;
-  domain: string;
-  issuedAt: string;
-}): string {
-  // Human-readable, SIWE-flavored. Wallet should display this verbatim.
-  return [
-    `${opts.domain} wants you to sign in with your TXC wallet.`,
-    ``,
-    `Nonce: ${opts.nonce}`,
-    `Issued At: ${opts.issuedAt}`,
-    `By signing, you authorize a sign-in session for payHME.`,
-    `This signature does not authorize any payment.`,
-  ].join("\n");
-}
+const TXC_MESSAGE_PREFIX = "\x18TEXITcoin Signed Message:\n";
 
 export function verifyTxcSignature(opts: {
   address: string;

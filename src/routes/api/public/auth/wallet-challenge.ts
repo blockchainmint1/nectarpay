@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { randomBytes } from "crypto";
-import { buildDeepLink } from "@/lib/wallet-auth-shared";
+import { buildDeepLink, buildSignableMessage } from "@/lib/wallet-auth-shared";
 
 const CORS = {
   "access-control-allow-origin": "*",
@@ -39,10 +39,16 @@ export const Route = createFileRoute("/api/public/auth/wallet-challenge")({
         }
 
         const origin = new URL(request.url).origin;
+        const message = buildSignableMessage({
+          nonce: data.nonce,
+          domain: new URL(request.url).hostname,
+          issuedAt: data.created_at ?? new Date().toISOString(),
+        });
         const deepLink = buildDeepLink({
           challengeId: data.id,
           nonce: data.nonce,
           origin,
+          message,
         });
 
         // Opportunistic cleanup of expired rows (cheap, fire-and-forget)
@@ -53,6 +59,7 @@ export const Route = createFileRoute("/api/public/auth/wallet-challenge")({
             id: data.id,
             nonce: data.nonce,
             expires_at: data.expires_at,
+            message,
             deep_link: deepLink,
             qr_data: deepLink,
           },
