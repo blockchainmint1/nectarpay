@@ -4,10 +4,12 @@
 //   2) Poll the chain for incoming credits to those addresses
 //   3) Match credits to open invoices, mark paid/underpaid, emit notifications & webhooks
 
-import { BTC_NETWORK, TXC_NETWORK, ETH_NETWORK, BASE_NETWORK } from "./chains/networks";
-import { deriveBtcLikeAddress, deriveEvmAddress } from "./chains/derive.server";
+import { BTC_NETWORK, TXC_NETWORK, ETH_NETWORK, BASE_NETWORK, TRON_NETWORK, SOL_NETWORK } from "./chains/networks";
+import { deriveBtcLikeAddress, deriveEvmAddress, deriveTronAddress } from "./chains/derive.server";
 import { extractIncoming, getAddressTxs, getTipHeight } from "./chains/btc-like.server";
 import { getBlockNumber, getTransfersTo } from "./chains/evm.server";
+import { getTronBlockNumber, getTronTransfersTo } from "./chains/tron.server";
+import { getSolanaSlot, getSolanaCreditsTo } from "./chains/solana.server";
 import { notifyUser } from "./notify.server";
 import { getUsdRate } from "./rates.functions";
 
