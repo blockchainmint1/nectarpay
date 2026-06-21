@@ -60,7 +60,6 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
     // When chain hasn't been selected yet, surface the merchant's enabled
     // chains so the customer can choose on the hosted checkout.
     let availableChains: string[] = [];
-    let qrAddressOnly = false;
     if (!inv.chain) {
       const { data: cfgs } = await supabaseAdmin
         .from("chain_configs")
@@ -68,14 +67,6 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
         .eq("store_id", inv.store_id)
         .eq("enabled", true);
       availableChains = (cfgs ?? []).map((c) => c.chain as string);
-    } else {
-      const { data: cfg } = await supabaseAdmin
-        .from("chain_configs")
-        .select("qr_address_only")
-        .eq("store_id", inv.store_id)
-        .eq("chain", inv.chain)
-        .maybeSingle();
-      qrAddressOnly = !!cfg?.qr_address_only;
     }
 
     return {
@@ -103,9 +94,9 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
         firstSeenAt: t.first_seen_at,
       })),
       availableChains,
-      qrAddressOnly,
     };
   });
+
 
 
 // Customer-side chain picker: the customer picks a payment network on the
