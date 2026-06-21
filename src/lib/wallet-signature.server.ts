@@ -96,7 +96,7 @@ export function verifyTxcSignature(opts: {
         prehash: false,
       });
       const point = secp.Point.fromBytes(pubCompressed);
-      const pubBytes = point.toBytes(compressed ? "compressed" : "uncompressed");
+      const pubBytes = point.toBytes(compressed);
 
       // P2PKH only for now: hash160 the pubkey and compare.
       // (If a segwit-tagged signature arrives, the recovered pubkey will
