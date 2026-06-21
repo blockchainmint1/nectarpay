@@ -37,7 +37,7 @@ export async function pollRates(): Promise<{
         const row = json.data?.[String(CMC_ID_MAP[sym])];
         const price = row?.quote?.USD?.price;
         if (typeof price === "number" && price > 0) {
-          const chain = sym.toLowerCase();
+          const chain = sym.toLowerCase() as "btc" | "eth" | "txc";
           const { error } = await supabaseAdmin
             .from("rates_cache")
             .upsert(
@@ -84,10 +84,11 @@ export async function getUsdRate(symbol: string): Promise<number> {
   const up = symbol.toUpperCase();
   if (up === "USDC" || up === "USDT" || up === "DAI") return 1;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const chain = up.toLowerCase() as "btc" | "eth" | "txc" | "base" | "doge" | "isk" | "zcu";
   const { data } = await supabaseAdmin
     .from("rates_cache")
     .select("rate")
-    .eq("chain", up.toLowerCase())
+    .eq("chain", chain)
     .eq("fiat", "USD")
     .maybeSingle();
   return Number(data?.rate ?? 0);

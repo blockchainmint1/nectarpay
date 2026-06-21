@@ -74,7 +74,7 @@ export async function notifyUser(
         body: payload.text,
         status: result.ok ? "sent" : "failed",
         error: result.error ?? null,
-        metadata: payload.metadata ?? null,
+        metadata: (payload.metadata ?? null) as never,
       });
     }
   }
@@ -91,7 +91,7 @@ export async function notifyUser(
       body: payload.text,
       status: "skipped",
       error: "email provider not configured",
-      metadata: payload.metadata ?? null,
+      metadata: (payload.metadata ?? null) as never,
     });
   }
 }
