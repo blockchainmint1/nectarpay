@@ -190,7 +190,6 @@ function CheckoutPage() {
   const txs = data?.found ? data.transactions : [];
   const store = data?.found ? data.store : null;
   const availableChains = data?.found ? data.availableChains : [];
-  const qrAddressOnly = data?.found ? !!data.qrAddressOnly : false;
 
   // SDK postMessage: when embedded in the payHME iframe modal, notify the parent
   // window on terminal status transitions so merchants can listen for "paid".
@@ -214,14 +213,7 @@ function CheckoutPage() {
   const requiredConfs = network?.confirmationsRequired ?? 1;
 
   const memo = inv ? inv.id.slice(0, 8) : null;
-  const uri = useMemo(
-    () => {
-      if (!inv || !inv.chain || !inv.address) return "";
-      if (qrAddressOnly) return inv.address;
-      return paymentUri(inv.chain, inv.address, inv.cryptoAmount, memo);
-    },
-    [inv, memo, qrAddressOnly],
-  );
+
 
 
 
