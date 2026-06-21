@@ -140,6 +140,24 @@ export const BASE_NETWORK: EvmNetwork = {
   confirmationsRequired: 3,
 };
 
+export const BSC_NETWORK: EvmNetwork = {
+  kind: "evm",
+  symbol: "bsc",
+  name: "BNB Smart Chain",
+  chainId: 56,
+  rpcUrl: (k) => `https://bnb-mainnet.g.alchemy.com/v2/${k}`,
+  explorerTx: (t) => `https://bscscan.com/tx/${t}`,
+  explorerAddr: (a) => `https://bscscan.com/address/${a}`,
+  stables: [
+    { symbol: "USDT", address: "0x55d398326f99059ff775485246999027b3197955", decimals: 18 },
+    { symbol: "USDC", address: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d", decimals: 18 },
+  ],
+  confirmationsRequired: 6,
+};
+
+/** EVM networks that share a derivation path — one xpub covers all of them. */
+export const EVM_NETWORKS: EvmNetwork[] = [ETH_NETWORK, BASE_NETWORK, BSC_NETWORK];
+
 export const TRON_NETWORK: TronNetwork = {
   kind: "tron",
   symbol: "tron",
@@ -175,6 +193,7 @@ export const ALL_NETWORKS = {
   txc: TXC_NETWORK,
   eth: ETH_NETWORK,
   base: BASE_NETWORK,
+  bsc: BSC_NETWORK,
   tron: TRON_NETWORK,
   sol: SOL_NETWORK,
 } as const;
