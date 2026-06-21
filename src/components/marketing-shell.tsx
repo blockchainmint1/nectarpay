@@ -17,7 +17,7 @@ export function MarketingNav() {
         <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
           <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
           <Link to="/docs" className="hover:text-foreground">Docs</Link>
-          <Link to="/integrations/woocommerce" className="hover:text-foreground">WooCommerce</Link>
+          <Link to="/integrations" className="hover:text-foreground">Integrations</Link>
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />
