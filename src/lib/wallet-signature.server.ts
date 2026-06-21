@@ -10,7 +10,7 @@
  * it depends on Node-only crypto modules.
  *
  * SPEC:
- *   - Magic prefix: TEXITcoin Signed Message:\n   (matches wallet signing.ts)
+ *   - Magic prefixes: TEXITcoin/Texitcoin Signed Message:\n variants used by TXC wallets
  *   - Address: P2PKH / P2SH-P2WPKH / P2WPKH (legacy + segwit)
  *   - Message format: the raw SIWE-style string the wallet signs verbatim
  */
@@ -26,14 +26,15 @@ import { bech32 } from "@scure/base";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (hashes as any).sha256 = (msg: Uint8Array) => sha256(msg);
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(hashes as any).hmacSha256 = (key: Uint8Array, msg: Uint8Array) =>
-  hmac(sha256, key, msg);
+(hashes as any).hmacSha256 = (key: Uint8Array, msg: Uint8Array) => hmac(sha256, key, msg);
 
 export { buildSignableMessage } from "@/lib/wallet-auth-shared";
 
 // TXC network params. Keep in sync with the mobile wallet's src/lib/chains/index.ts.
 const TXC_MESSAGE_PREFIX = "TEXITcoin Signed Message:\n";
 const TXC_LEGACY_PREFIX = "\x18TEXITcoin Signed Message:\n";
+const TXC_WEB_WALLET_PREFIX = "\x1aTexitcoin Signed Message:\n";
+const TXC_STANDARD_PREFIX = "\x1aTEXITcoin Signed Message:\n";
 const TXC_BECH32_HRP = "txc";
 
 function varInt(n: number): Uint8Array {
@@ -59,9 +60,7 @@ function magicHash(message: string, prefix: string): Uint8Array {
   const prefixBytes = new TextEncoder().encode(prefix);
   const messageBytes = new TextEncoder().encode(message);
   const len = varInt(messageBytes.length);
-  const buf = new Uint8Array(
-    prefixBytes.length + len.length + messageBytes.length,
-  );
+  const buf = new Uint8Array(prefixBytes.length + len.length + messageBytes.length);
   let off = 0;
   buf.set(prefixBytes, off);
   off += prefixBytes.length;
@@ -135,16 +134,16 @@ export function verifyTxcSignature(opts: {
     return false;
   }
 
-  for (const prefix of [TXC_MESSAGE_PREFIX, TXC_LEGACY_PREFIX]) {
+  for (const prefix of [
+    TXC_MESSAGE_PREFIX,
+    TXC_LEGACY_PREFIX,
+    TXC_WEB_WALLET_PREFIX,
+    TXC_STANDARD_PREFIX,
+  ]) {
     const hash = magicHash(opts.message, prefix);
     let publicKey: Uint8Array;
     try {
-      publicKey = recoverPublicKey(
-        hash,
-        parsed.signature,
-        parsed.recovery,
-        parsed.compressed,
-      );
+      publicKey = recoverPublicKey(hash, parsed.signature, parsed.recovery, parsed.compressed);
     } catch {
       continue;
     }
@@ -199,10 +198,7 @@ export function verifyTxcSignature(opts: {
         redeemScript[1] = 0x14;
         redeemScript.set(publicKeyHash, 2);
         const redeemHash = hash160(redeemScript);
-        if (
-          arraysEqual(publicKeyHash, expected) ||
-          arraysEqual(redeemHash, expected)
-        ) {
+        if (arraysEqual(publicKeyHash, expected) || arraysEqual(redeemHash, expected)) {
           return true;
         }
       }
@@ -235,7 +231,13 @@ export function recoverAddressesFromSignature(opts: {
     return [];
   }
   const out: Array<{ prefix: string; address: string }> = [];
-  for (const prefix of [TXC_MESSAGE_PREFIX, TXC_LEGACY_PREFIX, "\x18Bitcoin Signed Message:\n"]) {
+  for (const prefix of [
+    TXC_MESSAGE_PREFIX,
+    TXC_LEGACY_PREFIX,
+    TXC_WEB_WALLET_PREFIX,
+    TXC_STANDARD_PREFIX,
+    "\x18Bitcoin Signed Message:\n",
+  ]) {
     const hash = magicHash(opts.message, prefix);
     try {
       const pub = recoverPublicKey(hash, parsed.signature, parsed.recovery, parsed.compressed);
@@ -243,7 +245,10 @@ export function recoverAddressesFromSignature(opts: {
       const payload = new Uint8Array(21);
       payload[0] = 0x42; // TXC P2PKH version byte
       payload.set(pkh, 1);
-      out.push({ prefix: prefix.replace(/\x18/, "\\x18"), address: bs58check.encode(payload) });
+      out.push({
+        prefix: prefix.replaceAll("\x18", "\\x18").replaceAll("\x1a", "\\x1a"),
+        address: bs58check.encode(payload),
+      });
     } catch {
       // skip
     }
