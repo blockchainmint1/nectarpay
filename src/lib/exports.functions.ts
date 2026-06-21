@@ -48,8 +48,8 @@ export const runExport = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false });
 
     if (data.storeId) query = query.eq("store_id", data.storeId);
-    if (data.status) query = query.eq("status", data.status);
-    if (data.chain) query = query.eq("chain", data.chain);
+    if (data.status) query = query.eq("status", data.status as any);
+    if (data.chain) query = query.eq("chain", data.chain as any);
     if (data.fromDate) query = query.gte("created_at", data.fromDate);
     if (data.toDate) query = query.lte("created_at", data.toDate);
 
