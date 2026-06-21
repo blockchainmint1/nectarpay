@@ -398,7 +398,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
                 .eq("chain", "sol")
                 .ilike("id", `${prefix}%`)
                 .maybeSingle();
-              inv = data as typeof inv;
+              inv = data as InvMatch | null;
             }
             if (!inv) {
               const { data } = await supabaseAdmin
@@ -410,7 +410,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
                 .order("created_at", { ascending: false })
                 .limit(1)
                 .maybeSingle();
-              inv = data as typeof inv;
+              inv = data as InvMatch | null;
             }
             if (!inv) continue;
             const human = Number(BigInt(c.rawValue)) / 10 ** c.decimals;
