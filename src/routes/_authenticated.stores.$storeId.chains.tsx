@@ -270,7 +270,9 @@ function ChainCard({
         throw new Error(error.message || error.details || error.hint || "Save failed.");
       }
       toast.success(`${meta.name} saved.`);
+      setEditing(false);
       onSaved();
+
     } catch (e) {
       console.error("save chain failed", e);
       toast.error(e instanceof Error ? e.message : "Save failed.");
