@@ -228,7 +228,7 @@ function CheckoutPage() {
         className={cn(
           "pointer-events-none absolute -top-40 left-1/2 -z-0 h-[480px] w-[820px] -translate-x-1/2 rounded-full blur-3xl",
           "bg-gradient-to-br opacity-60",
-          inv ? chainAccent(inv.chain) : "from-primary/30 to-primary/5",
+          inv?.chain ? chainAccent(inv.chain) : "from-primary/30 to-primary/5",
         )}
       />
 
@@ -284,8 +284,8 @@ function CheckoutPage() {
               <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
 
               {/* SUCCESS STATE */}
-              {(inv.status === "confirmed" || inv.status === "overpaid") && (
-                <SuccessFrame inv={inv} txs={txs} store={store} />
+              {(inv.status === "confirmed" || inv.status === "overpaid") && inv.chain && (
+                <SuccessFrame inv={inv as Invoice} txs={txs} store={store} />
               )}
 
               {/* EXPIRED / CANCELLED / FAILED */}
@@ -293,17 +293,31 @@ function CheckoutPage() {
                 <TerminalFrame status={inv.status} />
               )}
 
+              {/* CHAIN-PICKER STATE (merchant didn't pre-select) */}
+              {(inv.status === "pending" || inv.status === "detected" || inv.status === "underpaid") &&
+                !inv.chain && (
+                  <ChainPickerFrame
+                    invoiceId={inv.id}
+                    fiatAmount={inv.fiatAmount}
+                    fiatCurrency={inv.fiatCurrency}
+                    description={inv.description}
+                    countdown={countdown}
+                    availableChains={availableChains}
+                  />
+                )}
+
               {/* PAYING STATE (pending / detected / underpaid) */}
-              {(inv.status === "pending" || inv.status === "detected" || inv.status === "underpaid") && (
-                <PayingFrame
-                  inv={inv}
-                  uri={uri}
-                  isDark={isDark}
-                  countdown={countdown}
-                  txs={txs}
-                  requiredConfs={requiredConfs}
-                />
-              )}
+              {(inv.status === "pending" || inv.status === "detected" || inv.status === "underpaid") &&
+                inv.chain && inv.address && (
+                  <PayingFrame
+                    inv={inv as Invoice}
+                    uri={uri}
+                    isDark={isDark}
+                    countdown={countdown}
+                    txs={txs}
+                    requiredConfs={requiredConfs}
+                  />
+                )}
             </section>
 
             {/* footer trust strip */}
