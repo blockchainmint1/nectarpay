@@ -546,9 +546,9 @@ function PayingFrame({
             type="button"
             onClick={onSwitch}
             disabled={switching}
-            className="mt-1 text-[11px] font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline disabled:opacity-50"
+            className="mt-1 text-xs font-semibold text-primary underline underline-offset-4 hover:text-primary/80 disabled:opacity-50"
           >
-            {switching ? "Switching…" : `Pay with a different network (${otherChains.length} available)`}
+            {switching ? "Switching…" : `← Pay with a different network (${otherChains.length} available)`}
           </button>
         )}
       </div>
