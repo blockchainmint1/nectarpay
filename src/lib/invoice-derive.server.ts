@@ -57,12 +57,26 @@ export async function deriveInvoiceAddress(
 
   let address: string;
   let index = cfg.next_address_index ?? 0;
+  let recycledEvmAddress = false;
   const xpub = cfg.xpub ?? cfg.xpub_or_address;
 
   if (net.kind === "btc-like") {
     address = deriveBtcLikeAddress(xpub, net, index);
   } else if (net.kind === "evm") {
-    address = deriveEvmAddress(xpub, net, index);
+    // EVM is account-based — each derived address must be swept individually
+    // (gas per address per token). When an invoice expires unpaid, the index
+    // is wasted forever unless we recycle it. Try to reuse an address from a
+    // prior expired/cancelled invoice on this store+chain that has NEVER
+    // received funds (no pending/detected/underpaid/confirmed/overpaid
+    // invoice ever landed on it). Falls back to fresh derivation.
+    const recycled = await findRecyclableEvmAddress(supabaseAdmin, storeId, chain);
+    if (recycled) {
+      address = recycled.address;
+      index = recycled.address_index ?? index;
+      recycledEvmAddress = true;
+    } else {
+      address = deriveEvmAddress(xpub, net, index);
+    }
   } else if (net.kind === "tron") {
     address = xpub.startsWith("T") ? xpub : deriveTronAddress(xpub, index);
     if (xpub.startsWith("T")) index = 0;
@@ -70,6 +84,7 @@ export async function deriveInvoiceAddress(
     address = cfg.xpub_or_address;
     index = 0;
   }
+
 
   // Rate: stable = $1; otherwise look up the chain's native asset.
   const baseSymbol = tokenSymbol
@@ -103,8 +118,13 @@ export async function deriveInvoiceAddress(
     cryptoAmount = Number(baseAmount.toFixed(8));
   }
 
-  // Bump address counter + log derivation (skip for static single addresses).
-  if (net.kind !== "solana" && !(net.kind === "tron" && xpub.startsWith("T"))) {
+  // Bump address counter + log derivation. Skip for:
+  //   - shared-address chains (Solana, Tron-static)
+  //   - recycled EVM addresses (counter already advanced when first derived;
+  //     derived_addresses row already exists)
+  const isStaticShared =
+    net.kind === "solana" || (net.kind === "tron" && xpub.startsWith("T"));
+  if (!isStaticShared && !recycledEvmAddress) {
     await supabaseAdmin
       .from("chain_configs")
       .update({ next_address_index: index + 1, next_derivation_index: index + 1 })
@@ -118,6 +138,7 @@ export async function deriveInvoiceAddress(
         address_index: index,
       });
   }
+
 
   return { address, cryptoAmount, rate, index, chainConfigId: cfg.id };
 }
@@ -175,4 +196,52 @@ async function applyAmountNonce(
   const adjusted = centsCeil / 100 + nonce / 1e5;
   return Number(adjusted.toFixed(8));
 }
+
+/**
+ * Find an EVM address from a prior expired/cancelled invoice on this
+ * store+chain that we can safely hand to a new invoice. "Safe" = the address
+ * has never received funds: every invoice ever recorded against it must be in
+ * a terminal-unpaid state (expired or cancelled). If any invoice on the
+ * address is pending/detected/underpaid/confirmed/overpaid/failed, we skip it.
+ *
+ * Returns the recycled address + its original derivation index, or null.
+ */
+async function findRecyclableEvmAddress(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabaseAdmin: any,
+  storeId: string,
+  chain: string,
+): Promise<{ address: string; address_index: number | null } | null> {
+  const TERMINAL_UNPAID = new Set(["expired", "cancelled"]);
+
+  // Pull recent expired/cancelled invoices on this store+chain.
+  const { data: candidates } = await supabaseAdmin
+    .from("invoices")
+    .select("address, address_index, created_at")
+    .eq("store_id", storeId)
+    .eq("chain", chain)
+    .in("status", ["expired", "cancelled"])
+    .not("address", "is", null)
+    .order("created_at", { ascending: true })
+    .limit(50);
+
+  for (const c of (candidates ?? []) as Array<{ address: string; address_index: number | null }>) {
+    // Verify NO invoice on this address is in a non-terminal-unpaid state.
+    const { data: siblings } = await supabaseAdmin
+      .from("invoices")
+      .select("status")
+      .eq("store_id", storeId)
+      .eq("chain", chain)
+      .eq("address", c.address);
+    const allUnpaid = (siblings ?? []).every((s: { status: string }) =>
+      TERMINAL_UNPAID.has(s.status),
+    );
+    if (allUnpaid) {
+      return { address: c.address, address_index: c.address_index };
+    }
+  }
+  return null;
+}
+
+
 
