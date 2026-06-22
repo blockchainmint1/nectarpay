@@ -581,16 +581,6 @@ function PayingFrame({
           </span>
         </label>
 
-        {showSwitch && (
-          <button
-            type="button"
-            onClick={onSwitch}
-            disabled={switching}
-            className="mt-1 text-xs font-semibold text-primary underline underline-offset-4 hover:text-primary/80 disabled:opacity-50"
-          >
-            {switching ? "Switching…" : `← Pay with a different network (${otherChains.length} available)`}
-          </button>
-        )}
       </div>
 
 
