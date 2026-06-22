@@ -249,7 +249,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
   }
 
   return (
-    <div className="mt-6 rounded-lg border border-border bg-card/60 p-5">
+    <div className="mt-6 rounded-lg border border-primary/30 bg-primary/5 p-5 ring-1 ring-primary/10">
       <div className="flex items-center gap-2">
         <Settings className="h-4 w-4 text-muted-foreground" />
         <h2 className="text-sm font-medium">Payment confirmation</h2>
