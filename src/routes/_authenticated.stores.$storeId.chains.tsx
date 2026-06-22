@@ -120,7 +120,7 @@ function ChainsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("chain_configs")
-        .select("id, chain, xpub, xpub_or_address, enabled")
+        .select("id, chain, xpub, xpub_or_address, enabled, stables")
         .eq("store_id", storeId);
       if (error) throw error;
       return data ?? [];
