@@ -128,6 +128,70 @@ if (!crypto.timingSafeEqual(Buffer.from(v1), Buffer.from(expected))) reject();`}
             to install our plugin in under five minutes.
           </p>
         </Section>
+
+        <div className="mt-16 rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-card/60 to-card/60 p-6 sm:p-8">
+          <h2 className="text-2xl font-semibold tracking-tight">
+            Don't trust us? <span className="honey-text">Good.</span>
+          </h2>
+          <div className="mt-3 space-y-3 text-sm leading-relaxed text-muted-foreground">
+            <p>
+              We get it. The whole point of crypto is{" "}
+              <span className="text-foreground">don't trust, verify</span>. A payment
+              processor asking you to take its word for it is the exact thing we built
+              Nectar.Pay to replace. We don't hold your keys — and you don't have to take
+              our word for that either.
+            </p>
+            <p>
+              Read the source. Run it yourself. Or fork the whole thing and run a
+              competing gateway — we honestly don't mind. The bees do better when the
+              hive is bigger.
+            </p>
+          </div>
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <a
+              href="https://github.com/honest-money/nectar-pay"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex flex-col rounded-xl border border-border bg-card/60 p-5 transition hover:border-primary/50 hover:bg-card"
+            >
+              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Read the code
+              </div>
+              <div className="mt-1 text-base font-semibold text-foreground">
+                Source on GitHub →
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Every line of the gateway, SDK, and watcher. MIT-ish, audit-friendly,
+                no hidden custody layer.
+              </p>
+            </a>
+
+            <a
+              href="https://lovable.dev/projects/faa7c23e-4f75-4eed-8c8c-23234e4242f7?remix=1"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex flex-col rounded-xl border border-primary/40 bg-primary/10 p-5 transition hover:border-primary hover:bg-primary/15"
+            >
+              <div className="text-xs font-semibold uppercase tracking-wider text-primary">
+                Run your own — $999
+              </div>
+              <div className="mt-1 text-base font-semibold text-foreground">
+                Buy the remix on Lovable →
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                One-click clone of the entire Nectar.Pay stack into your own Lovable
+                workspace. Your domain, your keys, your hive. Checkout via
+                blockchainmint.com — coming soon.
+              </p>
+            </a>
+          </div>
+
+          <p className="mt-4 text-xs text-muted-foreground">
+            Prefer to self-host the GitHub source? Go for it — no license fee, no
+            phone-home. The $999 remix is just the shortcut.
+          </p>
+        </div>
       </section>
       <MarketingFooter />
     </div>
