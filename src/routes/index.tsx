@@ -29,6 +29,8 @@ const CHAINS = [
   { label: "USDC", code: "stable", live: true },
   { label: "USDT", code: "stable", live: true },
   { label: "PYUSD", code: "stable", live: true },
+  { label: "DAI", code: "stable", live: true },
+
 ];
 
 
