@@ -93,8 +93,13 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
       .order("first_seen_at", { ascending: false });
 
     // Build the full list of payment options: every enabled chain's native
-    // asset + every stable the merchant has opted into per chain.
-    const { SUPPORTED_STABLES_BY_CHAIN } = await import("@/lib/chains/networks");
+    // asset + every stable the merchant has opted into per chain. For stables
+    // enabled on the shared EVM xpub (chain="eth"), we list every EVM network
+    // where the watcher will detect that token, since they all share the same
+    // derived address — e.g. "USDC on Ethereum, Base or BSC".
+    const { SUPPORTED_STABLES_BY_CHAIN, evmChainsForStable, EVM_CHAIN_LABEL } = await import(
+      "@/lib/chains/networks"
+    );
     const NATIVE_LABEL: Record<string, string> = {
       btc: "Bitcoin",
       txc: "TEXITcoin",
@@ -113,6 +118,12 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
       .eq("store_id", inv.store_id)
       .eq("enabled", true);
 
+    function joinNetworks(names: string[]): string {
+      if (names.length <= 1) return names.join("");
+      if (names.length === 2) return `${names[0]} or ${names[1]}`;
+      return `${names.slice(0, -1).join(", ")} or ${names[names.length - 1]}`;
+    }
+
     const availableOptions: CheckoutPaymentOption[] = [];
     for (const cfg of cfgs ?? []) {
       const chain = cfg.chain as string;
@@ -126,14 +137,22 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
       const enabled = ((cfg.stables ?? []) as string[]).map((s) => s.toUpperCase());
       for (const sym of allow) {
         if (!enabled.includes(sym)) continue;
+        let label: string;
+        if (chain === "eth") {
+          const nets = evmChainsForStable(sym).map((k) => EVM_CHAIN_LABEL[k]);
+          label = `${sym} on ${joinNetworks(nets)}`;
+        } else {
+          label = `${sym} on ${NATIVE_LABEL[chain] ?? chain.toUpperCase()}`;
+        }
         availableOptions.push({
           chain,
           tokenSymbol: sym,
           key: `${chain}:${sym}`,
-          label: `${sym} on ${NATIVE_LABEL[chain] ?? chain.toUpperCase()}`,
+          label,
         });
       }
     }
+
 
     return {
       found: true as const,
