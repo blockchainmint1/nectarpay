@@ -377,7 +377,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               // Stable transfer → invoice must have token_symbol = t.asset (USDC/USDT/PYUSD).
               // Native transfer → invoice.token_symbol IS NULL.
               // Native invoices may be on "eth" as a generic EVM catch-all; stable invoices are pinned to the specific chain.
-              const matchChains = t.isNative ? [net.symbol, "eth"] : [net.symbol];
+              const matchChains = (t.isNative ? [net.symbol, "eth"] : [net.symbol]) as never[];
               const invQuery = supabaseAdmin
                 .from("invoices")
                 .select("id, fiat_amount, status, chain, token_symbol")
