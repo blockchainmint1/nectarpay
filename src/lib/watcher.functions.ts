@@ -98,6 +98,7 @@ export async function recordTransaction(
   confirmations: number,
   blockHeight: number | null,
   isConfirmed: boolean,
+  tokenSymbol: string | null = null,
 ) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: existing } = await supabaseAdmin
@@ -125,9 +126,11 @@ export async function recordTransaction(
       block_height: blockHeight,
       first_seen_at: now,
       confirmed_at: isConfirmed ? now : null,
+      token_symbol: tokenSymbol,
     });
   }
 }
+
 
 export async function settleInvoice(
   invoiceId: string,
@@ -370,26 +373,38 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             r.credits += transfers.length;
 
             for (const t of transfers) {
-              // Invoice may be issued on this specific EVM chain (eth/base/bsc),
-              // or on "eth" as the catch-all if the merchant only sells in ETH terms.
-              const { data: inv } = await supabaseAdmin
+              // Match invoice on (address, chain, token_symbol).
+              // Stable transfer → invoice must have token_symbol = t.asset (USDC/USDT/PYUSD).
+              // Native transfer → invoice.token_symbol IS NULL.
+              // Native invoices may be on "eth" as a generic EVM catch-all; stable invoices are pinned to the specific chain.
+              const matchChains = (t.isNative ? [net.symbol, "eth"] : [net.symbol]) as never[];
+              const invQuery = supabaseAdmin
                 .from("invoices")
-                .select("id, fiat_amount, status, chain")
+                .select("id, fiat_amount, status, chain, token_symbol")
                 .eq("address", t.to.toLowerCase())
-                .in("chain", [net.symbol, "eth"])
-                .maybeSingle();
+                .in("chain", matchChains);
+              const { data: candidates } = await invQuery;
+              const inv = (candidates ?? []).find((c) =>
+                t.isNative ? c.token_symbol == null : (c.token_symbol ?? "").toUpperCase() === t.asset.toUpperCase(),
+              );
               if (!inv) continue;
               const rawAmount = BigInt(t.rawValue);
               const human = Number(rawAmount) / 10 ** t.decimals;
+              // Stables = $1; native uses live rate.
               const usd = t.isNative ? human * (await getUsdRate(net.symbol)) : human;
               const confirmations = tip - t.blockNum + 1;
               const cfg = configList[0];
               const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, usd);
               const isConfirmed = confirmations >= required;
-              await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed);
-              const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
-              if (settled.changed) r.invoicesUpdated++;
+              await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed, t.asset);
+              if (isConfirmed) {
+                const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
+                if (settled.changed) r.invoicesUpdated++;
+              } else if (await markInvoiceDetected(inv.id)) {
+                r.invoicesUpdated++;
+              }
             }
+
 
             await supabaseAdmin
               .from("watcher_cursors")
@@ -451,19 +466,22 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           const credits = await getTronTransfersTo(net, key, a.address).catch(() => []);
           r.credits += credits.length;
           for (const t of credits) {
-            const { data: inv } = await supabaseAdmin
+            const { data: candidates } = await supabaseAdmin
               .from("invoices")
-              .select("id, fiat_amount, status")
+              .select("id, fiat_amount, status, token_symbol")
               .eq("address", a.address)
-              .eq("chain", "tron")
-              .maybeSingle();
+              .eq("chain", "tron");
+            const inv = (candidates ?? []).find((c) =>
+              t.isNative ? c.token_symbol == null : (c.token_symbol ?? "").toUpperCase() === t.asset.toUpperCase(),
+            );
             if (!inv) continue;
             const human = Number(BigInt(t.rawValue)) / 10 ** t.decimals;
             const usd = t.isNative ? human * (await getUsdRate("TRX")) : human;
-            await recordTransaction(inv.id, t.txHash, human, net.confirmationsRequired, null, true);
+            await recordTransaction(inv.id, t.txHash, human, net.confirmationsRequired, null, true, t.asset);
             const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
             if (settled.changed) r.invoicesUpdated++;
           }
+
         }
 
         await supabaseAdmin
@@ -499,40 +517,42 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           const credits = await getSolanaCreditsTo(net, key, a.address).catch(() => []);
           r.credits += credits.length;
           for (const c of credits) {
-            // Match by memo (invoice id prefix) within this store, or fall back to single open invoice on the address.
-            type InvMatch = { id: string; fiat_amount: number; status: string };
+            // Match by memo (invoice id prefix) within this store, then by address+token.
+            // Asset must match token_symbol (USDC/USDT/PYUSD) or be NULL for native SOL.
+            type InvMatch = { id: string; fiat_amount: number; status: string; token_symbol: string | null };
+            const matchToken = (row: InvMatch) =>
+              c.isNative ? row.token_symbol == null : (row.token_symbol ?? "").toUpperCase() === c.asset.toUpperCase();
             let inv: InvMatch | null = null;
             if (c.memo) {
               const prefix = c.memo.trim().slice(0, 8);
               const { data } = await supabaseAdmin
                 .from("invoices")
-                .select("id, fiat_amount, status")
+                .select("id, fiat_amount, status, token_symbol")
                 .eq("store_id", a.store_id)
                 .eq("chain", "sol")
-                .ilike("id", `${prefix}%`)
-                .maybeSingle();
-              inv = data as InvMatch | null;
+                .ilike("id", `${prefix}%`);
+              inv = ((data ?? []) as InvMatch[]).find(matchToken) ?? null;
             }
             if (!inv) {
               const { data } = await supabaseAdmin
                 .from("invoices")
-                .select("id, fiat_amount, status")
+                .select("id, fiat_amount, status, token_symbol")
                 .eq("address", a.address)
                 .eq("chain", "sol")
                 .in("status", ["pending", "underpaid"])
                 .order("created_at", { ascending: false })
-                .limit(1)
-                .maybeSingle();
-              inv = data as InvMatch | null;
+                .limit(10);
+              inv = ((data ?? []) as InvMatch[]).find(matchToken) ?? null;
             }
             if (!inv) continue;
             const human = Number(BigInt(c.rawValue)) / 10 ** c.decimals;
             const usd = c.isNative ? human * (await getUsdRate("SOL")) : human;
             const isConfirmed = c.confirmations >= net.confirmationsRequired;
-            await recordTransaction(inv.id, c.signature, human, c.confirmations, c.slot, isConfirmed);
+            await recordTransaction(inv.id, c.signature, human, c.confirmations, c.slot, isConfirmed, c.asset);
             const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
             if (settled.changed) r.invoicesUpdated++;
           }
+
         }
 
         await supabaseAdmin
