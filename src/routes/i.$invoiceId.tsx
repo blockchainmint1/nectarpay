@@ -471,7 +471,7 @@ function PayingFrame({
             ≈ {inv.fiatAmount.toFixed(2)} {inv.fiatCurrency.toUpperCase()}
             {inv.rate ? <span className="ml-2 opacity-60">@ {inv.rate.toLocaleString()}</span> : null}
             {inv.tokenSymbol && (
-              <span className="ml-2 opacity-60">· on {CHAIN_LABEL[inv.chain] ?? inv.chain}</span>
+              <span className="ml-2 opacity-60">· on {chainLabelFor(inv.chain, inv.tokenSymbol)}</span>
             )}
           </p>
         </div>
@@ -485,8 +485,8 @@ function PayingFrame({
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs uppercase tracking-wider text-muted-foreground">
               {inv.tokenSymbol
-                ? `${inv.tokenSymbol} (${CHAIN_LABEL[inv.chain] ?? inv.chain}) address`
-                : `${CHAIN_LABEL[inv.chain] ?? inv.chain} address`}
+                ? `${inv.tokenSymbol} (${chainLabelFor(inv.chain, inv.tokenSymbol)}) address`
+                : `${chainLabelFor(inv.chain, inv.tokenSymbol)} address`}
             </span>
             <CopyButton value={inv.address} />
           </div>
