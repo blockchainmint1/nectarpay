@@ -37,7 +37,7 @@ function AuthenticatedLayout() {
       <aside className="hidden w-60 shrink-0 flex-col border-r border-border/60 bg-sidebar p-4 md:flex">
         <Link to="/" className="flex items-center gap-2 px-2 py-2 font-semibold tracking-tight">
           <span className="inline-block h-2.5 w-2.5 rounded-sm bg-primary glow" />
-          <span className="text-sm">pay<span className="text-primary">HME</span></span>
+          <span className="text-sm">Nectar<span className="text-primary">.Pay</span></span>
         </Link>
 
         <nav className="mt-6 flex flex-col gap-1">
