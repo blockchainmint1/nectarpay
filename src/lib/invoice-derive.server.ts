@@ -57,12 +57,26 @@ export async function deriveInvoiceAddress(
 
   let address: string;
   let index = cfg.next_address_index ?? 0;
+  let recycledEvmAddress = false;
   const xpub = cfg.xpub ?? cfg.xpub_or_address;
 
   if (net.kind === "btc-like") {
     address = deriveBtcLikeAddress(xpub, net, index);
   } else if (net.kind === "evm") {
-    address = deriveEvmAddress(xpub, net, index);
+    // EVM is account-based — each derived address must be swept individually
+    // (gas per address per token). When an invoice expires unpaid, the index
+    // is wasted forever unless we recycle it. Try to reuse an address from a
+    // prior expired/cancelled invoice on this store+chain that has NEVER
+    // received funds (no pending/detected/underpaid/confirmed/overpaid
+    // invoice ever landed on it). Falls back to fresh derivation.
+    const recycled = await findRecyclableEvmAddress(supabaseAdmin, storeId, chain);
+    if (recycled) {
+      address = recycled.address;
+      index = recycled.address_index ?? index;
+      recycledEvmAddress = true;
+    } else {
+      address = deriveEvmAddress(xpub, net, index);
+    }
   } else if (net.kind === "tron") {
     address = xpub.startsWith("T") ? xpub : deriveTronAddress(xpub, index);
     if (xpub.startsWith("T")) index = 0;
@@ -70,6 +84,7 @@ export async function deriveInvoiceAddress(
     address = cfg.xpub_or_address;
     index = 0;
   }
+
 
   // Rate: stable = $1; otherwise look up the chain's native asset.
   const baseSymbol = tokenSymbol
