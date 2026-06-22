@@ -197,9 +197,9 @@ export const SOL_NETWORK: SolanaNetwork = {
 
 /** Stable symbols we allow to be enabled per chain. Curated whitelist. */
 export const SUPPORTED_STABLES_BY_CHAIN: Partial<Record<ChainKind, readonly string[]>> = {
-  eth: ["USDC", "USDT", "PYUSD"],
-  base: ["USDC"],
-  bsc: ["USDT", "USDC"],
+  eth: ["USDC", "USDT", "PYUSD", "DAI"],
+  base: ["USDC", "DAI"],
+  bsc: ["USDT", "USDC", "DAI"],
   tron: ["USDT", "USDC"],
   sol: ["USDC", "USDT", "PYUSD"],
 };
