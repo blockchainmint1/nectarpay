@@ -680,20 +680,20 @@ function ChainPickerFrame({
   fiatCurrency: string;
   description: string | null;
   countdown: ReturnType<typeof useCountdown>;
-  availableChains: string[];
+  availableOptions: CheckoutPaymentOption[];
 }) {
   const selectChain = useServerFn(selectInvoiceChain);
   const [picking, setPicking] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
-  async function pick(chain: string) {
+  async function pick(optionKey: string) {
     setErr(null);
-    setPicking(chain);
+    setPicking(optionKey);
     try {
-      await selectChain({ data: { id: invoiceId, chain: chain as never } });
+      await selectChain({ data: { id: invoiceId, option: optionKey } });
       // Polling query will refetch and the page will switch to PayingFrame.
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Could not select chain.");
+      setErr(e instanceof Error ? e.message : "Could not select option.");
       setPicking(null);
     }
   }
@@ -733,33 +733,32 @@ function ChainPickerFrame({
       <div className="mt-7">
         <p className="text-sm font-medium">Choose how you'd like to pay</p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Pick a network — we'll generate a payment address for you.
+          Pick a network or stablecoin — we'll generate a payment address for you.
         </p>
 
-        {availableChains.length === 0 ? (
+        {availableOptions.length === 0 ? (
           <div className="mt-4 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-            This merchant hasn't enabled any payment networks yet.
+            This merchant hasn't enabled any payment options yet.
           </div>
         ) : (
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {availableChains.map((c) => {
-              const label = CHAIN_LABEL[c] ?? c.toUpperCase();
-              const isLoading = picking === c;
+            {availableOptions.map((o) => {
+              const isLoading = picking === o.key;
               return (
                 <button
-                  key={c}
+                  key={o.key}
                   type="button"
                   disabled={picking !== null}
-                  onClick={() => pick(c)}
+                  onClick={() => pick(o.key)}
                   className={cn(
                     "group relative flex items-center justify-between rounded-xl border border-border/60 bg-background/40 p-4 text-left transition-all",
                     "hover:border-primary/60 hover:bg-card disabled:opacity-50",
                   )}
                 >
                   <div>
-                    <p className="text-sm font-semibold">{label}</p>
+                    <p className="text-sm font-semibold">{o.label}</p>
                     <p className="mt-0.5 text-[11px] uppercase tracking-wider text-muted-foreground">
-                      {c}
+                      {o.tokenSymbol ? `${o.tokenSymbol} · ${o.chain}` : o.chain}
                     </p>
                   </div>
                   {isLoading ? (
