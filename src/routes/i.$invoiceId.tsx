@@ -770,7 +770,7 @@ function ChainPickerFrame({
                   <div>
                     <p className="text-sm font-semibold">{o.label}</p>
                     <p className="mt-0.5 text-[11px] uppercase tracking-wider text-muted-foreground">
-                      {o.tokenSymbol ? `${o.tokenSymbol} · ${o.chain}` : o.chain}
+                      {o.tokenSymbol ? `${o.tokenSymbol} · ${chainShortFor(o.chain, o.tokenSymbol)}` : o.chain}
                     </p>
                   </div>
                   {isLoading ? (
