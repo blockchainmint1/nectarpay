@@ -345,6 +345,7 @@ function useInvoiceType() {
   return null as null | {
     id: string;
     chain: string;
+    tokenSymbol: string | null;
     fiatAmount: number;
     fiatCurrency: string;
     cryptoAmount: number | null;
