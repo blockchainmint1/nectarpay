@@ -468,14 +468,23 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           for (const t of credits) {
             const { data: candidates } = await supabaseAdmin
               .from("invoices")
-              .select("id, fiat_amount, status, token_symbol")
+              .select("id, fiat_amount, status, token_symbol, crypto_amount")
               .eq("address", a.address)
-              .eq("chain", "tron");
-            const inv = (candidates ?? []).find((c) =>
-              t.isNative ? c.token_symbol == null : (c.token_symbol ?? "").toUpperCase() === t.asset.toUpperCase(),
-            );
-            if (!inv) continue;
+              .eq("chain", "tron")
+              .in("status", ["pending", "detected", "underpaid"]);
             const human = Number(BigInt(t.rawValue)) / 10 ** t.decimals;
+            // Match by token + amount-within-tolerance. The 5th-decimal nonce
+            // applied at invoice creation makes the expected amount unique
+            // across concurrent pending invoices on this shared address.
+            const inv = (candidates ?? []).find((c) => {
+              const tokOk = t.isNative
+                ? c.token_symbol == null
+                : (c.token_symbol ?? "").toUpperCase() === t.asset.toUpperCase();
+              if (!tokOk) return false;
+              if (c.crypto_amount == null) return false;
+              return Math.abs(human - Number(c.crypto_amount)) <= 0.000005;
+            });
+            if (!inv) continue;
             const usd = t.isNative ? human * (await getUsdRate("TRX")) : human;
             await recordTransaction(inv.id, t.txHash, human, net.confirmationsRequired, null, true, t.asset);
             const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
@@ -483,6 +492,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           }
 
         }
+
 
         await supabaseAdmin
           .from("watcher_cursors")
