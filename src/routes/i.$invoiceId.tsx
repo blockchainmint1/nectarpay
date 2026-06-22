@@ -388,20 +388,21 @@ function PayingFrame({
   const isDetected = inv.status === "detected" || inv.status === "underpaid";
   const latestTx = txs[0];
   const progress = latestTx ? Math.min(100, (latestTx.confirmations / requiredConfs) * 100) : 0;
-  const clearChain = useServerFn(clearInvoiceChain);
-  const [switching, setSwitching] = useState(false);
+  const selectChain = useServerFn(selectInvoiceChain);
+  const [switching, setSwitching] = useState<string | null>(null);
 
   const otherChains = availableChains.filter((c) => c !== inv.chain);
   const showSwitch = canSwitchChain && otherChains.length > 0;
 
-  async function onSwitch() {
-    setSwitching(true);
+  async function onSwitchTo(chain: string) {
+    setSwitching(chain);
     try {
-      await clearChain({ data: { id: inv.id } });
-      // Polling query will refetch and the page will switch to ChainPickerFrame.
+      await selectChain({ data: { id: inv.id, chain: chain as never } });
+      // Polling query refetches with the new chain/address/amount.
     } catch (e) {
-      setSwitching(false);
       alert(e instanceof Error ? e.message : "Could not switch chain.");
+    } finally {
+      setSwitching(null);
     }
   }
 
