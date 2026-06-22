@@ -47,6 +47,18 @@ const CHAIN_LABEL: Record<string, string> = {
   zcu: "ZCU",
 };
 
+// For stablecoins on the shared EVM xpub (chain="eth"), the derived address
+// works across every EVM network we scan — show "EVM" instead of "Ethereum"
+// so customers don't think it's Ethereum mainnet only.
+function chainLabelFor(chain: string, tokenSymbol: string | null | undefined): string {
+  if (tokenSymbol && chain === "eth") return "EVM";
+  return CHAIN_LABEL[chain] ?? chain;
+}
+function chainShortFor(chain: string, tokenSymbol: string | null | undefined): string {
+  if (tokenSymbol && chain === "eth") return "EVM";
+  return chain.toUpperCase();
+}
+
 function chainAccent(chain: string): string {
   // Tailwind classes — keep within design tokens, just shift hue per chain.
   switch (chain) {
@@ -459,7 +471,7 @@ function PayingFrame({
             ≈ {inv.fiatAmount.toFixed(2)} {inv.fiatCurrency.toUpperCase()}
             {inv.rate ? <span className="ml-2 opacity-60">@ {inv.rate.toLocaleString()}</span> : null}
             {inv.tokenSymbol && (
-              <span className="ml-2 opacity-60">· on {CHAIN_LABEL[inv.chain] ?? inv.chain}</span>
+              <span className="ml-2 opacity-60">· on {chainLabelFor(inv.chain, inv.tokenSymbol)}</span>
             )}
           </p>
         </div>
@@ -473,8 +485,8 @@ function PayingFrame({
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs uppercase tracking-wider text-muted-foreground">
               {inv.tokenSymbol
-                ? `${inv.tokenSymbol} (${CHAIN_LABEL[inv.chain] ?? inv.chain}) address`
-                : `${CHAIN_LABEL[inv.chain] ?? inv.chain} address`}
+                ? `${inv.tokenSymbol} (${chainLabelFor(inv.chain, inv.tokenSymbol)}) address`
+                : `${chainLabelFor(inv.chain, inv.tokenSymbol)} address`}
             </span>
             <CopyButton value={inv.address} />
           </div>
@@ -509,7 +521,7 @@ function PayingFrame({
                       />
                       {o.label}
                       <span className="text-[11px] font-normal uppercase tracking-wider text-muted-foreground">
-                        {o.tokenSymbol ? `${o.tokenSymbol}·${o.chain}` : o.chain}
+                        {o.tokenSymbol ? `${o.tokenSymbol}·${chainShortFor(o.chain, o.tokenSymbol)}` : o.chain}
                       </span>
                     </span>
                     <span className="text-[11px] font-medium text-muted-foreground group-hover:text-primary">
@@ -574,7 +586,7 @@ function PayingFrame({
           Open in wallet
         </a>
         <p className="text-center text-[11px] leading-snug text-muted-foreground">
-          Scan with your phone or tap to open your installed {CHAIN_LABEL[inv.chain] ?? "crypto"} wallet.
+          Scan with your phone or tap to open your installed {inv.tokenSymbol && inv.chain === "eth" ? "EVM" : (CHAIN_LABEL[inv.chain] ?? "crypto")} wallet.
         </p>
 
         <label className="mt-1 flex w-full cursor-pointer items-start gap-2 rounded-md border border-border/60 bg-background/40 px-3 py-2 text-left">
@@ -758,7 +770,7 @@ function ChainPickerFrame({
                   <div>
                     <p className="text-sm font-semibold">{o.label}</p>
                     <p className="mt-0.5 text-[11px] uppercase tracking-wider text-muted-foreground">
-                      {o.tokenSymbol ? `${o.tokenSymbol} · ${o.chain}` : o.chain}
+                      {o.tokenSymbol ? `${o.tokenSymbol} · ${chainShortFor(o.chain, o.tokenSymbol)}` : o.chain}
                     </p>
                   </div>
                   {isLoading ? (
