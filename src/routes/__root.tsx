@@ -80,27 +80,32 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "payHME — non-custodial crypto payments for any store" },
+      { title: "Nectar.Pay — No keys. No fees." },
       {
         name: "description",
         content:
-          "Accept BTC, TEXITcoin and EVM stablecoins on WooCommerce and any open ecommerce platform. Non-custodial. You hold the keys.",
+          "Nothing could be sweeter than keeping all of your money. Non-custodial crypto payment gateway for BTC, TEXITcoin and EVM stablecoins.",
       },
-      { property: "og:title", content: "payHME — non-custodial crypto payments for any store" },
+      { property: "og:title", content: "Nectar.Pay — No keys. No fees." },
       {
         property: "og:description",
-        content: "Non-custodial crypto payment gateway. Plug into WooCommerce in minutes.",
+        content:
+          "Nothing could be sweeter than keeping all of your money. Non-custodial crypto payments, direct to your wallet.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "Nectar.Pay" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "payHME — non-custodial crypto payments for any store" },
-      { name: "description", content: "payHME Gateway enables web stores to accept payments in various cryptocurrencies." },
-      { property: "og:description", content: "payHME Gateway enables web stores to accept payments in various cryptocurrencies." },
-      { name: "twitter:description", content: "payHME Gateway enables web stores to accept payments in various cryptocurrencies." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1fe402e2-5334-4652-98b5-cc8bdff11260/id-preview-981aa997--faa7c23e-4f75-4eed-8c8c-23234e4242f7.lovable.app-1782008798025.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1fe402e2-5334-4652-98b5-cc8bdff11260/id-preview-981aa997--faa7c23e-4f75-4eed-8c8c-23234e4242f7.lovable.app-1782008798025.png" },
+      { name: "twitter:title", content: "Nectar.Pay — No keys. No fees." },
+      {
+        name: "twitter:description",
+        content:
+          "Nothing could be sweeter than keeping all of your money. Non-custodial crypto payments, direct to your wallet.",
+      },
     ],
-    links: [{ rel: "stylesheet", href: appCss }],
+    links: [
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", type: "image/svg+xml", href: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 38'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0%25' stop-color='%23f5c44a'/><stop offset='100%25' stop-color='%23c98a2a'/></linearGradient></defs><path d='M16 2 L28 9 L28 23 L16 30 L4 23 L4 9 Z' fill='none' stroke='url(%23g)' stroke-width='3' stroke-linejoin='round'/><path d='M13.6 29.4 Q16 38 18.4 29.4 Z' fill='url(%23g)'/></svg>" },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,

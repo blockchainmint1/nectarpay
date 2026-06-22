@@ -3,11 +3,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
-      { title: "Privacy Policy — payHME" },
+      { title: "Privacy Policy — Nectar.Pay" },
       {
         name: "description",
         content:
-          "How payHME handles merchant and customer data. Non-custodial by design: we never see customer wallets, balances, or private keys.",
+          "How Nectar.Pay handles merchant and customer data. Non-custodial by design: we never see customer wallets, balances, or private keys.",
       },
     ],
   }),
@@ -23,15 +23,15 @@ function PrivacyPage() {
         to="/"
         className="mb-8 inline-flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground"
       >
-        ← payHME
+        ← Nectar.Pay
       </Link>
       <h1 className="text-4xl font-bold tracking-tight">Privacy Policy</h1>
       <p className="mt-2 text-sm text-muted-foreground">Effective {EFFECTIVE}</p>
 
       <div className="prose prose-neutral mt-10 max-w-none dark:prose-invert">
         <p className="text-base text-muted-foreground">
-          This page is maintained by payHME to describe what data we collect,
-          why, and what we don't. payHME is non-custodial — we don't see
+          This page is maintained by Nectar.Pay to describe what data we collect,
+          why, and what we don't. Nectar.Pay is non-custodial — we don't see
           customer funds or keys, and we work hard to collect as little
           personal data as we can while still running a reliable gateway.
         </p>
@@ -142,7 +142,7 @@ function PrivacyPage() {
 
         <h2>9. Children</h2>
         <p>
-          payHME is for businesses and adults. We do not knowingly collect
+          Nectar.Pay is for businesses and adults. We do not knowingly collect
           data from anyone under 18.
         </p>
 
@@ -160,7 +160,7 @@ function PrivacyPage() {
 
         <hr className="my-10 border-border" />
         <p className="text-sm text-muted-foreground">
-          payHME is part of the{" "}
+          Nectar.Pay is part of the{" "}
           <a href="https://honest.money">Honest Money Ecosystem</a>.
         </p>
       </div>

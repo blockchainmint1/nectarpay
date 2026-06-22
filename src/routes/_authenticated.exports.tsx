@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/exports")({
-  head: () => ({ meta: [{ title: "Exports · payHME" }] }),
+  head: () => ({ meta: [{ title: "Exports · Nectar.Pay" }] }),
   component: ExportsPage,
 });
 
@@ -179,7 +179,7 @@ function ExportsPage() {
           <p>1. In QuickBooks Online, go to <strong>Settings → Import data → Sales Receipts</strong>.</p>
           <p>2. Upload the CSV. QBO will auto-map most columns; confirm <em>Customer</em>, <em>Date</em>, and <em>Amount</em>.</p>
           <p>3. If prompted, create the <code className="rounded bg-muted px-1">Crypto Payment</code> product/service first (type: Service, income account of your choice).</p>
-          <p>4. Review and import. Each paid payHME invoice becomes one Sales Receipt.</p>
+          <p>4. Review and import. Each paid Nectar.Pay invoice becomes one Sales Receipt.</p>
         </CardContent>
       </Card>
     </div>

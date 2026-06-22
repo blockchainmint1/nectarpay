@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/integrations/woocommerce")({
   head: () => ({
     meta: [
-      { title: "WooCommerce integration · TEXITcoin Pay" },
+      { title: "WooCommerce integration · Nectar.Pay" },
       {
         name: "description",
         content:
           "Install our WooCommerce plugin to accept BTC, TEXITcoin and stablecoins on your WordPress store. Non-custodial.",
       },
-      { property: "og:title", content: "WooCommerce + TEXITcoin Pay" },
+      { property: "og:title", content: "WooCommerce + Nectar.Pay" },
       {
         property: "og:description",
         content: "Non-custodial crypto payments for WooCommerce. Five-minute setup.",
@@ -62,12 +62,12 @@ function WooPage() {
           <Step
             n={2}
             title="Paste your API key"
-            body="WooCommerce → Settings → Payments → TEXITcoin Pay. Paste the API key and webhook secret from your TEXITcoin Pay dashboard."
+            body="WooCommerce → Settings → Payments → Nectar.Pay. Paste the API key and webhook secret from your Nectar.Pay dashboard."
           />
           <Step
             n={3}
             title="Enable the methods you want"
-            body="Toggle BTC, TXC and stablecoins independently. Set per-chain confirmation thresholds in the TEXITcoin Pay dashboard."
+            body="Toggle BTC, TXC and stablecoins independently. Set per-chain confirmation thresholds in the Nectar.Pay dashboard."
           />
           <Step
             n={4}

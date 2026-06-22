@@ -18,11 +18,11 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Sign in with TXC Wallet · payHME" },
+      { title: "Sign in with TXC Wallet · Nectar.Pay" },
       {
         name: "description",
         content:
-          "Scan with your TEXITcoin wallet to sign in. payHME is wallet-only — no email, no password, no custody.",
+          "Scan with your TEXITcoin wallet to sign in. Nectar.Pay is wallet-only — no email, no password, no custody.",
       },
     ],
   }),
@@ -282,7 +282,7 @@ function AuthPage() {
             </p>
             <p>
               Signing a sign-in request <strong className="text-foreground">does not</strong> move
-              any funds. payHME never holds your keys or your crypto.
+              any funds. Nectar.Pay never holds your keys or your crypto.
             </p>
           </div>
         </div>

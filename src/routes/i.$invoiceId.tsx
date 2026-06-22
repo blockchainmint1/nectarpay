@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/i/$invoiceId")({
   head: ({ params }) => ({
     meta: [
-      { title: `Pay invoice · payHME` },
+      { title: `Pay invoice · Nectar.Pay` },
       { name: "description", content: `Complete crypto payment for invoice ${params.invoiceId.slice(0, 8)}.` },
       { name: "robots", content: "noindex" },
     ],
@@ -90,7 +90,7 @@ function paymentUri(
       params.set("memo", memo);
       params.set("reference", memo);
     }
-    params.set("label", "payHME");
+    params.set("label", "Nectar.Pay");
     const qs = params.toString();
     return `solana:${address}${qs ? `?${qs}` : ""}`;
   }
@@ -203,7 +203,7 @@ function CheckoutPage() {
   const store = data?.found ? data.store : null;
   const availableOptions: CheckoutPaymentOption[] = data?.found ? data.availableOptions : [];
 
-  // SDK postMessage: when embedded in the payHME iframe modal, notify the parent
+  // SDK postMessage: when embedded in the Nectar.Pay iframe modal, notify the parent
   // window on terminal status transitions so merchants can listen for "paid".
   const lastStatusRef = useRef<string | null>(null);
   useEffect(() => {
@@ -246,7 +246,7 @@ function CheckoutPage() {
       <header className="relative z-10 mx-auto flex max-w-3xl items-center justify-between px-4 py-5">
         <div className="flex items-center gap-2 text-sm font-semibold tracking-tight">
           <span className="inline-block h-2.5 w-2.5 rounded-sm bg-primary glow" />
-          pay<span className="text-primary">HME</span>
+          Nectar<span className="text-primary">.Pay</span>
           {store && (
             <span className="ml-3 hidden text-muted-foreground sm:inline">
               for <span className="text-foreground">{store.name}</span>
@@ -340,7 +340,7 @@ function CheckoutPage() {
                 <ShieldCheck className="h-3.5 w-3.5 text-success" /> Non-custodial — funds go straight to the merchant
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-primary" /> Powered by payHME
+                <Sparkles className="h-3.5 w-3.5 text-primary" /> Powered by Nectar.Pay
               </span>
             </div>
           </div>
