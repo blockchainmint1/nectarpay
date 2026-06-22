@@ -26,15 +26,11 @@ export const Route = createFileRoute("/")({
 const CHAINS = [
   { label: "Bitcoin", code: "BTC", live: true },
   { label: "TEXITcoin", code: "TXC", live: true },
-  { label: "USDC", code: "ERC-20", live: true },
-  { label: "USDT", code: "ERC-20", live: true },
-  { label: "Base", code: "L2", live: true },
-  { label: "Tron", code: "TRX + TRC-20", live: true },
-  { label: "Solana", code: "SOL + SPL", live: true },
-  { label: "Dogecoin", code: "DOGE", live: false },
-  { label: "Iskander Coin", code: "ISK", live: false },
-  { label: "ZCU", code: "ZCU", live: false },
+  { label: "USDC", code: "stable", live: true },
+  { label: "USDT", code: "stable", live: true },
+  { label: "PYUSD", code: "stable", live: true },
 ];
+
 
 function HomePage() {
   return (
