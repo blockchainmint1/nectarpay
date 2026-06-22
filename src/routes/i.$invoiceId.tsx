@@ -586,7 +586,7 @@ function PayingFrame({
           Open in wallet
         </a>
         <p className="text-center text-[11px] leading-snug text-muted-foreground">
-          Scan with your phone or tap to open your installed {CHAIN_LABEL[inv.chain] ?? "crypto"} wallet.
+          Scan with your phone or tap to open your installed {inv.tokenSymbol && inv.chain === "eth" ? "EVM" : (CHAIN_LABEL[inv.chain] ?? "crypto")} wallet.
         </p>
 
         <label className="mt-1 flex w-full cursor-pointer items-start gap-2 rounded-md border border-border/60 bg-background/40 px-3 py-2 text-left">
