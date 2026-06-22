@@ -300,7 +300,7 @@ function CheckoutPage() {
                     fiatCurrency={inv.fiatCurrency}
                     description={inv.description}
                     countdown={countdown}
-                    availableChains={availableChains}
+                    availableOptions={availableOptions}
                   />
                 )}
 
@@ -314,7 +314,7 @@ function CheckoutPage() {
                     countdown={countdown}
                     txs={txs}
                     requiredConfs={requiredConfs}
-                    availableChains={availableChains}
+                    availableOptions={availableOptions}
                     canSwitchChain={inv.status === "pending" && txs.length === 0}
                   />
 
