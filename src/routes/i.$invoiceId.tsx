@@ -673,7 +673,7 @@ function ChainPickerFrame({
   fiatCurrency,
   description,
   countdown,
-  availableChains,
+  availableOptions,
 }: {
   invoiceId: string;
   fiatAmount: number;
