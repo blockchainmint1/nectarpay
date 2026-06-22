@@ -66,6 +66,7 @@ export type Database = {
           next_address_index: number
           next_derivation_index: number
           qr_address_only: boolean
+          stables: string[]
           store_id: string
           updated_at: string
           xpub: string | null
@@ -81,6 +82,7 @@ export type Database = {
           next_address_index?: number
           next_derivation_index?: number
           qr_address_only?: boolean
+          stables?: string[]
           store_id: string
           updated_at?: string
           xpub?: string | null
@@ -96,6 +98,7 @@ export type Database = {
           next_address_index?: number
           next_derivation_index?: number
           qr_address_only?: boolean
+          stables?: string[]
           store_id?: string
           updated_at?: string
           xpub?: string | null
@@ -175,6 +178,7 @@ export type Database = {
           redirect_url: string | null
           status: Database["public"]["Enums"]["invoice_status"]
           store_id: string
+          token_symbol: string | null
           updated_at: string
         }
         Insert: {
@@ -198,6 +202,7 @@ export type Database = {
           redirect_url?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           store_id: string
+          token_symbol?: string | null
           updated_at?: string
         }
         Update: {
@@ -221,6 +226,7 @@ export type Database = {
           redirect_url?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           store_id?: string
+          token_symbol?: string | null
           updated_at?: string
         }
         Relationships: [

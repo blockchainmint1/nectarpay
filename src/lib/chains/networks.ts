@@ -122,6 +122,7 @@ export const ETH_NETWORK: EvmNetwork = {
   stables: [
     { symbol: "USDC", address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", decimals: 6 },
     { symbol: "USDT", address: "0xdac17f958d2ee523a2206206994597c13d831ec7", decimals: 6 },
+    { symbol: "PYUSD", address: "0x6c3ea9036406852006290770bedfcaba0e23a0e8", decimals: 6 },
   ],
   confirmationsRequired: 3,
 };
@@ -184,9 +185,44 @@ export const SOL_NETWORK: SolanaNetwork = {
   stables: [
     { symbol: "USDC", mint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", decimals: 6 },
     { symbol: "USDT", mint: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB", decimals: 6 },
+    { symbol: "PYUSD", mint: "2b1kV6DkPAnxd5ixfnxCpjxmKwqjjaYmCZfHsFu24GXo", decimals: 6 },
   ],
   confirmationsRequired: 1, // "confirmed" commitment
 };
+
+// ---- stables helpers ----
+
+/** Stable symbols we allow to be enabled per chain. Curated whitelist. */
+export const SUPPORTED_STABLES_BY_CHAIN: Partial<Record<ChainKind, readonly string[]>> = {
+  eth: ["USDC", "USDT", "PYUSD"],
+  base: ["USDC"],
+  bsc: ["USDT", "USDC"],
+  tron: ["USDT", "USDC"],
+  sol: ["USDC", "USDT", "PYUSD"],
+};
+
+export interface StableMeta {
+  chain: ChainKind;
+  symbol: string;
+  /** Contract address (EVM/Tron) or SPL mint (Solana). */
+  address: string;
+  decimals: number;
+}
+
+export function getStable(chain: ChainKind, symbol: string): StableMeta | null {
+  const net = getNetwork(chain);
+  if (!net) return null;
+  const sym = symbol.toUpperCase();
+  if (net.kind === "evm" || net.kind === "tron") {
+    const t = net.stables.find((s) => s.symbol.toUpperCase() === sym);
+    return t ? { chain, symbol: t.symbol, address: t.address, decimals: t.decimals } : null;
+  }
+  if (net.kind === "solana") {
+    const t = net.stables.find((s) => s.symbol.toUpperCase() === sym);
+    return t ? { chain, symbol: t.symbol, address: t.mint, decimals: t.decimals } : null;
+  }
+  return null;
+}
 
 export const ALL_NETWORKS = {
   btc: BTC_NETWORK,

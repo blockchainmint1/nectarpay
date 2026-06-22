@@ -85,7 +85,7 @@ export async function pollRates(): Promise<{
 /** Look up a USD rate for a chain symbol. Stablecoins return 1. */
 export async function getUsdRate(symbol: string): Promise<number> {
   const up = symbol.toUpperCase();
-  if (up === "USDC" || up === "USDT" || up === "DAI") return 1;
+  if (up === "USDC" || up === "USDT" || up === "DAI" || up === "PYUSD") return 1;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   // TRX is stored under chain="tron"; everything else lowercases.
   const chain = (up === "TRX" ? "tron" : up.toLowerCase()) as

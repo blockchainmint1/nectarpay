@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 // Inlined client-safe validators (mirror src/lib/chains/derive.server.ts).
 function isXpubLike(s: string): boolean {
   return /^([xtuvyz]pub)[1-9A-HJ-NP-Za-km-z]{100,120}$/.test(s.trim());
@@ -81,12 +82,24 @@ const CHAINS: ChainMeta[] = [
 
 
 
+// Stablecoin whitelist per chain. Mirrors SUPPORTED_STABLES_BY_CHAIN on the
+// server. Kept inline because this is a client component and the server
+// network module pulls in node-only crypto deps.
+const STABLES_BY_CHAIN: Partial<Record<ChainKey, readonly string[]>> = {
+  eth: ["USDC", "USDT", "PYUSD"],
+  tron: ["USDT", "USDC"],
+  sol: ["USDC", "USDT", "PYUSD"],
+  // base/bsc not listed in CHAINS UI today — EVM card covers them via the
+  // shared xpub. Stables for those chains will appear once they're exposed.
+};
+
 type Row = {
   id: string | null;
   chain: ChainKey;
   xpub: string | null;
   xpub_or_address: string;
   enabled: boolean;
+  stables: string[];
 };
 
 function emptyRow(chain: ChainKey): Row {
@@ -96,6 +109,7 @@ function emptyRow(chain: ChainKey): Row {
     xpub: null,
     xpub_or_address: "",
     enabled: false,
+    stables: [],
   };
 }
 
@@ -107,7 +121,7 @@ function ChainsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("chain_configs")
-        .select("id, chain, xpub, xpub_or_address, enabled")
+        .select("id, chain, xpub, xpub_or_address, enabled, stables")
         .eq("store_id", storeId);
       if (error) throw error;
       return data ?? [];
@@ -132,6 +146,7 @@ function ChainsPage() {
         xpub: r.xpub,
         xpub_or_address: r.xpub_or_address ?? "",
         enabled: r.enabled,
+        stables: (r.stables ?? []) as string[],
       };
     }
     setRows(next as Record<ChainKey, Row>);
@@ -342,6 +357,7 @@ function ChainCard({
         xpub: meta.inputKind === "address" ? null : (isXpubLike(v) ? v : null),
         xpub_or_address: v,
         enabled: row.enabled,
+        stables: row.stables,
       };
 
       const { error } = await supabase
@@ -444,6 +460,49 @@ function ChainCard({
           {saving ? "Saving…" : "Save"}
         </Button>
       </div>
+
+      {STABLES_BY_CHAIN[meta.key] && STABLES_BY_CHAIN[meta.key]!.length > 0 && (
+        <div className="mt-4 rounded-md border border-border/60 bg-background/40 p-3">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-medium">Accept stablecoins on this network</p>
+            <p className="text-[11px] text-muted-foreground">
+              Tokens land at the same address as the native asset.
+            </p>
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {STABLES_BY_CHAIN[meta.key]!.map((sym) => {
+              const checked = row.stables.includes(sym);
+              return (
+                <label
+                  key={sym}
+                  className={cn(
+                    "inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-1.5 text-xs font-medium transition",
+                    checked
+                      ? "border-primary/60 bg-primary/10 text-primary"
+                      : "border-border bg-background/40 text-muted-foreground hover:border-border/80",
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    className="h-3.5 w-3.5 accent-primary"
+                    checked={checked}
+                    onChange={(e) => {
+                      const next = e.target.checked
+                        ? Array.from(new Set([...row.stables, sym]))
+                        : row.stables.filter((s) => s !== sym);
+                      onChange({ ...row, stables: next });
+                    }}
+                  />
+                  {sym}
+                </label>
+              );
+            })}
+          </div>
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            On-chain detection for stablecoins is rolling out — opt in here and we'll watch your address for these tokens automatically as it ships.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

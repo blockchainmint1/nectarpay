@@ -15,7 +15,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { getPublicInvoice, selectInvoiceChain } from "@/lib/checkout.functions";
+import { getPublicInvoice, selectInvoiceChain, type CheckoutPaymentOption } from "@/lib/checkout.functions";
 import { ALL_NETWORKS } from "@/lib/chains/networks";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -189,7 +189,7 @@ function CheckoutPage() {
   const inv = data?.found ? data.invoice : null;
   const txs = data?.found ? data.transactions : [];
   const store = data?.found ? data.store : null;
-  const availableChains = data?.found ? data.availableChains : [];
+  const availableOptions: CheckoutPaymentOption[] = data?.found ? data.availableOptions : [];
 
   // SDK postMessage: when embedded in the payHME iframe modal, notify the parent
   // window on terminal status transitions so merchants can listen for "paid".
@@ -300,7 +300,7 @@ function CheckoutPage() {
                     fiatCurrency={inv.fiatCurrency}
                     description={inv.description}
                     countdown={countdown}
-                    availableChains={availableChains}
+                    availableOptions={availableOptions}
                   />
                 )}
 
@@ -314,7 +314,7 @@ function CheckoutPage() {
                     countdown={countdown}
                     txs={txs}
                     requiredConfs={requiredConfs}
-                    availableChains={availableChains}
+                    availableOptions={availableOptions}
                     canSwitchChain={inv.status === "pending" && txs.length === 0}
                   />
 
@@ -345,6 +345,7 @@ function useInvoiceType() {
   return null as null | {
     id: string;
     chain: string;
+    tokenSymbol: string | null;
     fiatAmount: number;
     fiatCurrency: string;
     cryptoAmount: number | null;
@@ -373,7 +374,7 @@ function PayingFrame({
   countdown,
   txs,
   requiredConfs,
-  availableChains,
+  availableOptions,
   canSwitchChain,
 }: {
   inv: Invoice;
@@ -382,7 +383,7 @@ function PayingFrame({
   countdown: ReturnType<typeof useCountdown>;
   txs: Tx[];
   requiredConfs: number;
-  availableChains: string[];
+  availableOptions: CheckoutPaymentOption[];
   canSwitchChain: boolean;
 }) {
   const isDetected = inv.status === "detected" || inv.status === "underpaid";
@@ -391,16 +392,17 @@ function PayingFrame({
   const selectChain = useServerFn(selectInvoiceChain);
   const [switching, setSwitching] = useState<string | null>(null);
 
-  const otherChains = availableChains.filter((c) => c !== inv.chain);
-  const showSwitch = canSwitchChain && otherChains.length > 0;
+  const currentKey = inv.tokenSymbol ? `${inv.chain}:${inv.tokenSymbol}` : inv.chain;
+  const otherOptions = availableOptions.filter((o) => o.key !== currentKey);
+  const showSwitch = canSwitchChain && otherOptions.length > 0;
 
-  async function onSwitchTo(chain: string) {
-    setSwitching(chain);
+  async function onSwitchTo(option: string) {
+    setSwitching(option);
     try {
-      await selectChain({ data: { id: inv.id, chain: chain as never } });
-      // Polling query refetches with the new chain/address/amount.
+      await selectChain({ data: { id: inv.id, option } });
+      // Polling query refetches with the new chain/token/address/amount.
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Could not switch chain.");
+      alert(e instanceof Error ? e.message : "Could not switch option.");
     } finally {
       setSwitching(null);
     }
@@ -449,11 +451,16 @@ function PayingFrame({
             <span className="font-mono text-4xl font-semibold tracking-tight md:text-5xl">
               {inv.cryptoAmount != null ? inv.cryptoAmount : "—"}
             </span>
-            <span className="text-lg font-medium text-muted-foreground">{inv.chain.toUpperCase()}</span>
+            <span className="text-lg font-medium text-muted-foreground">
+              {inv.tokenSymbol ? inv.tokenSymbol : inv.chain.toUpperCase()}
+            </span>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             ≈ {inv.fiatAmount.toFixed(2)} {inv.fiatCurrency.toUpperCase()}
             {inv.rate ? <span className="ml-2 opacity-60">@ {inv.rate.toLocaleString()}</span> : null}
+            {inv.tokenSymbol && (
+              <span className="ml-2 opacity-60">· on {CHAIN_LABEL[inv.chain] ?? inv.chain}</span>
+            )}
           </p>
         </div>
 
@@ -465,7 +472,9 @@ function PayingFrame({
         <div className="mt-6 rounded-xl border border-border/60 bg-background/40 p-3">
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs uppercase tracking-wider text-muted-foreground">
-              {CHAIN_LABEL[inv.chain] ?? inv.chain} address
+              {inv.tokenSymbol
+                ? `${inv.tokenSymbol} (${CHAIN_LABEL[inv.chain] ?? inv.chain}) address`
+                : `${CHAIN_LABEL[inv.chain] ?? inv.chain} address`}
             </span>
             <CopyButton value={inv.address} />
           </div>
@@ -474,20 +483,20 @@ function PayingFrame({
           </p>
         </div>
 
-        {/* alternate networks */}
+        {/* alternate payment options */}
         {showSwitch && (
           <div className="mt-4">
             <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               Or pay with
             </p>
             <div className="mt-2 flex flex-col gap-1.5">
-              {otherChains.map((c) => {
-                const busy = switching === c;
+              {otherOptions.map((o) => {
+                const busy = switching === o.key;
                 return (
                   <button
-                    key={c}
+                    key={o.key}
                     type="button"
-                    onClick={() => onSwitchTo(c)}
+                    onClick={() => onSwitchTo(o.key)}
                     disabled={switching !== null}
                     className="group flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-background/40 px-3 py-2 text-left transition hover:border-primary/50 hover:bg-primary/5 disabled:opacity-60"
                   >
@@ -495,12 +504,12 @@ function PayingFrame({
                       <span
                         className={cn(
                           "h-2 w-2 rounded-full bg-gradient-to-br",
-                          chainAccent(c),
+                          chainAccent(o.chain),
                         )}
                       />
-                      {CHAIN_LABEL[c] ?? c.toUpperCase()}
+                      {o.label}
                       <span className="text-[11px] font-normal uppercase tracking-wider text-muted-foreground">
-                        {c}
+                        {o.tokenSymbol ? `${o.tokenSymbol}·${o.chain}` : o.chain}
                       </span>
                     </span>
                     <span className="text-[11px] font-medium text-muted-foreground group-hover:text-primary">
@@ -664,27 +673,27 @@ function ChainPickerFrame({
   fiatCurrency,
   description,
   countdown,
-  availableChains,
+  availableOptions,
 }: {
   invoiceId: string;
   fiatAmount: number;
   fiatCurrency: string;
   description: string | null;
   countdown: ReturnType<typeof useCountdown>;
-  availableChains: string[];
+  availableOptions: CheckoutPaymentOption[];
 }) {
   const selectChain = useServerFn(selectInvoiceChain);
   const [picking, setPicking] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
-  async function pick(chain: string) {
+  async function pick(optionKey: string) {
     setErr(null);
-    setPicking(chain);
+    setPicking(optionKey);
     try {
-      await selectChain({ data: { id: invoiceId, chain: chain as never } });
+      await selectChain({ data: { id: invoiceId, option: optionKey } });
       // Polling query will refetch and the page will switch to PayingFrame.
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Could not select chain.");
+      setErr(e instanceof Error ? e.message : "Could not select option.");
       setPicking(null);
     }
   }
@@ -724,33 +733,32 @@ function ChainPickerFrame({
       <div className="mt-7">
         <p className="text-sm font-medium">Choose how you'd like to pay</p>
         <p className="mt-1 text-xs text-muted-foreground">
-          Pick a network — we'll generate a payment address for you.
+          Pick a network or stablecoin — we'll generate a payment address for you.
         </p>
 
-        {availableChains.length === 0 ? (
+        {availableOptions.length === 0 ? (
           <div className="mt-4 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-            This merchant hasn't enabled any payment networks yet.
+            This merchant hasn't enabled any payment options yet.
           </div>
         ) : (
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {availableChains.map((c) => {
-              const label = CHAIN_LABEL[c] ?? c.toUpperCase();
-              const isLoading = picking === c;
+            {availableOptions.map((o) => {
+              const isLoading = picking === o.key;
               return (
                 <button
-                  key={c}
+                  key={o.key}
                   type="button"
                   disabled={picking !== null}
-                  onClick={() => pick(c)}
+                  onClick={() => pick(o.key)}
                   className={cn(
                     "group relative flex items-center justify-between rounded-xl border border-border/60 bg-background/40 p-4 text-left transition-all",
                     "hover:border-primary/60 hover:bg-card disabled:opacity-50",
                   )}
                 >
                   <div>
-                    <p className="text-sm font-semibold">{label}</p>
+                    <p className="text-sm font-semibold">{o.label}</p>
                     <p className="mt-0.5 text-[11px] uppercase tracking-wider text-muted-foreground">
-                      {c}
+                      {o.tokenSymbol ? `${o.tokenSymbol} · ${o.chain}` : o.chain}
                     </p>
                   </div>
                   {isLoading ? (
