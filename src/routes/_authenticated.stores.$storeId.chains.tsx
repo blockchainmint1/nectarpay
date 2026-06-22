@@ -81,12 +81,24 @@ const CHAINS: ChainMeta[] = [
 
 
 
+// Stablecoin whitelist per chain. Mirrors SUPPORTED_STABLES_BY_CHAIN on the
+// server. Kept inline because this is a client component and the server
+// network module pulls in node-only crypto deps.
+const STABLES_BY_CHAIN: Partial<Record<ChainKey, readonly string[]>> = {
+  eth: ["USDC", "USDT", "PYUSD"],
+  tron: ["USDT", "USDC"],
+  sol: ["USDC", "USDT", "PYUSD"],
+  // base/bsc not listed in CHAINS UI today — EVM card covers them via the
+  // shared xpub. Stables for those chains will appear once they're exposed.
+};
+
 type Row = {
   id: string | null;
   chain: ChainKey;
   xpub: string | null;
   xpub_or_address: string;
   enabled: boolean;
+  stables: string[];
 };
 
 function emptyRow(chain: ChainKey): Row {
@@ -96,6 +108,7 @@ function emptyRow(chain: ChainKey): Row {
     xpub: null,
     xpub_or_address: "",
     enabled: false,
+    stables: [],
   };
 }
 
