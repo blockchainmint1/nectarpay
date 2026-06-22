@@ -117,6 +117,10 @@ export async function deriveInvoiceAddress(
   } else {
     cryptoAmount = Number(baseAmount.toFixed(8));
   }
+  // Recycled addresses: don't bump the counter, don't re-insert a
+  // derived_addresses row (it already exists from the original derivation).
+  void recycledEvmAddress;
+
 
   // Bump address counter + log derivation (skip for static single addresses).
   if (net.kind !== "solana" && !(net.kind === "tron" && xpub.startsWith("T"))) {
