@@ -625,6 +625,7 @@ export type Database = {
           id: string
           invoice_id: string
           raw: Json | null
+          token_symbol: string | null
           tx_hash: string
         }
         Insert: {
@@ -636,6 +637,7 @@ export type Database = {
           id?: string
           invoice_id: string
           raw?: Json | null
+          token_symbol?: string | null
           tx_hash: string
         }
         Update: {
@@ -647,6 +649,7 @@ export type Database = {
           id?: string
           invoice_id?: string
           raw?: Json | null
+          token_symbol?: string | null
           tx_hash?: string
         }
         Relationships: [
