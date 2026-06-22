@@ -117,13 +117,14 @@ export async function deriveInvoiceAddress(
   } else {
     cryptoAmount = Number(baseAmount.toFixed(8));
   }
-  // Recycled addresses: don't bump the counter, don't re-insert a
-  // derived_addresses row (it already exists from the original derivation).
-  void recycledEvmAddress;
 
-
-  // Bump address counter + log derivation (skip for static single addresses).
-  if (net.kind !== "solana" && !(net.kind === "tron" && xpub.startsWith("T"))) {
+  // Bump address counter + log derivation. Skip for:
+  //   - shared-address chains (Solana, Tron-static)
+  //   - recycled EVM addresses (counter already advanced when first derived;
+  //     derived_addresses row already exists)
+  const isStaticShared =
+    net.kind === "solana" || (net.kind === "tron" && xpub.startsWith("T"));
+  if (!isStaticShared && !recycledEvmAddress) {
     await supabaseAdmin
       .from("chain_configs")
       .update({ next_address_index: index + 1, next_derivation_index: index + 1 })
@@ -137,6 +138,7 @@ export async function deriveInvoiceAddress(
         address_index: index,
       });
   }
+
 
   return { address, cryptoAmount, rate, index, chainConfigId: cfg.id };
 }
