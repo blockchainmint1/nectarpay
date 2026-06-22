@@ -198,50 +198,68 @@ async function applyAmountNonce(
 }
 
 /**
- * Find an EVM address from a prior expired/cancelled invoice on this
- * store+chain that we can safely hand to a new invoice. "Safe" = the address
- * has never received funds: every invoice ever recorded against it must be in
- * a terminal-unpaid state (expired or cancelled). If any invoice on the
- * address is pending/detected/underpaid/confirmed/overpaid/failed, we skip it.
+ * Find an EVM address from a prior invoice on this store+chain that we can
+ * safely hand to a new invoice.
+ *
+ * EVM is account-based: each derived address has to be swept individually
+ * (gas per address per token), so we aggressively recycle. Rule:
+ *   1. The address must have NO currently-active invoice
+ *      (pending / detected / underpaid) — that would collide with a live flow.
+ *   2. The most recent invoice on the address must be older than the
+ *      RECYCLE_AFTER_MS window. After that window, any late on-chain payment
+ *      from the prior invoice is treated as out-of-window and credited to the
+ *      new invoice (acceptable tradeoff for cheaper sweeps).
  *
  * Returns the recycled address + its original derivation index, or null.
  */
+const EVM_RECYCLE_AFTER_MS = 60 * 60 * 1000; // 1 hour
+const ACTIVE_STATUSES = ["pending", "detected", "underpaid"];
+
 async function findRecyclableEvmAddress(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabaseAdmin: any,
   storeId: string,
   chain: string,
 ): Promise<{ address: string; address_index: number | null } | null> {
-  const TERMINAL_UNPAID = new Set(["expired", "cancelled"]);
+  const cutoffIso = new Date(Date.now() - EVM_RECYCLE_AFTER_MS).toISOString();
 
-  // Pull recent expired/cancelled invoices on this store+chain.
+  // Candidate addresses: any prior invoice on this store+chain whose most
+  // recent activity is at least 1 hour old. Order oldest-first so we drain
+  // long-idle addresses before recently-used ones.
   const { data: candidates } = await supabaseAdmin
     .from("invoices")
     .select("address, address_index, created_at")
     .eq("store_id", storeId)
     .eq("chain", chain)
-    .in("status", ["expired", "cancelled"])
     .not("address", "is", null)
+    .lt("created_at", cutoffIso)
     .order("created_at", { ascending: true })
-    .limit(50);
+    .limit(100);
 
+  const seen = new Set<string>();
   for (const c of (candidates ?? []) as Array<{ address: string; address_index: number | null }>) {
-    // Verify NO invoice on this address is in a non-terminal-unpaid state.
+    if (seen.has(c.address)) continue;
+    seen.add(c.address);
+
+    // Skip if ANY invoice on this address is currently live, or had activity
+    // (of any status) within the recycle window.
     const { data: siblings } = await supabaseAdmin
       .from("invoices")
-      .select("status")
+      .select("status, created_at")
       .eq("store_id", storeId)
       .eq("chain", chain)
       .eq("address", c.address);
-    const allUnpaid = (siblings ?? []).every((s: { status: string }) =>
-      TERMINAL_UNPAID.has(s.status),
+    const safe = (siblings ?? []).every(
+      (s: { status: string; created_at: string }) =>
+        !ACTIVE_STATUSES.includes(s.status) && s.created_at < cutoffIso,
     );
-    if (allUnpaid) {
+    if (safe) {
       return { address: c.address, address_index: c.address_index };
     }
   }
   return null;
 }
+
 
 
 
