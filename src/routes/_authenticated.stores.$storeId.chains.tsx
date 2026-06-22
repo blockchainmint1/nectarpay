@@ -459,6 +459,49 @@ function ChainCard({
           {saving ? "Saving…" : "Save"}
         </Button>
       </div>
+
+      {STABLES_BY_CHAIN[meta.key] && STABLES_BY_CHAIN[meta.key]!.length > 0 && (
+        <div className="mt-4 rounded-md border border-border/60 bg-background/40 p-3">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-medium">Accept stablecoins on this network</p>
+            <p className="text-[11px] text-muted-foreground">
+              Tokens land at the same address as the native asset.
+            </p>
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {STABLES_BY_CHAIN[meta.key]!.map((sym) => {
+              const checked = row.stables.includes(sym);
+              return (
+                <label
+                  key={sym}
+                  className={cn(
+                    "inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-1.5 text-xs font-medium transition",
+                    checked
+                      ? "border-primary/60 bg-primary/10 text-primary"
+                      : "border-border bg-background/40 text-muted-foreground hover:border-border/80",
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    className="h-3.5 w-3.5 accent-primary"
+                    checked={checked}
+                    onChange={(e) => {
+                      const next = e.target.checked
+                        ? Array.from(new Set([...row.stables, sym]))
+                        : row.stables.filter((s) => s !== sym);
+                      onChange({ ...row, stables: next });
+                    }}
+                  />
+                  {sym}
+                </label>
+              );
+            })}
+          </div>
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            On-chain detection for stablecoins is rolling out — opt in here and we'll watch your address for these tokens automatically as it ships.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
