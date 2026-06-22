@@ -15,7 +15,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { getPublicInvoice, selectInvoiceChain, clearInvoiceChain } from "@/lib/checkout.functions";
+import { getPublicInvoice, selectInvoiceChain } from "@/lib/checkout.functions";
 import { ALL_NETWORKS } from "@/lib/chains/networks";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -388,20 +388,21 @@ function PayingFrame({
   const isDetected = inv.status === "detected" || inv.status === "underpaid";
   const latestTx = txs[0];
   const progress = latestTx ? Math.min(100, (latestTx.confirmations / requiredConfs) * 100) : 0;
-  const clearChain = useServerFn(clearInvoiceChain);
-  const [switching, setSwitching] = useState(false);
+  const selectChain = useServerFn(selectInvoiceChain);
+  const [switching, setSwitching] = useState<string | null>(null);
 
   const otherChains = availableChains.filter((c) => c !== inv.chain);
   const showSwitch = canSwitchChain && otherChains.length > 0;
 
-  async function onSwitch() {
-    setSwitching(true);
+  async function onSwitchTo(chain: string) {
+    setSwitching(chain);
     try {
-      await clearChain({ data: { id: inv.id } });
-      // Polling query will refetch and the page will switch to ChainPickerFrame.
+      await selectChain({ data: { id: inv.id, chain: chain as never } });
+      // Polling query refetches with the new chain/address/amount.
     } catch (e) {
-      setSwitching(false);
       alert(e instanceof Error ? e.message : "Could not switch chain.");
+    } finally {
+      setSwitching(null);
     }
   }
 
@@ -473,6 +474,45 @@ function PayingFrame({
           </p>
         </div>
 
+        {/* alternate networks */}
+        {showSwitch && (
+          <div className="mt-4">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              Or pay with
+            </p>
+            <div className="mt-2 flex flex-col gap-1.5">
+              {otherChains.map((c) => {
+                const busy = switching === c;
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => onSwitchTo(c)}
+                    disabled={switching !== null}
+                    className="group flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-background/40 px-3 py-2 text-left transition hover:border-primary/50 hover:bg-primary/5 disabled:opacity-60"
+                  >
+                    <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+                      <span
+                        className={cn(
+                          "h-2 w-2 rounded-full bg-gradient-to-br",
+                          chainAccent(c),
+                        )}
+                      />
+                      {CHAIN_LABEL[c] ?? c.toUpperCase()}
+                      <span className="text-[11px] font-normal uppercase tracking-wider text-muted-foreground">
+                        {c}
+                      </span>
+                    </span>
+                    <span className="text-[11px] font-medium text-muted-foreground group-hover:text-primary">
+                      {busy ? "Switching…" : "Use →"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* memo for solana */}
         {inv.chain === "sol" && (
           <div className="mt-3 rounded-xl border border-primary/30 bg-primary/5 p-3">
@@ -541,16 +581,6 @@ function PayingFrame({
           </span>
         </label>
 
-        {showSwitch && (
-          <button
-            type="button"
-            onClick={onSwitch}
-            disabled={switching}
-            className="mt-1 text-xs font-semibold text-primary underline underline-offset-4 hover:text-primary/80 disabled:opacity-50"
-          >
-            {switching ? "Switching…" : `← Pay with a different network (${otherChains.length} available)`}
-          </button>
-        )}
       </div>
 
 
