@@ -466,19 +466,22 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           const credits = await getTronTransfersTo(net, key, a.address).catch(() => []);
           r.credits += credits.length;
           for (const t of credits) {
-            const { data: inv } = await supabaseAdmin
+            const { data: candidates } = await supabaseAdmin
               .from("invoices")
-              .select("id, fiat_amount, status")
+              .select("id, fiat_amount, status, token_symbol")
               .eq("address", a.address)
-              .eq("chain", "tron")
-              .maybeSingle();
+              .eq("chain", "tron");
+            const inv = (candidates ?? []).find((c) =>
+              t.isNative ? c.token_symbol == null : (c.token_symbol ?? "").toUpperCase() === t.asset.toUpperCase(),
+            );
             if (!inv) continue;
             const human = Number(BigInt(t.rawValue)) / 10 ** t.decimals;
             const usd = t.isNative ? human * (await getUsdRate("TRX")) : human;
-            await recordTransaction(inv.id, t.txHash, human, net.confirmationsRequired, null, true);
+            await recordTransaction(inv.id, t.txHash, human, net.confirmationsRequired, null, true, t.asset);
             const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
             if (settled.changed) r.invoicesUpdated++;
           }
+
         }
 
         await supabaseAdmin
