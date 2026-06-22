@@ -98,6 +98,7 @@ export async function recordTransaction(
   confirmations: number,
   blockHeight: number | null,
   isConfirmed: boolean,
+  tokenSymbol: string | null = null,
 ) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: existing } = await supabaseAdmin
@@ -125,9 +126,11 @@ export async function recordTransaction(
       block_height: blockHeight,
       first_seen_at: now,
       confirmed_at: isConfirmed ? now : null,
+      token_symbol: tokenSymbol,
     });
   }
 }
+
 
 export async function settleInvoice(
   invoiceId: string,
