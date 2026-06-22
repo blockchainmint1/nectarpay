@@ -47,6 +47,18 @@ const CHAIN_LABEL: Record<string, string> = {
   zcu: "ZCU",
 };
 
+// For stablecoins on the shared EVM xpub (chain="eth"), the derived address
+// works across every EVM network we scan — show "EVM" instead of "Ethereum"
+// so customers don't think it's Ethereum mainnet only.
+function chainLabelFor(chain: string, tokenSymbol: string | null | undefined): string {
+  if (tokenSymbol && chain === "eth") return "EVM";
+  return CHAIN_LABEL[chain] ?? chain;
+}
+function chainShortFor(chain: string, tokenSymbol: string | null | undefined): string {
+  if (tokenSymbol && chain === "eth") return "EVM";
+  return chain.toUpperCase();
+}
+
 function chainAccent(chain: string): string {
   // Tailwind classes — keep within design tokens, just shift hue per chain.
   switch (chain) {
