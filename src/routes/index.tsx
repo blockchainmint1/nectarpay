@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "TEXITcoin Pay — non-custodial crypto payments for any store" },
+      { title: "Nectar.Pay — non-custodial crypto payments for any store" },
       {
         name: "description",
         content:
           "Accept BTC, TEXITcoin, and EVM stablecoins on WooCommerce or any open ecommerce platform. You keep the keys. We do the watching.",
       },
-      { property: "og:title", content: "TEXITcoin Pay" },
+      { property: "og:title", content: "Nectar.Pay" },
       {
         property: "og:description",
         content: "Non-custodial crypto payment gateway. Plug into WooCommerce in minutes.",

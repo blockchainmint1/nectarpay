@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/stores/$storeId/kyc")({
-  head: () => ({ meta: [{ title: "KYC · payHME" }] }),
+  head: () => ({ meta: [{ title: "KYC · Nectar.Pay" }] }),
   component: KycSettingsPage,
 });
 
@@ -113,7 +113,7 @@ function KycSettingsPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Buyer verification (KYC)</h1>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
-        payHME is non-custodial — we never hold funds and never collect buyer documents. These
+        Nectar.Pay is non-custodial — we never hold funds and never collect buyer documents. These
         checks are optional, run on the buyer's behalf, and never store personal data on our side.
         Pass/fail only.
       </p>
@@ -198,7 +198,7 @@ function KycSettingsPage() {
           <Label className="text-base">Advanced provider (you bring the key)</Label>
           <p className="mt-1 flex items-start gap-2 text-xs text-muted-foreground">
             <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            payHME proxies the buyer to your provider's hosted flow. We store only pass/fail and a
+            Nectar.Pay proxies the buyer to your provider's hosted flow. We store only pass/fail and a
             reference ID. You're billed by the provider directly.
           </p>
           <div className="mt-4 grid gap-4">

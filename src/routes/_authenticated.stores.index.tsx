@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/stores/")({
-  head: () => ({ meta: [{ title: "Stores · TEXITcoin Pay" }] }),
+  head: () => ({ meta: [{ title: "Stores · Nectar.Pay" }] }),
   component: StoresIndex,
 });
 

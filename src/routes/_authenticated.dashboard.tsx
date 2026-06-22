@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard · TEXITcoin Pay" }] }),
+  head: () => ({ meta: [{ title: "Dashboard · Nectar.Pay" }] }),
   component: DashboardPage,
 });
 

@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing · TEXITcoin Pay" },
+      { title: "Pricing · Nectar.Pay" },
       {
         name: "description",
         content:
           "Free, Cheap ($19/mo), or Unlimited ($99/mo) — all paid in TEXITcoin. Non-custodial. No monthly minimums.",
       },
-      { property: "og:title", content: "Pricing · TEXITcoin Pay" },
+      { property: "og:title", content: "Pricing · Nectar.Pay" },
       {
         property: "og:description",
         content: "Free, $19/mo, or $99/mo. Pay in TEXITcoin. Non-custodial settlement.",

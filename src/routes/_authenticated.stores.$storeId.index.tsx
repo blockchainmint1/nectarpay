@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/stores/$storeId/")({
-  head: () => ({ meta: [{ title: "Store · payHME" }] }),
+  head: () => ({ meta: [{ title: "Store · Nectar.Pay" }] }),
   component: StoreDetailPage,
 });
 

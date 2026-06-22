@@ -28,7 +28,7 @@ function maskSecret(s: string): string {
 
 
 export const Route = createFileRoute("/_authenticated/stores/$storeId/chains")({
-  head: () => ({ meta: [{ title: "Chains · payHME" }] }),
+  head: () => ({ meta: [{ title: "Chains · Nectar.Pay" }] }),
   component: ChainsPage,
 });
 

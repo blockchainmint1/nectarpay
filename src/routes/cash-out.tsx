@@ -3,11 +3,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/cash-out")({
   head: () => ({
     meta: [
-      { title: "Cash Out — Crypto Cards, Banks & Off-Ramps | payHME" },
+      { title: "Cash Out — Crypto Cards, Banks & Off-Ramps | Nectar.Pay" },
       {
         name: "description",
         content:
-          "payHME settles crypto straight to your wallet. Here's where merchants actually spend it, convert to fiat, or hold it as stablecoins — without surrendering custody to a CEX.",
+          "Nectar.Pay settles crypto straight to your wallet. Here's where merchants actually spend it, convert to fiat, or hold it as stablecoins — without surrendering custody to a CEX.",
       },
       { property: "og:title", content: "Cash Out — Honest Off-Ramps for Merchants" },
       {
@@ -94,7 +94,7 @@ function CashOutPage() {
         to="/"
         className="mb-12 inline-flex items-center gap-2 text-[0.7rem] uppercase tracking-[0.4em] text-muted-foreground hover:text-foreground"
       >
-        ← payHME
+        ← Nectar.Pay
       </Link>
 
       <header className="border-y border-border/60 py-10 text-center">
@@ -105,7 +105,7 @@ function CashOutPage() {
           Cash <span className="text-primary">Out</span>
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-base text-foreground/75">
-          payHME settles every payment directly to <em>your</em> wallet.
+          Nectar.Pay settles every payment directly to <em>your</em> wallet.
           We never touch the funds. Here's the honest map of what you can
           actually do with crypto once it lands — sorted by{" "}
           <strong>least custodial first</strong>.
@@ -157,7 +157,7 @@ function CashOutPage() {
         <p>
           And only as a <em>last resort</em>: the centralized exchange. Use
           one if you must, withdraw fast, and never treat it as savings.
-          payHME is not in that business and never will be. We get the
+          Nectar.Pay is not in that business and never will be. We get the
           crypto into your wallet, cheap as hell. What you do next is your
           sovereignty.
         </p>
@@ -284,7 +284,7 @@ function CashOutPage() {
           </p>
         }
       >
-        <Card o={{ name: "Kraken", url: "https://kraken.com", blurb: "Long-standing, strong security track record, supports nearly every chain payHME does. Good fiat rails in US/EU.", chains: "BTC, ETH, SOL, DOGE, +", regions: "Global (ex-some US states)", custody: "Custodial", affiliate: true }} />
+        <Card o={{ name: "Kraken", url: "https://kraken.com", blurb: "Long-standing, strong security track record, supports nearly every chain Nectar.Pay does. Good fiat rails in US/EU.", chains: "BTC, ETH, SOL, DOGE, +", regions: "Global (ex-some US states)", custody: "Custodial", affiliate: true }} />
         <Card o={{ name: "Coinbase", url: "https://coinbase.com", blurb: "Easiest US fiat off-ramp, expensive on retail flow — use Coinbase Advanced for better fees.", chains: "BTC, ETH, SOL, USDC, +", regions: "US, EU, UK", custody: "Custodial" }} />
         <Card o={{ name: "Bitstamp", url: "https://bitstamp.net", blurb: "EU-regulated, clean SEPA in/out, no shenanigans. Smaller asset list, which is a feature.", chains: "BTC, ETH, +", regions: "EU, UK, US", custody: "Custodial" }} />
         <Card o={{ name: "Bitvavo", url: "https://bitvavo.com", blurb: "EU-only, cheapest SEPA off-ramp in the region. Good Solana/Doge support.", chains: "BTC, ETH, SOL, DOGE, +", regions: "EEA", custody: "Custodial" }} />
@@ -295,11 +295,11 @@ function CashOutPage() {
           Honesty disclosure
         </p>
         <h2 className="mt-3 text-2xl font-bold uppercase tracking-tight">
-          What payHME earns from this page
+          What Nectar.Pay earns from this page
         </h2>
         <p className="mt-4 text-base text-foreground/80">
           Links tagged <span className="text-primary/80">Affiliate</span>{" "}
-          may pay payHME a referral fee. It does not change what you pay or
+          may pay Nectar.Pay a referral fee. It does not change what you pay or
           how we rank the options. We led with self-custody because it's
           objectively better for merchants — not because it pays us more.
           If you spot a service we missed or an option that's gone
@@ -318,7 +318,7 @@ function CashOutPage() {
 
       <div className="mt-16 flex flex-wrap items-center justify-between gap-4 border-t border-border/60 pt-8 text-sm">
         <Link to="/" className="text-muted-foreground hover:text-foreground">
-          ← Back to payHME
+          ← Back to Nectar.Pay
         </Link>
         <div className="flex gap-6">
           <Link to="/manifesto" className="text-muted-foreground hover:text-foreground">

@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/integrations/")({
   head: () => ({
     meta: [
-      { title: "Integrations · TEXITcoin Pay" },
+      { title: "Integrations · Nectar.Pay" },
       {
         name: "description",
         content:
-          "Plug TEXITcoin Pay into the platforms you already use — WooCommerce, REST API, webhooks. Non-custodial crypto payments.",
+          "Plug Nectar.Pay into the platforms you already use — WooCommerce, REST API, webhooks. Non-custodial crypto payments.",
       },
-      { property: "og:title", content: "Integrations · TEXITcoin Pay" },
+      { property: "og:title", content: "Integrations · Nectar.Pay" },
       {
         property: "og:description",
         content: "WooCommerce plugin, REST API, and webhooks. Drop us in wherever you sell.",
@@ -31,7 +31,7 @@ function IntegrationsIndex() {
         <div className="mx-auto max-w-5xl px-4">
           <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">Integrations.</h1>
           <p className="mt-3 max-w-2xl text-muted-foreground">
-            Drop TEXITcoin Pay into the platforms you already use. Non-custodial — funds settle
+            Drop Nectar.Pay into the platforms you already use. Non-custodial — funds settle
             straight to your wallet.
           </p>
 

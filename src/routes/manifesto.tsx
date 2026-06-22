@@ -3,13 +3,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/manifesto")({
   head: () => ({
     meta: [
-      { title: "The payHME Manifesto — Honest Money for the Marketplace" },
+      { title: "The Nectar.Pay Manifesto — Honest Money for the Marketplace" },
       {
         name: "description",
         content:
-          "Why payHME exists: non-custodial crypto payments built on TEXITcoin and the Honest Money Ecosystem. A merchant gateway with no middleman, no debasement, no permission.",
+          "Why Nectar.Pay exists: non-custodial crypto payments built on TEXITcoin and the Honest Money Ecosystem. A merchant gateway with no middleman, no debasement, no permission.",
       },
-      { property: "og:title", content: "The payHME Manifesto" },
+      { property: "og:title", content: "The Nectar.Pay Manifesto" },
       {
         property: "og:description",
         content:
@@ -31,7 +31,7 @@ function ManifestoPage() {
         to="/"
         className="mb-12 inline-flex items-center gap-2 text-[0.7rem] uppercase tracking-[0.4em] text-muted-foreground hover:text-foreground"
       >
-        ← payHME
+        ← Nectar.Pay
       </Link>
 
       <header className="border-y border-border/60 py-10 text-center">
@@ -54,7 +54,7 @@ function ManifestoPage() {
           the printing press.
         </p>
         <p>
-          payHME is the till for that economy. A merchant payment gateway built
+          Nectar.Pay is the till for that economy. A merchant payment gateway built
           for the <strong>Honest Money Ecosystem</strong> — non-custodial,
           permissionless, and aimed straight at the rails that already work.
         </p>
@@ -69,7 +69,7 @@ function ManifestoPage() {
         <ol className="space-y-5 text-lg leading-relaxed text-foreground/85">
           <li>
             <strong>The merchant should hold the money, not us.</strong>{" "}
-            Every payHME invoice settles to an address the merchant controls.
+            Every Nectar.Pay invoice settles to an address the merchant controls.
             We never touch the funds. We never freeze them. We can't.
           </li>
           <li>
@@ -118,7 +118,7 @@ function ManifestoPage() {
             </span>
           </blockquote>
           <p>
-            payHME is the merchant rail that ignores them. A drop-in
+            Nectar.Pay is the merchant rail that ignores them. A drop-in
             checkout, a webhook, an invoice — same ergonomics, none of the
             custodial baggage. Built on the work Bobby Gray started in 2008
             with the American Open Currency Standard and continued in 2024

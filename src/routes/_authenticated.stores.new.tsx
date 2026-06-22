@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/stores/new")({
-  head: () => ({ meta: [{ title: "New store · TEXITcoin Pay" }] }),
+  head: () => ({ meta: [{ title: "New store · Nectar.Pay" }] }),
   component: NewStorePage,
 });
 

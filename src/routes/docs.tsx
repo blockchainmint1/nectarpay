@@ -6,13 +6,13 @@ import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 export const Route = createFileRoute("/docs")({
   head: () => ({
     meta: [
-      { title: "Docs · TEXITcoin Pay" },
+      { title: "Docs · Nectar.Pay" },
       {
         name: "description",
         content:
-          "Quickstart, API reference, and webhook signing for the TEXITcoin Pay gateway.",
+          "Quickstart, API reference, and webhook signing for the Nectar.Pay gateway.",
       },
-      { property: "og:title", content: "TEXITcoin Pay Docs" },
+      { property: "og:title", content: "Nectar.Pay Docs" },
       {
         property: "og:description",
         content: "Quickstart, API reference, and webhook signing.",
@@ -194,7 +194,7 @@ function LiveDemo() {
           data-amount="1"
           data-currency="USD"
         >
-          Try the payHME button
+          Try the Nectar.Pay button
         </button>
       </div>
       <p className="mt-3 text-[11px] text-muted-foreground">

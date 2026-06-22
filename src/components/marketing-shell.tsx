@@ -49,7 +49,7 @@ export function MarketingFooter() {
       <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-3 px-4 py-8 text-xs text-muted-foreground md:flex-row md:items-center">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="inline-block h-2 w-2 rounded-sm bg-primary" />
-          <span>© {new Date().getFullYear()} payHME · Non-custodial by design.</span>
+          <span>© {new Date().getFullYear()} Nectar.Pay · Non-custodial by design.</span>
           <span className="hidden md:inline">·</span>
           <span>
             Part of the{" "}

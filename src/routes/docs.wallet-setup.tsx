@@ -14,17 +14,17 @@ import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 export const Route = createFileRoute("/docs/wallet-setup")({
   head: () => ({
     meta: [
-      { title: "Wallet setup guide — xpubs & addresses · payHME" },
+      { title: "Wallet setup guide — xpubs & addresses · Nectar.Pay" },
       {
         name: "description",
         content:
-          "Step-by-step guide to finding the xpub, extended public key, or receive address you need to plug each chain into payHME — Bitcoin, TEXITcoin, Ethereum, Base, Tron, Solana, Dogecoin, Iskander, ZCU.",
+          "Step-by-step guide to finding the xpub, extended public key, or receive address you need to plug each chain into Nectar.Pay — Bitcoin, TEXITcoin, Ethereum, Base, Tron, Solana, Dogecoin, Iskander, ZCU.",
       },
-      { property: "og:title", content: "Wallet setup guide · payHME" },
+      { property: "og:title", content: "Wallet setup guide · Nectar.Pay" },
       {
         property: "og:description",
         content:
-          "How to find the xpub or address for every chain payHME supports — without exposing your private keys.",
+          "How to find the xpub or address for every chain Nectar.Pay supports — without exposing your private keys.",
       },
     ],
   }),
@@ -48,7 +48,7 @@ function WalletSetupGuide() {
           Wallet setup guide
         </h1>
         <p className="mt-3 text-muted-foreground">
-          payHME is non-custodial. You give us a <strong>public</strong> key —
+          Nectar.Pay is non-custodial. You give us a <strong>public</strong> key —
           either an extended public key (xpub) for UTXO chains or a single
           receive address for account-based chains — and we derive payment
           addresses for each invoice. Your private keys never leave your wallet.
@@ -142,10 +142,10 @@ function WalletSetupGuide() {
             <li>
               <strong>BlueWallet (mobile)</strong>: open the wallet → ⋯ menu → <em>XPUB</em>. Tap to reveal, then copy.
             </li>
-            <li>Paste into payHME → <em>Stores → Chains → Bitcoin → xpub</em>.</li>
+            <li>Paste into Nectar.Pay → <em>Stores → Chains → Bitcoin → xpub</em>.</li>
           </Steps>
           <Note>
-            payHME accepts all three formats (xpub / ypub / zpub) and derives the
+            Nectar.Pay accepts all three formats (xpub / ypub / zpub) and derives the
             correct address type automatically. zpub gives the cheapest fees for
             your buyers; use it if your wallet supports it.
           </Note>
@@ -170,7 +170,7 @@ function WalletSetupGuide() {
             <li>
               <strong>HD wallet compatible</strong>: use SLIP-44 coin type <code className="font-mono">696969</code> and BIP32 version bytes <code className="font-mono">0x0488B21E</code> (standard Bitcoin xpub). P2PKH addresses start with the letter matching prefix <code className="font-mono">0x42</code>.
             </li>
-            <li>Paste into payHME → <em>Stores → Chains → TEXITcoin → xpub</em>.</li>
+            <li>Paste into Nectar.Pay → <em>Stores → Chains → TEXITcoin → xpub</em>.</li>
           </Steps>
         </ChainSection>
 
@@ -189,15 +189,15 @@ function WalletSetupGuide() {
               <strong>Rabby / Frame / Trust</strong>: tap the account header to copy.
             </li>
             <li>
-              <strong>Ledger / Trezor via MetaMask</strong>: connect, select the Ledger account, copy that address. Do <em>not</em> use a Ledger address that you also use as a sweep/cold-storage account — payHME will receive money there but you'll need to move it.
+              <strong>Ledger / Trezor via MetaMask</strong>: connect, select the Ledger account, copy that address. Do <em>not</em> use a Ledger address that you also use as a sweep/cold-storage account — Nectar.Pay will receive money there but you'll need to move it.
             </li>
             <li>
               <strong>Coinbase / exchange wallet</strong>: skip. Exchange deposit addresses can rotate or be deactivated and won't safely receive arbitrary payments. Use a self-custody wallet.
             </li>
-            <li>Paste into payHME → <em>Stores → Chains → Ethereum → Receive address</em>.</li>
+            <li>Paste into Nectar.Pay → <em>Stores → Chains → Ethereum → Receive address</em>.</li>
           </Steps>
           <Note>
-            Tip: create a dedicated MetaMask account just for payHME payouts so
+            Tip: create a dedicated MetaMask account just for Nectar.Pay payouts so
             you can see incoming revenue cleanly and sweep on a schedule.
           </Note>
         </ChainSection>
@@ -213,7 +213,7 @@ function WalletSetupGuide() {
             <li>Any Ethereum wallet works on Base — the address is identical.</li>
             <li>In MetaMask, switch networks to <em>Base</em> (chain ID 8453) before testing — the wallet shows your Base balance separately even though the address is the same.</li>
             <li>For lowest fees on stablecoin payments, Base is usually our top pick. Recommend it to your buyers.</li>
-            <li>Paste your <code className="font-mono">0x…</code> address into payHME → <em>Stores → Chains → Base → Receive address</em>.</li>
+            <li>Paste your <code className="font-mono">0x…</code> address into Nectar.Pay → <em>Stores → Chains → Base → Receive address</em>.</li>
           </Steps>
         </ChainSection>
 
@@ -237,7 +237,7 @@ function WalletSetupGuide() {
             <li>
               <strong>Important — TRC20 vs ERC20</strong>: USDT on Tron is a different token contract than USDT on Ethereum. Make sure your wallet shows the <em>TRC20</em> network when you copy the address.
             </li>
-            <li>Paste into payHME → <em>Stores → Chains → Tron → Receive address</em>.</li>
+            <li>Paste into Nectar.Pay → <em>Stores → Chains → Tron → Receive address</em>.</li>
           </Steps>
           <Note>
             New Tron accounts may need to be "activated" with a small amount of
@@ -266,10 +266,10 @@ function WalletSetupGuide() {
             <li>
               <strong>Ledger via Phantom</strong>: connect, choose the Ledger Solana account, copy.
             </li>
-            <li>Paste into payHME → <em>Stores → Chains → Solana → Receive address</em>.</li>
+            <li>Paste into Nectar.Pay → <em>Stores → Chains → Solana → Receive address</em>.</li>
           </Steps>
           <Note>
-            payHME issues each invoice with a unique 8-character memo. Your
+            Nectar.Pay issues each invoice with a unique 8-character memo. Your
             wallet will show the memo on the incoming transaction so you can
             reconcile manually if needed — but our watcher does it for you.
           </Note>
@@ -304,7 +304,7 @@ function WalletSetupGuide() {
             <li>Open the Iskander wallet → <em>Settings → Advanced → Master Public Key</em>.</li>
             <li>Copy the xpub (starts with <code className="font-mono">xpub</code>) — never the seed phrase.</li>
             <li>If you're running a self-hosted Iskander Core, use <code className="font-mono text-xs">listdescriptors</code> in the console.</li>
-            <li>Paste into payHME → <em>Stores → Chains → Iskander → xpub</em>.</li>
+            <li>Paste into Nectar.Pay → <em>Stores → Chains → Iskander → xpub</em>.</li>
           </Steps>
         </ChainSection>
 
@@ -318,7 +318,7 @@ function WalletSetupGuide() {
           <Steps>
             <li>Open ZCU Core → <em>Window → Console</em> → <code className="font-mono text-xs">listdescriptors</code>.</li>
             <li>Copy the xpub portion of the receive descriptor (between <code>pkh(</code> and the next <code>/</code>).</li>
-            <li>Paste into payHME → <em>Stores → Chains → ZCU → xpub</em>.</li>
+            <li>Paste into Nectar.Pay → <em>Stores → Chains → ZCU → xpub</em>.</li>
           </Steps>
         </ChainSection>
 
@@ -334,13 +334,13 @@ function WalletSetupGuide() {
             wallet you actually own — not someone else's.
           </li>
           <li>
-            <strong>For xpub chains:</strong> payHME will show you the next 3 derived
+            <strong>For xpub chains:</strong> Nectar.Pay will show you the next 3 derived
             addresses. Open your wallet and confirm those exact addresses appear in your
             receive tab. If they don't match, the xpub belongs to a different wallet.
           </li>
           <li>
             <strong>Bookmark your wallet.</strong> If you lose access to your wallet, you
-            lose access to funds. payHME cannot recover anything — we never had it.
+            lose access to funds. Nectar.Pay cannot recover anything — we never had it.
           </li>
         </ol>
 

@@ -12,7 +12,7 @@ import { listApiKeys, createApiKey, revokeApiKey } from "@/lib/api-keys.function
 import { getWebhookConfig, setWebhookUrl, rotateWebhookSecret } from "@/lib/webhooks.functions";
 
 export const Route = createFileRoute("/_authenticated/stores/$storeId/keys")({
-  head: () => ({ meta: [{ title: "API keys · payHME" }] }),
+  head: () => ({ meta: [{ title: "API keys · Nectar.Pay" }] }),
   component: KeysPage,
 });
 

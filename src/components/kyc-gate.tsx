@@ -79,7 +79,7 @@ export function KycGate({
         <div className="flex-1">
           <div className="font-medium">Quick verification required</div>
           <p className="mt-1 text-xs text-muted-foreground">
-            This merchant requires {data.level === "advanced" ? "identity verification" : "a basic wallet & region check"} before payment. payHME does not store your personal data.
+            This merchant requires {data.level === "advanced" ? "identity verification" : "a basic wallet & region check"} before payment. Nectar.Pay does not store your personal data.
           </p>
 
           {data.level === "basic" ? (
@@ -117,7 +117,7 @@ export function KycGate({
             <div className="mt-4">
               <p className="text-xs text-muted-foreground">
                 You'll be redirected to <span className="font-medium">{data.providerLabel}</span> to verify.
-                Documents stay with them — payHME only receives pass/fail.
+                Documents stay with them — Nectar.Pay only receives pass/fail.
               </p>
               <Button onClick={onAdvancedStart} size="sm" disabled={busy} className="mt-3">
                 {busy ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <ExternalLink className="mr-2 h-3 w-3" />}
