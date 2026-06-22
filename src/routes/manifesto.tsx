@@ -162,6 +162,49 @@ function ManifestoPage() {
 
       <Rule />
 
+      <section>
+        <h2 className="mb-6 text-2xl font-bold uppercase tracking-wide">
+          Why no fees?
+        </h2>
+        <div className="space-y-6 text-lg leading-relaxed text-foreground/85">
+          <p>
+            <strong>Because small business is hard enough.</strong> If you're
+            just getting started, or you only take the occasional crypto
+            payment, the free tier is yours. No card on file, no "starter"
+            asterisk that turns into a bill at 10,001 in volume. We're just
+            getting started too — grow with us.
+          </p>
+          <p>
+            <strong>Because percentage fees are a tax on your success.</strong>{" "}
+            Running a business and actually making money are two different
+            sports, and most merchant processors siphon off the top of both.
+            Why should we get paid <em>more</em> the better you do? Crush it,
+            and we'll cheer for you — not invoice you for it.
+          </p>
+          <p>
+            <strong>Because we built this in a day.</strong> Not three years.
+            Not on a $40M Series B from suits who need their pound of flesh
+            back. There is no boardroom upstairs demanding we monetize you
+            harder this quarter. There is no boardroom upstairs.
+          </p>
+          <p>
+            <strong>Because our win is downstream of yours.</strong> When you
+            use TEXITcoin to sign in, to pay your flat monthly bill, or to
+            offer your customers a checkout option that doesn't bleed 2.9% —{" "}
+            <em>you</em> win first. We win on the back end, quietly, on a
+            dozen small things across the Honest Money Ecosystem. We don't
+            need to get rich off any single one of them.
+          </p>
+          <p>
+            <strong>And that's the truth.</strong> Love us or hate us for it.
+            You cannot run deceptive pricing and expect honest money to
+            succeed in the marketplace. So we don't, and it will.
+          </p>
+        </div>
+      </section>
+
+      <Rule />
+
       <section className="text-center">
         <p className="text-[0.7rem] uppercase tracking-[0.4em] text-muted-foreground">
           Part of the
