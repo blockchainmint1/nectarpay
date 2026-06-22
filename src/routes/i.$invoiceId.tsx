@@ -521,7 +521,7 @@ function PayingFrame({
                       />
                       {o.label}
                       <span className="text-[11px] font-normal uppercase tracking-wider text-muted-foreground">
-                        {o.tokenSymbol ? `${o.tokenSymbol}·${o.chain}` : o.chain}
+                        {o.tokenSymbol ? `${o.tokenSymbol}·${chainShortFor(o.chain, o.tokenSymbol)}` : o.chain}
                       </span>
                     </span>
                     <span className="text-[11px] font-medium text-muted-foreground group-hover:text-primary">
