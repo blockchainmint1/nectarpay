@@ -356,6 +356,7 @@ function ChainCard({
         xpub: meta.inputKind === "address" ? null : (isXpubLike(v) ? v : null),
         xpub_or_address: v,
         enabled: row.enabled,
+        stables: row.stables,
       };
 
       const { error } = await supabase
