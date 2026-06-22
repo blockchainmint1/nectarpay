@@ -197,3 +197,51 @@ async function applyAmountNonce(
   return Number(adjusted.toFixed(8));
 }
 
+/**
+ * Find an EVM address from a prior expired/cancelled invoice on this
+ * store+chain that we can safely hand to a new invoice. "Safe" = the address
+ * has never received funds: every invoice ever recorded against it must be in
+ * a terminal-unpaid state (expired or cancelled). If any invoice on the
+ * address is pending/detected/underpaid/confirmed/overpaid/failed, we skip it.
+ *
+ * Returns the recycled address + its original derivation index, or null.
+ */
+async function findRecyclableEvmAddress(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabaseAdmin: any,
+  storeId: string,
+  chain: string,
+): Promise<{ address: string; address_index: number | null } | null> {
+  const TERMINAL_UNPAID = new Set(["expired", "cancelled"]);
+
+  // Pull recent expired/cancelled invoices on this store+chain.
+  const { data: candidates } = await supabaseAdmin
+    .from("invoices")
+    .select("address, address_index, created_at")
+    .eq("store_id", storeId)
+    .eq("chain", chain)
+    .in("status", ["expired", "cancelled"])
+    .not("address", "is", null)
+    .order("created_at", { ascending: true })
+    .limit(50);
+
+  for (const c of (candidates ?? []) as Array<{ address: string; address_index: number | null }>) {
+    // Verify NO invoice on this address is in a non-terminal-unpaid state.
+    const { data: siblings } = await supabaseAdmin
+      .from("invoices")
+      .select("status")
+      .eq("store_id", storeId)
+      .eq("chain", chain)
+      .eq("address", c.address);
+    const allUnpaid = (siblings ?? []).every((s: { status: string }) =>
+      TERMINAL_UNPAID.has(s.status),
+    );
+    if (allUnpaid) {
+      return { address: c.address, address_index: c.address_index };
+    }
+  }
+  return null;
+}
+
+}
+
