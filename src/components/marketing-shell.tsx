@@ -179,7 +179,6 @@ export function MarketingFooter() {
         <nav className="flex flex-wrap gap-4">
           <Link to="/manifesto" className="hover:text-foreground">Manifesto</Link>
           <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
-          <Link to="/docs" className="hover:text-foreground">Docs</Link>
           <Link to="/terms" className="hover:text-foreground">Terms</Link>
           <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
         </nav>
