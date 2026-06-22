@@ -374,7 +374,7 @@ function PayingFrame({
   countdown,
   txs,
   requiredConfs,
-  availableChains,
+  availableOptions,
   canSwitchChain,
 }: {
   inv: Invoice;
@@ -383,7 +383,7 @@ function PayingFrame({
   countdown: ReturnType<typeof useCountdown>;
   txs: Tx[];
   requiredConfs: number;
-  availableChains: string[];
+  availableOptions: CheckoutPaymentOption[];
   canSwitchChain: boolean;
 }) {
   const isDetected = inv.status === "detected" || inv.status === "underpaid";
@@ -392,16 +392,17 @@ function PayingFrame({
   const selectChain = useServerFn(selectInvoiceChain);
   const [switching, setSwitching] = useState<string | null>(null);
 
-  const otherChains = availableChains.filter((c) => c !== inv.chain);
-  const showSwitch = canSwitchChain && otherChains.length > 0;
+  const currentKey = inv.tokenSymbol ? `${inv.chain}:${inv.tokenSymbol}` : inv.chain;
+  const otherOptions = availableOptions.filter((o) => o.key !== currentKey);
+  const showSwitch = canSwitchChain && otherOptions.length > 0;
 
-  async function onSwitchTo(chain: string) {
-    setSwitching(chain);
+  async function onSwitchTo(option: string) {
+    setSwitching(option);
     try {
-      await selectChain({ data: { id: inv.id, chain: chain as never } });
-      // Polling query refetches with the new chain/address/amount.
+      await selectChain({ data: { id: inv.id, option } });
+      // Polling query refetches with the new chain/token/address/amount.
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Could not switch chain.");
+      alert(e instanceof Error ? e.message : "Could not switch option.");
     } finally {
       setSwitching(null);
     }
