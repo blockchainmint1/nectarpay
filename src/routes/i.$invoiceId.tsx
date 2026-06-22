@@ -189,7 +189,7 @@ function CheckoutPage() {
   const inv = data?.found ? data.invoice : null;
   const txs = data?.found ? data.transactions : [];
   const store = data?.found ? data.store : null;
-  const availableChains = data?.found ? data.availableChains : [];
+  const availableOptions: CheckoutPaymentOption[] = data?.found ? data.availableOptions : [];
 
   // SDK postMessage: when embedded in the payHME iframe modal, notify the parent
   // window on terminal status transitions so merchants can listen for "paid".
