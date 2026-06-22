@@ -527,17 +527,27 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           const credits = await getSolanaCreditsTo(net, key, a.address).catch(() => []);
           r.credits += credits.length;
           for (const c of credits) {
-            // Match by memo (invoice id prefix) within this store, then by address+token.
-            // Asset must match token_symbol (USDC/USDT/PYUSD) or be NULL for native SOL.
-            type InvMatch = { id: string; fiat_amount: number; status: string; token_symbol: string | null };
+            // Match priority: memo (invoice id prefix) within this store, then
+            // address + token + amount-within-tolerance. The amount nonce
+            // (5th decimal) is the fallback fingerprint when no memo is set.
+            type InvMatch = {
+              id: string;
+              fiat_amount: number;
+              status: string;
+              token_symbol: string | null;
+              crypto_amount: number | null;
+            };
+            const human = Number(BigInt(c.rawValue)) / 10 ** c.decimals;
             const matchToken = (row: InvMatch) =>
               c.isNative ? row.token_symbol == null : (row.token_symbol ?? "").toUpperCase() === c.asset.toUpperCase();
+            const matchAmount = (row: InvMatch) =>
+              row.crypto_amount != null && Math.abs(human - Number(row.crypto_amount)) <= 0.000005;
             let inv: InvMatch | null = null;
             if (c.memo) {
               const prefix = c.memo.trim().slice(0, 8);
               const { data } = await supabaseAdmin
                 .from("invoices")
-                .select("id, fiat_amount, status, token_symbol")
+                .select("id, fiat_amount, status, token_symbol, crypto_amount")
                 .eq("store_id", a.store_id)
                 .eq("chain", "sol")
                 .ilike("id", `${prefix}%`);
@@ -546,16 +556,15 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             if (!inv) {
               const { data } = await supabaseAdmin
                 .from("invoices")
-                .select("id, fiat_amount, status, token_symbol")
+                .select("id, fiat_amount, status, token_symbol, crypto_amount")
                 .eq("address", a.address)
                 .eq("chain", "sol")
-                .in("status", ["pending", "underpaid"])
+                .in("status", ["pending", "detected", "underpaid"])
                 .order("created_at", { ascending: false })
-                .limit(10);
-              inv = ((data ?? []) as InvMatch[]).find(matchToken) ?? null;
+                .limit(50);
+              inv = ((data ?? []) as InvMatch[]).find((row) => matchToken(row) && matchAmount(row)) ?? null;
             }
             if (!inv) continue;
-            const human = Number(BigInt(c.rawValue)) / 10 ** c.decimals;
             const usd = c.isNative ? human * (await getUsdRate("SOL")) : human;
             const isConfirmed = c.confirmations >= net.confirmationsRequired;
             await recordTransaction(inv.id, c.signature, human, c.confirmations, c.slot, isConfirmed, c.asset);
@@ -564,6 +573,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           }
 
         }
+
 
         await supabaseAdmin
           .from("watcher_cursors")
