@@ -145,6 +145,7 @@ function ChainsPage() {
         xpub: r.xpub,
         xpub_or_address: r.xpub_or_address ?? "",
         enabled: r.enabled,
+        stables: (r.stables ?? []) as string[],
       };
     }
     setRows(next as Record<ChainKey, Row>);
