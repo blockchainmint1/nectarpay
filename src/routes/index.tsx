@@ -26,15 +26,11 @@ export const Route = createFileRoute("/")({
 const CHAINS = [
   { label: "Bitcoin", code: "BTC", live: true },
   { label: "TEXITcoin", code: "TXC", live: true },
-  { label: "USDC", code: "ERC-20", live: true },
-  { label: "USDT", code: "ERC-20", live: true },
-  { label: "Base", code: "L2", live: true },
-  { label: "Tron", code: "TRX + TRC-20", live: true },
-  { label: "Solana", code: "SOL + SPL", live: true },
-  { label: "Dogecoin", code: "DOGE", live: false },
-  { label: "Iskander Coin", code: "ISK", live: false },
-  { label: "ZCU", code: "ZCU", live: false },
+  { label: "USDC", code: "stable", live: true },
+  { label: "USDT", code: "stable", live: true },
+  { label: "PYUSD", code: "stable", live: true },
 ];
+
 
 function HomePage() {
   return (
@@ -67,9 +63,7 @@ function HomePage() {
                   Start free <Zap className="ml-1 h-4 w-4" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link to="/integrations/woocommerce">WooCommerce plugin</Link>
-              </Button>
+
             </div>
             <div className="mt-8 flex flex-wrap gap-2">
               {CHAINS.map((c) => (
