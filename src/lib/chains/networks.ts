@@ -123,6 +123,7 @@ export const ETH_NETWORK: EvmNetwork = {
     { symbol: "USDC", address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", decimals: 6 },
     { symbol: "USDT", address: "0xdac17f958d2ee523a2206206994597c13d831ec7", decimals: 6 },
     { symbol: "PYUSD", address: "0x6c3ea9036406852006290770bedfcaba0e23a0e8", decimals: 6 },
+    { symbol: "DAI", address: "0x6b175474e89094c44da98b954eedeac495271d0f", decimals: 18 },
   ],
   confirmationsRequired: 3,
 };
@@ -137,6 +138,7 @@ export const BASE_NETWORK: EvmNetwork = {
   explorerAddr: (a) => `https://basescan.org/address/${a}`,
   stables: [
     { symbol: "USDC", address: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913", decimals: 6 },
+    { symbol: "DAI", address: "0x50c5725949a6f0c72e6c4a641f24049a917db0cb", decimals: 18 },
   ],
   confirmationsRequired: 3,
 };
@@ -152,6 +154,7 @@ export const BSC_NETWORK: EvmNetwork = {
   stables: [
     { symbol: "USDT", address: "0x55d398326f99059ff775485246999027b3197955", decimals: 18 },
     { symbol: "USDC", address: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d", decimals: 18 },
+    { symbol: "DAI", address: "0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3", decimals: 18 },
   ],
   confirmationsRequired: 6,
 };
@@ -194,9 +197,9 @@ export const SOL_NETWORK: SolanaNetwork = {
 
 /** Stable symbols we allow to be enabled per chain. Curated whitelist. */
 export const SUPPORTED_STABLES_BY_CHAIN: Partial<Record<ChainKind, readonly string[]>> = {
-  eth: ["USDC", "USDT", "PYUSD"],
-  base: ["USDC"],
-  bsc: ["USDT", "USDC"],
+  eth: ["USDC", "USDT", "PYUSD", "DAI"],
+  base: ["USDC", "DAI"],
+  bsc: ["USDT", "USDC", "DAI"],
   tron: ["USDT", "USDC"],
   sol: ["USDC", "USDT", "PYUSD"],
 };

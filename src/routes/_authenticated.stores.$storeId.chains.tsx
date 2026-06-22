@@ -86,7 +86,7 @@ const CHAINS: ChainMeta[] = [
 // server. Kept inline because this is a client component and the server
 // network module pulls in node-only crypto deps.
 const STABLES_BY_CHAIN: Partial<Record<ChainKey, readonly string[]>> = {
-  eth: ["USDC", "USDT", "PYUSD"],
+  eth: ["USDC", "USDT", "PYUSD", "DAI"],
   tron: ["USDT", "USDC"],
   sol: ["USDC", "USDT", "PYUSD"],
   // base/bsc not listed in CHAINS UI today — EVM card covers them via the
