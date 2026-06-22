@@ -15,7 +15,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { getPublicInvoice, selectInvoiceChain } from "@/lib/checkout.functions";
+import { getPublicInvoice, selectInvoiceChain, type CheckoutPaymentOption } from "@/lib/checkout.functions";
 import { ALL_NETWORKS } from "@/lib/chains/networks";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
