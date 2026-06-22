@@ -474,6 +474,45 @@ function PayingFrame({
           </p>
         </div>
 
+        {/* alternate networks */}
+        {showSwitch && (
+          <div className="mt-4">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              Or pay with
+            </p>
+            <div className="mt-2 flex flex-col gap-1.5">
+              {otherChains.map((c) => {
+                const busy = switching === c;
+                return (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => onSwitchTo(c)}
+                    disabled={switching !== null}
+                    className="group flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-background/40 px-3 py-2 text-left transition hover:border-primary/50 hover:bg-primary/5 disabled:opacity-60"
+                  >
+                    <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+                      <span
+                        className={cn(
+                          "h-2 w-2 rounded-full bg-gradient-to-br",
+                          chainAccent(c),
+                        )}
+                      />
+                      {CHAIN_LABEL[c] ?? c.toUpperCase()}
+                      <span className="text-[11px] font-normal uppercase tracking-wider text-muted-foreground">
+                        {c}
+                      </span>
+                    </span>
+                    <span className="text-[11px] font-medium text-muted-foreground group-hover:text-primary">
+                      {busy ? "Switching…" : "Use →"}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* memo for solana */}
         {inv.chain === "sol" && (
           <div className="mt-3 rounded-xl border border-primary/30 bg-primary/5 p-3">
