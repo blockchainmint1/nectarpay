@@ -154,6 +154,7 @@ export const BSC_NETWORK: EvmNetwork = {
   stables: [
     { symbol: "USDT", address: "0x55d398326f99059ff775485246999027b3197955", decimals: 18 },
     { symbol: "USDC", address: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d", decimals: 18 },
+    { symbol: "DAI", address: "0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3", decimals: 18 },
   ],
   confirmationsRequired: 6,
 };
