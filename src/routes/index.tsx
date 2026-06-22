@@ -63,9 +63,7 @@ function HomePage() {
                   Start free <Zap className="ml-1 h-4 w-4" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link to="/integrations/woocommerce">WooCommerce plugin</Link>
-              </Button>
+
             </div>
             <div className="mt-8 flex flex-wrap gap-2">
               {CHAINS.map((c) => (
