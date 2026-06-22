@@ -451,11 +451,16 @@ function PayingFrame({
             <span className="font-mono text-4xl font-semibold tracking-tight md:text-5xl">
               {inv.cryptoAmount != null ? inv.cryptoAmount : "—"}
             </span>
-            <span className="text-lg font-medium text-muted-foreground">{inv.chain.toUpperCase()}</span>
+            <span className="text-lg font-medium text-muted-foreground">
+              {inv.tokenSymbol ? inv.tokenSymbol : inv.chain.toUpperCase()}
+            </span>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             ≈ {inv.fiatAmount.toFixed(2)} {inv.fiatCurrency.toUpperCase()}
             {inv.rate ? <span className="ml-2 opacity-60">@ {inv.rate.toLocaleString()}</span> : null}
+            {inv.tokenSymbol && (
+              <span className="ml-2 opacity-60">· on {CHAIN_LABEL[inv.chain] ?? inv.chain}</span>
+            )}
           </p>
         </div>
 
@@ -467,7 +472,9 @@ function PayingFrame({
         <div className="mt-6 rounded-xl border border-border/60 bg-background/40 p-3">
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs uppercase tracking-wider text-muted-foreground">
-              {CHAIN_LABEL[inv.chain] ?? inv.chain} address
+              {inv.tokenSymbol
+                ? `${inv.tokenSymbol} (${CHAIN_LABEL[inv.chain] ?? inv.chain}) address`
+                : `${CHAIN_LABEL[inv.chain] ?? inv.chain} address`}
             </span>
             <CopyButton value={inv.address} />
           </div>
@@ -476,20 +483,20 @@ function PayingFrame({
           </p>
         </div>
 
-        {/* alternate networks */}
+        {/* alternate payment options */}
         {showSwitch && (
           <div className="mt-4">
             <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               Or pay with
             </p>
             <div className="mt-2 flex flex-col gap-1.5">
-              {otherChains.map((c) => {
-                const busy = switching === c;
+              {otherOptions.map((o) => {
+                const busy = switching === o.key;
                 return (
                   <button
-                    key={c}
+                    key={o.key}
                     type="button"
-                    onClick={() => onSwitchTo(c)}
+                    onClick={() => onSwitchTo(o.key)}
                     disabled={switching !== null}
                     className="group flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-background/40 px-3 py-2 text-left transition hover:border-primary/50 hover:bg-primary/5 disabled:opacity-60"
                   >
@@ -497,12 +504,12 @@ function PayingFrame({
                       <span
                         className={cn(
                           "h-2 w-2 rounded-full bg-gradient-to-br",
-                          chainAccent(c),
+                          chainAccent(o.chain),
                         )}
                       />
-                      {CHAIN_LABEL[c] ?? c.toUpperCase()}
+                      {o.label}
                       <span className="text-[11px] font-normal uppercase tracking-wider text-muted-foreground">
-                        {c}
+                        {o.tokenSymbol ? `${o.tokenSymbol}·${o.chain}` : o.chain}
                       </span>
                     </span>
                     <span className="text-[11px] font-medium text-muted-foreground group-hover:text-primary">
