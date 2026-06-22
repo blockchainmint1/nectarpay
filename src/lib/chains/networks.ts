@@ -138,6 +138,7 @@ export const BASE_NETWORK: EvmNetwork = {
   explorerAddr: (a) => `https://basescan.org/address/${a}`,
   stables: [
     { symbol: "USDC", address: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913", decimals: 6 },
+    { symbol: "USDT", address: "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2", decimals: 6 },
     { symbol: "DAI", address: "0x50c5725949a6f0c72e6c4a641f24049a917db0cb", decimals: 18 },
   ],
   confirmationsRequired: 3,
@@ -198,11 +199,32 @@ export const SOL_NETWORK: SolanaNetwork = {
 /** Stable symbols we allow to be enabled per chain. Curated whitelist. */
 export const SUPPORTED_STABLES_BY_CHAIN: Partial<Record<ChainKind, readonly string[]>> = {
   eth: ["USDC", "USDT", "PYUSD", "DAI"],
-  base: ["USDC", "DAI"],
+  base: ["USDC", "USDT", "DAI"],
   bsc: ["USDT", "USDC", "DAI"],
   tron: ["USDT", "USDC"],
   sol: ["USDC", "USDT", "PYUSD"],
 };
+
+/**
+ * EVM chains that share a single derived address per xpub index. For checkout
+ * display, a stable enabled on the "eth" chain config is actually receivable
+ * on any of these networks (same address), so we surface a single combined
+ * option labeled e.g. "USDC on Ethereum, Base or BSC".
+ */
+export const EVM_CHAIN_KEYS = ["eth", "base", "bsc"] as const;
+export const EVM_CHAIN_LABEL: Record<(typeof EVM_CHAIN_KEYS)[number], string> = {
+  eth: "Ethereum",
+  base: "Base",
+  bsc: "BSC",
+};
+/** EVM chains on which a given stable token is recognized by the watcher. */
+export function evmChainsForStable(symbol: string): (typeof EVM_CHAIN_KEYS)[number][] {
+  const sym = symbol.toUpperCase();
+  return EVM_CHAIN_KEYS.filter((k) =>
+    (SUPPORTED_STABLES_BY_CHAIN[k] ?? []).map((s) => s.toUpperCase()).includes(sym),
+  );
+}
+
 
 export interface StableMeta {
   chain: ChainKind;
