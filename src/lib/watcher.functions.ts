@@ -374,10 +374,16 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
 
             for (const t of transfers) {
               // Match invoice on (address, chain, token_symbol).
-              // Stable transfer → invoice must have token_symbol = t.asset (USDC/USDT/PYUSD).
-              // Native transfer → invoice.token_symbol IS NULL.
-              // Native invoices may be on "eth" as a generic EVM catch-all; stable invoices are pinned to the specific chain.
-              const matchChains = (t.isNative ? [net.symbol, "eth"] : [net.symbol]) as never[];
+              // Native transfer → invoice.token_symbol IS NULL; chain must be
+              //   the specific EVM network (or "eth" as a generic catch-all).
+              // Stable transfer → invoice.token_symbol must equal t.asset and
+              //   chain may be any EVM key, because stables enabled on the
+              //   shared EVM xpub list a single combined option ("USDC on
+              //   Ethereum, Base or BSC") backed by one address — wherever
+              //   the customer sends it, we settle the same invoice.
+              const matchChains = (
+                t.isNative ? [net.symbol, "eth"] : ["eth", "base", "bsc"]
+              ) as never[];
               const invQuery = supabaseAdmin
                 .from("invoices")
                 .select("id, fiat_amount, status, chain, token_symbol")
@@ -388,6 +394,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
                 t.isNative ? c.token_symbol == null : (c.token_symbol ?? "").toUpperCase() === t.asset.toUpperCase(),
               );
               if (!inv) continue;
+
               const rawAmount = BigInt(t.rawValue);
               const human = Number(rawAmount) / 10 ** t.decimals;
               // Stables = $1; native uses live rate.
