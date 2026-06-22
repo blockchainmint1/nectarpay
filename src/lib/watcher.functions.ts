@@ -373,26 +373,38 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             r.credits += transfers.length;
 
             for (const t of transfers) {
-              // Invoice may be issued on this specific EVM chain (eth/base/bsc),
-              // or on "eth" as the catch-all if the merchant only sells in ETH terms.
-              const { data: inv } = await supabaseAdmin
+              // Match invoice on (address, chain, token_symbol).
+              // Stable transfer → invoice must have token_symbol = t.asset (USDC/USDT/PYUSD).
+              // Native transfer → invoice.token_symbol IS NULL.
+              // Native invoices may be on "eth" as a generic EVM catch-all; stable invoices are pinned to the specific chain.
+              const matchChains = t.isNative ? [net.symbol, "eth"] : [net.symbol];
+              const invQuery = supabaseAdmin
                 .from("invoices")
-                .select("id, fiat_amount, status, chain")
+                .select("id, fiat_amount, status, chain, token_symbol")
                 .eq("address", t.to.toLowerCase())
-                .in("chain", [net.symbol, "eth"])
-                .maybeSingle();
+                .in("chain", matchChains);
+              const { data: candidates } = await invQuery;
+              const inv = (candidates ?? []).find((c) =>
+                t.isNative ? c.token_symbol == null : (c.token_symbol ?? "").toUpperCase() === t.asset.toUpperCase(),
+              );
               if (!inv) continue;
               const rawAmount = BigInt(t.rawValue);
               const human = Number(rawAmount) / 10 ** t.decimals;
+              // Stables = $1; native uses live rate.
               const usd = t.isNative ? human * (await getUsdRate(net.symbol)) : human;
               const confirmations = tip - t.blockNum + 1;
               const cfg = configList[0];
               const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, usd);
               const isConfirmed = confirmations >= required;
-              await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed);
-              const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
-              if (settled.changed) r.invoicesUpdated++;
+              await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed, t.asset);
+              if (isConfirmed) {
+                const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
+                if (settled.changed) r.invoicesUpdated++;
+              } else if (await markInvoiceDetected(inv.id)) {
+                r.invoicesUpdated++;
+              }
             }
+
 
             await supabaseAdmin
               .from("watcher_cursors")
