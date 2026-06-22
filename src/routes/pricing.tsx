@@ -31,8 +31,8 @@ function PricingPage() {
         <div className="mx-auto max-w-6xl px-4">
           <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">Pricing.</h1>
           <p className="mt-3 max-w-2xl text-muted-foreground">
-            Three plans. All paid in TEXITcoin. Funds always settle straight to your wallet — we
-            never touch them.
+            Three membership plans. All paid in TEXITcoin. Funds always settle straight to your
+            wallet — we never touch them.
           </p>
 
           <div className="mt-10 grid gap-6 md:grid-cols-3">
