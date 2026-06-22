@@ -150,7 +150,7 @@ if (!crypto.timingSafeEqual(Buffer.from(v1), Buffer.from(expected))) reject();`}
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             <a
-              href="https://github.com/honest-money/nectar-pay"
+              href="https://github.com/blockchainmint1/nectarpay"
               target="_blank"
               rel="noopener noreferrer"
               className="group flex flex-col rounded-xl border border-border bg-card/60 p-5 transition hover:border-primary/50 hover:bg-card"
