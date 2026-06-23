@@ -79,6 +79,12 @@ function StoreDetailPage() {
           to={`/stores/${storeId}/terminals`}
         />
         <CardLink
+          icon={<Sliders className="h-4 w-4" />}
+          title="POS terminal experience"
+          body="Tip step, signature capture, email receipts, and receipt header (logo, address, footer)."
+          to={`/stores/${storeId}/pos-settings`}
+        />
+        <CardLink
           icon={<Receipt className="h-4 w-4" />}
           title="Invoices"
           body="Browse incoming payments and statuses."
