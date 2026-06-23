@@ -38,7 +38,7 @@ function PosSettingsPage() {
   const { storeId } = Route.useParams();
   const qc = useQueryClient();
 
-  const { data: store, isLoading } = useQuery({
+  const { data: store, isLoading, error } = useQuery({
     queryKey: ["store-pos", storeId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -49,8 +49,10 @@ function PosSettingsPage() {
         .eq("id", storeId)
         .maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error("Store not found or you don't have access.");
       return data;
     },
+    retry: false,
   });
 
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -92,9 +94,24 @@ function PosSettingsPage() {
     onError: (e) => toast.error((e as Error).message),
   });
 
+  if (error) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-10 md:px-8">
+        <Link to="/stores" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
+          <ChevronLeft className="h-4 w-4" /> All stores
+        </Link>
+        <div className="mt-6 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm">
+          <div className="font-semibold text-destructive">Couldn't load POS settings</div>
+          <p className="mt-1 text-muted-foreground">{(error as Error).message}</p>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading || !draft || !store) {
     return <div className="px-8 py-10 text-sm text-muted-foreground">Loading…</div>;
   }
+
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 md:px-8">
