@@ -330,7 +330,7 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
     .eq("id", invoiceId)
     .maybeSingle();
 
-  if (!inv || !inv.address || !["eth", "base", "bsc"].includes(inv.chain)) return false;
+  if (!inv?.address || !inv.chain || !["eth", "base", "bsc"].includes(inv.chain)) return false;
   if (["confirmed", "overpaid", "cancelled", "failed"].includes(inv.status)) return false;
 
   const key = process.env.ALCHEMY_API_KEY;
