@@ -670,6 +670,16 @@ function WaitingScreen({
           <img src={qrDataUrl} alt="Scan to pay" className="aspect-square w-[min(58vw,300px)]" />
         </div>
       )}
+      {hasWallet && invoice.address && (
+        <button
+          type="button"
+          onClick={() => { void navigator.clipboard?.writeText(invoice.address!); }}
+          className="mt-2 max-w-[min(58vw,300px)] break-all font-mono text-[9px] leading-snug text-white/55 hover:text-white/80"
+          title="Tap to copy"
+        >
+          {invoice.address}
+        </button>
+      )}
 
       <div className="mt-2 flex items-center gap-2 text-[10px] font-mono text-white/60">
         <span className="relative flex size-2">
