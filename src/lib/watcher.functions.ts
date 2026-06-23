@@ -456,6 +456,21 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
     const r: WatcherResult = { chain, addresses: 0, credits: 0, invoicesUpdated: 0 };
     try {
       if (chain === "btc" || chain === "txc") {
+        const cfgByStoreId = new Map(configList.map((c) => [c.store_id, c]));
+        const { data: openInvoices } = await supabaseAdmin
+          .from("invoices")
+          .select("id, store_id, address, fiat_amount, status, rate, crypto_amount")
+          .eq("chain", chain)
+          .in("store_id", configList.map((c) => c.store_id))
+          .in("status", ["pending", "detected", "underpaid"])
+          .not("address", "is", null);
+        r.addresses = openInvoices?.length ?? 0;
+
+        if (!openInvoices?.length) {
+          results.push(r);
+          continue;
+        }
+
         const net = chain === "btc" ? BTC_NETWORK : TXC_NETWORK;
         const tip = await getTipHeight(net);
 
@@ -470,16 +485,6 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             (cfg.next_address_index ?? 0) + ADDRESS_WINDOW,
           );
         }
-
-        const cfgByStoreId = new Map(configList.map((c) => [c.store_id, c]));
-        const { data: openInvoices } = await supabaseAdmin
-          .from("invoices")
-          .select("id, store_id, address, fiat_amount, status, rate, crypto_amount")
-          .eq("chain", chain)
-          .in("store_id", configList.map((c) => c.store_id))
-          .in("status", ["pending", "detected", "underpaid"])
-          .not("address", "is", null);
-        r.addresses = openInvoices?.length ?? 0;
 
         for (const inv of openInvoices ?? []) {
           if (!inv.address) continue;
@@ -531,6 +536,21 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
         const key = process.env.ALCHEMY_API_KEY;
         if (!key) throw new Error("ALCHEMY_API_KEY not configured");
 
+        const { data: openInvoices } = await supabaseAdmin
+          .from("invoices")
+          .select("address")
+          .in("chain", ["eth", "base", "bsc"])
+          .in("store_id", configList.map((c) => c.store_id))
+          .in("status", ["pending", "detected", "underpaid"])
+          .not("address", "is", null);
+        const addrList = Array.from(new Set((openInvoices ?? []).map((a) => a.address).filter(Boolean)));
+        r.addresses = addrList.length;
+
+        if (!addrList.length) {
+          results.push(r);
+          continue;
+        }
+
         // Derive addresses once (EVM derivation is network-agnostic).
         for (const cfg of configList) {
           if (!cfg.xpub) continue;
@@ -543,16 +563,6 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             (cfg.next_address_index ?? 0) + ADDRESS_WINDOW,
           );
         }
-
-        const { data: openInvoices } = await supabaseAdmin
-          .from("invoices")
-          .select("address")
-          .in("chain", ["eth", "base", "bsc"])
-          .in("store_id", configList.map((c) => c.store_id))
-          .in("status", ["pending", "detected", "underpaid"])
-          .not("address", "is", null);
-        const addrList = Array.from(new Set((openInvoices ?? []).map((a) => a.address).filter(Boolean)));
-        r.addresses = addrList.length;
 
         for (const net of EVM_NETWORKS) {
           try {
