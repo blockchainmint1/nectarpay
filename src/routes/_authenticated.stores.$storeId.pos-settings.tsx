@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
+import { ChainOrderEditor } from "@/components/pos-settings/chain-order-editor";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/stores/$storeId/pos-settings")({
@@ -138,6 +139,8 @@ function PosSettingsPage() {
             />
           </div>
         </Card>
+        <ChainOrderEditor storeId={storeId} />
+
 
         <Card className="p-5">
           <h2 className="text-sm font-semibold">Receipt header</h2>

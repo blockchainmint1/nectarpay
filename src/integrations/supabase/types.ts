@@ -60,6 +60,7 @@ export type Database = {
           chain: Database["public"]["Enums"]["chain_kind"]
           created_at: string
           derivation_path: string | null
+          display_order: number
           enabled: boolean
           id: string
           network: string
@@ -76,6 +77,7 @@ export type Database = {
           chain: Database["public"]["Enums"]["chain_kind"]
           created_at?: string
           derivation_path?: string | null
+          display_order?: number
           enabled?: boolean
           id?: string
           network?: string
@@ -92,6 +94,7 @@ export type Database = {
           chain?: Database["public"]["Enums"]["chain_kind"]
           created_at?: string
           derivation_path?: string | null
+          display_order?: number
           enabled?: boolean
           id?: string
           network?: string

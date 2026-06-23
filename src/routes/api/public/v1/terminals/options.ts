@@ -45,9 +45,10 @@ export const Route = createFileRoute("/api/public/v1/terminals/options")({
           const [cfgsRes, storeRes] = await Promise.all([
             supabaseAdmin
               .from("chain_configs")
-              .select("chain, stables")
+              .select("chain, stables, display_order")
               .eq("store_id", auth.terminal.store_id)
-              .eq("enabled", true),
+              .eq("enabled", true)
+              .order("display_order", { ascending: true }),
             supabaseAdmin
               .from("stores")
               .select("name, pos_tip_enabled, pos_signature_enabled, pos_email_receipt_enabled, receipt_business_name, receipt_address, receipt_logo_url, receipt_footer, receipt_tax_id")
