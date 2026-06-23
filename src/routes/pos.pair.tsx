@@ -60,6 +60,22 @@ function PairPage() {
   const [apiHint, setApiHint] = useState("");
   const [scanOpen, setScanOpen] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
+  const [alreadyPaired, setAlreadyPaired] = useState(false);
+
+  // If this device is already paired, don't show the pair form — bounce to /pos
+  // (which enforces the PIN lock). Re-pairing requires explicit Unpair from settings.
+  useEffect(() => {
+    const existing = (typeof window !== "undefined") ? (() => {
+      try {
+        return localStorage.getItem("pos.terminal.id") && localStorage.getItem("pos.terminal.secret");
+      } catch { return null; }
+    })() : null;
+    if (existing) {
+      setAlreadyPaired(true);
+      navigate({ to: "/pos", replace: true });
+    }
+  }, [navigate]);
+
 
   const m = useMutation({
     mutationFn: (args: { code: string; api: string }) => pairCall(args.code, args.api),
@@ -123,8 +139,13 @@ function PairPage() {
     setScanOpen(true);
   }
 
+  if (alreadyPaired) {
+    return <div className="fixed inset-0 bg-[#0a0d12]" />;
+  }
+
   return (
     <div className="fixed inset-0 bg-[#0a0d12] text-white flex flex-col items-center justify-center px-6">
+
       <div className="text-[10px] font-bold tracking-[0.3em] text-white/50">PAIR TERMINAL</div>
       <h1 className="mt-2 text-2xl font-bold">Enter pairing code</h1>
       <p className="mt-2 max-w-xs text-center text-sm text-white/60">
