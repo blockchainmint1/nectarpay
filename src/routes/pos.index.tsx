@@ -246,7 +246,8 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
     }
   };
 
-  // Poll status while waiting.
+  // Poll status while waiting. After confirmation, advance into the optional
+  // signature → email-receipt → final receipt sequence based on store settings.
   useEffect(() => {
     if (screen !== "waiting" || !invoice) return;
     let cancelled = false;
@@ -255,7 +256,11 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
         const s = await signedJson<InvoiceStatus>(creds, `/api/public/v1/terminals/invoice/${invoice.id}`);
         if (cancelled) return;
         setStatus(s);
-        if (s.status === "paid" || s.status === "confirmed" || s.status === "overpaid") setScreen("paid");
+        if (s.status === "paid" || s.status === "confirmed" || s.status === "overpaid") {
+          if (experience.signature_enabled) setScreen("signature");
+          else if (experience.email_receipt_enabled) setScreen("email");
+          else setScreen("paid");
+        }
         else if (s.status === "cancelled") setScreen("cancelled");
         else if (s.status === "expired") setScreen("expired");
       } catch { /* keep polling */ }
