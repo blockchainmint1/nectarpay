@@ -249,3 +249,30 @@ function StatusBadge({ status }: { status: string }) {
     </Badge>
   );
 }
+
+function tickerForChain(chain?: string | null): string {
+  if (!chain) return "";
+  const c = chain.toLowerCase();
+  if (c.includes("bitcoin") || c === "btc") return "BTC";
+  if (c.includes("texit") || c === "txc") return "TXC";
+  if (c.includes("litecoin") || c === "ltc") return "LTC";
+  if (c.includes("ethereum") || c === "eth") return "ETH";
+  if (c.includes("tron") || c === "trx") return "TRX";
+  if (c.includes("solana") || c === "sol") return "SOL";
+  if (c.includes("polygon") || c === "matic") return "MATIC";
+  if (c.includes("base")) return "ETH";
+  return chain.toUpperCase();
+}
+
+function formatCryptoAmount(amount: number | string, symbol?: string): string {
+  const n = Number(amount);
+  if (!isFinite(n)) return String(amount);
+  const stables = new Set(["USDC", "USDT", "DAI", "PYUSD"]);
+  const maxFrac = stables.has((symbol || "").toUpperCase()) ? 2 : 6;
+  // Strip trailing zeros
+  const fixed = n.toFixed(maxFrac);
+  const trimmed = fixed.replace(/\.?0+$/, "");
+  const [int, dec] = trimmed.split(".");
+  const intFmt = Number(int).toLocaleString();
+  return dec ? `${intFmt}.${dec}` : intFmt;
+}
