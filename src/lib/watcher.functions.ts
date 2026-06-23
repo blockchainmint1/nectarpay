@@ -275,9 +275,36 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
   return changed;
 }
 
+/**
+ * Mark stale unpaid invoices as `expired` so their reserved addresses are
+ * released back into the recycler pool. Only touches invoices with zero
+ * payment activity — `underpaid` invoices keep their lock because real
+ * money landed on that address.
+ */
+async function expireStaleInvoices(): Promise<number> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const nowIso = new Date().toISOString();
+  const { data, error } = await supabaseAdmin
+    .from("invoices")
+    .update({ status: "expired" })
+    .in("status", ["pending", "detected"])
+    .lt("expires_at", nowIso)
+    .select("id");
+  if (error) {
+    console.error("[watcher] expireStaleInvoices failed:", error);
+    return 0;
+  }
+  return data?.length ?? 0;
+}
+
 export async function runWatcherTick(): Promise<WatcherResult[]> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const results: WatcherResult[] = [];
+
+  // Release address locks from invoices whose expires_at has passed.
+  await expireStaleInvoices();
+
+
 
   const { data: configs } = await supabaseAdmin
     .from("chain_configs")
