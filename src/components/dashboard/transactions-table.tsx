@@ -22,11 +22,10 @@ const PAGE_SIZES = [10, 25, 50, 100];
 
 function useDebounced<T>(value: T, delay = 300) {
   const [v, setV] = useState(value);
-  useMemo(() => {
+  useEffect(() => {
     const id = setTimeout(() => setV(value), delay);
     return () => clearTimeout(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  }, [value, delay]);
   return v;
 }
 
