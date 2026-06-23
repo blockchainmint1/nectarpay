@@ -258,10 +258,24 @@ async function findRecyclableEvmAddress(
     .order("created_at", { ascending: true })
     .limit(100);
 
+  // Load the set of addresses currently derivable from the active xpub.
+  // If an xpub was swapped, prior invoices may carry addresses we no longer
+  // control — NEVER recycle those.
+  const { data: validRows } = await supabaseAdmin
+    .from("derived_addresses")
+    .select("address")
+    .eq("store_id", storeId);
+  const validAddresses = new Set(
+    ((validRows ?? []) as Array<{ address: string }>).map((r) => r.address.toLowerCase()),
+  );
+
   const seen = new Set<string>();
   for (const c of (candidates ?? []) as Array<{ address: string; address_index: number | null }>) {
     if (seen.has(c.address)) continue;
     seen.add(c.address);
+
+    // Must be derivable from the current xpub.
+    if (!validAddresses.has(c.address.toLowerCase())) continue;
 
     // Skip if ANY invoice on this address is currently live, or had activity
     // (of any status) within the recycle window.
@@ -280,6 +294,7 @@ async function findRecyclableEvmAddress(
     }
   }
   return null;
+
 }
 
 
