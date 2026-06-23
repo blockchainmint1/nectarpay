@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { LayoutDashboard, Store, BookOpen, LogOut, CreditCard, Bell, Download } from "lucide-react";
+import { LayoutDashboard, Store, BookOpen, LogOut, CreditCard, Bell, Download, Smartphone } from "lucide-react";
 
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
