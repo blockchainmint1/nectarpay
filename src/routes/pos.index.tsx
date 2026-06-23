@@ -554,9 +554,9 @@ function ChainScreen({
             className="flex w-full items-center justify-between rounded-xl border-2 border-dashed border-white/15 bg-transparent px-4 py-4 text-left transition hover:border-white/40 hover:bg-white/[0.03] disabled:opacity-40"
           >
             <div className="min-w-0 flex-1">
-              <div className="text-base font-bold">Let customer pick</div>
+              <div className="text-base font-bold">Choose on Device</div>
               <div className="mt-0.5 text-[11px] text-white/50">
-                Shows a chooser on the QR page — they decide on their phone.
+                Shows a QR that opens a chooser on the customer's phone.
               </div>
             </div>
             <span className="ml-3 text-white/40">→</span>
