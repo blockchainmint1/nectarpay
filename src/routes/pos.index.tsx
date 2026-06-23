@@ -261,7 +261,7 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
   // Poll status while waiting. After confirmation, advance into the optional
   // signature → email-receipt → final receipt sequence based on store settings.
   useEffect(() => {
-    if (screen !== "waiting" || !invoice) return;
+    if ((screen !== "waiting" && screen !== "underpaid") || !invoice) return;
     let cancelled = false;
     const tick = async () => {
       try {
@@ -273,11 +273,16 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
           else if (experience.email_receipt_enabled) setScreen("email");
           else setScreen("paid");
         }
+        else if (s.status === "underpaid") setScreen("underpaid");
         else if (s.status === "cancelled") setScreen("cancelled");
         else if (s.status === "expired") setScreen("expired");
       } catch { /* keep polling */ }
     };
     void tick();
+    const id = setInterval(tick, 1500);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [screen, invoice, creds, experience.signature_enabled, experience.email_receipt_enabled]);
+
     const id = setInterval(tick, 1000);
     return () => { cancelled = true; clearInterval(id); };
   }, [screen, invoice, creds]);
