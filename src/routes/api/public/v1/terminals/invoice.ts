@@ -23,7 +23,13 @@ const Body = z.object({
   currency: z.string().min(3).max(8).default("USD"),
   memo: z.string().max(512).optional().nullable(),
   expires_in_seconds: z.number().int().min(60).max(86_400).optional(),
+  /** Optional pre-selected payment option. "chain" (e.g. "btc") or "chain:SYMBOL" ("eth:USDC").
+   *  Omit / null to leave open — customer picks on the QR page. */
+  option: z.string().min(2).max(32).optional().nullable(),
 });
+
+const VALID_CHAINS = new Set(["btc", "txc", "eth", "base", "bsc", "tron", "sol", "doge", "isk", "zcu"]);
+const VALID_STABLES = new Set(["USDC", "USDT", "PYUSD", "DAI"]);
 
 export const Route = createFileRoute("/api/public/v1/terminals/invoice")({
   server: {
