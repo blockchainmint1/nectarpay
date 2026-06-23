@@ -341,6 +341,7 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
   const startsAfterMs = createdMs - 5 * 60 * 1000;
   const endsBeforeMs = expiresMs + 60 * 60 * 1000;
   const token = (inv.token_symbol ?? "").toUpperCase();
+  const invoiceAddress = inv.address;
   const scanNets = token
     ? EVM_NETWORKS
     : EVM_NETWORKS.filter((n) => n.symbol === inv.chain || (inv.chain === "eth" && n.symbol === "eth"));
@@ -351,7 +352,7 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
     try {
       const tip = await getBlockNumber(net, key);
       const fromBlock = Math.max(0, tip - 7200); // ~1 day on Ethereum; enough for missed webhooks/cron drift.
-      const transfers = await alchemyAssetTransfersForAddress(net, key, inv.address, fromBlock);
+      const transfers = await alchemyAssetTransfersForAddress(net, key, invoiceAddress, fromBlock);
       return { net, tip, transfers };
     } catch (e) {
       console.error(`[watcher] hot EVM scan failed on ${net.symbol}:`, e);
