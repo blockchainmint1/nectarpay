@@ -5,6 +5,7 @@ import { Store, Plus, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
+import { TransactionsTable } from "@/components/dashboard/transactions-table";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard · Nectar.Pay" }] }),
@@ -124,6 +125,15 @@ function DashboardPage() {
             </Button>
           </div>
         )}
+      </div>
+
+      <div className="mt-10">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold tracking-tight">Recent transactions</h2>
+        </div>
+        <div className="mt-4">
+          <TransactionsTable userId={user?.id} />
+        </div>
       </div>
     </div>
   );
