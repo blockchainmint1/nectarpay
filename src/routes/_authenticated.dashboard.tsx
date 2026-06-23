@@ -126,6 +126,15 @@ function DashboardPage() {
           </div>
         )}
       </div>
+
+      <div className="mt-10">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold tracking-tight">Recent transactions</h2>
+        </div>
+        <div className="mt-4">
+          <TransactionsTable userId={user?.id} />
+        </div>
+      </div>
     </div>
   );
 }
