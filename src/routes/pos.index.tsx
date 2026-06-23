@@ -521,7 +521,7 @@ function ChainScreen({
   onBack: () => void;
 }) {
   return (
-    <div className="flex flex-1 flex-col px-4 py-4">
+    <div className="flex min-h-0 flex-1 flex-col px-4 py-4">
       <div className="flex-shrink-0 text-center">
         <p className="text-[10px] font-bold tracking-[0.25em] text-white/50">CUSTOMER PAYS WITH</p>
         <div className="mt-1 text-4xl font-black tabular-nums">{fmt(totalCents)}</div>
