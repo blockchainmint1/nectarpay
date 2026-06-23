@@ -315,6 +315,24 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
         {screen === "waiting" && invoice && (
           <WaitingScreen invoice={invoice} status={status} qrDataUrl={qrDataUrl} onCancel={onCancel} />
         )}
+        {screen === "signature" && invoice && (
+          <SignatureScreen
+            onSkip={() => setScreen(experience.email_receipt_enabled ? "email" : "paid")}
+            onSubmit={async (dataUrl) => {
+              try { await signedJson(creds, `/api/public/v1/terminals/invoice/${invoice.id}/receipt`, { method: "POST", body: { signature_data_url: dataUrl } }); } catch { /* non-fatal */ }
+              setScreen(experience.email_receipt_enabled ? "email" : "paid");
+            }}
+          />
+        )}
+        {screen === "email" && invoice && (
+          <EmailReceiptScreen
+            onSkip={() => setScreen("paid")}
+            onSubmit={async (email) => {
+              try { await signedJson(creds, `/api/public/v1/terminals/invoice/${invoice.id}/receipt`, { method: "POST", body: { email } }); } catch { /* non-fatal */ }
+              setScreen("paid");
+            }}
+          />
+        )}
         {screen === "paid" && status && (
           <PaidScreen status={status} onDone={reset} />
         )}
