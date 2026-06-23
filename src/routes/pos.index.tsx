@@ -183,8 +183,12 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
     let cancelled = false;
     (async () => {
       try {
-        const res = await signedJson<{ options: PaymentOption[] }>(creds, "/api/public/v1/terminals/options");
-        if (!cancelled) setOptions(res.options ?? []);
+        const res = await signedJson<{ options: PaymentOption[]; experience?: Experience }>(
+          creds, "/api/public/v1/terminals/options",
+        );
+        if (cancelled) return;
+        setOptions(res.options ?? []);
+        if (res.experience) setExperience({ ...DEFAULT_EXPERIENCE, ...res.experience });
       } catch (e) {
         if (!cancelled) setOptionsErr((e as Error).message);
       }
