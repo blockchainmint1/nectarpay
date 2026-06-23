@@ -163,7 +163,7 @@ function PinLock({ pinHash, onUnlock }: { pinHash: string; onUnlock: () => void 
 
 // ─── Sale state machine ──────────────────────────────────────────────────
 
-type Screen = "amount" | "tip" | "chain" | "waiting" | "paid" | "signature" | "email" | "cancelled" | "expired";
+type Screen = "amount" | "tip" | "chain" | "waiting" | "underpaid" | "paid" | "signature" | "email" | "cancelled" | "expired";
 
 interface Experience {
   tip_enabled: boolean;
