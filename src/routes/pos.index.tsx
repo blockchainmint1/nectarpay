@@ -331,6 +331,10 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
         {screen === "waiting" && invoice && (
           <WaitingScreen invoice={invoice} status={status} onCancel={onCancel} />
         )}
+        {screen === "underpaid" && invoice && status && (
+          <UnderpaidScreen invoice={invoice} status={status} onCancel={onCancel} />
+        )}
+
         {screen === "signature" && invoice && (
           <SignatureScreen
             onSkip={() => setScreen(experience.email_receipt_enabled ? "email" : "paid")}
