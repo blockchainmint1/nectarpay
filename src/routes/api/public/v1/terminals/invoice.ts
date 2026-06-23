@@ -127,6 +127,12 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice")({
             .eq("id", auth.terminal.id);
 
           const origin = new URL(request.url).origin;
+          // Re-read derived fields so terminal can render a wallet QR directly.
+          const { data: full } = await supabaseAdmin
+            .from("invoices")
+            .select("address, crypto_amount")
+            .eq("id", inserted.id)
+            .maybeSingle();
           return json({
             id: inserted.id,
             checkout_url: `${origin}/i/${inserted.id}`,
@@ -135,6 +141,8 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice")({
             status: "pending",
             chain: preselectedChain,
             token_symbol: preselectedToken,
+            address: full?.address ?? null,
+            crypto_amount: full?.crypto_amount ?? null,
             expires_at: expiresAt,
           }, 201);
         } catch (err) {
