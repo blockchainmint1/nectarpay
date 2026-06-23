@@ -661,3 +661,137 @@ function DoneScreen({ label, onDone }: { label: string; onDone: () => void }) {
     </div>
   );
 }
+
+function SignatureScreen({ onSubmit, onSkip }: { onSubmit: (dataUrl: string) => void | Promise<void>; onSkip: () => void }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const drawingRef = useRef(false);
+  const dirtyRef = useRef(false);
+  const lastRef = useRef<{ x: number; y: number } | null>(null);
+  const [hasInk, setHasInk] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    const c = canvasRef.current;
+    if (!c) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = c.getBoundingClientRect();
+    c.width = Math.floor(rect.width * dpr);
+    c.height = Math.floor(rect.height * dpr);
+    const ctx = c.getContext("2d");
+    if (!ctx) return;
+    ctx.scale(dpr, dpr);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = "#0a0d12";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, rect.width, rect.height);
+  }, []);
+
+  function pointFromEvent(e: React.PointerEvent<HTMLCanvasElement>) {
+    const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+  function down(e: React.PointerEvent<HTMLCanvasElement>) {
+    e.preventDefault(); (e.target as HTMLCanvasElement).setPointerCapture(e.pointerId);
+    drawingRef.current = true;
+    lastRef.current = pointFromEvent(e);
+  }
+  function move(e: React.PointerEvent<HTMLCanvasElement>) {
+    if (!drawingRef.current) return;
+    const ctx = canvasRef.current?.getContext("2d");
+    const last = lastRef.current;
+    if (!ctx || !last) return;
+    const p = pointFromEvent(e);
+    ctx.beginPath();
+    ctx.moveTo(last.x, last.y);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    lastRef.current = p;
+    if (!dirtyRef.current) { dirtyRef.current = true; setHasInk(true); }
+  }
+  function up() { drawingRef.current = false; lastRef.current = null; }
+  function clear() {
+    const c = canvasRef.current;
+    const ctx = c?.getContext("2d");
+    if (!c || !ctx) return;
+    const rect = c.getBoundingClientRect();
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, rect.width, rect.height);
+    dirtyRef.current = false; setHasInk(false);
+  }
+  async function submit() {
+    if (!canvasRef.current || !hasInk || submitting) return;
+    setSubmitting(true);
+    const dataUrl = canvasRef.current.toDataURL("image/png");
+    await onSubmit(dataUrl);
+  }
+
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center px-4 py-4 text-center">
+      <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.25em] text-emerald-300">
+        <PenLine className="size-3.5" /> SIGN BELOW
+      </div>
+      <p className="mt-1 max-w-xs text-[11px] text-white/50">Customer signs to confirm receipt.</p>
+      <div className="mt-4 w-full max-w-md flex-1 max-h-[50vh]">
+        <canvas
+          ref={canvasRef}
+          onPointerDown={down}
+          onPointerMove={move}
+          onPointerUp={up}
+          onPointerCancel={up}
+          className="block h-full w-full touch-none rounded-xl bg-white"
+        />
+      </div>
+      <div className="mt-4 grid w-full max-w-md grid-cols-3 gap-2">
+        <button onClick={onSkip} className="h-11 rounded-lg border border-white/15 text-xs font-bold tracking-widest text-white/60 hover:bg-white/5">SKIP</button>
+        <button onClick={clear} className="h-11 rounded-lg border border-white/15 text-xs font-bold tracking-widest text-white/60 hover:bg-white/5">CLEAR</button>
+        <button onClick={submit} disabled={!hasInk || submitting} className="h-11 rounded-lg bg-emerald-500 text-xs font-bold tracking-widest text-black hover:bg-emerald-400 disabled:opacity-40">
+          {submitting ? "…" : "DONE"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function EmailReceiptScreen({ onSubmit, onSkip }: { onSubmit: (email: string) => void | Promise<void>; onSkip: () => void }) {
+  const [email, setEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
+  async function go() {
+    if (!valid || submitting) return;
+    setSubmitting(true);
+    await onSubmit(email.trim().toLowerCase());
+  }
+
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center px-6 py-6 text-center">
+      <Mail className="size-8 text-emerald-300" />
+      <p className="mt-3 text-[10px] font-bold tracking-[0.25em] text-emerald-300">EMAIL RECEIPT</p>
+      <p className="mt-1 max-w-xs text-[11px] text-white/50">Optional — enter the customer's email to send them a copy.</p>
+
+      <form onSubmit={(e) => { e.preventDefault(); void go(); }} className="mt-5 w-full max-w-sm">
+        <input
+          autoFocus
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="customer@example.com"
+          className="w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-center text-base lowercase placeholder:text-white/20 focus:border-emerald-400 focus:outline-none"
+        />
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <button type="button" onClick={onSkip} className="h-11 rounded-lg border border-white/15 text-xs font-bold tracking-widest text-white/60 hover:bg-white/5">
+            SKIP
+          </button>
+          <button type="submit" disabled={!valid || submitting} className="h-11 rounded-lg bg-emerald-500 text-xs font-bold tracking-widest text-black hover:bg-emerald-400 disabled:opacity-40">
+            {submitting ? "…" : "SEND"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
