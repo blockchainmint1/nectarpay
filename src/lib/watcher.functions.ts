@@ -281,6 +281,124 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
   return changed;
 }
 
+interface AlchemyTransferWithMetadata {
+  blockNum: string;
+  hash: string;
+  to: string;
+  value: number | null;
+  asset: string | null;
+  category: "external" | "internal" | "erc20";
+  metadata?: { blockTimestamp?: string };
+  rawContract: { value?: string; rawValue?: string; address: string | null; decimal?: string | null; decimals?: number | null };
+}
+
+async function alchemyAssetTransfersForAddress(
+  net: typeof ETH_NETWORK,
+  key: string,
+  address: string,
+  fromBlock: number,
+): Promise<AlchemyTransferWithMetadata[]> {
+  const res = await fetch(net.rpcUrl(key), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "alchemy_getAssetTransfers",
+      params: [{
+        fromBlock: `0x${Math.max(0, fromBlock).toString(16)}`,
+        toAddress: address,
+        category: ["external", "internal", "erc20"],
+        withMetadata: true,
+        excludeZeroValue: true,
+        maxCount: "0x32",
+        order: "desc",
+      }],
+    }),
+  });
+  if (!res.ok) throw new Error(`alchemy_getAssetTransfers → ${res.status}`);
+  const json = await res.json() as { result?: { transfers?: AlchemyTransferWithMetadata[] }, error?: { message: string } };
+  if (json.error) throw new Error(`alchemy_getAssetTransfers: ${json.error.message}`);
+  return json.result?.transfers ?? [];
+}
+
+export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: inv } = await supabaseAdmin
+    .from("invoices")
+    .select("id, store_id, chain, address, fiat_amount, status, rate, token_symbol, created_at, expires_at, stores!inner(default_confirmations_required, mempool_max_usd)")
+    .eq("id", invoiceId)
+    .maybeSingle();
+
+  if (!inv || !inv.address || !["eth", "base", "bsc"].includes(inv.chain)) return false;
+  if (["confirmed", "overpaid", "cancelled", "failed"].includes(inv.status)) return false;
+
+  const key = process.env.ALCHEMY_API_KEY;
+  if (!key) return false;
+
+  const createdMs = Date.parse(inv.created_at);
+  const expiresMs = inv.expires_at ? Date.parse(inv.expires_at) : createdMs + 15 * 60 * 1000;
+  const startsAfterMs = createdMs - 5 * 60 * 1000;
+  const endsBeforeMs = expiresMs + 60 * 60 * 1000;
+  const token = (inv.token_symbol ?? "").toUpperCase();
+  const scanNets = token
+    ? EVM_NETWORKS
+    : EVM_NETWORKS.filter((n) => n.symbol === inv.chain || (inv.chain === "eth" && n.symbol === "eth"));
+
+  let changed = false;
+
+  for (const net of scanNets) {
+    const tip = await getBlockNumber(net, key);
+    const fromBlock = Math.max(0, tip - 7200); // ~1 day on Ethereum; enough for missed webhooks/cron drift.
+    const transfers = await alchemyAssetTransfersForAddress(net, key, inv.address, fromBlock).catch((e) => {
+      console.error(`[watcher] hot EVM scan failed on ${net.symbol}:`, e);
+      return [] as AlchemyTransferWithMetadata[];
+    });
+
+    for (const t of transfers) {
+      const blockTime = Date.parse(t.metadata?.blockTimestamp ?? "");
+      if (Number.isFinite(blockTime) && (blockTime < startsAfterMs || blockTime > endsBeforeMs)) continue;
+
+      const contractAddr = t.rawContract.address?.toLowerCase() ?? null;
+      const isNative = t.category === "external" || t.category === "internal";
+      const stable = contractAddr
+        ? net.stables.find((s) => s.address.toLowerCase() === contractAddr)
+        : null;
+      if (token) {
+        if (!stable || stable.symbol.toUpperCase() !== token) continue;
+      } else if (!isNative) {
+        continue;
+      }
+
+      const raw = t.rawContract.value ?? t.rawContract.rawValue ?? "0";
+      const decimals = stable?.decimals ?? (typeof t.rawContract.decimals === "number"
+        ? t.rawContract.decimals
+        : t.rawContract.decimal
+          ? parseInt(t.rawContract.decimal, 16)
+          : 18);
+      const human = Number(BigInt(raw)) / 10 ** decimals;
+      if (!Number.isFinite(human) || human <= 0) continue;
+
+      const blockNum = parseInt(t.blockNum, 16);
+      const confirmations = Math.max(0, tip - blockNum + 1);
+      const lockedRate = inv.rate == null ? null : Number(inv.rate);
+      const paidUsd = token ? human : human * (lockedRate && lockedRate > 0 ? lockedRate : await getUsdRate(net.symbol));
+      const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd);
+      const isConfirmed = confirmations >= required;
+
+      await recordTransaction(inv.id, t.hash, human, confirmations, blockNum, isConfirmed, token ? token : null);
+      if (isConfirmed) {
+        const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
+        changed = settled.changed || changed;
+      } else if (await markInvoiceDetected(inv.id)) {
+        changed = true;
+      }
+    }
+  }
+
+  return changed;
+}
+
 /**
  * Mark stale unpaid invoices as `expired` so their reserved addresses are
  * released back into the recycler pool. Only touches invoices with zero
