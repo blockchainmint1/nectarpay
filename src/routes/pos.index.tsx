@@ -166,7 +166,6 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
   const [customTipCents, setCustomTipCents] = useState<number | null>(null);
   const [invoice, setInvoice] = useState<InvoiceResp | null>(null);
   const [status, setStatus] = useState<InvoiceStatus | null>(null);
-  const [qrDataUrl, setQrDataUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [options, setOptions] = useState<PaymentOption[] | null>(null);
