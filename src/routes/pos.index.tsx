@@ -283,9 +283,8 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
     return () => { cancelled = true; clearInterval(id); };
   }, [screen, invoice, creds, experience.signature_enabled, experience.email_receipt_enabled]);
 
-    const id = setInterval(tick, 1000);
-    return () => { cancelled = true; clearInterval(id); };
-  }, [screen, invoice, creds]);
+
+
 
   const reset = () => {
     setSubtotalCents(0); setTipBps(0); setCustomTipCents(null);
