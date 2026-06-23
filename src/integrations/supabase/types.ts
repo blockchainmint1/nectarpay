@@ -164,6 +164,7 @@ export type Database = {
           chain: Database["public"]["Enums"]["chain_kind"] | null
           created_at: string
           crypto_amount: number | null
+          customer_email: string | null
           derivation_index: number | null
           description: string | null
           expires_at: string
@@ -176,6 +177,7 @@ export type Database = {
           kyc_status: Database["public"]["Enums"]["kyc_status"]
           rate: number | null
           redirect_url: string | null
+          signature_data_url: string | null
           status: Database["public"]["Enums"]["invoice_status"]
           store_id: string
           token_symbol: string | null
@@ -188,6 +190,7 @@ export type Database = {
           chain?: Database["public"]["Enums"]["chain_kind"] | null
           created_at?: string
           crypto_amount?: number | null
+          customer_email?: string | null
           derivation_index?: number | null
           description?: string | null
           expires_at: string
@@ -200,6 +203,7 @@ export type Database = {
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
           rate?: number | null
           redirect_url?: string | null
+          signature_data_url?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           store_id: string
           token_symbol?: string | null
@@ -212,6 +216,7 @@ export type Database = {
           chain?: Database["public"]["Enums"]["chain_kind"] | null
           created_at?: string
           crypto_amount?: number | null
+          customer_email?: string | null
           derivation_index?: number | null
           description?: string | null
           expires_at?: string
@@ -224,6 +229,7 @@ export type Database = {
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
           rate?: number | null
           redirect_url?: string | null
+          signature_data_url?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           store_id?: string
           token_symbol?: string | null
@@ -483,6 +489,14 @@ export type Database = {
           mempool_max_usd: number | null
           name: string
           owner_id: string
+          pos_email_receipt_enabled: boolean
+          pos_signature_enabled: boolean
+          pos_tip_enabled: boolean
+          receipt_address: string | null
+          receipt_business_name: string | null
+          receipt_footer: string | null
+          receipt_logo_url: string | null
+          receipt_tax_id: string | null
           updated_at: string
           webhook_secret: string | null
           webhook_secret_hash: string | null
@@ -505,6 +519,14 @@ export type Database = {
           mempool_max_usd?: number | null
           name: string
           owner_id: string
+          pos_email_receipt_enabled?: boolean
+          pos_signature_enabled?: boolean
+          pos_tip_enabled?: boolean
+          receipt_address?: string | null
+          receipt_business_name?: string | null
+          receipt_footer?: string | null
+          receipt_logo_url?: string | null
+          receipt_tax_id?: string | null
           updated_at?: string
           webhook_secret?: string | null
           webhook_secret_hash?: string | null
@@ -527,6 +549,14 @@ export type Database = {
           mempool_max_usd?: number | null
           name?: string
           owner_id?: string
+          pos_email_receipt_enabled?: boolean
+          pos_signature_enabled?: boolean
+          pos_tip_enabled?: boolean
+          receipt_address?: string | null
+          receipt_business_name?: string | null
+          receipt_footer?: string | null
+          receipt_logo_url?: string | null
+          receipt_tax_id?: string | null
           updated_at?: string
           webhook_secret?: string | null
           webhook_secret_hash?: string | null

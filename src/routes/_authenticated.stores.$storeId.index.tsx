@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, KeyRound, Link2, Receipt, Settings as SettingsIcon, ShieldCheck, Smartphone } from "lucide-react";
+import { ChevronLeft, KeyRound, Link2, Receipt, Settings as SettingsIcon, ShieldCheck, Smartphone, Sliders } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -77,6 +77,12 @@ function StoreDetailPage() {
           title="Terminals"
           body="Pair Senraise / Android POS devices. Each terminal gets its own credentials and a revocable lease."
           to={`/stores/${storeId}/terminals`}
+        />
+        <CardLink
+          icon={<Sliders className="h-4 w-4" />}
+          title="POS terminal experience"
+          body="Tip step, signature capture, email receipts, and receipt header (logo, address, footer)."
+          to={`/stores/${storeId}/pos-settings`}
         />
         <CardLink
           icon={<Receipt className="h-4 w-4" />}

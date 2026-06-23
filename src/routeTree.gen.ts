@@ -52,6 +52,7 @@ import { Route as ApiPublicAuthWalletExchangeRouteImport } from './routes/api/pu
 import { Route as ApiPublicAuthWalletChallengeRouteImport } from './routes/api/public/auth/wallet-challenge'
 import { Route as ApiPublicAuthWalletCallbackRouteImport } from './routes/api/public/auth/wallet-callback'
 import { Route as AuthenticatedStoresStoreIdTerminalsRouteImport } from './routes/_authenticated.stores.$storeId.terminals'
+import { Route as AuthenticatedStoresStoreIdPosSettingsRouteImport } from './routes/_authenticated.stores.$storeId.pos-settings'
 import { Route as AuthenticatedStoresStoreIdKycRouteImport } from './routes/_authenticated.stores.$storeId.kyc'
 import { Route as AuthenticatedStoresStoreIdKeysRouteImport } from './routes/_authenticated.stores.$storeId.keys'
 import { Route as AuthenticatedStoresStoreIdChainsRouteImport } from './routes/_authenticated.stores.$storeId.chains'
@@ -60,6 +61,7 @@ import { Route as ApiPublicV1TerminalsOptionsRouteImport } from './routes/api/pu
 import { Route as ApiPublicV1TerminalsInvoiceRouteImport } from './routes/api/public/v1/terminals/invoice'
 import { Route as ApiPublicV1TerminalsHeartbeatRouteImport } from './routes/api/public/v1/terminals/heartbeat'
 import { Route as ApiPublicV1TerminalsInvoiceIdRouteImport } from './routes/api/public/v1/terminals/invoice.$id'
+import { Route as ApiPublicV1TerminalsInvoiceIdReceiptRouteImport } from './routes/api/public/v1/terminals/invoice.$id.receipt'
 import { Route as ApiPublicV1TerminalsInvoiceIdCancelRouteImport } from './routes/api/public/v1/terminals/invoice.$id.cancel'
 
 const TermsRoute = TermsRouteImport.update({
@@ -288,6 +290,12 @@ const AuthenticatedStoresStoreIdTerminalsRoute =
     path: '/terminals',
     getParentRoute: () => AuthenticatedStoresStoreIdRoute,
   } as any)
+const AuthenticatedStoresStoreIdPosSettingsRoute =
+  AuthenticatedStoresStoreIdPosSettingsRouteImport.update({
+    id: '/pos-settings',
+    path: '/pos-settings',
+    getParentRoute: () => AuthenticatedStoresStoreIdRoute,
+  } as any)
 const AuthenticatedStoresStoreIdKycRoute =
   AuthenticatedStoresStoreIdKycRouteImport.update({
     id: '/kyc',
@@ -336,6 +344,12 @@ const ApiPublicV1TerminalsInvoiceIdRoute =
     path: '/$id',
     getParentRoute: () => ApiPublicV1TerminalsInvoiceRoute,
   } as any)
+const ApiPublicV1TerminalsInvoiceIdReceiptRoute =
+  ApiPublicV1TerminalsInvoiceIdReceiptRouteImport.update({
+    id: '/receipt',
+    path: '/receipt',
+    getParentRoute: () => ApiPublicV1TerminalsInvoiceIdRoute,
+  } as any)
 const ApiPublicV1TerminalsInvoiceIdCancelRoute =
   ApiPublicV1TerminalsInvoiceIdCancelRouteImport.update({
     id: '/cancel',
@@ -378,6 +392,7 @@ export interface FileRoutesByFullPath {
   '/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
   '/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
+  '/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
   '/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
@@ -395,6 +410,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/terminals/pair': typeof ApiPublicV1TerminalsPairRoute
   '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
   '/api/public/v1/terminals/invoice/$id/cancel': typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
+  '/api/public/v1/terminals/invoice/$id/receipt': typeof ApiPublicV1TerminalsInvoiceIdReceiptRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -428,6 +444,7 @@ export interface FileRoutesByTo {
   '/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
   '/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
+  '/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
   '/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
@@ -445,6 +462,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/terminals/pair': typeof ApiPublicV1TerminalsPairRoute
   '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
   '/api/public/v1/terminals/invoice/$id/cancel': typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
+  '/api/public/v1/terminals/invoice/$id/receipt': typeof ApiPublicV1TerminalsInvoiceIdReceiptRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -483,6 +501,7 @@ export interface FileRoutesById {
   '/_authenticated/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
   '/_authenticated/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/_authenticated/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
+  '/_authenticated/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
   '/_authenticated/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
@@ -500,6 +519,7 @@ export interface FileRoutesById {
   '/api/public/v1/terminals/pair': typeof ApiPublicV1TerminalsPairRoute
   '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
   '/api/public/v1/terminals/invoice/$id/cancel': typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
+  '/api/public/v1/terminals/invoice/$id/receipt': typeof ApiPublicV1TerminalsInvoiceIdReceiptRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -538,6 +558,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId/chains'
     | '/stores/$storeId/keys'
     | '/stores/$storeId/kyc'
+    | '/stores/$storeId/pos-settings'
     | '/stores/$storeId/terminals'
     | '/api/public/auth/wallet-callback'
     | '/api/public/auth/wallet-challenge'
@@ -555,6 +576,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/terminals/pair'
     | '/api/public/v1/terminals/invoice/$id'
     | '/api/public/v1/terminals/invoice/$id/cancel'
+    | '/api/public/v1/terminals/invoice/$id/receipt'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -588,6 +610,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId/chains'
     | '/stores/$storeId/keys'
     | '/stores/$storeId/kyc'
+    | '/stores/$storeId/pos-settings'
     | '/stores/$storeId/terminals'
     | '/api/public/auth/wallet-callback'
     | '/api/public/auth/wallet-challenge'
@@ -605,6 +628,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/terminals/pair'
     | '/api/public/v1/terminals/invoice/$id'
     | '/api/public/v1/terminals/invoice/$id/cancel'
+    | '/api/public/v1/terminals/invoice/$id/receipt'
   id:
     | '__root__'
     | '/'
@@ -642,6 +666,7 @@ export interface FileRouteTypes {
     | '/_authenticated/stores/$storeId/chains'
     | '/_authenticated/stores/$storeId/keys'
     | '/_authenticated/stores/$storeId/kyc'
+    | '/_authenticated/stores/$storeId/pos-settings'
     | '/_authenticated/stores/$storeId/terminals'
     | '/api/public/auth/wallet-callback'
     | '/api/public/auth/wallet-challenge'
@@ -659,6 +684,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/terminals/pair'
     | '/api/public/v1/terminals/invoice/$id'
     | '/api/public/v1/terminals/invoice/$id/cancel'
+    | '/api/public/v1/terminals/invoice/$id/receipt'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -994,6 +1020,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStoresStoreIdTerminalsRouteImport
       parentRoute: typeof AuthenticatedStoresStoreIdRoute
     }
+    '/_authenticated/stores/$storeId/pos-settings': {
+      id: '/_authenticated/stores/$storeId/pos-settings'
+      path: '/pos-settings'
+      fullPath: '/stores/$storeId/pos-settings'
+      preLoaderRoute: typeof AuthenticatedStoresStoreIdPosSettingsRouteImport
+      parentRoute: typeof AuthenticatedStoresStoreIdRoute
+    }
     '/_authenticated/stores/$storeId/kyc': {
       id: '/_authenticated/stores/$storeId/kyc'
       path: '/kyc'
@@ -1050,6 +1083,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1TerminalsInvoiceIdRouteImport
       parentRoute: typeof ApiPublicV1TerminalsInvoiceRoute
     }
+    '/api/public/v1/terminals/invoice/$id/receipt': {
+      id: '/api/public/v1/terminals/invoice/$id/receipt'
+      path: '/receipt'
+      fullPath: '/api/public/v1/terminals/invoice/$id/receipt'
+      preLoaderRoute: typeof ApiPublicV1TerminalsInvoiceIdReceiptRouteImport
+      parentRoute: typeof ApiPublicV1TerminalsInvoiceIdRoute
+    }
     '/api/public/v1/terminals/invoice/$id/cancel': {
       id: '/api/public/v1/terminals/invoice/$id/cancel'
       path: '/cancel'
@@ -1081,6 +1121,7 @@ interface AuthenticatedStoresStoreIdRouteChildren {
   AuthenticatedStoresStoreIdChainsRoute: typeof AuthenticatedStoresStoreIdChainsRoute
   AuthenticatedStoresStoreIdKeysRoute: typeof AuthenticatedStoresStoreIdKeysRoute
   AuthenticatedStoresStoreIdKycRoute: typeof AuthenticatedStoresStoreIdKycRoute
+  AuthenticatedStoresStoreIdPosSettingsRoute: typeof AuthenticatedStoresStoreIdPosSettingsRoute
   AuthenticatedStoresStoreIdTerminalsRoute: typeof AuthenticatedStoresStoreIdTerminalsRoute
   AuthenticatedStoresStoreIdIndexRoute: typeof AuthenticatedStoresStoreIdIndexRoute
 }
@@ -1091,6 +1132,8 @@ const AuthenticatedStoresStoreIdRouteChildren: AuthenticatedStoresStoreIdRouteCh
       AuthenticatedStoresStoreIdChainsRoute,
     AuthenticatedStoresStoreIdKeysRoute: AuthenticatedStoresStoreIdKeysRoute,
     AuthenticatedStoresStoreIdKycRoute: AuthenticatedStoresStoreIdKycRoute,
+    AuthenticatedStoresStoreIdPosSettingsRoute:
+      AuthenticatedStoresStoreIdPosSettingsRoute,
     AuthenticatedStoresStoreIdTerminalsRoute:
       AuthenticatedStoresStoreIdTerminalsRoute,
     AuthenticatedStoresStoreIdIndexRoute: AuthenticatedStoresStoreIdIndexRoute,
@@ -1157,12 +1200,15 @@ const PosRouteWithChildren = PosRoute._addFileChildren(PosRouteChildren)
 
 interface ApiPublicV1TerminalsInvoiceIdRouteChildren {
   ApiPublicV1TerminalsInvoiceIdCancelRoute: typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
+  ApiPublicV1TerminalsInvoiceIdReceiptRoute: typeof ApiPublicV1TerminalsInvoiceIdReceiptRoute
 }
 
 const ApiPublicV1TerminalsInvoiceIdRouteChildren: ApiPublicV1TerminalsInvoiceIdRouteChildren =
   {
     ApiPublicV1TerminalsInvoiceIdCancelRoute:
       ApiPublicV1TerminalsInvoiceIdCancelRoute,
+    ApiPublicV1TerminalsInvoiceIdReceiptRoute:
+      ApiPublicV1TerminalsInvoiceIdReceiptRoute,
   }
 
 const ApiPublicV1TerminalsInvoiceIdRouteWithChildren =

@@ -5,7 +5,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import QRCode from "qrcode";
-import { Settings, History, Lock, X } from "lucide-react";
+import { Settings, History, Lock, X, PenLine, Mail } from "lucide-react";
 import { loadCreds, signedJson, type TerminalCreds } from "@/lib/pos-client";
 import { loadSettings, sha256, type PosSettings } from "@/lib/pos-settings";
 
@@ -148,7 +148,14 @@ function PinLock({ pinHash, onUnlock }: { pinHash: string; onUnlock: () => void 
 
 // ─── Sale state machine ──────────────────────────────────────────────────
 
-type Screen = "amount" | "tip" | "chain" | "waiting" | "paid" | "cancelled" | "expired";
+type Screen = "amount" | "tip" | "chain" | "waiting" | "paid" | "signature" | "email" | "cancelled" | "expired";
+
+interface Experience {
+  tip_enabled: boolean;
+  signature_enabled: boolean;
+  email_receipt_enabled: boolean;
+}
+const DEFAULT_EXPERIENCE: Experience = { tip_enabled: true, signature_enabled: false, email_receipt_enabled: false };
 
 function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: PosSettings; onLock: () => void }) {
   const [screen, setScreen] = useState<Screen>("amount");
@@ -163,11 +170,12 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
   const [options, setOptions] = useState<PaymentOption[] | null>(null);
   const [optionsErr, setOptionsErr] = useState<string | null>(null);
   const [finalTipCents, setFinalTipCents] = useState(0);
+  const [experience, setExperience] = useState<Experience>(DEFAULT_EXPERIENCE);
 
   const taxCents = Math.round((subtotalCents * settings.taxBps) / 10_000);
   const tipCents = customTipCents !== null ? customTipCents : Math.round((subtotalCents * tipBps) / 10_000);
   const totalCents = subtotalCents + taxCents + tipCents;
-  const hasTips = settings.tipPresetsBps.some((b) => b > 0);
+  const hasTips = experience.tip_enabled && settings.tipPresetsBps.some((b) => b > 0);
 
   // Fetch the store's enabled chains once on boot so we can show them on the
   // chain-picker screen. Errors are non-fatal — we fall back to "customer picks".
@@ -175,8 +183,12 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
     let cancelled = false;
     (async () => {
       try {
-        const res = await signedJson<{ options: PaymentOption[] }>(creds, "/api/public/v1/terminals/options");
-        if (!cancelled) setOptions(res.options ?? []);
+        const res = await signedJson<{ options: PaymentOption[]; experience?: Experience }>(
+          creds, "/api/public/v1/terminals/options",
+        );
+        if (cancelled) return;
+        setOptions(res.options ?? []);
+        if (res.experience) setExperience({ ...DEFAULT_EXPERIENCE, ...res.experience });
       } catch (e) {
         if (!cancelled) setOptionsErr((e as Error).message);
       }
@@ -234,7 +246,8 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
     }
   };
 
-  // Poll status while waiting.
+  // Poll status while waiting. After confirmation, advance into the optional
+  // signature → email-receipt → final receipt sequence based on store settings.
   useEffect(() => {
     if (screen !== "waiting" || !invoice) return;
     let cancelled = false;
@@ -243,7 +256,11 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
         const s = await signedJson<InvoiceStatus>(creds, `/api/public/v1/terminals/invoice/${invoice.id}`);
         if (cancelled) return;
         setStatus(s);
-        if (s.status === "paid" || s.status === "confirmed" || s.status === "overpaid") setScreen("paid");
+        if (s.status === "paid" || s.status === "confirmed" || s.status === "overpaid") {
+          if (experience.signature_enabled) setScreen("signature");
+          else if (experience.email_receipt_enabled) setScreen("email");
+          else setScreen("paid");
+        }
         else if (s.status === "cancelled") setScreen("cancelled");
         else if (s.status === "expired") setScreen("expired");
       } catch { /* keep polling */ }
@@ -297,6 +314,24 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
         )}
         {screen === "waiting" && invoice && (
           <WaitingScreen invoice={invoice} status={status} qrDataUrl={qrDataUrl} onCancel={onCancel} />
+        )}
+        {screen === "signature" && invoice && (
+          <SignatureScreen
+            onSkip={() => setScreen(experience.email_receipt_enabled ? "email" : "paid")}
+            onSubmit={async (dataUrl) => {
+              try { await signedJson(creds, `/api/public/v1/terminals/invoice/${invoice.id}/receipt`, { method: "POST", body: { signature_data_url: dataUrl } }); } catch { /* non-fatal */ }
+              setScreen(experience.email_receipt_enabled ? "email" : "paid");
+            }}
+          />
+        )}
+        {screen === "email" && invoice && (
+          <EmailReceiptScreen
+            onSkip={() => setScreen("paid")}
+            onSubmit={async (email) => {
+              try { await signedJson(creds, `/api/public/v1/terminals/invoice/${invoice.id}/receipt`, { method: "POST", body: { email } }); } catch { /* non-fatal */ }
+              setScreen("paid");
+            }}
+          />
         )}
         {screen === "paid" && status && (
           <PaidScreen status={status} onDone={reset} />
@@ -626,3 +661,137 @@ function DoneScreen({ label, onDone }: { label: string; onDone: () => void }) {
     </div>
   );
 }
+
+function SignatureScreen({ onSubmit, onSkip }: { onSubmit: (dataUrl: string) => void | Promise<void>; onSkip: () => void }) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const drawingRef = useRef(false);
+  const dirtyRef = useRef(false);
+  const lastRef = useRef<{ x: number; y: number } | null>(null);
+  const [hasInk, setHasInk] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    const c = canvasRef.current;
+    if (!c) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const rect = c.getBoundingClientRect();
+    c.width = Math.floor(rect.width * dpr);
+    c.height = Math.floor(rect.height * dpr);
+    const ctx = c.getContext("2d");
+    if (!ctx) return;
+    ctx.scale(dpr, dpr);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = "#0a0d12";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, rect.width, rect.height);
+  }, []);
+
+  function pointFromEvent(e: React.PointerEvent<HTMLCanvasElement>) {
+    const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+  function down(e: React.PointerEvent<HTMLCanvasElement>) {
+    e.preventDefault(); (e.target as HTMLCanvasElement).setPointerCapture(e.pointerId);
+    drawingRef.current = true;
+    lastRef.current = pointFromEvent(e);
+  }
+  function move(e: React.PointerEvent<HTMLCanvasElement>) {
+    if (!drawingRef.current) return;
+    const ctx = canvasRef.current?.getContext("2d");
+    const last = lastRef.current;
+    if (!ctx || !last) return;
+    const p = pointFromEvent(e);
+    ctx.beginPath();
+    ctx.moveTo(last.x, last.y);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    lastRef.current = p;
+    if (!dirtyRef.current) { dirtyRef.current = true; setHasInk(true); }
+  }
+  function up() { drawingRef.current = false; lastRef.current = null; }
+  function clear() {
+    const c = canvasRef.current;
+    const ctx = c?.getContext("2d");
+    if (!c || !ctx) return;
+    const rect = c.getBoundingClientRect();
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, rect.width, rect.height);
+    dirtyRef.current = false; setHasInk(false);
+  }
+  async function submit() {
+    if (!canvasRef.current || !hasInk || submitting) return;
+    setSubmitting(true);
+    const dataUrl = canvasRef.current.toDataURL("image/png");
+    await onSubmit(dataUrl);
+  }
+
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center px-4 py-4 text-center">
+      <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.25em] text-emerald-300">
+        <PenLine className="size-3.5" /> SIGN BELOW
+      </div>
+      <p className="mt-1 max-w-xs text-[11px] text-white/50">Customer signs to confirm receipt.</p>
+      <div className="mt-4 w-full max-w-md flex-1 max-h-[50vh]">
+        <canvas
+          ref={canvasRef}
+          onPointerDown={down}
+          onPointerMove={move}
+          onPointerUp={up}
+          onPointerCancel={up}
+          className="block h-full w-full touch-none rounded-xl bg-white"
+        />
+      </div>
+      <div className="mt-4 grid w-full max-w-md grid-cols-3 gap-2">
+        <button onClick={onSkip} className="h-11 rounded-lg border border-white/15 text-xs font-bold tracking-widest text-white/60 hover:bg-white/5">SKIP</button>
+        <button onClick={clear} className="h-11 rounded-lg border border-white/15 text-xs font-bold tracking-widest text-white/60 hover:bg-white/5">CLEAR</button>
+        <button onClick={submit} disabled={!hasInk || submitting} className="h-11 rounded-lg bg-emerald-500 text-xs font-bold tracking-widest text-black hover:bg-emerald-400 disabled:opacity-40">
+          {submitting ? "…" : "DONE"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function EmailReceiptScreen({ onSubmit, onSkip }: { onSubmit: (email: string) => void | Promise<void>; onSkip: () => void }) {
+  const [email, setEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
+  async function go() {
+    if (!valid || submitting) return;
+    setSubmitting(true);
+    await onSubmit(email.trim().toLowerCase());
+  }
+
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center px-6 py-6 text-center">
+      <Mail className="size-8 text-emerald-300" />
+      <p className="mt-3 text-[10px] font-bold tracking-[0.25em] text-emerald-300">EMAIL RECEIPT</p>
+      <p className="mt-1 max-w-xs text-[11px] text-white/50">Optional — enter the customer's email to send them a copy.</p>
+
+      <form onSubmit={(e) => { e.preventDefault(); void go(); }} className="mt-5 w-full max-w-sm">
+        <input
+          autoFocus
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="customer@example.com"
+          className="w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-center text-base lowercase placeholder:text-white/20 focus:border-emerald-400 focus:outline-none"
+        />
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <button type="button" onClick={onSkip} className="h-11 rounded-lg border border-white/15 text-xs font-bold tracking-widest text-white/60 hover:bg-white/5">
+            SKIP
+          </button>
+          <button type="submit" disabled={!valid || submitting} className="h-11 rounded-lg bg-emerald-500 text-xs font-bold tracking-widest text-black hover:bg-emerald-400 disabled:opacity-40">
+            {submitting ? "…" : "SEND"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
