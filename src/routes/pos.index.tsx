@@ -580,31 +580,79 @@ function ChainScreen({
 }
 
 
+function paymentUri(chain: string, address: string, amount: number | null, tokenSymbol: string | null): string {
+  if (chain === "btc") return `bitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
+  if (chain === "txc") return `texitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
+  if (chain === "doge") return `dogecoin:${address}${amount ? `?amount=${amount}` : ""}`;
+  if (chain === "eth" || chain === "base" || chain === "bsc") return `ethereum:${address}`;
+  if (chain === "tron") return `tron:${address}`;
+  if (chain === "sol") {
+    const params = new URLSearchParams();
+    if (amount) params.set("amount", String(amount));
+    if (tokenSymbol) params.set("spl-token", tokenSymbol);
+    params.set("label", "Nectar.Pay");
+    const qs = params.toString();
+    return `solana:${address}${qs ? `?${qs}` : ""}`;
+  }
+  return address;
+}
+
 function WaitingScreen({
-  invoice, status, qrDataUrl, onCancel,
-}: { invoice: InvoiceResp; status: InvoiceStatus | null; qrDataUrl: string; onCancel: () => void }) {
+  invoice, status, onCancel,
+}: { invoice: InvoiceResp; status: InvoiceStatus | null; onCancel: () => void }) {
   const expiresMs = new Date(invoice.expires_at).getTime();
   const [remaining, setRemaining] = useState(() => Math.max(0, expiresMs - Date.now()));
+  const [addressOnly, setAddressOnly] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState("");
+
   useEffect(() => {
     const id = setInterval(() => setRemaining(Math.max(0, expiresMs - Date.now())), 1000);
     return () => clearInterval(id);
   }, [expiresMs]);
+
+  const hasWallet = !!(invoice.chain && invoice.address);
+  const assetLabel = invoice.token_symbol
+    ? `${invoice.token_symbol} on ${invoice.chain?.toUpperCase()}`
+    : (invoice.chain?.toUpperCase() ?? "");
+
+  // Build the QR value: wallet URI when chain pre-selected, else checkout page.
+  const qrValue = useMemo(() => {
+    if (!hasWallet) return invoice.checkout_url;
+    if (addressOnly) return invoice.address!;
+    return paymentUri(invoice.chain!, invoice.address!, invoice.crypto_amount, invoice.token_symbol);
+  }, [hasWallet, addressOnly, invoice]);
+
+  useEffect(() => {
+    let cancelled = false;
+    QRCode.toDataURL(qrValue, { width: 640, margin: 1, color: { dark: "#000", light: "#fff" } })
+      .then((url) => { if (!cancelled) setQrDataUrl(url); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [qrValue]);
+
   const mm = Math.floor(remaining / 60_000);
   const ss = Math.floor((remaining % 60_000) / 1000).toString().padStart(2, "0");
   const detected = status && (status.status === "detected" || status.status === "underpaid");
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-4 py-4 text-center">
-      <p className="text-[10px] font-bold tracking-[0.25em] text-white/50">SCAN TO PAY</p>
-      <div className="mt-1 text-4xl font-black tabular-nums">{fmt(invoice.fiat_amount * 100, invoice.currency)}</div>
-
-      {qrDataUrl && (
-        <div className="mt-4 rounded-xl bg-white p-3 shadow-2xl">
-          <img src={qrDataUrl} alt="Scan to pay" className="aspect-square w-[min(70vw,360px)]" />
+    <div className="flex flex-1 flex-col items-center justify-center px-4 py-3 text-center">
+      <p className="text-[10px] font-bold tracking-[0.25em] text-white/50">
+        {hasWallet ? "SEND PAYMENT" : "SCAN TO PAY"}
+      </p>
+      <div className="mt-1 text-3xl font-black tabular-nums">{fmt(invoice.fiat_amount * 100, invoice.currency)}</div>
+      {hasWallet && invoice.crypto_amount != null && (
+        <div className="mt-0.5 text-xs font-mono text-white/70">
+          {invoice.crypto_amount} {invoice.token_symbol ?? invoice.chain?.toUpperCase()}
         </div>
       )}
 
-      <div className="mt-3 flex items-center gap-2 text-[10px] font-mono text-white/60">
+      {qrDataUrl && (
+        <div className="mt-3 rounded-xl bg-white p-3 shadow-2xl">
+          <img src={qrDataUrl} alt="Scan to pay" className="aspect-square w-[min(58vw,300px)]" />
+        </div>
+      )}
+
+      <div className="mt-2 flex items-center gap-2 text-[10px] font-mono text-white/60">
         <span className="relative flex size-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
           <span className="relative inline-flex size-2 rounded-full bg-emerald-400" />
@@ -612,11 +660,28 @@ function WaitingScreen({
         {detected ? `detected · ${status?.chain ?? ""}` : `listening · ${mm}:${ss}`}
       </div>
 
-      <p className="mt-2 max-w-xs text-[11px] text-white/50">
-        Customer scans with any wallet and picks their chain (BTC, TXC, ETH, SOL…).
-      </p>
+      {hasWallet ? (
+        <>
+          <div className="mt-3 w-full max-w-sm rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-[11px] font-bold text-amber-200">
+            ⚠ ONLY SEND {assetLabel} TO THIS ADDRESS
+          </div>
+          <label className="mt-3 flex cursor-pointer items-center gap-2 text-[11px] text-white/70">
+            <input
+              type="checkbox"
+              checked={!addressOnly}
+              onChange={(e) => setAddressOnly(!e.target.checked)}
+              className="size-4 accent-emerald-400"
+            />
+            Include amount &amp; token in QR
+          </label>
+        </>
+      ) : (
+        <p className="mt-2 max-w-xs text-[11px] text-white/50">
+          Customer scans with any wallet and picks their chain on their phone.
+        </p>
+      )}
 
-      <button onClick={onCancel} className="mt-4 h-11 rounded-lg border border-white/15 px-8 text-xs font-bold tracking-widest text-white/70 hover:bg-white/5">
+      <button onClick={onCancel} className="mt-3 h-11 rounded-lg border border-white/15 px-8 text-xs font-bold tracking-widest text-white/70 hover:bg-white/5">
         CANCEL
       </button>
     </div>
