@@ -28,6 +28,8 @@ type InvoiceResp = {
   currency: string;
   chain: string | null;
   token_symbol: string | null;
+  address: string | null;
+  crypto_amount: number | null;
   expires_at: string;
 };
 
