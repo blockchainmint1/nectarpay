@@ -271,7 +271,7 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
 
   const reset = () => {
     setSubtotalCents(0); setTipBps(0); setCustomTipCents(null);
-    setInvoice(null); setStatus(null); setQrDataUrl(""); setErr(null);
+    setInvoice(null); setStatus(null); setErr(null);
     setFinalTipCents(0);
     setScreen("amount");
   };
