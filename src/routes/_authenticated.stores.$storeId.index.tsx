@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, KeyRound, Link2, Receipt, Settings as SettingsIcon, ShieldCheck, Smartphone } from "lucide-react";
+import { ChevronLeft, KeyRound, Link2, Receipt, Settings as SettingsIcon, ShieldCheck, Smartphone, Sliders } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
