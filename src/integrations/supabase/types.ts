@@ -615,6 +615,92 @@ export type Database = {
         }
         Relationships: []
       }
+      terminal_pairing_codes: {
+        Row: {
+          code: string
+          consumed_at: string | null
+          consumed_terminal_id: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          label: string
+          store_id: string
+        }
+        Insert: {
+          code: string
+          consumed_at?: string | null
+          consumed_terminal_id?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          label?: string
+          store_id: string
+        }
+        Update: {
+          code?: string
+          consumed_at?: string | null
+          consumed_terminal_id?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          label?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "terminal_pairing_codes_consumed_terminal_id_fkey"
+            columns: ["consumed_terminal_id"]
+            isOneToOne: false
+            referencedRelation: "terminals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "terminal_pairing_codes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      terminals: {
+        Row: {
+          created_at: string
+          hmac_secret_hash: string
+          id: string
+          label: string
+          last_seen_at: string | null
+          revoked_at: string | null
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          hmac_secret_hash: string
+          id?: string
+          label?: string
+          last_seen_at?: string | null
+          revoked_at?: string | null
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          hmac_secret_hash?: string
+          id?: string
+          label?: string
+          last_seen_at?: string | null
+          revoked_at?: string | null
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "terminals_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           amount: number

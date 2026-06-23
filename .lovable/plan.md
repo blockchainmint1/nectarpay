@@ -1,115 +1,157 @@
-# Wallet-Only Auth + Admin Panel
+# NectarPay POS Terminal — v1
 
-## Decisions locked in
-- **Wallet**: TXC mobile app, QR code + `payhme://` deep link (no extension)
-- **Existing users**: wiped, wallet-only going forward (clean slate)
-- **Admin role**: comma-separated `ADMIN_WALLETS` env var, auto-promoted on login
-- **Merchant panel**: reuse existing `/dashboard` + `/stores/*` (already there, no rename)
-- **New `/admin`**: built fresh
+A locked-down web app that runs in Chrome on the Senraise H10P handheld and accepts crypto payments against a paired NectarPay store. Same shell will later wrap in an Android APK.
 
-## QR login — yes, this is a real pattern
+Borrowed wholesale from the ImagineNation terminal we built in Rails Tools: pairing flow, fullscreen shell, PIN + idle auto-lock, tax/tip configuration, native-bridge hooks for the APK, brick-splash if unpaired.
 
-Standard flow (Sign-In-With-Wallet, mobile-scans-desktop variant):
+---
 
-```text
-Desktop /auth                                TXC Mobile Wallet
-─────────────────                            ─────────────────
-1. POST /challenge                           
-   ← { id, nonce, expires_at }               
-2. Render QR with                            
-   payhme://login?id=…&nonce=…&cb=…  ─scan→  3. Show "Sign in to payHME?"
-                                             4. User taps Approve
-                                             5. Sign: nonce + domain + ts
-3a. Poll /status?id=…                ←POST── 6. POST /callback {id, address, sig}
-                                             ←── { ok }
-4. /status returns { token }
-5. Exchange token → Supabase session
-6. Navigate to /dashboard or /admin
-```
+## 1. Database
 
-Same desktop-with-extension path (future): skip QR, `window.txc.signMessage(nonce)` inline, same callback.
+Two new tables. Both store-scoped, no PII.
 
-## Database changes (single migration)
+`terminals`
+- `id` uuid pk
+- `store_id` uuid → stores.id (cascade)
+- `label` text (e.g. "Front counter")
+- `hmac_secret_hash` text — sha-256 of the secret; raw secret is shown to the device exactly once at pairing
+- `last_seen_at` timestamptz
+- `revoked_at` timestamptz nullable
+- `created_at`
 
-1. **Drop email/password users**: truncate `auth.users` cascade (wipes profiles, stores, invoices, everything — clean slate as requested)
-2. **New table `wallet_accounts`**: `(wallet_address PK, user_id FK auth.users, chain text default 'TXC', first_seen_at, last_login_at)` — one wallet ↔ one auth.users row
-3. **New table `wallet_login_challenges`**: `(id uuid PK, nonce text, wallet_address text nullable, status enum[pending|signed|consumed|expired], one_time_token text nullable, expires_at, created_at)` — short-lived (5 min)
-4. **Update `handle_new_user` trigger**: stop assuming email; pull display name from `wallet_address` truncated
-5. **Add `admin` role to existing `app_role` enum** (already there as `'admin'`)
-6. RLS + GRANTs on both new tables
+`terminal_pairing_codes`
+- `id` uuid pk
+- `store_id` uuid → stores.id (cascade)
+- `code` text unique — 6-char A-Z2-9 (no 0/O/1/I)
+- `label` text — label to assign to the terminal once paired
+- `expires_at` timestamptz — 5 min from issue
+- `consumed_at` timestamptz nullable
+- `consumed_terminal_id` uuid nullable
 
-## TXC signature verification
+RLS: store owner can read/write rows for their own stores (uses existing `owns_store(store_id)`). Service role full access. No anon access — pairing/HMAC happens server-side in `/api/public/v1/terminals/*`.
 
-TEXITcoin is a Bitcoin-derivative. Use Bitcoin-style message signing (`\x18Bitcoin Signed Message:\n` prefix + recoverable ECDSA, base64). Pure-JS, Worker-safe via `bitcoinjs-message` package.
+## 2. Public API endpoints
 
-**Open question for the TXC wallet team**: confirm
-- Exact magic-string prefix (default `\x18TEXITcoin Signed Message:\n` matching their daemon's `signmessage` RPC)
-- Address format (P2PKH base58 vs bech32) and version byte
-- Whether they sign the raw nonce or a SIWE-style structured message
+All under `src/routes/api/public/v1/terminals/` so they bypass auth on published sites; security is enforced inside each handler.
 
-I'll build with sensible defaults (BTC-compatible) + a clearly-marked `verifyTxcSignature()` function so swapping the spec later is one file.
+`POST /api/public/v1/terminals/pair`
+- Body: `{ code }`
+- Looks up the pairing code (unconsumed + unexpired), mints a new `terminals` row, generates a 32-byte hmac_secret (returned raw, stored hashed), marks the code consumed.
+- Returns: `{ terminal_id, hmac_secret, store_id, store_name, api_base }`
 
-## Server routes (all under `/api/public/auth/`)
+`POST /api/public/v1/terminals/invoice` (HMAC-signed)
+- Headers: `X-Terminal-Id`, `X-Timestamp`, `X-Signature` (= HMAC-SHA256(secret, `${timestamp}.${rawBody}`), hex)
+- Body: `{ amount_cents, currency, memo?, expires_in_seconds? }`
+- Verifies signature (timing-safe), rejects if timestamp is >2 min skewed, looks up terminal (not revoked), creates a **chain-less** invoice on that store (existing path in `api.public.v1.invoices.ts`), updates `last_seen_at`.
+- Returns: `{ id, checkout_url, fiat_amount, currency, expires_at }`
 
-| Route | Method | Purpose |
-|---|---|---|
-| `/api/public/auth/wallet-challenge` | POST | Create nonce, return `{id, nonce, deep_link, qr_data, expires_at}` |
-| `/api/public/auth/wallet-callback` | POST | Wallet posts `{id, address, signature}`, server verifies, marks challenge `signed`, mints one-time token |
-| `/api/public/auth/wallet-status` | GET `?id=` | Desktop polls; returns `pending` or `{status:'signed', token}` once |
-| `/api/public/auth/wallet-exchange` | POST | Desktop posts one-time token → server creates/loads `auth.users` row for wallet, issues Supabase session via admin API, returns session tokens |
+`GET /api/public/v1/terminals/invoice/:id` (HMAC-signed)
+- For polling status. Returns `{ id, status, chain, crypto_amount, address, tx_hash, paid_at }`. Scoped to the terminal's store.
 
-All public-prefix bypasses auth at the edge; each handler validates input with Zod and uses constant-time compare on the one-time token.
+`POST /api/public/v1/terminals/invoice/:id/cancel` (HMAC-signed)
+- Cashier cancel button.
 
-## Frontend
+`POST /api/public/v1/terminals/heartbeat` (HMAC-signed)
+- Optional, bumps `last_seen_at`.
 
-1. **Replace `/auth`**: rip out email/password forms. Show:
-   - Big QR (renders the `payhme://` URI)
-   - Deep-link button for same-device mobile
-   - "Don't have TXC wallet?" link → wallet download page
-   - Polling indicator + 5-min countdown
-   - On success: store session, redirect to `search.redirect ?? /dashboard` (or `/admin` if wallet is in `ADMIN_WALLETS`)
-2. **`src/lib/wallet-auth.functions.ts`**: client helpers (`createChallenge`, `pollStatus`, `exchange`)
-3. **Update `_authenticated/route.tsx` gate**: no functional change — Supabase session check still works; wallet just becomes the login method
-4. **New `/admin` layout**: pathless `_admin` group under `_authenticated`, `beforeLoad` checks `has_role('admin')`, redirects non-admins to `/dashboard`
-5. **`/admin` pages (skeleton, expand later)**:
-   - `/admin` — overview (users, stores, invoice volume, errors)
-   - `/admin/users` — list, search, suspend
-   - `/admin/stores` — global store list
-   - `/admin/invoices` — global invoice search
-   - `/admin/system` — chain configs, rate cache, watcher cursors, KYC provider toggles
+## 3. Merchant UI
 
-## Admin role promotion
+New route: `src/routes/_authenticated.stores.$storeId.terminals.tsx`
+- Lists paired terminals (label, last_seen_at, revoke button)
+- "Pair a new terminal" → opens a modal that calls a server fn to mint a pairing code + label, shows the 6-char code BIG + a QR encoding `{code, api: <origin>}` for 5 minutes with a live countdown
+- Revoke flips `revoked_at`; the terminal's next API call returns 401 → it brick-splashes back to pair screen
 
-On every wallet exchange, server fn:
+Add a "Terminals" link inside the store sidebar (alongside Chains / Keys / KYC).
+
+## 4. POS app
+
+New top-level public routes — intentionally OUTSIDE `_authenticated/` because the terminal isn't a Supabase user; it auths to the server with its HMAC.
+
+- `/pos` — main terminal
+- `/pos/pair` — pairing
+- `/pos/history` — last 50 invoices created from this terminal
+- `/pos/settings` — tax %, tip presets (3 slots), PIN (4-digit, sha-256 hashed in localStorage), idle auto-lock
+
+Shell rules (lifted from ImagineNation):
+- `fixed inset-0` dark `#0a0d12`, no marketing chrome, no footer
+- `head()` sets `viewport-fit=cover`, `maximum-scale=1`, `user-scalable=no`, `theme-color`
+- 4-digit PIN lock with sha-256 hash + configurable idle auto-lock (1/3/5/15 min, or never)
+- "Brick splash" screens for `checking pairing…`, `terminal not paired`, `terminal revoked`
+
+LocalStorage keys (namespaced):
+- `pos.terminal.id`, `pos.terminal.secret`, `pos.terminal.apiBase`
+- `pos.settings` (tax bps, tip preset bps[3], pin hash, idle lock ms)
+
+POS flow (state machine):
+1. **Amount** — big numpad, live subtotal, auto-computed tax line, CLEAR / CHARGE buttons
+2. **Tip** — three preset % buttons + "no tip" + custom amount
+3. **Waiting** — calls `POST /terminals/invoice` with `amount_cents = subtotal + tax + tip`, gets back `checkout_url = /i/<id>`, renders a fullscreen QR of that URL + amount + countdown. Polls `GET /terminals/invoice/:id` every 2s for `status` transitions.
+4. **Paid** — checkmark, amount, chain it landed on, tx hash, "NEW SALE"
+5. **Cancelled/Expired** — "NEW SALE" button
+
+Because we picked "customer picks on the QR screen", the invoice is chain-less (the existing `/api/public/v1/invoices` already handles this — `chain: null` is valid). The QR points at `/i/<id>`, which is the hosted checkout page that lets the buyer pick a chain.
+
+## 5. APK bridge hooks
+
+Same shape as ImagineNation, so the Android wrapper later just implements:
+- `window.TerminalAuth.save(id, secret)` — push creds into native keychain
+- `window.Pairing.startScan()` / `stopScan()` — native camera takes over QR scanning
+- `window.onPairingScan(payload)` — native pushes a scan result back into the page
+
+The web build still works standalone via `getUserMedia` + `@zxing/browser` when no native bridge is present.
+
+## 6. What this v1 does NOT include
+
+- NFC tap-to-pay (no offline-card infra in NectarPay)
+- Cashier-scans-wallet-QR-to-push (no per-user wallet model here)
+- Receipts/printer integration (the H10P has a printer but driver work goes in the APK)
+- Multi-cashier accounts on one terminal — terminal = device, owner controls revocation
+
+---
+
+## Technical details
+
+**HMAC signing on the client.** SubtleCrypto in the browser:
 ```ts
-const admins = (process.env.ADMIN_WALLETS ?? '').split(',').map(s => s.trim().toLowerCase());
-if (admins.includes(address.toLowerCase())) {
-  await supabaseAdmin.from('user_roles').upsert({ user_id, role: 'admin' });
+async function sign(secretHex: string, body: string, ts: string) {
+  const key = await crypto.subtle.importKey(
+    "raw", hexToBytes(secretHex),
+    { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${ts}.${body}`));
+  return bytesToHex(new Uint8Array(sig));
 }
 ```
-You add `ADMIN_WALLETS` once (your TXC address); next login auto-promotes.
+Server side verifies with `node:crypto` (`createHmac` + `timingSafeEqual`), rejects >120s skew. Secret is generated server-side as 32 random bytes (hex-encoded), shown to the device exactly once at pairing, only sha-256 hash stored in DB.
 
-## What I'll build now vs defer
+**Pairing code format.** 6 chars from `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` (no confusing 0/O/1/I). Server retries on uniqueness violation. Codes expire after 5 min; consumed codes can't be reused.
 
-**This turn (foundation):**
-- Migration (drop users, new tables, RLS, GRANTs)
-- All 4 server routes with Zod validation + Bitcoin-message-style signature verification stub
-- New `/auth` page with QR + polling
-- `/admin` layout gate + overview placeholder + 4 child pages with real data tables
-- `ADMIN_WALLETS` secret added
+**Invoice creation.** The terminal endpoint internally calls the existing `deriveInvoiceAddress` machinery — but with `chain: null` it skips derivation (matches the existing chain-less branch in `api.public.v1.invoices.ts`). The `/i/<id>` page already supports chain selection for chain-less invoices.
 
-**Defer (needs TXC wallet team input):**
-- Final signature spec (magic prefix, address encoding)
-- Wallet download page content
-- WebSocket replacement for polling (nice-to-have)
-- Multi-wallet-per-user, wallet rotation
+**File layout.**
+```
+src/lib/terminals.functions.ts         — server fns for the merchant UI (createPairingCode, listTerminals, revokeTerminal)
+src/lib/terminals.server.ts            — shared helpers (codegen, hmac verify) — server only
+src/lib/pos-client.ts                  — browser HMAC + fetch wrappers for the POS app
+src/routes/api/public/v1/terminals/
+  pair.ts
+  invoice.ts
+  invoice.$id.ts
+  invoice.$id.cancel.ts
+  heartbeat.ts
+src/routes/pos.tsx                     — main terminal + shell (PIN, idle, fullscreen)
+src/routes/pos.pair.tsx
+src/routes/pos.history.tsx
+src/routes/pos.settings.tsx
+src/routes/_authenticated.stores.$storeId.terminals.tsx
+```
 
-## Risks
-- **Anyone with TXC wallet can sign up** — that's the design, but no email = no rate-limit-by-identity. Mitigation: per-IP rate limit on `/wallet-challenge`.
-- **Signature spec drift**: if TXC wallet implements signing differently than `bitcoinjs-message` expects, login breaks. Mitigation: `verifyTxcSignature()` is isolated; spec change = 1-file fix.
-- **Wiping users**: this is a hard reset. If there's anyone real in the DB right now, they're gone. Confirm before I run the migration.
+## Order of operations
 
-## Confirm before I build
-1. **Wipe is OK?** Truncate `auth.users` cascade — destroys all stores, invoices, KYC records. Y/N
-2. **Your admin TXC wallet address** — I need it (or a placeholder) to seed `ADMIN_WALLETS`. Or I'll add the secret empty and you fill it in via the secrets UI.
-3. **Deep link scheme**: `payhme://login?...` OK? Or `txc://`?
+1. Migration: `terminals` + `terminal_pairing_codes` + grants + RLS + policies
+2. Server helpers + 5 public endpoints (HMAC verify, pairing, invoice create/get/cancel, heartbeat)
+3. Merchant terminals UI under `/stores/:storeId/terminals` (issue code, list, revoke)
+4. POS app shell + pair screen + amount/tip/waiting/paid screens + settings + history
+5. Manual test: pair from a phone "merchant" tab, create a sale on `/pos`, scan QR with another device, confirm paid status flows back
+
+ETA after approval: this is a meaty one (probably 6–8 files of real logic), but no architectural unknowns — every piece has a precedent in either Rails Tools or this codebase.
