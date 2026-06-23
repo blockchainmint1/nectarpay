@@ -731,6 +731,98 @@ function WaitingScreen({
   );
 }
 
+function UnderpaidScreen({
+  invoice, status, onCancel,
+}: { invoice: InvoiceResp; status: InvoiceStatus; onCancel: () => void }) {
+  const [qrDataUrl, setQrDataUrl] = useState("");
+  const [showQr, setShowQr] = useState(false);
+
+  const owedUsd = Number(status.fiat_amount ?? invoice.fiat_amount);
+  const paidUsd = Number(status.paid_usd ?? 0);
+  const dueUsd = Math.max(0, owedUsd - paidUsd);
+  const dueCrypto = status.due_crypto != null
+    ? Number(status.due_crypto)
+    : (invoice.crypto_amount != null && owedUsd > 0
+        ? Math.max(0, Number(invoice.crypto_amount) * (dueUsd / owedUsd))
+        : null);
+  const tokenLabel = invoice.token_symbol ?? invoice.chain?.toUpperCase() ?? "";
+
+  const qrValue = useMemo(() => {
+    if (!invoice.chain || !invoice.address) return "";
+    return paymentUri(invoice.chain, invoice.address, dueCrypto, invoice.token_symbol);
+  }, [invoice, dueCrypto]);
+
+  useEffect(() => {
+    if (!showQr || !qrValue) return;
+    let cancelled = false;
+    QRCode.toDataURL(qrValue, { width: 640, margin: 1, color: { dark: "#000", light: "#fff" } })
+      .then((url) => { if (!cancelled) setQrDataUrl(url); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [qrValue, showQr]);
+
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center px-4 py-3 text-center">
+      <p className="text-[10px] font-bold tracking-[0.25em] text-amber-300">UNDERPAID — TOP UP REQUIRED</p>
+
+      <div className="mt-3 w-full max-w-sm rounded-xl border border-amber-400/40 bg-amber-400/5 px-4 py-3">
+        <div className="grid grid-cols-3 gap-2 text-left">
+          <div>
+            <p className="text-[9px] font-bold tracking-widest text-white/50">OWED</p>
+            <p className="mt-0.5 text-base font-bold tabular-nums">{fmt(owedUsd * 100, status.currency)}</p>
+          </div>
+          <div>
+            <p className="text-[9px] font-bold tracking-widest text-white/50">PAID</p>
+            <p className="mt-0.5 text-base font-bold tabular-nums text-emerald-300">{fmt(paidUsd * 100, status.currency)}</p>
+          </div>
+          <div>
+            <p className="text-[9px] font-bold tracking-widest text-white/50">DUE</p>
+            <p className="mt-0.5 text-base font-bold tabular-nums text-amber-300">{fmt(dueUsd * 100, status.currency)}</p>
+          </div>
+        </div>
+        {dueCrypto != null && (
+          <p className="mt-2 font-mono text-[11px] text-white/70">
+            Send {dueCrypto.toFixed(6).replace(/0+$/, "").replace(/\.$/, "")} {tokenLabel} to the same address
+          </p>
+        )}
+      </div>
+
+      {!showQr ? (
+        <button
+          onClick={() => setShowQr(true)}
+          className="mt-4 h-12 rounded-lg bg-amber-400 px-8 text-sm font-bold tracking-widest text-black hover:bg-amber-300"
+        >
+          CLICK TO PAY DIFFERENCE
+        </button>
+      ) : (
+        <>
+          {qrDataUrl && (
+            <div className="mt-3 rounded-xl bg-white p-3 shadow-2xl">
+              <img src={qrDataUrl} alt="Scan to pay difference" className="aspect-square w-[min(54vw,260px)]" />
+            </div>
+          )}
+          {invoice.address && (
+            <button
+              type="button"
+              onClick={() => { void navigator.clipboard?.writeText(invoice.address!); }}
+              className="mt-2 max-w-[min(58vw,300px)] break-all font-mono text-[9px] leading-snug text-white/55 hover:text-white/80"
+              title="Tap to copy"
+            >
+              {invoice.address}
+            </button>
+          )}
+          <p className="mt-2 text-[10px] font-mono text-white/50">listening for top-up…</p>
+        </>
+      )}
+
+      <button onClick={onCancel} className="mt-4 h-11 rounded-lg border border-white/15 px-8 text-xs font-bold tracking-widest text-white/70 hover:bg-white/5">
+        CANCEL
+      </button>
+    </div>
+  );
+}
+
+
 function PaidScreen({ status, onDone }: { status: InvoiceStatus; onDone: () => void }) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 py-4 text-center">
