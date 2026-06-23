@@ -76,9 +76,6 @@ function PairPage() {
     }
   }, [navigate]);
 
-  if (alreadyPaired) {
-    return <div className="fixed inset-0 bg-[#0a0d12]" />;
-  }
 
   const m = useMutation({
     mutationFn: (args: { code: string; api: string }) => pairCall(args.code, args.api),
