@@ -12,14 +12,19 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PosRouteImport } from './routes/pos'
 import { Route as ManifestoRouteImport } from './routes/manifesto'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as CashOutRouteImport } from './routes/cash-out'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PosIndexRouteImport } from './routes/pos.index'
 import { Route as IntegrationsIndexRouteImport } from './routes/integrations.index'
 import { Route as SdkPayhmeDotjsRouteImport } from './routes/sdk.payhme[.]js'
+import { Route as PosSettingsRouteImport } from './routes/pos.settings'
+import { Route as PosPairRouteImport } from './routes/pos.pair'
+import { Route as PosHistoryRouteImport } from './routes/pos.history'
 import { Route as IntegrationsWoocommerceRouteImport } from './routes/integrations.woocommerce'
 import { Route as IInvoiceIdRouteImport } from './routes/i.$invoiceId'
 import { Route as DocsWalletSetupRouteImport } from './routes/docs.wallet-setup'
@@ -45,9 +50,15 @@ import { Route as ApiPublicAuthWalletStatusRouteImport } from './routes/api/publ
 import { Route as ApiPublicAuthWalletExchangeRouteImport } from './routes/api/public/auth/wallet-exchange'
 import { Route as ApiPublicAuthWalletChallengeRouteImport } from './routes/api/public/auth/wallet-challenge'
 import { Route as ApiPublicAuthWalletCallbackRouteImport } from './routes/api/public/auth/wallet-callback'
+import { Route as AuthenticatedStoresStoreIdTerminalsRouteImport } from './routes/_authenticated.stores.$storeId.terminals'
 import { Route as AuthenticatedStoresStoreIdKycRouteImport } from './routes/_authenticated.stores.$storeId.kyc'
 import { Route as AuthenticatedStoresStoreIdKeysRouteImport } from './routes/_authenticated.stores.$storeId.keys'
 import { Route as AuthenticatedStoresStoreIdChainsRouteImport } from './routes/_authenticated.stores.$storeId.chains'
+import { Route as ApiPublicV1TerminalsPairRouteImport } from './routes/api/public/v1/terminals/pair'
+import { Route as ApiPublicV1TerminalsInvoiceRouteImport } from './routes/api/public/v1/terminals/invoice'
+import { Route as ApiPublicV1TerminalsHeartbeatRouteImport } from './routes/api/public/v1/terminals/heartbeat'
+import { Route as ApiPublicV1TerminalsInvoiceIdRouteImport } from './routes/api/public/v1/terminals/invoice.$id'
+import { Route as ApiPublicV1TerminalsInvoiceIdCancelRouteImport } from './routes/api/public/v1/terminals/invoice.$id.cancel'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -62,6 +73,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PosRoute = PosRouteImport.update({
+  id: '/pos',
+  path: '/pos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ManifestoRoute = ManifestoRouteImport.update({
@@ -93,6 +109,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PosIndexRoute = PosIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PosRoute,
+} as any)
 const IntegrationsIndexRoute = IntegrationsIndexRouteImport.update({
   id: '/integrations/',
   path: '/integrations/',
@@ -102,6 +123,21 @@ const SdkPayhmeDotjsRoute = SdkPayhmeDotjsRouteImport.update({
   id: '/sdk/payhme.js',
   path: '/sdk/payhme.js',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PosSettingsRoute = PosSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => PosRoute,
+} as any)
+const PosPairRoute = PosPairRouteImport.update({
+  id: '/pair',
+  path: '/pair',
+  getParentRoute: () => PosRoute,
+} as any)
+const PosHistoryRoute = PosHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => PosRoute,
 } as any)
 const IntegrationsWoocommerceRoute = IntegrationsWoocommerceRouteImport.update({
   id: '/integrations/woocommerce',
@@ -239,6 +275,12 @@ const ApiPublicAuthWalletCallbackRoute =
     path: '/api/public/auth/wallet-callback',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedStoresStoreIdTerminalsRoute =
+  AuthenticatedStoresStoreIdTerminalsRouteImport.update({
+    id: '/terminals',
+    path: '/terminals',
+    getParentRoute: () => AuthenticatedStoresStoreIdRoute,
+  } as any)
 const AuthenticatedStoresStoreIdKycRoute =
   AuthenticatedStoresStoreIdKycRouteImport.update({
     id: '/kyc',
@@ -257,6 +299,36 @@ const AuthenticatedStoresStoreIdChainsRoute =
     path: '/chains',
     getParentRoute: () => AuthenticatedStoresStoreIdRoute,
   } as any)
+const ApiPublicV1TerminalsPairRoute =
+  ApiPublicV1TerminalsPairRouteImport.update({
+    id: '/api/public/v1/terminals/pair',
+    path: '/api/public/v1/terminals/pair',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicV1TerminalsInvoiceRoute =
+  ApiPublicV1TerminalsInvoiceRouteImport.update({
+    id: '/api/public/v1/terminals/invoice',
+    path: '/api/public/v1/terminals/invoice',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicV1TerminalsHeartbeatRoute =
+  ApiPublicV1TerminalsHeartbeatRouteImport.update({
+    id: '/api/public/v1/terminals/heartbeat',
+    path: '/api/public/v1/terminals/heartbeat',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicV1TerminalsInvoiceIdRoute =
+  ApiPublicV1TerminalsInvoiceIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => ApiPublicV1TerminalsInvoiceRoute,
+  } as any)
+const ApiPublicV1TerminalsInvoiceIdCancelRoute =
+  ApiPublicV1TerminalsInvoiceIdCancelRouteImport.update({
+    id: '/cancel',
+    path: '/cancel',
+    getParentRoute: () => ApiPublicV1TerminalsInvoiceIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -264,6 +336,7 @@ export interface FileRoutesByFullPath {
   '/cash-out': typeof CashOutRoute
   '/docs': typeof DocsRouteWithChildren
   '/manifesto': typeof ManifestoRoute
+  '/pos': typeof PosRouteWithChildren
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
@@ -275,8 +348,12 @@ export interface FileRoutesByFullPath {
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
+  '/pos/history': typeof PosHistoryRoute
+  '/pos/pair': typeof PosPairRoute
+  '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
   '/integrations/': typeof IntegrationsIndexRoute
+  '/pos/': typeof PosIndexRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/stores': typeof AuthenticatedAdminStoresRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -287,6 +364,7 @@ export interface FileRoutesByFullPath {
   '/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
   '/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
+  '/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
   '/api/public/auth/wallet-exchange': typeof ApiPublicAuthWalletExchangeRoute
@@ -297,6 +375,11 @@ export interface FileRoutesByFullPath {
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
   '/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
+  '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
+  '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
+  '/api/public/v1/terminals/pair': typeof ApiPublicV1TerminalsPairRoute
+  '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
+  '/api/public/v1/terminals/invoice/$id/cancel': typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -314,8 +397,12 @@ export interface FileRoutesByTo {
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
+  '/pos/history': typeof PosHistoryRoute
+  '/pos/pair': typeof PosPairRoute
+  '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
   '/integrations': typeof IntegrationsIndexRoute
+  '/pos': typeof PosIndexRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/stores': typeof AuthenticatedAdminStoresRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -325,6 +412,7 @@ export interface FileRoutesByTo {
   '/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
   '/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
+  '/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
   '/api/public/auth/wallet-exchange': typeof ApiPublicAuthWalletExchangeRoute
@@ -335,6 +423,11 @@ export interface FileRoutesByTo {
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdIndexRoute
+  '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
+  '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
+  '/api/public/v1/terminals/pair': typeof ApiPublicV1TerminalsPairRoute
+  '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
+  '/api/public/v1/terminals/invoice/$id/cancel': typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -344,6 +437,7 @@ export interface FileRoutesById {
   '/cash-out': typeof CashOutRoute
   '/docs': typeof DocsRouteWithChildren
   '/manifesto': typeof ManifestoRoute
+  '/pos': typeof PosRouteWithChildren
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
@@ -355,8 +449,12 @@ export interface FileRoutesById {
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
+  '/pos/history': typeof PosHistoryRoute
+  '/pos/pair': typeof PosPairRoute
+  '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
   '/integrations/': typeof IntegrationsIndexRoute
+  '/pos/': typeof PosIndexRoute
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/_authenticated/admin/stores': typeof AuthenticatedAdminStoresRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -367,6 +465,7 @@ export interface FileRoutesById {
   '/_authenticated/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
   '/_authenticated/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/_authenticated/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
+  '/_authenticated/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
   '/api/public/auth/wallet-exchange': typeof ApiPublicAuthWalletExchangeRoute
@@ -377,6 +476,11 @@ export interface FileRoutesById {
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
   '/_authenticated/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
+  '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
+  '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
+  '/api/public/v1/terminals/pair': typeof ApiPublicV1TerminalsPairRoute
+  '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
+  '/api/public/v1/terminals/invoice/$id/cancel': typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -386,6 +490,7 @@ export interface FileRouteTypes {
     | '/cash-out'
     | '/docs'
     | '/manifesto'
+    | '/pos'
     | '/pricing'
     | '/privacy'
     | '/terms'
@@ -397,8 +502,12 @@ export interface FileRouteTypes {
     | '/docs/wallet-setup'
     | '/i/$invoiceId'
     | '/integrations/woocommerce'
+    | '/pos/history'
+    | '/pos/pair'
+    | '/pos/settings'
     | '/sdk/payhme.js'
     | '/integrations/'
+    | '/pos/'
     | '/admin/invoices'
     | '/admin/stores'
     | '/admin/users'
@@ -409,6 +518,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId/chains'
     | '/stores/$storeId/keys'
     | '/stores/$storeId/kyc'
+    | '/stores/$storeId/terminals'
     | '/api/public/auth/wallet-callback'
     | '/api/public/auth/wallet-challenge'
     | '/api/public/auth/wallet-exchange'
@@ -419,6 +529,11 @@ export interface FileRouteTypes {
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
     | '/stores/$storeId/'
+    | '/api/public/v1/terminals/heartbeat'
+    | '/api/public/v1/terminals/invoice'
+    | '/api/public/v1/terminals/pair'
+    | '/api/public/v1/terminals/invoice/$id'
+    | '/api/public/v1/terminals/invoice/$id/cancel'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -436,8 +551,12 @@ export interface FileRouteTypes {
     | '/docs/wallet-setup'
     | '/i/$invoiceId'
     | '/integrations/woocommerce'
+    | '/pos/history'
+    | '/pos/pair'
+    | '/pos/settings'
     | '/sdk/payhme.js'
     | '/integrations'
+    | '/pos'
     | '/admin/invoices'
     | '/admin/stores'
     | '/admin/users'
@@ -447,6 +566,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId/chains'
     | '/stores/$storeId/keys'
     | '/stores/$storeId/kyc'
+    | '/stores/$storeId/terminals'
     | '/api/public/auth/wallet-callback'
     | '/api/public/auth/wallet-challenge'
     | '/api/public/auth/wallet-exchange'
@@ -457,6 +577,11 @@ export interface FileRouteTypes {
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
     | '/stores/$storeId'
+    | '/api/public/v1/terminals/heartbeat'
+    | '/api/public/v1/terminals/invoice'
+    | '/api/public/v1/terminals/pair'
+    | '/api/public/v1/terminals/invoice/$id'
+    | '/api/public/v1/terminals/invoice/$id/cancel'
   id:
     | '__root__'
     | '/'
@@ -465,6 +590,7 @@ export interface FileRouteTypes {
     | '/cash-out'
     | '/docs'
     | '/manifesto'
+    | '/pos'
     | '/pricing'
     | '/privacy'
     | '/terms'
@@ -476,8 +602,12 @@ export interface FileRouteTypes {
     | '/docs/wallet-setup'
     | '/i/$invoiceId'
     | '/integrations/woocommerce'
+    | '/pos/history'
+    | '/pos/pair'
+    | '/pos/settings'
     | '/sdk/payhme.js'
     | '/integrations/'
+    | '/pos/'
     | '/_authenticated/admin/invoices'
     | '/_authenticated/admin/stores'
     | '/_authenticated/admin/users'
@@ -488,6 +618,7 @@ export interface FileRouteTypes {
     | '/_authenticated/stores/$storeId/chains'
     | '/_authenticated/stores/$storeId/keys'
     | '/_authenticated/stores/$storeId/kyc'
+    | '/_authenticated/stores/$storeId/terminals'
     | '/api/public/auth/wallet-callback'
     | '/api/public/auth/wallet-challenge'
     | '/api/public/auth/wallet-exchange'
@@ -498,6 +629,11 @@ export interface FileRouteTypes {
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
     | '/_authenticated/stores/$storeId/'
+    | '/api/public/v1/terminals/heartbeat'
+    | '/api/public/v1/terminals/invoice'
+    | '/api/public/v1/terminals/pair'
+    | '/api/public/v1/terminals/invoice/$id'
+    | '/api/public/v1/terminals/invoice/$id/cancel'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -507,6 +643,7 @@ export interface RootRouteChildren {
   CashOutRoute: typeof CashOutRoute
   DocsRoute: typeof DocsRouteWithChildren
   ManifestoRoute: typeof ManifestoRoute
+  PosRoute: typeof PosRouteWithChildren
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
@@ -523,6 +660,9 @@ export interface RootRouteChildren {
   ApiPublicCronWatcherRoute: typeof ApiPublicCronWatcherRoute
   ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
   ApiPublicV1InvoicesRoute: typeof ApiPublicV1InvoicesRoute
+  ApiPublicV1TerminalsHeartbeatRoute: typeof ApiPublicV1TerminalsHeartbeatRoute
+  ApiPublicV1TerminalsInvoiceRoute: typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
+  ApiPublicV1TerminalsPairRoute: typeof ApiPublicV1TerminalsPairRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -546,6 +686,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pos': {
+      id: '/pos'
+      path: '/pos'
+      fullPath: '/pos'
+      preLoaderRoute: typeof PosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/manifesto': {
@@ -590,6 +737,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pos/': {
+      id: '/pos/'
+      path: '/'
+      fullPath: '/pos/'
+      preLoaderRoute: typeof PosIndexRouteImport
+      parentRoute: typeof PosRoute
+    }
     '/integrations/': {
       id: '/integrations/'
       path: '/integrations'
@@ -603,6 +757,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/sdk/payhme.js'
       preLoaderRoute: typeof SdkPayhmeDotjsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/pos/settings': {
+      id: '/pos/settings'
+      path: '/settings'
+      fullPath: '/pos/settings'
+      preLoaderRoute: typeof PosSettingsRouteImport
+      parentRoute: typeof PosRoute
+    }
+    '/pos/pair': {
+      id: '/pos/pair'
+      path: '/pair'
+      fullPath: '/pos/pair'
+      preLoaderRoute: typeof PosPairRouteImport
+      parentRoute: typeof PosRoute
+    }
+    '/pos/history': {
+      id: '/pos/history'
+      path: '/history'
+      fullPath: '/pos/history'
+      preLoaderRoute: typeof PosHistoryRouteImport
+      parentRoute: typeof PosRoute
     }
     '/integrations/woocommerce': {
       id: '/integrations/woocommerce'
@@ -779,6 +954,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAuthWalletCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/stores/$storeId/terminals': {
+      id: '/_authenticated/stores/$storeId/terminals'
+      path: '/terminals'
+      fullPath: '/stores/$storeId/terminals'
+      preLoaderRoute: typeof AuthenticatedStoresStoreIdTerminalsRouteImport
+      parentRoute: typeof AuthenticatedStoresStoreIdRoute
+    }
     '/_authenticated/stores/$storeId/kyc': {
       id: '/_authenticated/stores/$storeId/kyc'
       path: '/kyc'
@@ -799,6 +981,41 @@ declare module '@tanstack/react-router' {
       fullPath: '/stores/$storeId/chains'
       preLoaderRoute: typeof AuthenticatedStoresStoreIdChainsRouteImport
       parentRoute: typeof AuthenticatedStoresStoreIdRoute
+    }
+    '/api/public/v1/terminals/pair': {
+      id: '/api/public/v1/terminals/pair'
+      path: '/api/public/v1/terminals/pair'
+      fullPath: '/api/public/v1/terminals/pair'
+      preLoaderRoute: typeof ApiPublicV1TerminalsPairRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/terminals/invoice': {
+      id: '/api/public/v1/terminals/invoice'
+      path: '/api/public/v1/terminals/invoice'
+      fullPath: '/api/public/v1/terminals/invoice'
+      preLoaderRoute: typeof ApiPublicV1TerminalsInvoiceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/terminals/heartbeat': {
+      id: '/api/public/v1/terminals/heartbeat'
+      path: '/api/public/v1/terminals/heartbeat'
+      fullPath: '/api/public/v1/terminals/heartbeat'
+      preLoaderRoute: typeof ApiPublicV1TerminalsHeartbeatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/terminals/invoice/$id': {
+      id: '/api/public/v1/terminals/invoice/$id'
+      path: '/$id'
+      fullPath: '/api/public/v1/terminals/invoice/$id'
+      preLoaderRoute: typeof ApiPublicV1TerminalsInvoiceIdRouteImport
+      parentRoute: typeof ApiPublicV1TerminalsInvoiceRoute
+    }
+    '/api/public/v1/terminals/invoice/$id/cancel': {
+      id: '/api/public/v1/terminals/invoice/$id/cancel'
+      path: '/cancel'
+      fullPath: '/api/public/v1/terminals/invoice/$id/cancel'
+      preLoaderRoute: typeof ApiPublicV1TerminalsInvoiceIdCancelRouteImport
+      parentRoute: typeof ApiPublicV1TerminalsInvoiceIdRoute
     }
   }
 }
@@ -824,6 +1041,7 @@ interface AuthenticatedStoresStoreIdRouteChildren {
   AuthenticatedStoresStoreIdChainsRoute: typeof AuthenticatedStoresStoreIdChainsRoute
   AuthenticatedStoresStoreIdKeysRoute: typeof AuthenticatedStoresStoreIdKeysRoute
   AuthenticatedStoresStoreIdKycRoute: typeof AuthenticatedStoresStoreIdKycRoute
+  AuthenticatedStoresStoreIdTerminalsRoute: typeof AuthenticatedStoresStoreIdTerminalsRoute
   AuthenticatedStoresStoreIdIndexRoute: typeof AuthenticatedStoresStoreIdIndexRoute
 }
 
@@ -833,6 +1051,8 @@ const AuthenticatedStoresStoreIdRouteChildren: AuthenticatedStoresStoreIdRouteCh
       AuthenticatedStoresStoreIdChainsRoute,
     AuthenticatedStoresStoreIdKeysRoute: AuthenticatedStoresStoreIdKeysRoute,
     AuthenticatedStoresStoreIdKycRoute: AuthenticatedStoresStoreIdKycRoute,
+    AuthenticatedStoresStoreIdTerminalsRoute:
+      AuthenticatedStoresStoreIdTerminalsRoute,
     AuthenticatedStoresStoreIdIndexRoute: AuthenticatedStoresStoreIdIndexRoute,
   }
 
@@ -877,6 +1097,52 @@ const DocsRouteChildren: DocsRouteChildren = {
 
 const DocsRouteWithChildren = DocsRoute._addFileChildren(DocsRouteChildren)
 
+interface PosRouteChildren {
+  PosHistoryRoute: typeof PosHistoryRoute
+  PosPairRoute: typeof PosPairRoute
+  PosSettingsRoute: typeof PosSettingsRoute
+  PosIndexRoute: typeof PosIndexRoute
+}
+
+const PosRouteChildren: PosRouteChildren = {
+  PosHistoryRoute: PosHistoryRoute,
+  PosPairRoute: PosPairRoute,
+  PosSettingsRoute: PosSettingsRoute,
+  PosIndexRoute: PosIndexRoute,
+}
+
+const PosRouteWithChildren = PosRoute._addFileChildren(PosRouteChildren)
+
+interface ApiPublicV1TerminalsInvoiceIdRouteChildren {
+  ApiPublicV1TerminalsInvoiceIdCancelRoute: typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
+}
+
+const ApiPublicV1TerminalsInvoiceIdRouteChildren: ApiPublicV1TerminalsInvoiceIdRouteChildren =
+  {
+    ApiPublicV1TerminalsInvoiceIdCancelRoute:
+      ApiPublicV1TerminalsInvoiceIdCancelRoute,
+  }
+
+const ApiPublicV1TerminalsInvoiceIdRouteWithChildren =
+  ApiPublicV1TerminalsInvoiceIdRoute._addFileChildren(
+    ApiPublicV1TerminalsInvoiceIdRouteChildren,
+  )
+
+interface ApiPublicV1TerminalsInvoiceRouteChildren {
+  ApiPublicV1TerminalsInvoiceIdRoute: typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
+}
+
+const ApiPublicV1TerminalsInvoiceRouteChildren: ApiPublicV1TerminalsInvoiceRouteChildren =
+  {
+    ApiPublicV1TerminalsInvoiceIdRoute:
+      ApiPublicV1TerminalsInvoiceIdRouteWithChildren,
+  }
+
+const ApiPublicV1TerminalsInvoiceRouteWithChildren =
+  ApiPublicV1TerminalsInvoiceRoute._addFileChildren(
+    ApiPublicV1TerminalsInvoiceRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
@@ -884,6 +1150,7 @@ const rootRouteChildren: RootRouteChildren = {
   CashOutRoute: CashOutRoute,
   DocsRoute: DocsRouteWithChildren,
   ManifestoRoute: ManifestoRoute,
+  PosRoute: PosRouteWithChildren,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,
@@ -900,17 +1167,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronWatcherRoute: ApiPublicCronWatcherRoute,
   ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
   ApiPublicV1InvoicesRoute: ApiPublicV1InvoicesRoute,
+  ApiPublicV1TerminalsHeartbeatRoute: ApiPublicV1TerminalsHeartbeatRoute,
+  ApiPublicV1TerminalsInvoiceRoute:
+    ApiPublicV1TerminalsInvoiceRouteWithChildren,
+  ApiPublicV1TerminalsPairRoute: ApiPublicV1TerminalsPairRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
