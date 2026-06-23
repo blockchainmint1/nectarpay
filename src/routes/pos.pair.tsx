@@ -6,8 +6,9 @@
 //   window.onPairingScan(payload)
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { Camera, X } from "lucide-react";
 import { saveCreds, type TerminalCreds } from "@/lib/pos-client";
 
 export const Route = createFileRoute("/pos/pair")({
@@ -27,6 +28,9 @@ declare global {
     TerminalAuth?: { save: (id: string, secret: string) => void };
     Pairing?: { startScan?: () => void; stopScan?: () => void };
     onPairingScan?: (payload: string) => void;
+    BarcodeDetector?: new (opts?: { formats?: string[] }) => {
+      detect: (src: CanvasImageSource) => Promise<Array<{ rawValue: string }>>;
+    };
   }
 }
 
@@ -54,6 +58,8 @@ function PairPage() {
   const navigate = useNavigate();
   const [code, setCode] = useState("");
   const [apiHint, setApiHint] = useState("");
+  const [scanOpen, setScanOpen] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
 
   const m = useMutation({
     mutationFn: (args: { code: string; api: string }) => pairCall(args.code, args.api),
@@ -74,30 +80,48 @@ function PairPage() {
     },
   });
 
+  function handleScannedPayload(payload: string) {
+    try {
+      const parsed = JSON.parse(payload);
+      if (parsed?.code) {
+        const api = parsed.api ?? parsed.host ?? "";
+        setCode(String(parsed.code).toUpperCase());
+        setApiHint(api);
+        m.mutate({ code: String(parsed.code).toUpperCase(), api });
+        return;
+      }
+    } catch { /* not JSON */ }
+    if (typeof payload === "string" && payload.length >= 4) {
+      const c = payload.toUpperCase().replace(/[^A-Z2-9]/g, "").slice(0, 8);
+      if (c.length >= 4) {
+        setCode(c);
+        m.mutate({ code: c, api: "" });
+      }
+    }
+  }
+
   // Native APK bridge for QR scans → onPairingScan(json|raw)
   useEffect(() => {
     window.onPairingScan = (payload: string) => {
-      try {
-        const parsed = JSON.parse(payload);
-        if (parsed?.code) {
-          const api = parsed.api ?? parsed.host ?? "";
-          setCode(parsed.code);
-          setApiHint(api);
-          m.mutate({ code: String(parsed.code).toUpperCase(), api });
-          return;
-        }
-      } catch { /* not JSON */ }
-      if (typeof payload === "string" && payload.length >= 4) {
-        setCode(payload.toUpperCase());
-        m.mutate({ code: payload.toUpperCase(), api: "" });
-      }
+      setScanOpen(false);
+      handleScannedPayload(payload);
     };
-    window.Pairing?.startScan?.();
     return () => {
       window.Pairing?.stopScan?.();
       delete window.onPairingScan;
     };
-  }, [m]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function openScanner() {
+    setScanError(null);
+    // Prefer the native bridge when running inside the APK shell.
+    if (window.Pairing?.startScan) {
+      window.Pairing.startScan();
+      return;
+    }
+    setScanOpen(true);
+  }
 
   return (
     <div className="fixed inset-0 bg-[#0a0d12] text-white flex flex-col items-center justify-center px-6">
@@ -129,7 +153,129 @@ function PairPage() {
         >
           {m.isPending ? "PAIRING…" : "PAIR"}
         </button>
+        <button
+          type="button"
+          onClick={openScanner}
+          className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 py-3 text-sm font-semibold tracking-wide text-white/90 hover:bg-white/10"
+        >
+          <Camera className="h-4 w-4" /> SCAN QR CODE
+        </button>
+        {scanError && <p className="text-center text-xs text-red-400">{scanError}</p>}
       </form>
+
+      {scanOpen && (
+        <QrScanner
+          onClose={() => setScanOpen(false)}
+          onResult={(payload) => { setScanOpen(false); handleScannedPayload(payload); }}
+          onError={(msg) => { setScanOpen(false); setScanError(msg); }}
+        />
+      )}
+    </div>
+  );
+}
+
+function QrScanner({
+  onResult,
+  onClose,
+  onError,
+}: {
+  onResult: (payload: string) => void;
+  onClose: () => void;
+  onError: (msg: string) => void;
+}) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [status, setStatus] = useState("Requesting camera…");
+
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    let raf = 0;
+    let cancelled = false;
+    let detector: { detect: (s: CanvasImageSource) => Promise<Array<{ rawValue: string }>> } | null = null;
+
+    async function start() {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        onError("Camera not available on this device.");
+        return;
+      }
+      if (!window.BarcodeDetector) {
+        onError("This browser can't scan QR codes. Type the code instead.");
+        return;
+      }
+      try {
+        detector = new window.BarcodeDetector({ formats: ["qr_code"] });
+      } catch {
+        onError("QR scanning not supported on this device.");
+        return;
+      }
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" } },
+          audio: false,
+        });
+      } catch (e) {
+        onError((e as Error).message || "Camera permission denied.");
+        return;
+      }
+      if (cancelled) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
+      const v = videoRef.current;
+      if (!v) return;
+      v.srcObject = stream;
+      await v.play().catch(() => {});
+      setStatus("Point the camera at the QR code");
+
+      const tick = async () => {
+        if (cancelled || !v || !detector) return;
+        if (v.readyState >= 2 && v.videoWidth > 0) {
+          try {
+            const results = await detector.detect(v);
+            if (results.length > 0 && results[0].rawValue) {
+              onResult(results[0].rawValue);
+              return;
+            }
+          } catch { /* keep looping */ }
+        }
+        raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+    }
+
+    start();
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(raf);
+      stream?.getTracks().forEach((t) => t.stop());
+    };
+  }, [onError, onResult]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col bg-black">
+      <div className="flex items-center justify-between px-4 pt-[max(env(safe-area-inset-top),1rem)] pb-3 text-white">
+        <span className="text-xs font-bold tracking-[0.3em] text-white/60">SCAN PAIRING QR</span>
+        <button
+          onClick={onClose}
+          className="rounded-full bg-white/10 p-2 hover:bg-white/20"
+          aria-label="Close scanner"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
+      <div className="relative flex-1 overflow-hidden">
+        <video
+          ref={videoRef}
+          playsInline
+          muted
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <canvas ref={canvasRef} className="hidden" />
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div className="size-64 rounded-2xl border-2 border-emerald-400/80 shadow-[0_0_0_9999px_rgba(0,0,0,0.55)]" />
+        </div>
+        <div className="absolute inset-x-0 bottom-6 text-center text-xs text-white/80">{status}</div>
+      </div>
     </div>
   );
 }
