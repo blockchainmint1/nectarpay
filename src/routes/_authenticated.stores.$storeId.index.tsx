@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, KeyRound, Link2, Receipt, Settings as SettingsIcon, ShieldCheck } from "lucide-react";
+import { ChevronLeft, KeyRound, Link2, Receipt, Settings as SettingsIcon, ShieldCheck, Smartphone } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -71,6 +71,12 @@ function StoreDetailPage() {
           title="API keys"
           body="Issue, rotate, and revoke API credentials."
           to={`/stores/${storeId}/keys`}
+        />
+        <CardLink
+          icon={<Smartphone className="h-4 w-4" />}
+          title="Terminals"
+          body="Pair Senraise / Android POS devices. Each terminal gets its own credentials and a revocable lease."
+          to={`/stores/${storeId}/terminals`}
         />
         <CardLink
           icon={<Receipt className="h-4 w-4" />}

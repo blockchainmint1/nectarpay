@@ -20,6 +20,8 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as IntegrationsIndexRouteImport } from './routes/integrations.index'
 import { Route as SdkPayhmeDotjsRouteImport } from './routes/sdk.payhme[.]js'
+import { Route as PosSettingsRouteImport } from './routes/pos.settings'
+import { Route as PosPairRouteImport } from './routes/pos.pair'
 import { Route as IntegrationsWoocommerceRouteImport } from './routes/integrations.woocommerce'
 import { Route as IInvoiceIdRouteImport } from './routes/i.$invoiceId'
 import { Route as DocsWalletSetupRouteImport } from './routes/docs.wallet-setup'
@@ -106,6 +108,16 @@ const IntegrationsIndexRoute = IntegrationsIndexRouteImport.update({
 const SdkPayhmeDotjsRoute = SdkPayhmeDotjsRouteImport.update({
   id: '/sdk/payhme.js',
   path: '/sdk/payhme.js',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PosSettingsRoute = PosSettingsRouteImport.update({
+  id: '/pos/settings',
+  path: '/pos/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PosPairRoute = PosPairRouteImport.update({
+  id: '/pos/pair',
+  path: '/pos/pair',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IntegrationsWoocommerceRoute = IntegrationsWoocommerceRouteImport.update({
@@ -310,6 +322,8 @@ export interface FileRoutesByFullPath {
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
+  '/pos/pair': typeof PosPairRoute
+  '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
@@ -354,6 +368,8 @@ export interface FileRoutesByTo {
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
+  '/pos/pair': typeof PosPairRoute
+  '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
   '/integrations': typeof IntegrationsIndexRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
@@ -400,6 +416,8 @@ export interface FileRoutesById {
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
+  '/pos/pair': typeof PosPairRoute
+  '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
@@ -447,6 +465,8 @@ export interface FileRouteTypes {
     | '/docs/wallet-setup'
     | '/i/$invoiceId'
     | '/integrations/woocommerce'
+    | '/pos/pair'
+    | '/pos/settings'
     | '/sdk/payhme.js'
     | '/integrations/'
     | '/admin/invoices'
@@ -491,6 +511,8 @@ export interface FileRouteTypes {
     | '/docs/wallet-setup'
     | '/i/$invoiceId'
     | '/integrations/woocommerce'
+    | '/pos/pair'
+    | '/pos/settings'
     | '/sdk/payhme.js'
     | '/integrations'
     | '/admin/invoices'
@@ -536,6 +558,8 @@ export interface FileRouteTypes {
     | '/docs/wallet-setup'
     | '/i/$invoiceId'
     | '/integrations/woocommerce'
+    | '/pos/pair'
+    | '/pos/settings'
     | '/sdk/payhme.js'
     | '/integrations/'
     | '/_authenticated/admin/invoices'
@@ -577,6 +601,8 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   IInvoiceIdRoute: typeof IInvoiceIdRoute
   IntegrationsWoocommerceRoute: typeof IntegrationsWoocommerceRoute
+  PosPairRoute: typeof PosPairRoute
+  PosSettingsRoute: typeof PosSettingsRoute
   SdkPayhmeDotjsRoute: typeof SdkPayhmeDotjsRoute
   IntegrationsIndexRoute: typeof IntegrationsIndexRoute
   ApiPublicAuthWalletCallbackRoute: typeof ApiPublicAuthWalletCallbackRoute
@@ -670,6 +696,20 @@ declare module '@tanstack/react-router' {
       path: '/sdk/payhme.js'
       fullPath: '/sdk/payhme.js'
       preLoaderRoute: typeof SdkPayhmeDotjsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pos/settings': {
+      id: '/pos/settings'
+      path: '/pos/settings'
+      fullPath: '/pos/settings'
+      preLoaderRoute: typeof PosSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pos/pair': {
+      id: '/pos/pair'
+      path: '/pos/pair'
+      fullPath: '/pos/pair'
+      preLoaderRoute: typeof PosPairRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/integrations/woocommerce': {
@@ -1022,6 +1062,8 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   IInvoiceIdRoute: IInvoiceIdRoute,
   IntegrationsWoocommerceRoute: IntegrationsWoocommerceRoute,
+  PosPairRoute: PosPairRoute,
+  PosSettingsRoute: PosSettingsRoute,
   SdkPayhmeDotjsRoute: SdkPayhmeDotjsRoute,
   IntegrationsIndexRoute: IntegrationsIndexRoute,
   ApiPublicAuthWalletCallbackRoute: ApiPublicAuthWalletCallbackRoute,
