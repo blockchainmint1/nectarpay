@@ -26,6 +26,8 @@ type InvoiceResp = {
   checkout_url: string;
   fiat_amount: number;
   currency: string;
+  chain: string | null;
+  token_symbol: string | null;
   expires_at: string;
 };
 
@@ -40,6 +42,13 @@ type InvoiceStatus = {
   fiat_amount: number;
   currency: string;
   expires_at: string;
+};
+
+type PaymentOption = {
+  key: string;
+  chain: string;
+  tokenSymbol: string | null;
+  label: string;
 };
 
 function fmt(cents: number, currency = "USD") {
