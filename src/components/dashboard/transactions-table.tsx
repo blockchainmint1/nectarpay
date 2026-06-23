@@ -141,21 +141,25 @@ export function TransactionsTable({ userId }: { userId: string | undefined }) {
               <th className="px-4 py-2.5">Store</th>
               <th className="px-4 py-2.5">Tx hash</th>
               <th className="px-4 py-2.5 text-right"><SortHead k="amount" align="right">Amount</SortHead></th>
+              <th className="px-4 py-2.5 text-right">Value</th>
               <th className="px-4 py-2.5 text-right"><SortHead k="confirmations" align="right">Conf.</SortHead></th>
               <th className="px-4 py-2.5">Invoice</th>
             </tr>
           </thead>
           <tbody>
             {query.isLoading ? (
-              <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">Loading…</td></tr>
+              <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">Loading…</td></tr>
             ) : query.error ? (
-              <tr><td colSpan={6} className="p-8 text-center text-destructive">Failed to load transactions</td></tr>
+              <tr><td colSpan={7} className="p-8 text-center text-destructive">Failed to load transactions</td></tr>
             ) : (query.data?.rows ?? []).length === 0 ? (
-              <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">No transactions yet</td></tr>
+              <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">No transactions yet</td></tr>
             ) : (
               query.data!.rows.map((r: any) => {
                 const inv = Array.isArray(r.invoice) ? r.invoice[0] : r.invoice;
                 const store = inv ? (Array.isArray(inv.store) ? inv.store[0] : inv.store) : null;
+                const symbol = r.token_symbol || tickerForChain(inv?.chain);
+                const fiatCurrency = inv?.fiat_currency || store?.fiat_currency || "USD";
+                const fiatVal = inv?.fiat_amount != null ? Number(inv.fiat_amount) : null;
                 return (
                   <tr key={r.id} className="border-b border-border/60 last:border-0 hover:bg-accent/30">
                     <td className="px-4 py-2.5 whitespace-nowrap text-muted-foreground">
@@ -171,9 +175,14 @@ export function TransactionsTable({ userId }: { userId: string | undefined }) {
                     <td className="px-4 py-2.5 font-mono text-xs">
                       <span title={r.tx_hash}>{r.tx_hash.slice(0, 10)}…{r.tx_hash.slice(-6)}</span>
                     </td>
-                    <td className="px-4 py-2.5 text-right font-mono tabular-nums">
-                      {Number(r.amount).toLocaleString(undefined, { maximumFractionDigits: 8 })}
-                      {r.token_symbol ? <span className="ml-1 text-xs text-muted-foreground">{r.token_symbol}</span> : null}
+                    <td className="px-4 py-2.5 text-right font-mono tabular-nums whitespace-nowrap">
+                      <span title={String(r.amount)}>{formatCryptoAmount(r.amount, symbol)}</span>
+                      {symbol ? <span className="ml-1 text-xs text-muted-foreground">{symbol}</span> : null}
+                    </td>
+                    <td className="px-4 py-2.5 text-right font-mono tabular-nums whitespace-nowrap text-muted-foreground">
+                      {fiatVal != null
+                        ? new Intl.NumberFormat(undefined, { style: "currency", currency: fiatCurrency, maximumFractionDigits: 2 }).format(fiatVal)
+                        : "—"}
                     </td>
                     <td className="px-4 py-2.5 text-right tabular-nums">{r.confirmations}</td>
                     <td className="px-4 py-2.5">
@@ -239,4 +248,31 @@ function StatusBadge({ status }: { status: string }) {
       {status}
     </Badge>
   );
+}
+
+function tickerForChain(chain?: string | null): string {
+  if (!chain) return "";
+  const c = chain.toLowerCase();
+  if (c.includes("bitcoin") || c === "btc") return "BTC";
+  if (c.includes("texit") || c === "txc") return "TXC";
+  if (c.includes("litecoin") || c === "ltc") return "LTC";
+  if (c.includes("ethereum") || c === "eth") return "ETH";
+  if (c.includes("tron") || c === "trx") return "TRX";
+  if (c.includes("solana") || c === "sol") return "SOL";
+  if (c.includes("polygon") || c === "matic") return "MATIC";
+  if (c.includes("base")) return "ETH";
+  return chain.toUpperCase();
+}
+
+function formatCryptoAmount(amount: number | string, symbol?: string): string {
+  const n = Number(amount);
+  if (!isFinite(n)) return String(amount);
+  const stables = new Set(["USDC", "USDT", "DAI", "PYUSD"]);
+  const maxFrac = stables.has((symbol || "").toUpperCase()) ? 2 : 6;
+  // Strip trailing zeros
+  const fixed = n.toFixed(maxFrac);
+  const trimmed = fixed.replace(/\.?0+$/, "");
+  const [int, dec] = trimmed.split(".");
+  const intFmt = Number(int).toLocaleString();
+  return dec ? `${intFmt}.${dec}` : intFmt;
 }
