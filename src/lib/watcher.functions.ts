@@ -4,7 +4,7 @@
 //   2) Poll the chain for incoming credits to those addresses
 //   3) Match credits to open invoices, mark paid/underpaid, emit notifications & webhooks
 
-import { BTC_NETWORK, TXC_NETWORK, ETH_NETWORK, EVM_NETWORKS, TRON_NETWORK, SOL_NETWORK } from "./chains/networks";
+import { BTC_NETWORK, TXC_NETWORK, ETH_NETWORK, EVM_NETWORKS, TRON_NETWORK, SOL_NETWORK, type EvmNetwork } from "./chains/networks";
 import { deriveBtcLikeAddress, deriveEvmAddress, deriveTronAddress } from "./chains/derive.server";
 import { extractIncoming, getAddressTxs, getTipHeight } from "./chains/btc-like.server";
 import { getBlockNumber, getTransfersTo } from "./chains/evm.server";
@@ -293,7 +293,7 @@ interface AlchemyTransferWithMetadata {
 }
 
 async function alchemyAssetTransfersForAddress(
-  net: typeof ETH_NETWORK,
+  net: EvmNetwork,
   key: string,
   address: string,
   fromBlock: number,
