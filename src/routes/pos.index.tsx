@@ -148,7 +148,7 @@ function PinLock({ pinHash, onUnlock }: { pinHash: string; onUnlock: () => void 
 
 // ─── Sale state machine ──────────────────────────────────────────────────
 
-type Screen = "amount" | "tip" | "waiting" | "paid" | "cancelled" | "expired";
+type Screen = "amount" | "tip" | "chain" | "waiting" | "paid" | "cancelled" | "expired";
 
 function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: PosSettings; onLock: () => void }) {
   const [screen, setScreen] = useState<Screen>("amount");
@@ -160,11 +160,29 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [options, setOptions] = useState<PaymentOption[] | null>(null);
+  const [optionsErr, setOptionsErr] = useState<string | null>(null);
+  const [finalTipCents, setFinalTipCents] = useState(0);
 
   const taxCents = Math.round((subtotalCents * settings.taxBps) / 10_000);
   const tipCents = customTipCents !== null ? customTipCents : Math.round((subtotalCents * tipBps) / 10_000);
   const totalCents = subtotalCents + taxCents + tipCents;
   const hasTips = settings.tipPresetsBps.some((b) => b > 0);
+
+  // Fetch the store's enabled chains once on boot so we can show them on the
+  // chain-picker screen. Errors are non-fatal — we fall back to "customer picks".
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await signedJson<{ options: PaymentOption[] }>(creds, "/api/public/v1/terminals/options");
+        if (!cancelled) setOptions(res.options ?? []);
+      } catch (e) {
+        if (!cancelled) setOptionsErr((e as Error).message);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [creds]);
 
   const press = (k: string) => {
     if (k === "C") return setSubtotalCents(0);
@@ -175,14 +193,26 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
 
   const onChargePress = () => {
     if (subtotalCents <= 0) return;
-    if (hasTips) setScreen("tip"); else void goToCharge(0);
+    if (hasTips) setScreen("tip");
+    else goToChainPicker(0);
   };
 
-  const goToCharge = async (overrideTipCents?: number) => {
+  // After tip is chosen, move to the chain picker (or skip straight to invoice
+  // creation if the store hasn't enabled any chains — preserves old behavior).
+  const goToChainPicker = (overrideTipCents?: number) => {
+    const finalTip = overrideTipCents ?? tipCents;
+    setFinalTipCents(finalTip);
+    if (!options || options.length === 0) {
+      void createInvoice(finalTip, null);
+      return;
+    }
+    setScreen("chain");
+  };
+
+  const createInvoice = async (finalTip: number, option: string | null) => {
     if (subtotalCents <= 0) return;
     setBusy(true); setErr(null);
     try {
-      const finalTip = overrideTipCents ?? tipCents;
       const finalTotal = subtotalCents + taxCents + finalTip;
       const memo = [
         `subtotal:${subtotalCents}`,
@@ -191,7 +221,7 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
       ].filter(Boolean).join(" ");
       const inv = await signedJson<InvoiceResp>(creds, "/api/public/v1/terminals/invoice", {
         method: "POST",
-        body: { amount_cents: finalTotal, currency: "USD", memo },
+        body: { amount_cents: finalTotal, currency: "USD", memo, option },
       });
       setInvoice(inv);
       const dataUrl = await QRCode.toDataURL(inv.checkout_url, { width: 640, margin: 1, color: { dark: "#000", light: "#fff" } });
@@ -226,6 +256,7 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
   const reset = () => {
     setSubtotalCents(0); setTipBps(0); setCustomTipCents(null);
     setInvoice(null); setStatus(null); setQrDataUrl(""); setErr(null);
+    setFinalTipCents(0);
     setScreen("amount");
   };
 
@@ -249,8 +280,19 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
             tipBps={tipBps} customTipCents={customTipCents} presetsBps={settings.tipPresetsBps}
             onPickPreset={(bps) => { setTipBps(bps); setCustomTipCents(null); }}
             onPickCustom={(c) => { setTipBps(0); setCustomTipCents(c); }}
-            onSkip={() => goToCharge(0)} onConfirm={() => goToCharge()} onBack={() => setScreen("amount")}
+            onSkip={() => goToChainPicker(0)} onConfirm={() => goToChainPicker()} onBack={() => setScreen("amount")}
             busy={busy}
+          />
+        )}
+        {screen === "chain" && (
+          <ChainScreen
+            totalCents={subtotalCents + taxCents + finalTipCents}
+            options={options ?? []}
+            optionsErr={optionsErr}
+            busy={busy}
+            err={err}
+            onPick={(opt) => createInvoice(finalTipCents, opt)}
+            onBack={() => setScreen(hasTips ? "tip" : "amount")}
           />
         )}
         {screen === "waiting" && invoice && (
