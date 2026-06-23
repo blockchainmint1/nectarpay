@@ -4,7 +4,7 @@
 //   2) Poll the chain for incoming credits to those addresses
 //   3) Match credits to open invoices, mark paid/underpaid, emit notifications & webhooks
 
-import { BTC_NETWORK, TXC_NETWORK, ETH_NETWORK, EVM_NETWORKS, TRON_NETWORK, SOL_NETWORK } from "./chains/networks";
+import { BTC_NETWORK, TXC_NETWORK, ETH_NETWORK, EVM_NETWORKS, TRON_NETWORK, SOL_NETWORK, type EvmNetwork } from "./chains/networks";
 import { deriveBtcLikeAddress, deriveEvmAddress, deriveTronAddress } from "./chains/derive.server";
 import { extractIncoming, getAddressTxs, getTipHeight } from "./chains/btc-like.server";
 import { getBlockNumber, getTransfersTo } from "./chains/evm.server";
@@ -281,6 +281,130 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
   return changed;
 }
 
+interface AlchemyTransferWithMetadata {
+  blockNum: string;
+  hash: string;
+  to: string;
+  value: number | null;
+  asset: string | null;
+  category: "external" | "internal" | "erc20";
+  metadata?: { blockTimestamp?: string };
+  rawContract: { value?: string; rawValue?: string; address: string | null; decimal?: string | null; decimals?: number | null };
+}
+
+async function alchemyAssetTransfersForAddress(
+  net: EvmNetwork,
+  key: string,
+  address: string,
+  fromBlock: number,
+): Promise<AlchemyTransferWithMetadata[]> {
+  const res = await fetch(net.rpcUrl(key), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      jsonrpc: "2.0",
+      id: 1,
+      method: "alchemy_getAssetTransfers",
+      params: [{
+        fromBlock: `0x${Math.max(0, fromBlock).toString(16)}`,
+        toAddress: address,
+        category: ["external", "internal", "erc20"],
+        withMetadata: true,
+        excludeZeroValue: true,
+        maxCount: "0x32",
+        order: "desc",
+      }],
+    }),
+  });
+  if (!res.ok) throw new Error(`alchemy_getAssetTransfers → ${res.status}`);
+  const json = await res.json() as { result?: { transfers?: AlchemyTransferWithMetadata[] }, error?: { message: string } };
+  if (json.error) throw new Error(`alchemy_getAssetTransfers: ${json.error.message}`);
+  return json.result?.transfers ?? [];
+}
+
+export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: inv } = await supabaseAdmin
+    .from("invoices")
+    .select("id, store_id, chain, address, fiat_amount, status, rate, token_symbol, created_at, expires_at, stores!inner(default_confirmations_required, mempool_max_usd)")
+    .eq("id", invoiceId)
+    .maybeSingle();
+
+  if (!inv?.address || !inv.chain || !["eth", "base", "bsc"].includes(inv.chain)) return false;
+  if (["confirmed", "overpaid", "cancelled", "failed"].includes(inv.status)) return false;
+
+  const key = process.env.ALCHEMY_API_KEY;
+  if (!key) return false;
+
+  const createdMs = Date.parse(inv.created_at);
+  const expiresMs = inv.expires_at ? Date.parse(inv.expires_at) : createdMs + 15 * 60 * 1000;
+  const startsAfterMs = createdMs - 5 * 60 * 1000;
+  const endsBeforeMs = expiresMs + 60 * 60 * 1000;
+  const token = (inv.token_symbol ?? "").toUpperCase();
+  const invoiceAddress = inv.address;
+  const scanNets = token
+    ? EVM_NETWORKS
+    : EVM_NETWORKS.filter((n) => n.symbol === inv.chain || (inv.chain === "eth" && n.symbol === "eth"));
+
+  let changed = false;
+
+  const scanned = await Promise.all(scanNets.map(async (net) => {
+    try {
+      const tip = await getBlockNumber(net, key);
+      const fromBlock = Math.max(0, tip - 7200); // ~1 day on Ethereum; enough for missed webhooks/cron drift.
+      const transfers = await alchemyAssetTransfersForAddress(net, key, invoiceAddress, fromBlock);
+      return { net, tip, transfers };
+    } catch (e) {
+      console.error(`[watcher] hot EVM scan failed on ${net.symbol}:`, e);
+      return { net, tip: 0, transfers: [] as AlchemyTransferWithMetadata[] };
+    }
+  }));
+
+  for (const { net, tip, transfers } of scanned) {
+    for (const t of transfers) {
+      const blockTime = Date.parse(t.metadata?.blockTimestamp ?? "");
+      if (Number.isFinite(blockTime) && (blockTime < startsAfterMs || blockTime > endsBeforeMs)) continue;
+
+      const contractAddr = t.rawContract.address?.toLowerCase() ?? null;
+      const isNative = t.category === "external" || t.category === "internal";
+      const stable = contractAddr
+        ? net.stables.find((s) => s.address.toLowerCase() === contractAddr)
+        : null;
+      if (token) {
+        if (!stable || stable.symbol.toUpperCase() !== token) continue;
+      } else if (!isNative) {
+        continue;
+      }
+
+      const raw = t.rawContract.value ?? t.rawContract.rawValue ?? "0";
+      const decimals = stable?.decimals ?? (typeof t.rawContract.decimals === "number"
+        ? t.rawContract.decimals
+        : t.rawContract.decimal
+          ? parseInt(t.rawContract.decimal, 16)
+          : 18);
+      const human = Number(BigInt(raw)) / 10 ** decimals;
+      if (!Number.isFinite(human) || human <= 0) continue;
+
+      const blockNum = parseInt(t.blockNum, 16);
+      const confirmations = Math.max(0, tip - blockNum + 1);
+      const lockedRate = inv.rate == null ? null : Number(inv.rate);
+      const paidUsd = token ? human : human * (lockedRate && lockedRate > 0 ? lockedRate : await getUsdRate(net.symbol));
+      const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd);
+      const isConfirmed = confirmations >= required;
+
+      await recordTransaction(inv.id, t.hash, human, confirmations, blockNum, isConfirmed, token ? token : null);
+      if (isConfirmed) {
+        const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
+        changed = settled.changed || changed;
+      } else if (await markInvoiceDetected(inv.id)) {
+        changed = true;
+      }
+    }
+  }
+
+  return changed;
+}
+
 /**
  * Mark stale unpaid invoices as `expired` so their reserved addresses are
  * released back into the recycler pool. Only touches invoices with zero
@@ -332,6 +456,21 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
     const r: WatcherResult = { chain, addresses: 0, credits: 0, invoicesUpdated: 0 };
     try {
       if (chain === "btc" || chain === "txc") {
+        const cfgByStoreId = new Map(configList.map((c) => [c.store_id, c]));
+        const { data: openInvoices } = await supabaseAdmin
+          .from("invoices")
+          .select("id, store_id, address, fiat_amount, status, rate, crypto_amount")
+          .eq("chain", chain)
+          .in("store_id", configList.map((c) => c.store_id))
+          .in("status", ["pending", "detected", "underpaid"])
+          .not("address", "is", null);
+        r.addresses = openInvoices?.length ?? 0;
+
+        if (!openInvoices?.length) {
+          results.push(r);
+          continue;
+        }
+
         const net = chain === "btc" ? BTC_NETWORK : TXC_NETWORK;
         const tip = await getTipHeight(net);
 
@@ -346,16 +485,6 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             (cfg.next_address_index ?? 0) + ADDRESS_WINDOW,
           );
         }
-
-        const cfgByStoreId = new Map(configList.map((c) => [c.store_id, c]));
-        const { data: openInvoices } = await supabaseAdmin
-          .from("invoices")
-          .select("id, store_id, address, fiat_amount, status, rate, crypto_amount")
-          .eq("chain", chain)
-          .in("store_id", configList.map((c) => c.store_id))
-          .in("status", ["pending", "detected", "underpaid"])
-          .not("address", "is", null);
-        r.addresses = openInvoices?.length ?? 0;
 
         for (const inv of openInvoices ?? []) {
           if (!inv.address) continue;
@@ -407,6 +536,21 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
         const key = process.env.ALCHEMY_API_KEY;
         if (!key) throw new Error("ALCHEMY_API_KEY not configured");
 
+        const { data: openInvoices } = await supabaseAdmin
+          .from("invoices")
+          .select("address")
+          .in("chain", ["eth", "base", "bsc"])
+          .in("store_id", configList.map((c) => c.store_id))
+          .in("status", ["pending", "detected", "underpaid"])
+          .not("address", "is", null);
+        const addrList = Array.from(new Set((openInvoices ?? []).map((a) => a.address).filter(Boolean)));
+        r.addresses = addrList.length;
+
+        if (!addrList.length) {
+          results.push(r);
+          continue;
+        }
+
         // Derive addresses once (EVM derivation is network-agnostic).
         for (const cfg of configList) {
           if (!cfg.xpub) continue;
@@ -419,13 +563,6 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             (cfg.next_address_index ?? 0) + ADDRESS_WINDOW,
           );
         }
-
-        const { data: addrs } = await supabaseAdmin
-          .from("derived_addresses")
-          .select("address")
-          .in("chain_config_id", configList.map((c) => c.id));
-        r.addresses = addrs?.length ?? 0;
-        const addrList = (addrs ?? []).map((a) => a.address);
 
         for (const net of EVM_NETWORKS) {
           try {
@@ -456,7 +593,8 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
                 .from("invoices")
                 .select("id, fiat_amount, status, chain, token_symbol")
                 .ilike("address", t.to) // EVM addresses are stored checksum-cased; match case-insensitively
-                .in("chain", matchChains);
+                .in("chain", matchChains)
+                .in("status", ["pending", "detected", "underpaid"]);
               const { data: candidates } = await invQuery;
               const inv = (candidates ?? []).find((c) =>
                 t.isNative ? c.token_symbol == null : (c.token_symbol ?? "").toUpperCase() === t.asset.toUpperCase(),

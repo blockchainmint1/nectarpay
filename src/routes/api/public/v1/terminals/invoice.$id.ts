@@ -36,11 +36,25 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id")({
           if (!inv) return json({ error: "Invoice not found." }, 404);
           if (inv.store_id !== auth.terminal.store_id) return json({ error: "Forbidden." }, 403);
 
+          if (["pending", "detected", "underpaid"].includes(inv.status) && inv.chain && ["eth", "base", "bsc"].includes(inv.chain)) {
+            const { scanEvmInvoiceNow } = await import("@/lib/watcher.functions");
+            await scanEvmInvoiceNow(inv.id).catch((e) => {
+              console.error("[terminal-invoice] hot EVM scan failed:", e);
+            });
+          }
+
+          const { data: freshInv } = await supabaseAdmin
+            .from("invoices")
+            .select("id, store_id, status, chain, crypto_amount, address, fiat_amount, fiat_currency, expires_at, updated_at, token_symbol, rate")
+            .eq("id", params.id)
+            .maybeSingle();
+          const invoice = freshInv ?? inv;
+
           // Pull the first confirmed tx hash, if any.
           const { data: tx } = await supabaseAdmin
             .from("transactions")
             .select("tx_hash, confirmed_at")
-            .eq("invoice_id", inv.id)
+            .eq("invoice_id", invoice.id)
             .order("first_seen_at", { ascending: true })
             .limit(1)
             .maybeSingle();
@@ -50,10 +64,10 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id")({
           const { data: confirmedTxs } = await supabaseAdmin
             .from("transactions")
             .select("amount, token_symbol")
-            .eq("invoice_id", inv.id)
+            .eq("invoice_id", invoice.id)
             .not("confirmed_at", "is", null);
-          const isStable = !!inv.token_symbol;
-          const lockedRate = inv.rate == null ? 0 : Number(inv.rate);
+          const isStable = !!invoice.token_symbol;
+          const lockedRate = invoice.rate == null ? 0 : Number(invoice.rate);
           let paidUsd = 0;
           let paidCrypto = 0;
           for (const t of confirmedTxs ?? []) {
@@ -62,23 +76,23 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id")({
             paidCrypto += amt;
             paidUsd += isStable ? amt : amt * lockedRate;
           }
-          const owedUsd = Number(inv.fiat_amount);
+          const owedUsd = Number(invoice.fiat_amount);
           const dueUsd = Math.max(0, owedUsd - paidUsd);
-          const owedCrypto = inv.crypto_amount == null ? null : Number(inv.crypto_amount);
+          const owedCrypto = invoice.crypto_amount == null ? null : Number(invoice.crypto_amount);
           const dueCrypto = owedCrypto == null ? null : Math.max(0, owedCrypto - paidCrypto);
 
           return json({
-            id: inv.id,
-            status: inv.status,
-            chain: inv.chain,
-            crypto_amount: inv.crypto_amount,
-            address: inv.address,
+            id: invoice.id,
+            status: invoice.status,
+            chain: invoice.chain,
+            crypto_amount: invoice.crypto_amount,
+            address: invoice.address,
             tx_hash: tx?.tx_hash ?? null,
             paid_at: tx?.confirmed_at ?? null,
-            fiat_amount: inv.fiat_amount,
-            currency: inv.fiat_currency,
-            expires_at: inv.expires_at,
-            token_symbol: inv.token_symbol,
+            fiat_amount: invoice.fiat_amount,
+            currency: invoice.fiat_currency,
+            expires_at: invoice.expires_at,
+            token_symbol: invoice.token_symbol,
             paid_usd: Number(paidUsd.toFixed(4)),
             due_usd: Number(dueUsd.toFixed(4)),
             paid_crypto: paidCrypto,
