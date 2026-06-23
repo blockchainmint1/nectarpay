@@ -139,8 +139,13 @@ function PairPage() {
     setScanOpen(true);
   }
 
+  if (alreadyPaired) {
+    return <div className="fixed inset-0 bg-[#0a0d12]" />;
+  }
+
   return (
     <div className="fixed inset-0 bg-[#0a0d12] text-white flex flex-col items-center justify-center px-6">
+
       <div className="text-[10px] font-bold tracking-[0.3em] text-white/50">PAIR TERMINAL</div>
       <h1 className="mt-2 text-2xl font-bold">Enter pairing code</h1>
       <p className="mt-2 max-w-xs text-center text-sm text-white/60">
