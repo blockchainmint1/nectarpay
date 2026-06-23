@@ -51,7 +51,13 @@ type InvoiceStatus = {
   fiat_amount: number;
   currency: string;
   expires_at: string;
+  token_symbol?: string | null;
+  paid_usd?: number;
+  due_usd?: number;
+  paid_crypto?: number;
+  due_crypto?: number | null;
 };
+
 
 type PaymentOption = {
   key: string;
