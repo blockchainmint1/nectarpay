@@ -139,6 +139,8 @@ function PosSettingsPage() {
             />
           </div>
         </Card>
+        <ChainOrderEditor storeId={storeId} />
+
 
         <Card className="p-5">
           <h2 className="text-sm font-semibold">Receipt header</h2>
