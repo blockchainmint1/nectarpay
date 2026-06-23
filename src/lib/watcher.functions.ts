@@ -132,28 +132,63 @@ export async function recordTransaction(
 }
 
 
+/**
+ * Sum every CONFIRMED transaction on this invoice into a USD total. This is
+ * how underpayment top-ups settle: the second tx isn't evaluated alone — we
+ * add it to whatever the address already received.
+ *
+ * - Native invoices (token_symbol IS NULL): all credits use the invoice's
+ *   locked USD rate so a small market wiggle between quote and payment
+ *   doesn't show as underpaid.
+ * - Stable invoices: each credit is 1 USD per token.
+ */
+async function totalPaidUsdForInvoice(
+  invoiceId: string,
+  invoiceTokenSymbol: string | null,
+  lockedRate: number | null,
+): Promise<number> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: txs } = await supabaseAdmin
+    .from("transactions")
+    .select("amount, token_symbol, confirmed_at")
+    .eq("invoice_id", invoiceId)
+    .not("confirmed_at", "is", null);
+  if (!txs?.length) return 0;
+  const isStable = !!invoiceTokenSymbol;
+  let total = 0;
+  for (const t of txs) {
+    const amt = Number(t.amount);
+    if (!Number.isFinite(amt) || amt <= 0) continue;
+    total += isStable ? amt : amt * (lockedRate ?? 0);
+  }
+  return total;
+}
+
 export async function settleInvoice(
   invoiceId: string,
-  paidAmountUsd: number,
+  _ignoredLatestCreditUsd: number,
   amountDueUsd: number,
-): Promise<{ status: string; changed: boolean }> {
+): Promise<{ status: string; changed: boolean; paidUsd: number }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
-    .select("id, status, store_id, chain, address, fiat_amount, fiat_currency, external_order_id, stores(owner_id, webhook_url, webhook_secret)")
+    .select("id, status, store_id, chain, address, fiat_amount, fiat_currency, external_order_id, token_symbol, rate, stores(owner_id, webhook_url, webhook_secret)")
     .eq("id", invoiceId)
     .single();
   if (!inv || ["confirmed", "expired", "cancelled"].includes(inv.status)) {
-    return { status: inv?.status ?? "unknown", changed: false };
+    return { status: inv?.status ?? "unknown", changed: false, paidUsd: 0 };
   }
 
+  const lockedRate = inv.rate == null ? null : Number(inv.rate);
+  const paidAmountUsd = await totalPaidUsdForInvoice(inv.id, inv.token_symbol ?? null, lockedRate);
   const isPaid = paidAmountUsd + 0.005 >= amountDueUsd;
   const newStatus: "confirmed" | "underpaid" | typeof inv.status = isPaid
     ? "confirmed"
     : paidAmountUsd > 0
       ? "underpaid"
       : inv.status;
-  if (newStatus === inv.status) return { status: newStatus, changed: false };
+  if (newStatus === inv.status) return { status: newStatus, changed: false, paidUsd: paidAmountUsd };
+
 
   await supabaseAdmin
     .from("invoices")
@@ -203,7 +238,7 @@ export async function settleInvoice(
     }
   }
 
-  return { status: newStatus, changed: true };
+  return { status: newStatus, changed: true, paidUsd: paidAmountUsd };
 }
 
 export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean> {
