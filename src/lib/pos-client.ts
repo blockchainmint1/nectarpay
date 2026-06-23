@@ -14,14 +14,21 @@ function bytesToHex(bytes: Uint8Array): string {
 }
 
 async function sign(secretHex: string, body: string, ts: string): Promise<string> {
+  const secretBytes = hexToBytes(secretHex);
   const key = await crypto.subtle.importKey(
     "raw",
-    hexToBytes(secretHex),
+    // Cast to BufferSource — TS DOM lib types are stricter about ArrayBuffer vs ArrayBufferLike.
+    secretBytes.buffer.slice(secretBytes.byteOffset, secretBytes.byteOffset + secretBytes.byteLength) as ArrayBuffer,
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"],
   );
-  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${ts}.${body}`));
+  const payload = new TextEncoder().encode(`${ts}.${body}`);
+  const sig = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    payload.buffer.slice(payload.byteOffset, payload.byteOffset + payload.byteLength) as ArrayBuffer,
+  );
   return bytesToHex(new Uint8Array(sig));
 }
 

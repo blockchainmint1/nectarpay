@@ -30,11 +30,20 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id")({
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { data: inv } = await supabaseAdmin
             .from("invoices")
-            .select("id, store_id, status, chain, crypto_amount, address, tx_hash, paid_at, fiat_amount, fiat_currency, expires_at")
+            .select("id, store_id, status, chain, crypto_amount, address, fiat_amount, fiat_currency, expires_at, updated_at")
             .eq("id", params.id)
             .maybeSingle();
           if (!inv) return json({ error: "Invoice not found." }, 404);
           if (inv.store_id !== auth.terminal.store_id) return json({ error: "Forbidden." }, 403);
+
+          // Pull the first confirmed tx hash, if any.
+          const { data: tx } = await supabaseAdmin
+            .from("transactions")
+            .select("tx_hash, confirmed_at")
+            .eq("invoice_id", inv.id)
+            .order("first_seen_at", { ascending: true })
+            .limit(1)
+            .maybeSingle();
 
           return json({
             id: inv.id,
@@ -42,8 +51,8 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id")({
             chain: inv.chain,
             crypto_amount: inv.crypto_amount,
             address: inv.address,
-            tx_hash: inv.tx_hash,
-            paid_at: inv.paid_at,
+            tx_hash: tx?.tx_hash ?? null,
+            paid_at: tx?.confirmed_at ?? null,
             fiat_amount: inv.fiat_amount,
             currency: inv.fiat_currency,
             expires_at: inv.expires_at,
