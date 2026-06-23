@@ -262,17 +262,27 @@ export async function reconcileChain(chain: string): Promise<{
       .eq("chain_configs.chain", "eth");
     const local = Array.from(new Set((addrs ?? []).map((a) => a.address.toLowerCase())));
 
-    // Remote subscribed addresses on this webhook.
-    const res = await fetchAlchemy(
-      `/webhook-addresses?webhook_id=${encodeURIComponent(hook.webhook_id)}&limit=1000`,
-      { method: "GET" },
-    );
-    if (!res.ok) {
-      const body = await res.text().catch(() => "");
-      return { chain, local: local.length, remote: 0, added: 0, error: `list ${res.status}: ${body}` };
+    // Remote subscribed addresses on this webhook (paginated, max 100 per page).
+    const remote = new Set<string>();
+    let after: string | undefined;
+    for (let page = 0; page < 200; page++) {
+      const qs = new URLSearchParams({
+        webhook_id: hook.webhook_id,
+        limit: "100",
+      });
+      if (after) qs.set("after", after);
+      const res = await fetchAlchemy(`/webhook-addresses?${qs.toString()}`, { method: "GET" });
+      if (!res.ok) {
+        const body = await res.text().catch(() => "");
+        return { chain, local: local.length, remote: remote.size, added: 0, error: `list ${res.status}: ${body}` };
+      }
+      const json = (await res.json().catch(() => null)) as
+        | { data?: string[]; pagination?: { cursors?: { after?: string } } }
+        | null;
+      for (const a of json?.data ?? []) remote.add(a.toLowerCase());
+      after = json?.pagination?.cursors?.after;
+      if (!after || !(json?.data ?? []).length) break;
     }
-    const json = (await res.json().catch(() => null)) as { data?: string[] } | null;
-    const remote = new Set((json?.data ?? []).map((a) => a.toLowerCase()));
 
     const toAdd = local.filter((a) => !remote.has(a));
     if (toAdd.length) await patchAddresses(hook.webhook_id, toAdd, []);
