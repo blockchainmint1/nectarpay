@@ -8,6 +8,13 @@ import QRCode from "qrcode";
 import { Settings, History, Lock, X, PenLine, Mail } from "lucide-react";
 import { loadCreds, signedJson, type TerminalCreds } from "@/lib/pos-client";
 import { loadSettings, sha256, type PosSettings } from "@/lib/pos-settings";
+import { EVM_CHAIN_LABEL, evmChainsForStable } from "@/lib/chains/networks";
+
+function joinNets(names: string[]): string {
+  if (names.length <= 1) return names.join("");
+  if (names.length === 2) return `${names[0]} or ${names[1]}`;
+  return `${names.slice(0, -1).join(", ")} or ${names[names.length - 1]}`;
+}
 
 export const Route = createFileRoute("/pos/")({
   head: () => ({
@@ -611,9 +618,21 @@ function WaitingScreen({
   }, [expiresMs]);
 
   const hasWallet = !!(invoice.chain && invoice.address);
-  const assetLabel = invoice.token_symbol
-    ? `${invoice.token_symbol} on ${invoice.chain?.toUpperCase()}`
-    : (invoice.chain?.toUpperCase() ?? "");
+  const assetLabel = (() => {
+    const chain = invoice.chain;
+    const token = invoice.token_symbol;
+    if (!chain) return "";
+    if (chain === "eth") {
+      // Native or stable on an EVM chain — address is valid on all EVM chains
+      // the wallet supports for that asset.
+      const nets = token
+        ? evmChainsForStable(token).map((k) => EVM_CHAIN_LABEL[k].toUpperCase())
+        : ["ETH", "BASE", "BSC"];
+      if (token) return `${token} on ${joinNets(nets)}`;
+      return joinNets(nets);
+    }
+    return token ? `${token} on ${chain.toUpperCase()}` : chain.toUpperCase();
+  })();
 
   // Build the QR value: wallet URI when chain pre-selected, else checkout page.
   const qrValue = useMemo(() => {
