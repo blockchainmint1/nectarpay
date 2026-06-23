@@ -387,7 +387,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               const invQuery = supabaseAdmin
                 .from("invoices")
                 .select("id, fiat_amount, status, chain, token_symbol")
-                .eq("address", t.to.toLowerCase())
+                .ilike("address", t.to) // EVM addresses are stored checksum-cased; match case-insensitively
                 .in("chain", matchChains);
               const { data: candidates } = await invQuery;
               const inv = (candidates ?? []).find((c) =>

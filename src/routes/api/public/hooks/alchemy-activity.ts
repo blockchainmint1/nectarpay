@@ -164,7 +164,7 @@ export const Route = createFileRoute("/api/public/hooks/alchemy-activity")({
             const { data: candidates } = await supabaseAdmin
               .from("invoices")
               .select("id, fiat_amount, status, token_symbol, chain, rate, stores!inner(default_confirmations_required, mempool_max_usd)")
-              .eq("address", act.toAddress.toLowerCase())
+              .ilike("address", act.toAddress) // checksum-cased storage; case-insensitive match
               .in("chain", matchChains)
               .in("status", ["pending", "detected", "underpaid"]);
 
