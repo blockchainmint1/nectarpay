@@ -272,7 +272,7 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
       } catch { /* keep polling */ }
     };
     void tick();
-    const id = setInterval(tick, 2500);
+    const id = setInterval(tick, 1000);
     return () => { cancelled = true; clearInterval(id); };
   }, [screen, invoice, creds]);
 
