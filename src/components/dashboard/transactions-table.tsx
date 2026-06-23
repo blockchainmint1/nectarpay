@@ -179,7 +179,7 @@ export function TransactionsTable({ userId }: { userId: string | undefined }) {
                     <td className="px-4 py-2.5">
                       {inv ? (
                         <Link
-                          to="/invoices/$invoiceId"
+                          to="/i/$invoiceId"
                           params={{ invoiceId: inv.id }}
                           className="inline-flex items-center gap-1 text-primary hover:underline"
                         >
