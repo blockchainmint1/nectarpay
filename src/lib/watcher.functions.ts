@@ -68,18 +68,19 @@ async function ensureAddresses(
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: existing } = await supabaseAdmin
     .from("derived_addresses")
-    .select("address_index")
+    .select("address_index, address")
     .eq("chain_config_id", chainConfigId);
-  const have = new Set((existing ?? []).map((r) => r.address_index));
+  const have = new Map((existing ?? []).map((r) => [r.address_index, r.address]));
   const rows: { chain_config_id: string; store_id: string; address: string; address_index: number }[] =
     [];
   for (let i = startIndex; i <= endIndex; i++) {
-    if (have.has(i)) continue;
     try {
+      const address = derive(i);
+      if ((have.get(i) ?? "").toLowerCase() === address.toLowerCase()) continue;
       rows.push({
         chain_config_id: chainConfigId,
         store_id: storeId,
-        address: derive(i),
+        address,
         address_index: i,
       });
     } catch (e) {
@@ -87,7 +88,12 @@ async function ensureAddresses(
     }
   }
   if (rows.length) {
-    await supabaseAdmin.from("derived_addresses").upsert(rows, { onConflict: "address" });
+    const { error } = await supabaseAdmin
+      .from("derived_addresses")
+      .upsert(rows, { onConflict: "chain_config_id,address_index" });
+    if (error) {
+      console.error("[watcher] ensureAddresses upsert failed:", error);
+    }
   }
 }
 
