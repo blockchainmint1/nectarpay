@@ -42,11 +42,20 @@ export const Route = createFileRoute("/api/public/v1/terminals/options")({
           if (!auth.ok) return json({ error: auth.error }, auth.status);
 
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          const { data: cfgs } = await supabaseAdmin
-            .from("chain_configs")
-            .select("chain, stables")
-            .eq("store_id", auth.terminal.store_id)
-            .eq("enabled", true);
+          const [cfgsRes, storeRes] = await Promise.all([
+            supabaseAdmin
+              .from("chain_configs")
+              .select("chain, stables")
+              .eq("store_id", auth.terminal.store_id)
+              .eq("enabled", true),
+            supabaseAdmin
+              .from("stores")
+              .select("name, pos_tip_enabled, pos_signature_enabled, pos_email_receipt_enabled, receipt_business_name, receipt_address, receipt_logo_url, receipt_footer, receipt_tax_id")
+              .eq("id", auth.terminal.store_id)
+              .maybeSingle(),
+          ]);
+          const cfgs = cfgsRes.data;
+          const store = storeRes.data;
 
           const { SUPPORTED_STABLES_BY_CHAIN, evmChainsForStable, EVM_CHAIN_LABEL } = await import(
             "@/lib/chains/networks"
@@ -82,7 +91,21 @@ export const Route = createFileRoute("/api/public/v1/terminals/options")({
             }
           }
 
-          return json({ options });
+          return json({
+            options,
+            experience: {
+              tip_enabled: store?.pos_tip_enabled ?? true,
+              signature_enabled: store?.pos_signature_enabled ?? false,
+              email_receipt_enabled: store?.pos_email_receipt_enabled ?? false,
+            },
+            receipt: {
+              business_name: store?.receipt_business_name ?? store?.name ?? null,
+              address: store?.receipt_address ?? null,
+              logo_url: store?.receipt_logo_url ?? null,
+              footer: store?.receipt_footer ?? null,
+              tax_id: store?.receipt_tax_id ?? null,
+            },
+          });
         } catch (err) {
           return json({ error: err instanceof Error ? err.message : "Server error" }, 500);
         }
