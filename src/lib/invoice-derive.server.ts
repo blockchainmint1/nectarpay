@@ -129,14 +129,17 @@ export async function deriveInvoiceAddress(
       .from("chain_configs")
       .update({ next_address_index: index + 1, next_derivation_index: index + 1 })
       .eq("id", cfg.id);
-    await supabaseAdmin
+    const { error: upsertAddressError } = await supabaseAdmin
       .from("derived_addresses")
-      .insert({
+      .upsert({
         chain_config_id: cfg.id,
         store_id: storeId,
         address,
         address_index: index,
-      });
+      }, { onConflict: "chain_config_id,address_index" });
+    if (upsertAddressError) {
+      console.error("[invoice-derive] failed to register derived address:", upsertAddressError);
+    }
   }
 
   // For EVM addresses, register with Alchemy Address Activity webhooks so we
