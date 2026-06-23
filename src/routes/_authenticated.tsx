@@ -47,6 +47,9 @@ function AuthenticatedLayout() {
           <NavItem to="/stores" icon={<Store className="h-4 w-4" />}>
             Stores
           </NavItem>
+          <NavItem to="/terminals" icon={<Smartphone className="h-4 w-4" />}>
+            Terminals
+          </NavItem>
           <NavItem to="/billing" icon={<CreditCard className="h-4 w-4" />}>
             Billing
           </NavItem>
