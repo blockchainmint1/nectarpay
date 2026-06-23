@@ -8,6 +8,13 @@ import QRCode from "qrcode";
 import { Settings, History, Lock, X, PenLine, Mail } from "lucide-react";
 import { loadCreds, signedJson, type TerminalCreds } from "@/lib/pos-client";
 import { loadSettings, sha256, type PosSettings } from "@/lib/pos-settings";
+import { EVM_CHAIN_LABEL, evmChainsForStable } from "@/lib/chains/networks";
+
+function joinNets(names: string[]): string {
+  if (names.length <= 1) return names.join("");
+  if (names.length === 2) return `${names[0]} or ${names[1]}`;
+  return `${names.slice(0, -1).join(", ")} or ${names[names.length - 1]}`;
+}
 
 export const Route = createFileRoute("/pos/")({
   head: () => ({
