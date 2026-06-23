@@ -139,6 +139,21 @@ export async function deriveInvoiceAddress(
       });
   }
 
+  // For EVM addresses, register with Alchemy Address Activity webhooks so we
+  // get push notifications within ~1–3s of payment broadcast (instead of
+  // waiting for the next 10s cron tick). Fire-and-forget — failures are
+  // logged but don't block invoice creation; the cron watcher is the
+  // safety net. Skip if no auth token configured.
+  if (net.kind === "evm" && process.env.ALCHEMY_AUTH_TOKEN) {
+    void (async () => {
+      try {
+        const { registerEvmAddressEverywhere } = await import("./alchemy-notify.server");
+        await registerEvmAddressEverywhere(address);
+      } catch (e) {
+        console.error("[invoice-derive] EVM webhook registration failed:", e);
+      }
+    })();
+  }
 
   return { address, cryptoAmount, rate, index, chainConfigId: cfg.id };
 }

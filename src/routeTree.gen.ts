@@ -44,6 +44,7 @@ import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authen
 import { Route as AuthenticatedStoresStoreIdIndexRouteImport } from './routes/_authenticated.stores.$storeId.index'
 import { Route as ApiPublicV1InvoicesRouteImport } from './routes/api.public.v1.invoices'
 import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
+import { Route as ApiPublicHooksAlchemyActivityRouteImport } from './routes/api/public/hooks/alchemy-activity'
 import { Route as ApiPublicCronWatcherRouteImport } from './routes/api/public/cron/watcher'
 import { Route as ApiPublicCronRatesRouteImport } from './routes/api/public/cron/rates'
 import { Route as ApiPublicCronBillingRouteImport } from './routes/api/public/cron/billing'
@@ -245,6 +246,12 @@ const ApiPublicTelegramWebhookRoute =
     path: '/api/public/telegram/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksAlchemyActivityRoute =
+  ApiPublicHooksAlchemyActivityRouteImport.update({
+    id: '/api/public/hooks/alchemy-activity',
+    path: '/api/public/hooks/alchemy-activity',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronWatcherRoute = ApiPublicCronWatcherRouteImport.update({
   id: '/api/public/cron/watcher',
   path: '/api/public/cron/watcher',
@@ -401,6 +408,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/billing': typeof ApiPublicCronBillingRoute
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
+  '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
   '/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
@@ -453,6 +461,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/billing': typeof ApiPublicCronBillingRoute
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
+  '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdIndexRoute
@@ -510,6 +519,7 @@ export interface FileRoutesById {
   '/api/public/cron/billing': typeof ApiPublicCronBillingRoute
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
+  '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
   '/_authenticated/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
@@ -567,6 +577,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/billing'
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
+    | '/api/public/hooks/alchemy-activity'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
     | '/stores/$storeId/'
@@ -619,6 +630,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/billing'
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
+    | '/api/public/hooks/alchemy-activity'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
     | '/stores/$storeId'
@@ -675,6 +687,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/billing'
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
+    | '/api/public/hooks/alchemy-activity'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
     | '/_authenticated/stores/$storeId/'
@@ -709,6 +722,7 @@ export interface RootRouteChildren {
   ApiPublicCronBillingRoute: typeof ApiPublicCronBillingRoute
   ApiPublicCronRatesRoute: typeof ApiPublicCronRatesRoute
   ApiPublicCronWatcherRoute: typeof ApiPublicCronWatcherRoute
+  ApiPublicHooksAlchemyActivityRoute: typeof ApiPublicHooksAlchemyActivityRoute
   ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
   ApiPublicV1InvoicesRoute: typeof ApiPublicV1InvoicesRoute
   ApiPublicV1TerminalsHeartbeatRoute: typeof ApiPublicV1TerminalsHeartbeatRoute
@@ -962,6 +976,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/telegram/webhook'
       fullPath: '/api/public/telegram/webhook'
       preLoaderRoute: typeof ApiPublicTelegramWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/alchemy-activity': {
+      id: '/api/public/hooks/alchemy-activity'
+      path: '/api/public/hooks/alchemy-activity'
+      fullPath: '/api/public/hooks/alchemy-activity'
+      preLoaderRoute: typeof ApiPublicHooksAlchemyActivityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/cron/watcher': {
@@ -1253,6 +1274,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronBillingRoute: ApiPublicCronBillingRoute,
   ApiPublicCronRatesRoute: ApiPublicCronRatesRoute,
   ApiPublicCronWatcherRoute: ApiPublicCronWatcherRoute,
+  ApiPublicHooksAlchemyActivityRoute: ApiPublicHooksAlchemyActivityRoute,
   ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
   ApiPublicV1InvoicesRoute: ApiPublicV1InvoicesRoute,
   ApiPublicV1TerminalsHeartbeatRoute: ApiPublicV1TerminalsHeartbeatRoute,
