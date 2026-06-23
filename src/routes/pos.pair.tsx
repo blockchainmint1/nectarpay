@@ -60,6 +60,25 @@ function PairPage() {
   const [apiHint, setApiHint] = useState("");
   const [scanOpen, setScanOpen] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
+  const [alreadyPaired, setAlreadyPaired] = useState(false);
+
+  // If this device is already paired, don't show the pair form — bounce to /pos
+  // (which enforces the PIN lock). Re-pairing requires explicit Unpair from settings.
+  useEffect(() => {
+    const existing = (typeof window !== "undefined") ? (() => {
+      try {
+        return localStorage.getItem("pos.terminal.id") && localStorage.getItem("pos.terminal.secret");
+      } catch { return null; }
+    })() : null;
+    if (existing) {
+      setAlreadyPaired(true);
+      navigate({ to: "/pos", replace: true });
+    }
+  }, [navigate]);
+
+  if (alreadyPaired) {
+    return <div className="fixed inset-0 bg-[#0a0d12]" />;
+  }
 
   const m = useMutation({
     mutationFn: (args: { code: string; api: string }) => pairCall(args.code, args.api),
