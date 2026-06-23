@@ -468,6 +468,84 @@ function TipScreen({
   );
 }
 
+function ChainScreen({
+  totalCents, options, optionsErr, busy, err, onPick, onBack,
+}: {
+  totalCents: number;
+  options: PaymentOption[];
+  optionsErr: string | null;
+  busy: boolean;
+  err: string | null;
+  onPick: (option: string | null) => void;
+  onBack: () => void;
+}) {
+  return (
+    <div className="flex flex-1 flex-col px-4 py-4">
+      <div className="flex-shrink-0 text-center">
+        <p className="text-[10px] font-bold tracking-[0.25em] text-white/50">CUSTOMER PAYS WITH</p>
+        <div className="mt-1 text-4xl font-black tabular-nums">{fmt(totalCents)}</div>
+      </div>
+
+      <div className="mx-auto mt-5 flex w-full max-w-md min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+        {optionsErr && (
+          <p className="text-center text-xs text-red-400">Couldn't load chains: {optionsErr}</p>
+        )}
+        {options.length === 0 && !optionsErr && (
+          <p className="text-center text-xs text-white/50">
+            No chains enabled for this store yet. Customer will pick on their phone.
+          </p>
+        )}
+        {options.map((opt) => (
+          <button
+            key={opt.key}
+            disabled={busy}
+            onClick={() => onPick(opt.key)}
+            className="group flex w-full items-center justify-between rounded-xl border-2 border-white/15 bg-white/[0.03] px-4 py-4 text-left transition hover:border-emerald-400/60 hover:bg-emerald-400/[0.05] disabled:opacity-40"
+          >
+            <div className="min-w-0 flex-1">
+              <div className="text-base font-bold">{opt.label}</div>
+              <div className="mt-0.5 font-mono text-[10px] uppercase tracking-widest text-white/40">
+                {opt.tokenSymbol ? `${opt.tokenSymbol} · ${opt.chain}` : opt.chain}
+              </div>
+            </div>
+            <span className="ml-3 text-white/40 group-hover:text-emerald-300">→</span>
+          </button>
+        ))}
+
+        {/* Pinned at the bottom: hand the choice to the customer on the QR page. */}
+        <div className="mt-2 border-t border-white/10 pt-2">
+          <button
+            disabled={busy}
+            onClick={() => onPick(null)}
+            className="flex w-full items-center justify-between rounded-xl border-2 border-dashed border-white/15 bg-transparent px-4 py-4 text-left transition hover:border-white/40 hover:bg-white/[0.03] disabled:opacity-40"
+          >
+            <div className="min-w-0 flex-1">
+              <div className="text-base font-bold">Let customer pick</div>
+              <div className="mt-0.5 text-[11px] text-white/50">
+                Shows a chooser on the QR page — they decide on their phone.
+              </div>
+            </div>
+            <span className="ml-3 text-white/40">→</span>
+          </button>
+        </div>
+
+        {err && <p className="mt-2 text-center text-xs text-red-400">{err}</p>}
+      </div>
+
+      <div className="mx-auto mt-3 w-full max-w-md flex-shrink-0">
+        <button
+          onClick={onBack}
+          disabled={busy}
+          className="h-11 w-full rounded-lg border border-white/15 text-xs font-bold tracking-widest text-white/60 hover:bg-white/5 disabled:opacity-40"
+        >
+          ← BACK
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
 function WaitingScreen({
   invoice, status, qrDataUrl, onCancel,
 }: { invoice: InvoiceResp; status: InvoiceStatus | null; qrDataUrl: string; onCancel: () => void }) {
