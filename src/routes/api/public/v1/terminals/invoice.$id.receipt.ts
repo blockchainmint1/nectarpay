@@ -60,7 +60,7 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/recei
           if (!inv) return json({ error: "Invoice not found" }, 404);
           if (inv.store_id !== auth.terminal.store_id) return json({ error: "Forbidden" }, 403);
 
-          const patch: Record<string, string | null> = {};
+          const patch: { customer_email?: string; signature_data_url?: string } = {};
           if (email !== null) patch.customer_email = email;
           if (sig !== null) patch.signature_data_url = sig;
           if (Object.keys(patch).length === 0) return json({ ok: true });
