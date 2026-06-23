@@ -544,12 +544,15 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           );
         }
 
-        const { data: addrs } = await supabaseAdmin
-          .from("derived_addresses")
+        const { data: openInvoices } = await supabaseAdmin
+          .from("invoices")
           .select("address")
-          .in("chain_config_id", configList.map((c) => c.id));
-        r.addresses = addrs?.length ?? 0;
-        const addrList = (addrs ?? []).map((a) => a.address);
+          .in("chain", ["eth", "base", "bsc"])
+          .in("store_id", configList.map((c) => c.store_id))
+          .in("status", ["pending", "detected", "underpaid"])
+          .not("address", "is", null);
+        const addrList = Array.from(new Set((openInvoices ?? []).map((a) => a.address).filter(Boolean)));
+        r.addresses = addrList.length;
 
         for (const net of EVM_NETWORKS) {
           try {
@@ -580,7 +583,8 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
                 .from("invoices")
                 .select("id, fiat_amount, status, chain, token_symbol")
                 .ilike("address", t.to) // EVM addresses are stored checksum-cased; match case-insensitively
-                .in("chain", matchChains);
+                .in("chain", matchChains)
+                .in("status", ["pending", "detected", "underpaid"]);
               const { data: candidates } = await invQuery;
               const inv = (candidates ?? []).find((c) =>
                 t.isNative ? c.token_symbol == null : (c.token_symbol ?? "").toUpperCase() === t.asset.toUpperCase(),
