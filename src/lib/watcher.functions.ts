@@ -238,7 +238,7 @@ export async function settleInvoice(
     }
   }
 
-  return { status: newStatus, changed: true };
+  return { status: newStatus, changed: true, paidUsd: paidAmountUsd };
 }
 
 export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean> {
