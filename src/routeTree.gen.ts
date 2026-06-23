@@ -48,6 +48,7 @@ import { Route as ApiPublicHooksAlchemyActivityRouteImport } from './routes/api/
 import { Route as ApiPublicCronWatcherRouteImport } from './routes/api/public/cron/watcher'
 import { Route as ApiPublicCronRatesRouteImport } from './routes/api/public/cron/rates'
 import { Route as ApiPublicCronBillingRouteImport } from './routes/api/public/cron/billing'
+import { Route as ApiPublicCronAlchemySyncRouteImport } from './routes/api/public/cron/alchemy-sync'
 import { Route as ApiPublicAuthWalletStatusRouteImport } from './routes/api/public/auth/wallet-status'
 import { Route as ApiPublicAuthWalletExchangeRouteImport } from './routes/api/public/auth/wallet-exchange'
 import { Route as ApiPublicAuthWalletChallengeRouteImport } from './routes/api/public/auth/wallet-challenge'
@@ -267,6 +268,12 @@ const ApiPublicCronBillingRoute = ApiPublicCronBillingRouteImport.update({
   path: '/api/public/cron/billing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronAlchemySyncRoute =
+  ApiPublicCronAlchemySyncRouteImport.update({
+    id: '/api/public/cron/alchemy-sync',
+    path: '/api/public/cron/alchemy-sync',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAuthWalletStatusRoute =
   ApiPublicAuthWalletStatusRouteImport.update({
     id: '/api/public/auth/wallet-status',
@@ -405,6 +412,7 @@ export interface FileRoutesByFullPath {
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
   '/api/public/auth/wallet-exchange': typeof ApiPublicAuthWalletExchangeRoute
   '/api/public/auth/wallet-status': typeof ApiPublicAuthWalletStatusRoute
+  '/api/public/cron/alchemy-sync': typeof ApiPublicCronAlchemySyncRoute
   '/api/public/cron/billing': typeof ApiPublicCronBillingRoute
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
@@ -458,6 +466,7 @@ export interface FileRoutesByTo {
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
   '/api/public/auth/wallet-exchange': typeof ApiPublicAuthWalletExchangeRoute
   '/api/public/auth/wallet-status': typeof ApiPublicAuthWalletStatusRoute
+  '/api/public/cron/alchemy-sync': typeof ApiPublicCronAlchemySyncRoute
   '/api/public/cron/billing': typeof ApiPublicCronBillingRoute
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
@@ -516,6 +525,7 @@ export interface FileRoutesById {
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
   '/api/public/auth/wallet-exchange': typeof ApiPublicAuthWalletExchangeRoute
   '/api/public/auth/wallet-status': typeof ApiPublicAuthWalletStatusRoute
+  '/api/public/cron/alchemy-sync': typeof ApiPublicCronAlchemySyncRoute
   '/api/public/cron/billing': typeof ApiPublicCronBillingRoute
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
@@ -574,6 +584,7 @@ export interface FileRouteTypes {
     | '/api/public/auth/wallet-challenge'
     | '/api/public/auth/wallet-exchange'
     | '/api/public/auth/wallet-status'
+    | '/api/public/cron/alchemy-sync'
     | '/api/public/cron/billing'
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
@@ -627,6 +638,7 @@ export interface FileRouteTypes {
     | '/api/public/auth/wallet-challenge'
     | '/api/public/auth/wallet-exchange'
     | '/api/public/auth/wallet-status'
+    | '/api/public/cron/alchemy-sync'
     | '/api/public/cron/billing'
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
@@ -684,6 +696,7 @@ export interface FileRouteTypes {
     | '/api/public/auth/wallet-challenge'
     | '/api/public/auth/wallet-exchange'
     | '/api/public/auth/wallet-status'
+    | '/api/public/cron/alchemy-sync'
     | '/api/public/cron/billing'
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
@@ -719,6 +732,7 @@ export interface RootRouteChildren {
   ApiPublicAuthWalletChallengeRoute: typeof ApiPublicAuthWalletChallengeRoute
   ApiPublicAuthWalletExchangeRoute: typeof ApiPublicAuthWalletExchangeRoute
   ApiPublicAuthWalletStatusRoute: typeof ApiPublicAuthWalletStatusRoute
+  ApiPublicCronAlchemySyncRoute: typeof ApiPublicCronAlchemySyncRoute
   ApiPublicCronBillingRoute: typeof ApiPublicCronBillingRoute
   ApiPublicCronRatesRoute: typeof ApiPublicCronRatesRoute
   ApiPublicCronWatcherRoute: typeof ApiPublicCronWatcherRoute
@@ -1006,6 +1020,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronBillingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/alchemy-sync': {
+      id: '/api/public/cron/alchemy-sync'
+      path: '/api/public/cron/alchemy-sync'
+      fullPath: '/api/public/cron/alchemy-sync'
+      preLoaderRoute: typeof ApiPublicCronAlchemySyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/auth/wallet-status': {
       id: '/api/public/auth/wallet-status'
       path: '/api/public/auth/wallet-status'
@@ -1271,6 +1292,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAuthWalletChallengeRoute: ApiPublicAuthWalletChallengeRoute,
   ApiPublicAuthWalletExchangeRoute: ApiPublicAuthWalletExchangeRoute,
   ApiPublicAuthWalletStatusRoute: ApiPublicAuthWalletStatusRoute,
+  ApiPublicCronAlchemySyncRoute: ApiPublicCronAlchemySyncRoute,
   ApiPublicCronBillingRoute: ApiPublicCronBillingRoute,
   ApiPublicCronRatesRoute: ApiPublicCronRatesRoute,
   ApiPublicCronWatcherRoute: ApiPublicCronWatcherRoute,
