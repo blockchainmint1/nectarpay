@@ -347,14 +347,19 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
 
   let changed = false;
 
-  for (const net of scanNets) {
-    const tip = await getBlockNumber(net, key);
-    const fromBlock = Math.max(0, tip - 7200); // ~1 day on Ethereum; enough for missed webhooks/cron drift.
-    const transfers = await alchemyAssetTransfersForAddress(net, key, inv.address, fromBlock).catch((e) => {
+  const scanned = await Promise.all(scanNets.map(async (net) => {
+    try {
+      const tip = await getBlockNumber(net, key);
+      const fromBlock = Math.max(0, tip - 7200); // ~1 day on Ethereum; enough for missed webhooks/cron drift.
+      const transfers = await alchemyAssetTransfersForAddress(net, key, inv.address, fromBlock);
+      return { net, tip, transfers };
+    } catch (e) {
       console.error(`[watcher] hot EVM scan failed on ${net.symbol}:`, e);
-      return [] as AlchemyTransferWithMetadata[];
-    });
+      return { net, tip: 0, transfers: [] as AlchemyTransferWithMetadata[] };
+    }
+  }));
 
+  for (const { net, tip, transfers } of scanned) {
     for (const t of transfers) {
       const blockTime = Date.parse(t.metadata?.blockTimestamp ?? "");
       if (Number.isFinite(blockTime) && (blockTime < startsAfterMs || blockTime > endsBeforeMs)) continue;
