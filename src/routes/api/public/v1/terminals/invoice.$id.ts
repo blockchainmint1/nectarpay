@@ -36,7 +36,7 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id")({
           if (!inv) return json({ error: "Invoice not found." }, 404);
           if (inv.store_id !== auth.terminal.store_id) return json({ error: "Forbidden." }, 403);
 
-          if (["pending", "detected", "underpaid"].includes(inv.status) && ["eth", "base", "bsc"].includes(inv.chain)) {
+          if (["pending", "detected", "underpaid"].includes(inv.status) && inv.chain && ["eth", "base", "bsc"].includes(inv.chain)) {
             const { scanEvmInvoiceNow } = await import("@/lib/watcher.functions");
             await scanEvmInvoiceNow(inv.id).catch((e) => {
               console.error("[terminal-invoice] hot EVM scan failed:", e);
