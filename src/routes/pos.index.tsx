@@ -5,7 +5,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import QRCode from "qrcode";
-import { Settings, History, Lock, X } from "lucide-react";
+import { Settings, History, Lock, X, PenLine, Mail } from "lucide-react";
 import { loadCreds, signedJson, type TerminalCreds } from "@/lib/pos-client";
 import { loadSettings, sha256, type PosSettings } from "@/lib/pos-settings";
 
