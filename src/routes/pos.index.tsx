@@ -237,8 +237,6 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
         body: { amount_cents: finalTotal, currency: "USD", memo, option },
       });
       setInvoice(inv);
-      const dataUrl = await QRCode.toDataURL(inv.checkout_url, { width: 640, margin: 1, color: { dark: "#000", light: "#fff" } });
-      setQrDataUrl(dataUrl);
       setScreen("waiting");
     } catch (e) {
       setErr((e as Error).message);
