@@ -23,7 +23,13 @@ const Body = z.object({
   currency: z.string().min(3).max(8).default("USD"),
   memo: z.string().max(512).optional().nullable(),
   expires_in_seconds: z.number().int().min(60).max(86_400).optional(),
+  /** Optional pre-selected payment option. "chain" (e.g. "btc") or "chain:SYMBOL" ("eth:USDC").
+   *  Omit / null to leave open — customer picks on the QR page. */
+  option: z.string().min(2).max(32).optional().nullable(),
 });
+
+const VALID_CHAINS = new Set(["btc", "txc", "eth", "base", "bsc", "tron", "sol", "doge", "isk", "zcu"]);
+const VALID_STABLES = new Set(["USDC", "USDT", "PYUSD", "DAI"]);
 
 export const Route = createFileRoute("/api/public/v1/terminals/invoice")({
   server: {
@@ -75,6 +81,45 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice")({
             .single();
           if (insErr || !inserted) return json({ error: insErr?.message ?? "Insert failed." }, 500);
 
+          // If the cashier pre-selected a chain (or chain:STABLE), derive the
+          // address now so the QR is a direct pay URL instead of a checkout page.
+          let preselectedChain: string | null = null;
+          let preselectedToken: string | null = null;
+          if (body.option) {
+            const [chainRaw, tokenRaw] = body.option.split(":");
+            const chain = chainRaw.toLowerCase();
+            const tokenSymbol = tokenRaw ? tokenRaw.toUpperCase() : null;
+            if (!VALID_CHAINS.has(chain)) return json({ error: "Unsupported chain." }, 400);
+            if (tokenSymbol && !VALID_STABLES.has(tokenSymbol)) return json({ error: "Unsupported token." }, 400);
+
+            try {
+              const { deriveInvoiceAddress } = await import("@/lib/invoice-derive.server");
+              const derived = await deriveInvoiceAddress(
+                store.id,
+                chain as never,
+                fiatAmount,
+                tokenSymbol,
+              );
+              const { error: updErr } = await supabaseAdmin
+                .from("invoices")
+                .update({
+                  chain: chain as never,
+                  token_symbol: tokenSymbol,
+                  address: derived.address,
+                  crypto_amount: derived.cryptoAmount,
+                  rate: derived.rate,
+                  derivation_index: derived.index,
+                  address_index: derived.index,
+                })
+                .eq("id", inserted.id);
+              if (updErr) return json({ error: updErr.message }, 500);
+              preselectedChain = chain;
+              preselectedToken = tokenSymbol;
+            } catch (e) {
+              return json({ error: e instanceof Error ? e.message : "Could not derive address" }, 500);
+            }
+          }
+
           // Touch last_seen_at; ignore errors.
           await supabaseAdmin
             .from("terminals")
@@ -88,6 +133,8 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice")({
             fiat_amount: fiatAmount,
             currency,
             status: "pending",
+            chain: preselectedChain,
+            token_symbol: preselectedToken,
             expires_at: expiresAt,
           }, 201);
         } catch (err) {

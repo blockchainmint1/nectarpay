@@ -56,6 +56,7 @@ import { Route as AuthenticatedStoresStoreIdKycRouteImport } from './routes/_aut
 import { Route as AuthenticatedStoresStoreIdKeysRouteImport } from './routes/_authenticated.stores.$storeId.keys'
 import { Route as AuthenticatedStoresStoreIdChainsRouteImport } from './routes/_authenticated.stores.$storeId.chains'
 import { Route as ApiPublicV1TerminalsPairRouteImport } from './routes/api/public/v1/terminals/pair'
+import { Route as ApiPublicV1TerminalsOptionsRouteImport } from './routes/api/public/v1/terminals/options'
 import { Route as ApiPublicV1TerminalsInvoiceRouteImport } from './routes/api/public/v1/terminals/invoice'
 import { Route as ApiPublicV1TerminalsHeartbeatRouteImport } from './routes/api/public/v1/terminals/heartbeat'
 import { Route as ApiPublicV1TerminalsInvoiceIdRouteImport } from './routes/api/public/v1/terminals/invoice.$id'
@@ -311,6 +312,12 @@ const ApiPublicV1TerminalsPairRoute =
     path: '/api/public/v1/terminals/pair',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicV1TerminalsOptionsRoute =
+  ApiPublicV1TerminalsOptionsRouteImport.update({
+    id: '/api/public/v1/terminals/options',
+    path: '/api/public/v1/terminals/options',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicV1TerminalsInvoiceRoute =
   ApiPublicV1TerminalsInvoiceRouteImport.update({
     id: '/api/public/v1/terminals/invoice',
@@ -384,6 +391,7 @@ export interface FileRoutesByFullPath {
   '/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
+  '/api/public/v1/terminals/options': typeof ApiPublicV1TerminalsOptionsRoute
   '/api/public/v1/terminals/pair': typeof ApiPublicV1TerminalsPairRoute
   '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
   '/api/public/v1/terminals/invoice/$id/cancel': typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
@@ -433,6 +441,7 @@ export interface FileRoutesByTo {
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdIndexRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
+  '/api/public/v1/terminals/options': typeof ApiPublicV1TerminalsOptionsRoute
   '/api/public/v1/terminals/pair': typeof ApiPublicV1TerminalsPairRoute
   '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
   '/api/public/v1/terminals/invoice/$id/cancel': typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
@@ -487,6 +496,7 @@ export interface FileRoutesById {
   '/_authenticated/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
+  '/api/public/v1/terminals/options': typeof ApiPublicV1TerminalsOptionsRoute
   '/api/public/v1/terminals/pair': typeof ApiPublicV1TerminalsPairRoute
   '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
   '/api/public/v1/terminals/invoice/$id/cancel': typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
@@ -541,6 +551,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId/'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
+    | '/api/public/v1/terminals/options'
     | '/api/public/v1/terminals/pair'
     | '/api/public/v1/terminals/invoice/$id'
     | '/api/public/v1/terminals/invoice/$id/cancel'
@@ -590,6 +601,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
+    | '/api/public/v1/terminals/options'
     | '/api/public/v1/terminals/pair'
     | '/api/public/v1/terminals/invoice/$id'
     | '/api/public/v1/terminals/invoice/$id/cancel'
@@ -643,6 +655,7 @@ export interface FileRouteTypes {
     | '/_authenticated/stores/$storeId/'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
+    | '/api/public/v1/terminals/options'
     | '/api/public/v1/terminals/pair'
     | '/api/public/v1/terminals/invoice/$id'
     | '/api/public/v1/terminals/invoice/$id/cancel'
@@ -674,6 +687,7 @@ export interface RootRouteChildren {
   ApiPublicV1InvoicesRoute: typeof ApiPublicV1InvoicesRoute
   ApiPublicV1TerminalsHeartbeatRoute: typeof ApiPublicV1TerminalsHeartbeatRoute
   ApiPublicV1TerminalsInvoiceRoute: typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
+  ApiPublicV1TerminalsOptionsRoute: typeof ApiPublicV1TerminalsOptionsRoute
   ApiPublicV1TerminalsPairRoute: typeof ApiPublicV1TerminalsPairRoute
 }
 
@@ -1008,6 +1022,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1TerminalsPairRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/terminals/options': {
+      id: '/api/public/v1/terminals/options'
+      path: '/api/public/v1/terminals/options'
+      fullPath: '/api/public/v1/terminals/options'
+      preLoaderRoute: typeof ApiPublicV1TerminalsOptionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/terminals/invoice': {
       id: '/api/public/v1/terminals/invoice'
       path: '/api/public/v1/terminals/invoice'
@@ -1191,6 +1212,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1TerminalsHeartbeatRoute: ApiPublicV1TerminalsHeartbeatRoute,
   ApiPublicV1TerminalsInvoiceRoute:
     ApiPublicV1TerminalsInvoiceRouteWithChildren,
+  ApiPublicV1TerminalsOptionsRoute: ApiPublicV1TerminalsOptionsRoute,
   ApiPublicV1TerminalsPairRoute: ApiPublicV1TerminalsPairRoute,
 }
 export const routeTree = rootRouteImport

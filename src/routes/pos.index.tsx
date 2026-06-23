@@ -26,6 +26,8 @@ type InvoiceResp = {
   checkout_url: string;
   fiat_amount: number;
   currency: string;
+  chain: string | null;
+  token_symbol: string | null;
   expires_at: string;
 };
 
@@ -40,6 +42,13 @@ type InvoiceStatus = {
   fiat_amount: number;
   currency: string;
   expires_at: string;
+};
+
+type PaymentOption = {
+  key: string;
+  chain: string;
+  tokenSymbol: string | null;
+  label: string;
 };
 
 function fmt(cents: number, currency = "USD") {
@@ -139,7 +148,7 @@ function PinLock({ pinHash, onUnlock }: { pinHash: string; onUnlock: () => void 
 
 // ─── Sale state machine ──────────────────────────────────────────────────
 
-type Screen = "amount" | "tip" | "waiting" | "paid" | "cancelled" | "expired";
+type Screen = "amount" | "tip" | "chain" | "waiting" | "paid" | "cancelled" | "expired";
 
 function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: PosSettings; onLock: () => void }) {
   const [screen, setScreen] = useState<Screen>("amount");
@@ -151,11 +160,29 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [options, setOptions] = useState<PaymentOption[] | null>(null);
+  const [optionsErr, setOptionsErr] = useState<string | null>(null);
+  const [finalTipCents, setFinalTipCents] = useState(0);
 
   const taxCents = Math.round((subtotalCents * settings.taxBps) / 10_000);
   const tipCents = customTipCents !== null ? customTipCents : Math.round((subtotalCents * tipBps) / 10_000);
   const totalCents = subtotalCents + taxCents + tipCents;
   const hasTips = settings.tipPresetsBps.some((b) => b > 0);
+
+  // Fetch the store's enabled chains once on boot so we can show them on the
+  // chain-picker screen. Errors are non-fatal — we fall back to "customer picks".
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await signedJson<{ options: PaymentOption[] }>(creds, "/api/public/v1/terminals/options");
+        if (!cancelled) setOptions(res.options ?? []);
+      } catch (e) {
+        if (!cancelled) setOptionsErr((e as Error).message);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [creds]);
 
   const press = (k: string) => {
     if (k === "C") return setSubtotalCents(0);
@@ -166,14 +193,26 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
 
   const onChargePress = () => {
     if (subtotalCents <= 0) return;
-    if (hasTips) setScreen("tip"); else void goToCharge(0);
+    if (hasTips) setScreen("tip");
+    else goToChainPicker(0);
   };
 
-  const goToCharge = async (overrideTipCents?: number) => {
+  // After tip is chosen, move to the chain picker (or skip straight to invoice
+  // creation if the store hasn't enabled any chains — preserves old behavior).
+  const goToChainPicker = (overrideTipCents?: number) => {
+    const finalTip = overrideTipCents ?? tipCents;
+    setFinalTipCents(finalTip);
+    if (!options || options.length === 0) {
+      void createInvoice(finalTip, null);
+      return;
+    }
+    setScreen("chain");
+  };
+
+  const createInvoice = async (finalTip: number, option: string | null) => {
     if (subtotalCents <= 0) return;
     setBusy(true); setErr(null);
     try {
-      const finalTip = overrideTipCents ?? tipCents;
       const finalTotal = subtotalCents + taxCents + finalTip;
       const memo = [
         `subtotal:${subtotalCents}`,
@@ -182,7 +221,7 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
       ].filter(Boolean).join(" ");
       const inv = await signedJson<InvoiceResp>(creds, "/api/public/v1/terminals/invoice", {
         method: "POST",
-        body: { amount_cents: finalTotal, currency: "USD", memo },
+        body: { amount_cents: finalTotal, currency: "USD", memo, option },
       });
       setInvoice(inv);
       const dataUrl = await QRCode.toDataURL(inv.checkout_url, { width: 640, margin: 1, color: { dark: "#000", light: "#fff" } });
@@ -217,6 +256,7 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
   const reset = () => {
     setSubtotalCents(0); setTipBps(0); setCustomTipCents(null);
     setInvoice(null); setStatus(null); setQrDataUrl(""); setErr(null);
+    setFinalTipCents(0);
     setScreen("amount");
   };
 
@@ -240,8 +280,19 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
             tipBps={tipBps} customTipCents={customTipCents} presetsBps={settings.tipPresetsBps}
             onPickPreset={(bps) => { setTipBps(bps); setCustomTipCents(null); }}
             onPickCustom={(c) => { setTipBps(0); setCustomTipCents(c); }}
-            onSkip={() => goToCharge(0)} onConfirm={() => goToCharge()} onBack={() => setScreen("amount")}
+            onSkip={() => goToChainPicker(0)} onConfirm={() => goToChainPicker()} onBack={() => setScreen("amount")}
             busy={busy}
+          />
+        )}
+        {screen === "chain" && (
+          <ChainScreen
+            totalCents={subtotalCents + taxCents + finalTipCents}
+            options={options ?? []}
+            optionsErr={optionsErr}
+            busy={busy}
+            err={err}
+            onPick={(opt) => createInvoice(finalTipCents, opt)}
+            onBack={() => setScreen(hasTips ? "tip" : "amount")}
           />
         )}
         {screen === "waiting" && invoice && (
@@ -416,6 +467,84 @@ function TipScreen({
     </div>
   );
 }
+
+function ChainScreen({
+  totalCents, options, optionsErr, busy, err, onPick, onBack,
+}: {
+  totalCents: number;
+  options: PaymentOption[];
+  optionsErr: string | null;
+  busy: boolean;
+  err: string | null;
+  onPick: (option: string | null) => void;
+  onBack: () => void;
+}) {
+  return (
+    <div className="flex flex-1 flex-col px-4 py-4">
+      <div className="flex-shrink-0 text-center">
+        <p className="text-[10px] font-bold tracking-[0.25em] text-white/50">CUSTOMER PAYS WITH</p>
+        <div className="mt-1 text-4xl font-black tabular-nums">{fmt(totalCents)}</div>
+      </div>
+
+      <div className="mx-auto mt-5 flex w-full max-w-md min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+        {optionsErr && (
+          <p className="text-center text-xs text-red-400">Couldn't load chains: {optionsErr}</p>
+        )}
+        {options.length === 0 && !optionsErr && (
+          <p className="text-center text-xs text-white/50">
+            No chains enabled for this store yet. Customer will pick on their phone.
+          </p>
+        )}
+        {options.map((opt) => (
+          <button
+            key={opt.key}
+            disabled={busy}
+            onClick={() => onPick(opt.key)}
+            className="group flex w-full items-center justify-between rounded-xl border-2 border-white/15 bg-white/[0.03] px-4 py-4 text-left transition hover:border-emerald-400/60 hover:bg-emerald-400/[0.05] disabled:opacity-40"
+          >
+            <div className="min-w-0 flex-1">
+              <div className="text-base font-bold">{opt.label}</div>
+              <div className="mt-0.5 font-mono text-[10px] uppercase tracking-widest text-white/40">
+                {opt.tokenSymbol ? `${opt.tokenSymbol} · ${opt.chain}` : opt.chain}
+              </div>
+            </div>
+            <span className="ml-3 text-white/40 group-hover:text-emerald-300">→</span>
+          </button>
+        ))}
+
+        {/* Pinned at the bottom: hand the choice to the customer on the QR page. */}
+        <div className="mt-2 border-t border-white/10 pt-2">
+          <button
+            disabled={busy}
+            onClick={() => onPick(null)}
+            className="flex w-full items-center justify-between rounded-xl border-2 border-dashed border-white/15 bg-transparent px-4 py-4 text-left transition hover:border-white/40 hover:bg-white/[0.03] disabled:opacity-40"
+          >
+            <div className="min-w-0 flex-1">
+              <div className="text-base font-bold">Let customer pick</div>
+              <div className="mt-0.5 text-[11px] text-white/50">
+                Shows a chooser on the QR page — they decide on their phone.
+              </div>
+            </div>
+            <span className="ml-3 text-white/40">→</span>
+          </button>
+        </div>
+
+        {err && <p className="mt-2 text-center text-xs text-red-400">{err}</p>}
+      </div>
+
+      <div className="mx-auto mt-3 w-full max-w-md flex-shrink-0">
+        <button
+          onClick={onBack}
+          disabled={busy}
+          className="h-11 w-full rounded-lg border border-white/15 text-xs font-bold tracking-widest text-white/60 hover:bg-white/5 disabled:opacity-40"
+        >
+          ← BACK
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
 function WaitingScreen({
   invoice, status, qrDataUrl, onCancel,
