@@ -148,7 +148,14 @@ function PinLock({ pinHash, onUnlock }: { pinHash: string; onUnlock: () => void 
 
 // ─── Sale state machine ──────────────────────────────────────────────────
 
-type Screen = "amount" | "tip" | "chain" | "waiting" | "paid" | "cancelled" | "expired";
+type Screen = "amount" | "tip" | "chain" | "waiting" | "paid" | "signature" | "email" | "cancelled" | "expired";
+
+interface Experience {
+  tip_enabled: boolean;
+  signature_enabled: boolean;
+  email_receipt_enabled: boolean;
+}
+const DEFAULT_EXPERIENCE: Experience = { tip_enabled: true, signature_enabled: false, email_receipt_enabled: false };
 
 function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: PosSettings; onLock: () => void }) {
   const [screen, setScreen] = useState<Screen>("amount");
@@ -163,11 +170,12 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
   const [options, setOptions] = useState<PaymentOption[] | null>(null);
   const [optionsErr, setOptionsErr] = useState<string | null>(null);
   const [finalTipCents, setFinalTipCents] = useState(0);
+  const [experience, setExperience] = useState<Experience>(DEFAULT_EXPERIENCE);
 
   const taxCents = Math.round((subtotalCents * settings.taxBps) / 10_000);
   const tipCents = customTipCents !== null ? customTipCents : Math.round((subtotalCents * tipBps) / 10_000);
   const totalCents = subtotalCents + taxCents + tipCents;
-  const hasTips = settings.tipPresetsBps.some((b) => b > 0);
+  const hasTips = experience.tip_enabled && settings.tipPresetsBps.some((b) => b > 0);
 
   // Fetch the store's enabled chains once on boot so we can show them on the
   // chain-picker screen. Errors are non-fatal — we fall back to "customer picks".
