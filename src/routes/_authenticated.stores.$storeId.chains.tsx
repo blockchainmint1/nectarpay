@@ -618,7 +618,7 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
                   <div className="text-destructive">Code expired — generate a new one.</div>
                 ) : (
                   <>
-                    <div className="font-medium">Scan with the Nectar wallet</div>
+                    <div className="font-medium">Scan with the Beekeeper.money wallet</div>
                     <div className="mt-1 text-muted-foreground">
                       Expires in {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, "0")}
                     </div>
