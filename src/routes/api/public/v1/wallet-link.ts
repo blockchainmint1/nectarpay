@@ -217,6 +217,14 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
           const raw = await request.json().catch(() => null);
           const parse = SubmitBody.safeParse(raw);
           if (!parse.success) {
+            console.warn("[wallet-link POST] schema reject", {
+              raw_keys: raw && typeof raw === "object" ? Object.keys(raw) : null,
+              payload_keys:
+                raw && typeof raw === "object" && raw && (raw as Record<string, unknown>).payload && typeof (raw as Record<string, unknown>).payload === "object"
+                  ? Object.keys((raw as { payload: Record<string, unknown> }).payload)
+                  : null,
+              issues: parse.error.flatten(),
+            });
             return json({ error: "Bad request body.", details: parse.error.flatten() }, 400);
           }
           const { payload, signature, address } = parse.data;
@@ -229,11 +237,22 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
             .select("id, store_id, expires_at, used_at, created_by")
             .eq("code_hash", code_hash)
             .maybeSingle();
-          if (!codeRow) return json({ error: "Unknown link token." }, 404);
+          if (!codeRow) {
+            console.warn("[wallet-link POST] unknown token", {
+              challenge_id_len: payload.challenge_id.length,
+              challenge_id_prefix: payload.challenge_id.slice(0, 8),
+              challenge_id_suffix: payload.challenge_id.slice(-4),
+              hash_prefix: code_hash.slice(0, 12),
+              from: payload.from,
+              callback_url: payload.callback_url,
+            });
+            return json({ error: "Unknown link token." }, 404);
+          }
           if (codeRow.used_at) return json({ error: "Token already used." }, 410);
           if (new Date(codeRow.expires_at).getTime() < Date.now()) {
             return json({ error: "Token expired." }, 410);
           }
+
 
           // 2. Envelope sanity — must match what the manifest advertised.
           const url = new URL(request.url);
