@@ -147,6 +147,13 @@ function ChainsPage() {
     return init as Record<ChainKey, Row>;
   });
 
+  const [suggestStables, setSuggestStables] = useState(false);
+  // dummy line to keep replace unique:
+    const init: Record<string, Row> = {};
+    for (const c of CHAINS) init[c.key] = emptyRow(c.key);
+    return init as Record<ChainKey, Row>;
+  });
+
   useEffect(() => {
     if (!data) return;
     const next: Record<string, Row> = {};
