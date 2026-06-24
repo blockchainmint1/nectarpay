@@ -147,8 +147,6 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
       for (const sym of allow) {
         if (sym === nativeOptIn) continue; // native handled above
         if (!enabled.includes(sym)) continue;
-      for (const sym of allow) {
-        if (!enabled.includes(sym)) continue;
         let label: string;
         if (chain === "eth") {
           const nets = evmChainsForStable(sym).map((k) => EVM_CHAIN_LABEL[k]);
