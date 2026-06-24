@@ -178,7 +178,10 @@ function ChainsPage() {
         unique per-invoice addresses) or a single static receive address.
       </p>
 
+      <WalletLinkCard storeId={storeId} onLinked={() => refetch()} />
+
       <StoreSettingsCard storeId={storeId} />
+
 
       {isLoading ? (
         <div className="mt-8 text-sm text-muted-foreground">Loading…</div>
