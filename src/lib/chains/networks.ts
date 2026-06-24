@@ -141,7 +141,7 @@ export const BASE_NETWORK: EvmNetwork = {
     { symbol: "USDT", address: "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2", decimals: 6 },
     { symbol: "DAI", address: "0x50c5725949a6f0c72e6c4a641f24049a917db0cb", decimals: 18 },
   ],
-  confirmationsRequired: 3,
+  confirmationsRequired: 1,
 };
 
 export const BSC_NETWORK: EvmNetwork = {
@@ -157,7 +157,7 @@ export const BSC_NETWORK: EvmNetwork = {
     { symbol: "USDC", address: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d", decimals: 18 },
     { symbol: "DAI", address: "0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3", decimals: 18 },
   ],
-  confirmationsRequired: 6,
+  confirmationsRequired: 3,
 };
 
 /** EVM networks that share a derivation path — one xpub covers all of them. */
@@ -223,6 +223,24 @@ export function evmChainsForStable(symbol: string): (typeof EVM_CHAIN_KEYS)[numb
   return EVM_CHAIN_KEYS.filter((k) =>
     (SUPPORTED_STABLES_BY_CHAIN[k] ?? []).map((s) => s.toUpperCase()).includes(sym),
   );
+}
+
+// ---- finality tiers (for mempool / 0-conf acceptance) ----
+
+/**
+ * Fast-finality chains: L2s and high-throughput chains where mempool / first
+ * confirmation is low-risk. Base, BSC, Solana, Tron.
+ */
+export const FAST_FINALITY_CHAINS: readonly ChainKind[] = ["base", "bsc", "tron", "sol"] as const;
+
+/**
+ * Slow-finality chains: Bitcoin family + Ethereum L1, where reorgs/double-spends
+ * carry meaningfully more risk. Mempool acceptance here is the "yolo" tier.
+ */
+export const SLOW_FINALITY_CHAINS: readonly ChainKind[] = ["btc", "txc", "eth", "doge", "isk", "zcu"] as const;
+
+export function isFastFinality(chain: string): boolean {
+  return (FAST_FINALITY_CHAINS as readonly string[]).includes(chain);
 }
 
 

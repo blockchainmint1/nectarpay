@@ -163,7 +163,7 @@ export const Route = createFileRoute("/api/public/hooks/alchemy-activity")({
 
             const { data: candidates } = await supabaseAdmin
               .from("invoices")
-              .select("id, fiat_amount, status, token_symbol, chain, rate, stores!inner(default_confirmations_required, mempool_max_usd)")
+              .select("id, fiat_amount, status, token_symbol, chain, rate, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow)")
               .ilike("address", act.toAddress) // checksum-cased storage; case-insensitive match
               .in("chain", matchChains)
               .in("status", ["pending", "detected", "underpaid"]);
@@ -175,7 +175,12 @@ export const Route = createFileRoute("/api/public/hooks/alchemy-activity")({
               token_symbol: string | null;
               chain: string;
               rate: number | null;
-              stores: { default_confirmations_required: number | null; mempool_max_usd: number | null } | null;
+              stores: {
+                default_confirmations_required: number | null;
+                mempool_max_usd: number | null;
+                mempool_accept_fast: boolean | null;
+                mempool_accept_slow: boolean | null;
+              } | null;
             };
             const inv = ((candidates ?? []) as InvRow[]).find((c) =>
               isNative
@@ -191,11 +196,13 @@ export const Route = createFileRoute("/api/public/hooks/alchemy-activity")({
             const paidUsd = human * usdRate;
 
             // Confirmation requirement (mirrors watcher.functions.ts logic).
-            const zc = inv.stores?.mempool_max_usd == null ? null : Number(inv.stores.mempool_max_usd);
-            const required =
-              zc != null && zc > 0 && paidUsd <= zc
-                ? 0
-                : inv.stores?.default_confirmations_required ?? netInfo.net.confirmationsRequired;
+            const fast = ["base", "bsc", "tron", "sol"].includes(inv.chain);
+            const tierOn = fast ? !!inv.stores?.mempool_accept_fast : !!inv.stores?.mempool_accept_slow;
+            const cap = inv.stores?.mempool_max_usd == null ? null : Number(inv.stores.mempool_max_usd);
+            const zeroConfOk = tierOn && (cap == null || cap <= 0 || paidUsd <= cap);
+            const required = zeroConfOk
+              ? 0
+              : inv.stores?.default_confirmations_required ?? netInfo.net.confirmationsRequired;
             const isConfirmed = confirmations >= required;
 
             await recordAndSettle(

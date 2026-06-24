@@ -4,7 +4,7 @@
 //   2) Poll the chain for incoming credits to those addresses
 //   3) Match credits to open invoices, mark paid/underpaid, emit notifications & webhooks
 
-import { BTC_NETWORK, TXC_NETWORK, ETH_NETWORK, EVM_NETWORKS, TRON_NETWORK, SOL_NETWORK, type EvmNetwork } from "./chains/networks";
+import { BTC_NETWORK, TXC_NETWORK, ETH_NETWORK, EVM_NETWORKS, TRON_NETWORK, SOL_NETWORK, isFastFinality, type EvmNetwork } from "./chains/networks";
 import { deriveBtcLikeAddress, deriveEvmAddress, deriveTronAddress } from "./chains/derive.server";
 import { extractIncoming, getAddressTxs, getTipHeight } from "./chains/btc-like.server";
 import { getBlockNumber, getTransfersTo } from "./chains/evm.server";
@@ -24,19 +24,31 @@ export interface WatcherResult {
 }
 
 /**
- * Effective confirmations required for this credit. If the merchant has
- * opted into mempool acceptance for small payments (`zero_conf_max_usd`)
- * and the paid USD amount is at or under that threshold, treat 0-conf
- * (mempool-visible) as good. Otherwise fall back to the merchant's
- * configured `confirmations_required`, then the network default.
+ * Effective confirmations required for this credit. The merchant can opt into
+ * mempool (0-conf) acceptance per finality tier — fast (Base/BSC/Sol/Tron) or
+ * slow (BTC/ETH L1/TXC) — and `mempool_max_usd` caps which invoices qualify.
+ * If the tier toggle is on AND the paid USD is ≤ the cap (or no cap is set),
+ * treat 0-conf as good. Otherwise fall back to the merchant's configured
+ * `default_confirmations_required`, then the network default.
  */
 function effectiveConfsRequired(
-  store: { default_confirmations_required?: number | null; mempool_max_usd?: number | null } | null | undefined,
+  store: {
+    default_confirmations_required?: number | null;
+    mempool_max_usd?: number | null;
+    mempool_accept_fast?: boolean | null;
+    mempool_accept_slow?: boolean | null;
+  } | null | undefined,
   netDefault: number,
   paidUsd: number,
+  chain: string,
 ): number {
-  const zc = store?.mempool_max_usd == null ? null : Number(store.mempool_max_usd);
-  if (zc != null && zc > 0 && paidUsd <= zc) return 0;
+  const tierOn = isFastFinality(chain)
+    ? !!store?.mempool_accept_fast
+    : !!store?.mempool_accept_slow;
+  if (tierOn) {
+    const cap = store?.mempool_max_usd == null ? null : Number(store.mempool_max_usd);
+    if (cap == null || cap <= 0 || paidUsd <= cap) return 0;
+  }
   return store?.default_confirmations_required ?? netDefault;
 }
 
@@ -251,7 +263,7 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
-    .select("id, store_id, chain, address, fiat_amount, status, rate, stores!inner(default_confirmations_required, mempool_max_usd)")
+    .select("id, store_id, chain, address, fiat_amount, status, rate, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow)")
     .eq("id", invoiceId)
     .maybeSingle();
   if (!inv || !inv.address || (inv.chain !== "btc" && inv.chain !== "txc")) return false;
@@ -267,7 +279,7 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
     const lockedRate = inv.rate == null ? null : Number(inv.rate);
     const usdRate = lockedRate && lockedRate > 0 ? lockedRate : await getUsdRate(inv.chain);
     const paidUsd = paidCrypto * usdRate;
-    const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd);
+    const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd, inv.chain);
     const isConfirmed = credit.confirmations >= required;
     await recordTransaction(inv.id, credit.txid, paidCrypto, credit.confirmations, null, isConfirmed);
     if (isConfirmed) {
@@ -326,7 +338,7 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
-    .select("id, store_id, chain, address, fiat_amount, status, rate, token_symbol, created_at, expires_at, stores!inner(default_confirmations_required, mempool_max_usd)")
+    .select("id, store_id, chain, address, fiat_amount, status, rate, token_symbol, created_at, expires_at, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow)")
     .eq("id", invoiceId)
     .maybeSingle();
 
@@ -389,7 +401,7 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
       const confirmations = Math.max(0, tip - blockNum + 1);
       const lockedRate = inv.rate == null ? null : Number(inv.rate);
       const paidUsd = token ? human : human * (lockedRate && lockedRate > 0 ? lockedRate : await getUsdRate(net.symbol));
-      const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd);
+      const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd, net.symbol);
       const isConfirmed = confirmations >= required;
 
       await recordTransaction(inv.id, t.hash, human, confirmations, blockNum, isConfirmed, token ? token : null);
@@ -448,7 +460,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
 
   const { data: configs } = await supabaseAdmin
     .from("chain_configs")
-    .select("*, stores!inner(id, owner_id, default_confirmations_required, mempool_max_usd)")
+    .select("*, stores!inner(id, owner_id, default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow)")
     .not("xpub", "is", null)
     .eq("enabled", true);
 
@@ -510,7 +522,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             const lockedRate = inv.rate == null ? null : Number(inv.rate);
             const usdRate = lockedRate && lockedRate > 0 ? lockedRate : await getUsdRate(chain);
             const paidUsd = paidCrypto * usdRate;
-            const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, paidUsd);
+            const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, paidUsd, chain);
             const isConfirmed = credit.confirmations >= required;
             await recordTransaction(
               inv.id,
@@ -617,7 +629,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               const usd = t.isNative ? human * (await getUsdRate(net.symbol)) : human;
               const confirmations = tip - t.blockNum + 1;
               const cfg = configList[0];
-              const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, usd);
+              const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, usd, net.symbol);
               const isConfirmed = confirmations >= required;
               await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed, t.asset);
               if (isConfirmed) {
