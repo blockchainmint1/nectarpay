@@ -257,6 +257,7 @@ function ChainsPage() {
               storeId={storeId}
               onChange={(r) => setRows((prev) => ({ ...prev, [meta.key]: r }))}
               onSaved={() => refetch()}
+              xpubLocked={isLinked}
             />
           ))}
         </div>
