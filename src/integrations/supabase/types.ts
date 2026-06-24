@@ -572,6 +572,8 @@ export type Database = {
           kyc_basic_require_email: boolean
           kyc_level: Database["public"]["Enums"]["kyc_level"]
           kyc_threshold_usd: number | null
+          mempool_accept_fast: boolean
+          mempool_accept_slow: boolean
           mempool_max_usd: number | null
           name: string
           owner_id: string
@@ -622,6 +624,8 @@ export type Database = {
           kyc_basic_require_email?: boolean
           kyc_level?: Database["public"]["Enums"]["kyc_level"]
           kyc_threshold_usd?: number | null
+          mempool_accept_fast?: boolean
+          mempool_accept_slow?: boolean
           mempool_max_usd?: number | null
           name: string
           owner_id: string
@@ -672,6 +676,8 @@ export type Database = {
           kyc_basic_require_email?: boolean
           kyc_level?: Database["public"]["Enums"]["kyc_level"]
           kyc_threshold_usd?: number | null
+          mempool_accept_fast?: boolean
+          mempool_accept_slow?: boolean
           mempool_max_usd?: number | null
           name?: string
           owner_id?: string
