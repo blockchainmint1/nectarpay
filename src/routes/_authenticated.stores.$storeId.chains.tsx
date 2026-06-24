@@ -99,11 +99,19 @@ const CHAINS: ChainMeta[] = [
 // server. Kept inline because this is a client component and the server
 // network module pulls in node-only crypto deps.
 const STABLES_BY_CHAIN: Partial<Record<ChainKey, readonly string[]>> = {
-  eth: ["USDC", "USDT", "PYUSD", "DAI"],
-  tron: ["USDT", "USDC"],
-  sol: ["USDC", "USDT", "PYUSD"],
+  eth: ["ETH", "USDC", "USDT", "PYUSD", "DAI"],
+  tron: ["TRX", "USDT", "USDC"],
+  sol: ["SOL", "USDC", "USDT", "PYUSD"],
   // base/bsc not listed in CHAINS UI today — EVM card covers them via the
   // shared xpub. Stables for those chains will appear once they're exposed.
+};
+
+// Native tokens — rendered alongside stables under "Accept on this network",
+// but labelled as the chain's native asset rather than a stablecoin.
+const NATIVE_BY_CHAIN: Partial<Record<ChainKey, string>> = {
+  eth: "ETH",
+  tron: "TRX",
+  sol: "SOL",
 };
 
 type Row = {
@@ -496,14 +504,15 @@ function ChainCard({
       {STABLES_BY_CHAIN[meta.key] && STABLES_BY_CHAIN[meta.key]!.length > 0 && (
         <div className="mt-4 rounded-md border border-border/60 bg-background/40 p-3">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-xs font-medium">Accept stablecoins on this network</p>
+            <p className="text-xs font-medium">Accept on this network</p>
             <p className="text-[11px] text-muted-foreground">
-              Tokens land at the same address as the native asset.
+              All tokens land at the same address as the native asset.
             </p>
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
             {STABLES_BY_CHAIN[meta.key]!.map((sym) => {
               const checked = row.stables.includes(sym);
+              const isNative = NATIVE_BY_CHAIN[meta.key] === sym;
               return (
                 <label
                   key={sym}
@@ -525,13 +534,18 @@ function ChainCard({
                       onChange({ ...row, stables: next });
                     }}
                   />
-                  {sym}
+                  <span>{sym}</span>
+                  {isNative && (
+                    <span className="rounded bg-muted/60 px-1 py-0.5 text-[9px] uppercase tracking-wide text-muted-foreground">
+                      native
+                    </span>
+                  )}
                 </label>
               );
             })}
           </div>
           <p className="mt-2 text-[11px] text-muted-foreground">
-            On-chain detection for stablecoins is rolling out — opt in here and we'll watch your address for these tokens automatically as it ships.
+            Pick exactly what you want to accept — leave the native asset off if you only want stablecoins. On-chain detection for stablecoins is rolling out and we'll watch your address for these tokens automatically as it ships.
           </p>
         </div>
       )}
@@ -663,3 +677,74 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
   );
 }
 
+
+function StablecoinSuggestionDialog({
+  open,
+  onOpenChange,
+  storeId,
+  ethRow,
+  onApplied,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  storeId: string;
+  ethRow: Row;
+  onApplied: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+
+  async function onAgree() {
+    setBusy(true);
+    try {
+      const suggested = ["USDT", "USDC", "PYUSD"];
+      const mergedStables = Array.from(new Set([...(ethRow.stables ?? []), ...suggested]));
+      const payload = {
+        store_id: storeId,
+        chain: "eth" as const,
+        network: "mainnet",
+        xpub: ethRow.xpub,
+        xpub_or_address: ethRow.xpub_or_address || ethRow.xpub || "",
+        enabled: true,
+        stables: mergedStables,
+      };
+      const { error } = await supabase
+        .from("chain_configs")
+        .upsert(payload, { onConflict: "store_id,chain" });
+      if (error) throw error;
+      toast.success("EVM stablecoins enabled — USDT, USDC, PYUSD.");
+      onApplied();
+      onOpenChange(false);
+    } catch (e) {
+      console.error("enable stables failed", e);
+      toast.error(e instanceof Error ? e.message : "Could not enable stablecoins.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            Enable stablecoins on EVM?
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            We suggest turning on <span className="font-medium text-foreground">USDT</span>,{" "}
+            <span className="font-medium text-foreground">USDC</span>, and{" "}
+            <span className="font-medium text-foreground">PYUSD</span> on EVM for starters — the
+            most-used dollar rails your customers already hold. Native ETH stays off unless you
+            tick it below. You can change all of this anytime.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={busy}>Not now</AlertDialogCancel>
+          <AlertDialogAction onClick={onAgree} disabled={busy}>
+            {busy ? "Enabling…" : "Agreed — enable"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
