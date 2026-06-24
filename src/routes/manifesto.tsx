@@ -228,13 +228,6 @@ function ManifestoPage() {
             className="text-primary hover:underline"
           >
             TEXITcoin
-          </a>{" "}
-          · explore the{" "}
-          <a
-            href="https://honest.money/aocs"
-            className="text-primary hover:underline"
-          >
-            American Open Currency Standard
           </a>
         </p>
       </section>
