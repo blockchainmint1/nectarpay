@@ -434,6 +434,16 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
   // Release address locks from invoices whose expires_at has passed.
   await expireStaleInvoices();
 
+  // Fire Telegram alerts for any chain_config xpub/address changes since last tick.
+  try {
+    const { dispatchXpubChangeAlerts } = await import("./xpub-alerts.server");
+    await dispatchXpubChangeAlerts();
+  } catch (e) {
+    console.error("[watcher] xpub-alert dispatch failed:", (e as Error).message);
+  }
+
+
+
 
 
   const { data: configs } = await supabaseAdmin

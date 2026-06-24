@@ -12,7 +12,8 @@ export type NotifyEvent =
   | "invoice_expired"
   | "deposit_received"
   | "plan_renewed"
-  | "grace_warning";
+  | "grace_warning"
+  | "security_xpub_change";
 
 export interface NotifyPayload {
   event: NotifyEvent;
