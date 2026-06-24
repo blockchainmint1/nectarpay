@@ -558,13 +558,11 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
     try {
       const result = await createCode({ data: { storeId } });
       const origin = window.location.origin;
-      const payload = JSON.stringify({
-        nectar: "merchant-link",
-        v: 1,
-        url: `${origin}/api/public/v1/wallet-link`,
-        token: result.token,
-      });
-      const qr = await QRCode.toDataURL(payload, { width: 320, margin: 1 });
+      // QR is a plain HTTPS URL — the wallet is a web/PWA, custom schemes
+      // don't fire. Wallet GETs this to fetch the link manifest, then POSTs
+      // the signed xpubs back to callback_url from the manifest.
+      const linkUrl = `${origin}/api/public/v1/wallet-link?token=${encodeURIComponent(result.token)}`;
+      const qr = await QRCode.toDataURL(linkUrl, { width: 320, margin: 1 });
       setQrDataUrl(qr);
       setToken(result.token);
       setExpiresAt(new Date(result.expires_at).getTime());
