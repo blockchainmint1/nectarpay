@@ -279,7 +279,7 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
     const lockedRate = inv.rate == null ? null : Number(inv.rate);
     const usdRate = lockedRate && lockedRate > 0 ? lockedRate : await getUsdRate(inv.chain);
     const paidUsd = paidCrypto * usdRate;
-    const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd);
+    const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd, inv.chain);
     const isConfirmed = credit.confirmations >= required;
     await recordTransaction(inv.id, credit.txid, paidCrypto, credit.confirmations, null, isConfirmed);
     if (isConfirmed) {
