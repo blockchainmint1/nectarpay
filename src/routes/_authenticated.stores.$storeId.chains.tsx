@@ -99,11 +99,19 @@ const CHAINS: ChainMeta[] = [
 // server. Kept inline because this is a client component and the server
 // network module pulls in node-only crypto deps.
 const STABLES_BY_CHAIN: Partial<Record<ChainKey, readonly string[]>> = {
-  eth: ["USDC", "USDT", "PYUSD", "DAI"],
-  tron: ["USDT", "USDC"],
-  sol: ["USDC", "USDT", "PYUSD"],
+  eth: ["ETH", "USDC", "USDT", "PYUSD", "DAI"],
+  tron: ["TRX", "USDT", "USDC"],
+  sol: ["SOL", "USDC", "USDT", "PYUSD"],
   // base/bsc not listed in CHAINS UI today — EVM card covers them via the
   // shared xpub. Stables for those chains will appear once they're exposed.
+};
+
+// Native tokens — rendered alongside stables under "Accept on this network",
+// but labelled as the chain's native asset rather than a stablecoin.
+const NATIVE_BY_CHAIN: Partial<Record<ChainKey, string>> = {
+  eth: "ETH",
+  tron: "TRX",
+  sol: "SOL",
 };
 
 type Row = {
