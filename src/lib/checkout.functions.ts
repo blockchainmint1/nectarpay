@@ -124,17 +124,29 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
       return `${names.slice(0, -1).join(", ")} or ${names[names.length - 1]}`;
     }
 
+    // Per-chain native opt-in: for chains where the merchant can choose to
+    // disable the native asset and only accept stablecoins, we only surface
+    // the native option when the matching symbol is present in `stables`.
+    const NATIVE_OPT_IN: Record<string, string> = { eth: "ETH", tron: "TRX", sol: "SOL" };
+
     const availableOptions: CheckoutPaymentOption[] = [];
     for (const cfg of cfgs ?? []) {
       const chain = cfg.chain as string;
-      availableOptions.push({
-        chain,
-        tokenSymbol: null,
-        key: chain,
-        label: NATIVE_LABEL[chain] ?? chain.toUpperCase(),
-      });
-      const allow = (SUPPORTED_STABLES_BY_CHAIN as Record<string, readonly string[] | undefined>)[chain] ?? [];
       const enabled = ((cfg.stables ?? []) as string[]).map((s) => s.toUpperCase());
+      const nativeOptIn = NATIVE_OPT_IN[chain];
+      const includeNative = !nativeOptIn || enabled.includes(nativeOptIn);
+      if (includeNative) {
+        availableOptions.push({
+          chain,
+          tokenSymbol: null,
+          key: chain,
+          label: NATIVE_LABEL[chain] ?? chain.toUpperCase(),
+        });
+      }
+      const allow = (SUPPORTED_STABLES_BY_CHAIN as Record<string, readonly string[] | undefined>)[chain] ?? [];
+      for (const sym of allow) {
+        if (sym === nativeOptIn) continue; // native handled above
+        if (!enabled.includes(sym)) continue;
       for (const sym of allow) {
         if (!enabled.includes(sym)) continue;
         let label: string;
