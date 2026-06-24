@@ -1,41 +1,49 @@
 // Wallet Link — HTTPS-only handshake between the Bee Keeper / Nectar wallet
 // and a NectarPay merchant store.
 //
-// FLOW
-//   1. Merchant clicks "Link wallet" on the Chains page → server mints a one-time
-//      token (5 min TTL, sha256-hashed at rest) tied to their store.
-//   2. UI renders a QR encoding a plain HTTPS URL:
-//        https://<host>/api/public/v1/wallet-link?token=<token>
-//      Wallet is web/PWA — custom schemes don't fire, so the QR is a real URL.
-//   3. Wallet GETs that URL → receives the link manifest (callback_url, from,
-//      chains, exp, signing spec, challenge_id).
-//   4. Wallet signs the canonical JSON of
-//        { challenge_id, callback_url, from, chains, exp, xpubs }
-//      with the merchant's TXC wallet key (the one they already log in with).
-//   5. Wallet POSTs { ...payload, address, signature } back to callback_url.
-//   6. Server re-canonicalizes, verifies the signature against an address
-//      registered to the user who created the token, validates each xpub,
-//      writes chain_configs, and burns the token.
+// WIRE FORMAT (locked with the wallet team)
 //
-// SIGNING PRIMITIVE (the manifest exposes this verbatim so wallets stay aligned)
-//   curve            : secp256k1
-//   hash             : double-SHA256 with TXC magic-prefix (Bitcoin-style)
-//   prefix           : "TEXITcoin Signed Message:\n"
-//   encoding         : base64 (65-byte recoverable ECDSA)
-//   key              : TXC account key — same one used for wallet login
-//   address_formats  : p2pkh, p2sh-p2wpkh, p2wpkh (txc bech32)
-//   derivation       : m/44'/696969'/0'/0/0 (Bee Keeper's TXC receive 0)
-//   canonical_json   : JSON.stringify with object keys sorted ascending, UTF-8,
-//                      no whitespace. Arrays preserved in order.
+//   GET /api/public/v1/wallet-link?token=<token>
+//     → manifest { v, type:"hm-link-manifest", challenge_id, callback_url,
+//                  from, merchant, chains, exp, issued_at, signing }
+//
+//   POST /api/public/v1/wallet-link
+//     {
+//       "payload": {
+//         "v": 1, "type": "hm-link-xpubs",
+//         "challenge_id": "...", "from": "nectar-pay.com",
+//         "callback_url": "https://nectar-pay.com/api/public/v1/wallet-link",
+//         "chains": ["BTC","TXC","EVM","LTC","BCH","TRX"],
+//         "xpubs": { "BTC":"zpub...", "TXC":"xpub...", "EVM":"xpub...",
+//                    "LTC":"...", "BCH":"...", "TRX":"<hex pubkey>" },
+//         "exp": 1735689600,                         // unix SECONDS
+//         "issued_at": "2026-06-24T18:32:01.234Z"
+//       },
+//       "signature": "<base64 BIP-137>",
+//       "address":   "<TXC base58 P2PKH, version 0x42>"
+//     }
+//     ← { ok: true, store_id, merchant_name, chains_linked: ["BTC",...] }
+//
+// SIGNING
+//   curve     : secp256k1
+//   address   : TXC mainnet legacy P2PKH (base58check, version 0x42)
+//               derived from m/44'/696969'/0'/0/0
+//   message   : UTF-8 bytes of canonicalJson(payload)
+//               (object keys sorted recursively, no whitespace)
+//   signature : BIP-137 compact recoverable, base64
+//   prefix    : "TEXITcoin Signed Message:\n"
+//   verify    : double-sha256 magic-prefixed; we use the in-house
+//               @noble/secp256k1 verifier (verifyTxcSignature).
 //
 // SECURITY
-//   - Bearer-style query token, single-use, 5-min TTL, sha256-hashed at rest.
-//   - Signature MUST be from a wallet address registered to the token issuer
-//     (looked up via wallet_accounts.user_id = wallet_link_codes.created_by).
-//   - All four envelope fields (challenge_id, callback_url, from, chains, exp)
-//     are inside the signed payload — a stripped or replayed POST won't verify.
-//   - chain_configs.enabled is never auto-flipped on; the merchant reviews.
-//   - The audit trigger logs every xpub change → xpub-alert cron → Telegram.
+//   - challenge_id is a one-time bearer, sha256-hashed at rest, 5-min TTL.
+//   - All envelope fields (challenge_id, callback_url, from, chains, exp,
+//     issued_at, xpubs) live INSIDE the signed payload — strip/replay fails.
+//   - Signing address must already be registered to the token issuer
+//     (wallet_accounts.user_id = wallet_link_codes.created_by).
+//   - chain_configs.enabled is never auto-flipped; merchant reviews.
+//   - The audit trigger on chain_configs logs every xpub change; xpub-alert
+//     cron Telegram-pings the merchant on any drift.
 
 import { createFileRoute } from "@tanstack/react-router";
 import { createHash } from "crypto";
@@ -56,45 +64,46 @@ function json(body: unknown, status = 200) {
   });
 }
 
-// Chains the wallet is allowed to push. TXC is first-class — never omit it.
-const SUPPORTED_CHAINS = ["btc", "txc", "eth", "ltc", "bch", "doge", "tron"] as const;
-type ChainKey = (typeof SUPPORTED_CHAINS)[number];
+// Uppercase wire-protocol chain keys (wallet side).
+const WIRE_CHAINS = ["BTC", "TXC", "EVM", "LTC", "BCH", "DOGE", "TRX"] as const;
+type WireChain = (typeof WIRE_CHAINS)[number];
 
-const XpubEntry = z.object({
-  xpub: z.string().min(80).max(160),
-  path: z.string().max(64).optional(),
-});
+// Map wire-protocol key → chain_configs.chain enum value (lowercase, EVM → eth).
+const WIRE_TO_DB: Record<WireChain, "btc" | "txc" | "eth" | "ltc" | "bch" | "doge" | "tron"> = {
+  BTC: "btc",
+  TXC: "txc",
+  EVM: "eth",
+  LTC: "ltc",
+  BCH: "bch",
+  DOGE: "doge",
+  TRX: "tron",
+};
 
-const XpubMap = z.object({
-  btc: XpubEntry.optional(),
-  txc: XpubEntry.optional(),
-  eth: XpubEntry.optional(),
-  evm: XpubEntry.optional(), // alias — normalized to eth
-  ltc: XpubEntry.optional(),
-  bch: XpubEntry.optional(),
-  doge: XpubEntry.optional(),
-  tron: XpubEntry.optional(),
+const PayloadSchema = z.object({
+  v: z.literal(1),
+  type: z.literal("hm-link-xpubs"),
+  challenge_id: z.string().min(8).max(128),
+  from: z.string().min(1).max(253),
+  callback_url: z.string().url(),
+  chains: z.array(z.enum(WIRE_CHAINS)).min(1),
+  // TRX is a hex pubkey, others are xpub-like strings. Validate length loosely;
+  // per-chain shape check happens below.
+  xpubs: z.record(z.enum(WIRE_CHAINS), z.string().min(40).max(200)),
+  exp: z.number().int().positive(), // unix SECONDS
+  issued_at: z.string().min(10).max(40),
 });
 
 const SubmitBody = z.object({
-  version: z.literal(1),
-  challenge_id: z.string().min(8).max(128),
-  callback_url: z.string().url(),
-  from: z.string().min(1).max(253),
-  chains: z.array(z.enum(SUPPORTED_CHAINS)).min(1),
-  exp: z.number().int().positive(),
-  xpubs: XpubMap,
-  address: z.string().min(20).max(80),
+  payload: PayloadSchema,
   signature: z.string().min(40).max(200),
+  address: z.string().min(20).max(80),
 });
 
-// Canonical JSON: object keys sorted ascending; arrays preserve order.
-// Wallets must reproduce this byte-for-byte before signing.
+// Canonical JSON: recursively sort object keys ascending, no whitespace,
+// arrays preserved in order. Must match the wallet's canonicalJson() byte-for-byte.
 function canonicalize(value: unknown): string {
   if (value === null || typeof value !== "object") return JSON.stringify(value);
-  if (Array.isArray(value)) {
-    return "[" + value.map(canonicalize).join(",") + "]";
-  }
+  if (Array.isArray(value)) return "[" + value.map(canonicalize).join(",") + "]";
   const keys = Object.keys(value as Record<string, unknown>).sort();
   return (
     "{" +
@@ -105,31 +114,51 @@ function canonicalize(value: unknown): string {
   );
 }
 
+function isTrxPubkeyHex(s: string): boolean {
+  // Tron uses an uncompressed secp256k1 pubkey (65 bytes = 130 hex chars,
+  // optional 0x04 prefix), or a compressed 33-byte form (66 hex chars).
+  const v = s.trim().replace(/^0x/i, "");
+  return /^[0-9a-fA-F]+$/.test(v) && (v.length === 66 || v.length === 128 || v.length === 130);
+}
+
 function manifestFor(opts: {
   token: string;
   origin: string;
+  host: string;
   storeName: string;
   expiresAtIso: string;
 }) {
   return {
-    version: 1,
+    v: 1,
+    type: "hm-link-manifest",
     challenge_id: opts.token,
     callback_url: `${opts.origin}/api/public/v1/wallet-link`,
-    from: new URL(opts.origin).host,
+    from: opts.host,
     merchant: opts.storeName,
-    chains: SUPPORTED_CHAINS,
-    exp: new Date(opts.expiresAtIso).getTime(),
+    chains: WIRE_CHAINS,
+    exp: Math.floor(new Date(opts.expiresAtIso).getTime() / 1000), // unix SECONDS
+    issued_at: new Date().toISOString(),
     signing: {
       curve: "secp256k1",
       hash: "sha256d-magic",
       prefix: "TEXITcoin Signed Message:\n",
       encoding: "base64",
+      sig_format: "BIP-137 compact recoverable",
       key: "txc-account",
-      address_formats: ["p2pkh", "p2sh-p2wpkh", "p2wpkh"],
+      address_format: "p2pkh-base58check-v0x42",
       derivation: "m/44'/696969'/0'/0/0",
-      canonical_json:
-        "JSON.stringify with object keys sorted ascending; UTF-8; no whitespace",
-      signed_fields: ["challenge_id", "callback_url", "from", "chains", "exp", "xpubs"],
+      message: "UTF-8 bytes of canonicalJson(payload), keys sorted recursively, no whitespace",
+      signed_fields: [
+        "v",
+        "type",
+        "challenge_id",
+        "from",
+        "callback_url",
+        "chains",
+        "xpubs",
+        "exp",
+        "issued_at",
+      ],
     },
   };
 }
@@ -139,7 +168,6 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
 
-      // Wallet scans QR → GETs this with ?token=… to fetch the link manifest.
       GET: async ({ request }) => {
         try {
           const url = new URL(request.url);
@@ -171,6 +199,7 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
             manifestFor({
               token,
               origin: url.origin,
+              host: url.host,
               storeName: store.name,
               expiresAtIso: codeRow.expires_at,
             }),
@@ -190,10 +219,10 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
           if (!parse.success) {
             return json({ error: "Bad request body.", details: parse.error.flatten() }, 400);
           }
-          const body = parse.data;
+          const { payload, signature, address } = parse.data;
 
           // 1. Token lookup.
-          const code_hash = createHash("sha256").update(body.challenge_id).digest("hex");
+          const code_hash = createHash("sha256").update(payload.challenge_id).digest("hex");
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { data: codeRow } = await supabaseAdmin
             .from("wallet_link_codes")
@@ -206,16 +235,16 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
             return json({ error: "Token expired." }, 410);
           }
 
-          // 2. Envelope sanity — must match what we'd have signed in the manifest.
+          // 2. Envelope sanity — must match what the manifest advertised.
           const url = new URL(request.url);
           const expectedCallback = `${url.origin}/api/public/v1/wallet-link`;
-          if (body.callback_url !== expectedCallback) {
+          if (payload.callback_url !== expectedCallback) {
             return json({ error: "callback_url mismatch." }, 400);
           }
-          if (body.from !== url.host) {
+          if (payload.from !== url.host) {
             return json({ error: "from mismatch." }, 400);
           }
-          if (body.exp < Date.now()) {
+          if (payload.exp * 1000 < Date.now()) {
             return json({ error: "Signed payload expired." }, 410);
           }
 
@@ -227,23 +256,12 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
           const allowed = new Set(
             (addrRows ?? []).map((r) => r.wallet_address.trim().toLowerCase()),
           );
-          if (!allowed.has(body.address.trim().toLowerCase())) {
+          if (!allowed.has(address.trim().toLowerCase())) {
             return json({ error: "Signing address not registered to this merchant." }, 403);
           }
 
-          const message = canonicalize({
-            challenge_id: body.challenge_id,
-            callback_url: body.callback_url,
-            from: body.from,
-            chains: body.chains,
-            exp: body.exp,
-            xpubs: body.xpubs,
-          });
-          const sigOk = verifyTxcSignature({
-            address: body.address,
-            message,
-            signature: body.signature,
-          });
+          const message = canonicalize(payload);
+          const sigOk = verifyTxcSignature({ address, message, signature });
           if (!sigOk) return json({ error: "Invalid signature." }, 401);
 
           const { data: store } = await supabaseAdmin
@@ -253,75 +271,69 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
             .maybeSingle();
           if (!store) return json({ error: "Store not found." }, 404);
 
-          // 4. Normalize evm → eth and write chain_configs.
-          const incoming: Partial<Record<ChainKey, { xpub: string; path?: string }>> = {
-            btc: body.xpubs.btc,
-            txc: body.xpubs.txc,
-            eth: body.xpubs.eth ?? body.xpubs.evm,
-            ltc: body.xpubs.ltc,
-            bch: body.xpubs.bch,
-            doge: body.xpubs.doge,
-            tron: body.xpubs.tron,
-          };
+          // 4. Per-chain validate + upsert chain_configs.
+          const chainsLinked: WireChain[] = [];
+          const rejected: { chain: WireChain; reason: string }[] = [];
 
-          const accepted: ChainKey[] = [];
-          const rejected: { chain: ChainKey; reason: string }[] = [];
+          for (const wireKey of WIRE_CHAINS) {
+            const xpub = payload.xpubs[wireKey];
+            if (!xpub) continue;
+            const v = xpub.trim();
 
-          for (const [chain, entry] of Object.entries(incoming) as [
-            ChainKey,
-            { xpub: string; path?: string } | undefined,
-          ][]) {
-            if (!entry) continue;
-            const xpub = entry.xpub.trim();
-            if (!isXpubLike(xpub)) {
-              rejected.push({ chain, reason: "Invalid xpub format." });
+            // Per-chain shape check. TRX is a raw pubkey hex; others are xpub-like.
+            const shapeOk = wireKey === "TRX" ? isTrxPubkeyHex(v) : isXpubLike(v);
+            if (!shapeOk) {
+              rejected.push({ chain: wireKey, reason: "Invalid key format." });
               continue;
             }
 
+            const dbChain = WIRE_TO_DB[wireKey];
             const { data: existing } = await supabaseAdmin
               .from("chain_configs")
               .select("id, enabled, stables")
               .eq("store_id", store.id)
-              .eq("chain", chain)
+              .eq("chain", dbChain)
               .maybeSingle();
 
-            const payload = {
+            const row = {
               store_id: store.id,
-              chain,
+              chain: dbChain,
               network: "mainnet",
-              xpub,
-              xpub_or_address: xpub,
-              derivation_path: entry.path ?? null,
-              enabled: existing?.enabled ?? false, // merchant flips on after review
+              xpub: v,
+              xpub_or_address: v,
+              derivation_path: null,
+              enabled: existing?.enabled ?? false,
               stables: existing?.stables ?? [],
             };
 
             const { error: upErr } = await supabaseAdmin
               .from("chain_configs")
-              .upsert(payload, { onConflict: "store_id,chain" });
+              .upsert(row, { onConflict: "store_id,chain" });
             if (upErr) {
-              rejected.push({ chain, reason: upErr.message });
+              rejected.push({ chain: wireKey, reason: upErr.message });
               continue;
             }
-            accepted.push(chain);
+            chainsLinked.push(wireKey);
           }
 
-          if (accepted.length > 0) {
+          if (chainsLinked.length > 0) {
             await supabaseAdmin
               .from("wallet_link_codes")
               .update({ used_at: new Date().toISOString() })
               .eq("id", codeRow.id);
           }
 
-          return json(
-            {
-              merchantId: store.id,
-              merchantName: store.name,
-              accepted,
-              rejected,
-            },
-            accepted.length > 0 ? 200 : 400,
-          );
+          if (chainsLinked.length === 0) {
+            return json({ ok: false, error: "No chains accepted.", rejected }, 400);
+          }
+
+          return json({
+            ok: true,
+            store_id: store.id,
+            merchant_name: store.name,
+            chains_linked: chainsLinked,
+            rejected,
+          });
         } catch (err) {
           return json(
             { error: err instanceof Error ? err.message : "Server error" },
