@@ -587,12 +587,12 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
           <Smartphone className="h-4 w-4" />
         </div>
         <div className="flex-1">
-          <h2 className="text-sm font-medium">Link a Nectar wallet</h2>
+          <h2 className="text-sm font-medium">Link a Beekeeper.money wallet</h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Skip the copy-paste. Scan this QR with the Nectar wallet on your phone and it pushes your
-            xpubs for every chain it supports (BTC, TXC, EVM, LTC, BCH, DOGE, TRX) in one tap. Chains
-            stay disabled until you flip them on — and we Telegram-alert you the moment any xpub on
-            this store changes.
+            Skip the copy-paste. Scan this QR with the Beekeeper.money wallet on your phone and it
+            pushes your xpubs for every chain it supports (BTC, TXC, EVM, LTC, BCH, DOGE, TRX) in
+            one tap. Chains stay disabled until you flip them on — and we Telegram-alert you the
+            moment any xpub on this store changes.
           </p>
 
           {!token && (
