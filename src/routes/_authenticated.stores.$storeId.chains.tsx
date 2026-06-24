@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import QRCode from "qrcode";
-import { ChevronLeft, Link2, Save, Pencil, Copy, Check, Settings, Smartphone, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
+import { ChevronLeft, Link2, Save, Pencil, Copy, Check, Settings, Smartphone, RefreshCw, ShieldCheck, Sparkles, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -157,6 +157,22 @@ function ChainsPage() {
 
   const [suggestStables, setSuggestStables] = useState(false);
 
+  const { data: linkInfo, refetch: refetchLink } = useQuery({
+    queryKey: ["wallet-link-status", storeId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wallet_link_codes")
+        .select("id, used_at, created_at")
+        .eq("store_id", storeId)
+        .not("used_at", "is", null)
+        .order("used_at", { ascending: false })
+        .limit(1);
+      if (error) throw error;
+      return data?.[0] ?? null;
+    },
+  });
+  const isLinked = !!linkInfo;
+
   useEffect(() => {
     if (!data) return;
     const next: Record<string, Row> = {};
@@ -198,13 +214,25 @@ function ChainsPage() {
         unique per-invoice addresses) or a single static receive address.
       </p>
 
-      <WalletLinkCard
-        storeId={storeId}
-        onLinked={() => {
-          refetch();
-          setSuggestStables(true);
-        }}
-      />
+      {isLinked ? (
+        <WalletLinkedCard
+          storeId={storeId}
+          linkedAt={linkInfo?.used_at ?? null}
+          onRelinked={() => {
+            refetch();
+            refetchLink();
+          }}
+        />
+      ) : (
+        <WalletLinkCard
+          storeId={storeId}
+          onLinked={() => {
+            refetch();
+            refetchLink();
+            setSuggestStables(true);
+          }}
+        />
+      )}
 
       <StablecoinSuggestionDialog
         open={suggestStables}
@@ -229,6 +257,7 @@ function ChainsPage() {
               storeId={storeId}
               onChange={(r) => setRows((prev) => ({ ...prev, [meta.key]: r }))}
               onSaved={() => refetch()}
+              xpubLocked={isLinked}
             />
           ))}
         </div>
@@ -339,19 +368,20 @@ function ChainCard({
   storeId,
   onChange,
   onSaved,
+  xpubLocked = false,
 }: {
   meta: ChainMeta;
   row: Row;
   storeId: string;
   onChange: (r: Row) => void;
   onSaved: () => void;
-
+  xpubLocked?: boolean;
 }) {
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
   const [copied, setCopied] = useState(false);
   const persisted = !!row.id;
-  const showInput = !persisted || editing;
+  const showInput = !xpubLocked && (!persisted || editing);
 
   const value = meta.inputKind === "xpub" ? row.xpub ?? "" : row.xpub_or_address;
 
@@ -483,14 +513,23 @@ function ChainCard({
               >
                 {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
               </button>
-              <button
-                type="button"
-                onClick={() => setEditing(true)}
-                className="text-muted-foreground hover:text-foreground"
-                title="Replace"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-              </button>
+              {xpubLocked ? (
+                <span
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-primary"
+                  title="Locked by Beekeeper wallet — relink to change"
+                >
+                  <Lock className="h-3 w-3" /> Locked
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setEditing(true)}
+                  className="text-muted-foreground hover:text-foreground"
+                  title="Replace"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -746,5 +785,92 @@ function StablecoinSuggestionDialog({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+  );
+}
+
+function WalletLinkedCard({
+  storeId,
+  linkedAt,
+  onRelinked,
+}: {
+  storeId: string;
+  linkedAt: string | null;
+  onRelinked: () => void;
+}) {
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [relinking, setRelinking] = useState(false);
+
+  return (
+    <div className="mt-6 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-5">
+      <div className="flex items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-emerald-500/15 text-emerald-500">
+          <ShieldCheck className="h-4 w-4" />
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-medium">Beekeeper.money wallet linked</h2>
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-emerald-400">
+              <Lock className="h-3 w-3" /> xpubs locked
+            </span>
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Your xpubs are managed by the linked Beekeeper wallet
+            {linkedAt ? ` (since ${new Date(linkedAt).toLocaleDateString()})` : ""}. To replace
+            any xpub, re-link with a fresh wallet signature — we'll Telegram-alert you the moment
+            it happens. Enabled chains and accepted assets remain editable here.
+          </p>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-4"
+            onClick={() => setConfirmOpen(true)}
+            disabled={relinking}
+          >
+            <RefreshCw className="mr-2 h-3.5 w-3.5" />
+            Re-link wallet to change xpubs
+          </Button>
+        </div>
+      </div>
+
+      {relinking && (
+        <div className="mt-4">
+          <WalletLinkCard
+            storeId={storeId}
+            onLinked={() => {
+              setRelinking(false);
+              onRelinked();
+            }}
+          />
+        </div>
+      )}
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Lock className="h-4 w-4 text-primary" />
+              Re-link Beekeeper wallet?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Replacing xpubs requires a fresh signature from your Beekeeper wallet. Anyone
+              scanning the next QR can overwrite the xpubs on this store, so only generate it
+              when you're ready to scan from the wallet that owns the funds.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setRelinking(true);
+                setConfirmOpen(false);
+              }}
+            >
+              Generate re-link QR
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }
