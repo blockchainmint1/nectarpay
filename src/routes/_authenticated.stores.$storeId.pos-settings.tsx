@@ -96,7 +96,7 @@ function PosSettingsPage() {
         .maybeSingle();
       if (error) throw error;
       if (!data) throw new Error("Store not found or you don't have access.");
-      return data as Record<string, unknown> & { id: string; name: string };
+      return data as unknown as Record<string, unknown> & { id: string; name: string };
     },
     retry: false,
   });
