@@ -157,6 +157,22 @@ function ChainsPage() {
 
   const [suggestStables, setSuggestStables] = useState(false);
 
+  const { data: linkInfo, refetch: refetchLink } = useQuery({
+    queryKey: ["wallet-link-status", storeId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wallet_link_codes")
+        .select("id, used_at, created_at")
+        .eq("store_id", storeId)
+        .not("used_at", "is", null)
+        .order("used_at", { ascending: false })
+        .limit(1);
+      if (error) throw error;
+      return data?.[0] ?? null;
+    },
+  });
+  const isLinked = !!linkInfo;
+
   useEffect(() => {
     if (!data) return;
     const next: Record<string, Row> = {};
