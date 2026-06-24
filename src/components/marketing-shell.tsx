@@ -131,6 +131,14 @@ export function MarketingNav() {
           <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
           <Link to="/docs" className="hover:text-foreground">Docs</Link>
           <Link to="/integrations" className="hover:text-foreground">Integrations</Link>
+          <a
+            href="https://beekeeper.honest.money"
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-foreground"
+          >
+            Wallet
+          </a>
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />
