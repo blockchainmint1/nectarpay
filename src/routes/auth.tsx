@@ -272,12 +272,12 @@ function AuthPage() {
             <p>
               <strong className="text-foreground">No TXC wallet yet?</strong>{" "}
               <a
-                href="https://wallet.honest.money"
+                href="https://beekeeper.honest.money"
                 target="_blank"
                 rel="noreferrer"
                 className="text-primary hover:underline"
               >
-                Get TEXITcoin Wallet →
+                Get Beekeeper.money Wallet →
               </a>
             </p>
             <p>
