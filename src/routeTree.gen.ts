@@ -42,6 +42,7 @@ import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminStoresRouteImport } from './routes/_authenticated.admin.stores'
 import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated.admin.invoices'
 import { Route as AuthenticatedStoresStoreIdIndexRouteImport } from './routes/_authenticated.stores.$storeId.index'
+import { Route as ApiPublicV1WalletLinkRouteImport } from './routes/api/public/v1/wallet-link'
 import { Route as ApiPublicV1InvoicesRouteImport } from './routes/api.public.v1.invoices'
 import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
 import { Route as ApiPublicHooksAlchemyActivityRouteImport } from './routes/api/public/hooks/alchemy-activity'
@@ -236,6 +237,11 @@ const AuthenticatedStoresStoreIdIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedStoresStoreIdRoute,
   } as any)
+const ApiPublicV1WalletLinkRoute = ApiPublicV1WalletLinkRouteImport.update({
+  id: '/api/public/v1/wallet-link',
+  path: '/api/public/v1/wallet-link',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicV1InvoicesRoute = ApiPublicV1InvoicesRouteImport.update({
   id: '/api/public/v1/invoices',
   path: '/api/public/v1/invoices',
@@ -419,6 +425,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
+  '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRoute
   '/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
@@ -473,6 +480,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
+  '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdIndexRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
@@ -532,6 +540,7 @@ export interface FileRoutesById {
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
+  '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRoute
   '/_authenticated/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
@@ -591,6 +600,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/alchemy-activity'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
+    | '/api/public/v1/wallet-link'
     | '/stores/$storeId/'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
@@ -645,6 +655,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/alchemy-activity'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
+    | '/api/public/v1/wallet-link'
     | '/stores/$storeId'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
@@ -703,6 +714,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/alchemy-activity'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
+    | '/api/public/v1/wallet-link'
     | '/_authenticated/stores/$storeId/'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
@@ -739,6 +751,7 @@ export interface RootRouteChildren {
   ApiPublicHooksAlchemyActivityRoute: typeof ApiPublicHooksAlchemyActivityRoute
   ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
   ApiPublicV1InvoicesRoute: typeof ApiPublicV1InvoicesRoute
+  ApiPublicV1WalletLinkRoute: typeof ApiPublicV1WalletLinkRoute
   ApiPublicV1TerminalsHeartbeatRoute: typeof ApiPublicV1TerminalsHeartbeatRoute
   ApiPublicV1TerminalsInvoiceRoute: typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
   ApiPublicV1TerminalsOptionsRoute: typeof ApiPublicV1TerminalsOptionsRoute
@@ -977,6 +990,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/stores/$storeId/'
       preLoaderRoute: typeof AuthenticatedStoresStoreIdIndexRouteImport
       parentRoute: typeof AuthenticatedStoresStoreIdRoute
+    }
+    '/api/public/v1/wallet-link': {
+      id: '/api/public/v1/wallet-link'
+      path: '/api/public/v1/wallet-link'
+      fullPath: '/api/public/v1/wallet-link'
+      preLoaderRoute: typeof ApiPublicV1WalletLinkRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/v1/invoices': {
       id: '/api/public/v1/invoices'
@@ -1299,6 +1319,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksAlchemyActivityRoute: ApiPublicHooksAlchemyActivityRoute,
   ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
   ApiPublicV1InvoicesRoute: ApiPublicV1InvoicesRoute,
+  ApiPublicV1WalletLinkRoute: ApiPublicV1WalletLinkRoute,
   ApiPublicV1TerminalsHeartbeatRoute: ApiPublicV1TerminalsHeartbeatRoute,
   ApiPublicV1TerminalsInvoiceRoute:
     ApiPublicV1TerminalsInvoiceRouteWithChildren,
