@@ -24,19 +24,31 @@ export interface WatcherResult {
 }
 
 /**
- * Effective confirmations required for this credit. If the merchant has
- * opted into mempool acceptance for small payments (`zero_conf_max_usd`)
- * and the paid USD amount is at or under that threshold, treat 0-conf
- * (mempool-visible) as good. Otherwise fall back to the merchant's
- * configured `confirmations_required`, then the network default.
+ * Effective confirmations required for this credit. The merchant can opt into
+ * mempool (0-conf) acceptance per finality tier — fast (Base/BSC/Sol/Tron) or
+ * slow (BTC/ETH L1/TXC) — and `mempool_max_usd` caps which invoices qualify.
+ * If the tier toggle is on AND the paid USD is ≤ the cap (or no cap is set),
+ * treat 0-conf as good. Otherwise fall back to the merchant's configured
+ * `default_confirmations_required`, then the network default.
  */
 function effectiveConfsRequired(
-  store: { default_confirmations_required?: number | null; mempool_max_usd?: number | null } | null | undefined,
+  store: {
+    default_confirmations_required?: number | null;
+    mempool_max_usd?: number | null;
+    mempool_accept_fast?: boolean | null;
+    mempool_accept_slow?: boolean | null;
+  } | null | undefined,
   netDefault: number,
   paidUsd: number,
+  chain: string,
 ): number {
-  const zc = store?.mempool_max_usd == null ? null : Number(store.mempool_max_usd);
-  if (zc != null && zc > 0 && paidUsd <= zc) return 0;
+  const tierOn = isFastFinality(chain)
+    ? !!store?.mempool_accept_fast
+    : !!store?.mempool_accept_slow;
+  if (tierOn) {
+    const cap = store?.mempool_max_usd == null ? null : Number(store.mempool_max_usd);
+    if (cap == null || cap <= 0 || paidUsd <= cap) return 0;
+  }
   return store?.default_confirmations_required ?? netDefault;
 }
 
