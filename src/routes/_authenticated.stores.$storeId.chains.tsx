@@ -504,14 +504,15 @@ function ChainCard({
       {STABLES_BY_CHAIN[meta.key] && STABLES_BY_CHAIN[meta.key]!.length > 0 && (
         <div className="mt-4 rounded-md border border-border/60 bg-background/40 p-3">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-xs font-medium">Accept stablecoins on this network</p>
+            <p className="text-xs font-medium">Accept on this network</p>
             <p className="text-[11px] text-muted-foreground">
-              Tokens land at the same address as the native asset.
+              All tokens land at the same address as the native asset.
             </p>
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
             {STABLES_BY_CHAIN[meta.key]!.map((sym) => {
               const checked = row.stables.includes(sym);
+              const isNative = NATIVE_BY_CHAIN[meta.key] === sym;
               return (
                 <label
                   key={sym}
@@ -533,13 +534,18 @@ function ChainCard({
                       onChange({ ...row, stables: next });
                     }}
                   />
-                  {sym}
+                  <span>{sym}</span>
+                  {isNative && (
+                    <span className="rounded bg-muted/60 px-1 py-0.5 text-[9px] uppercase tracking-wide text-muted-foreground">
+                      native
+                    </span>
+                  )}
                 </label>
               );
             })}
           </div>
           <p className="mt-2 text-[11px] text-muted-foreground">
-            On-chain detection for stablecoins is rolling out — opt in here and we'll watch your address for these tokens automatically as it ships.
+            Pick exactly what you want to accept — leave the native asset off if you only want stablecoins. On-chain detection for stablecoins is rolling out and we'll watch your address for these tokens automatically as it ships.
           </p>
         </div>
       )}
