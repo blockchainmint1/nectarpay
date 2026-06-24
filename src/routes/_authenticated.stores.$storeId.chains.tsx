@@ -283,19 +283,23 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
 
   const [confs, setConfs] = useState<number>(1);
   const [mempool, setMempool] = useState<string>("");
+  const [fast, setFast] = useState<boolean>(false);
+  const [slow, setSlow] = useState<boolean>(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!data) return;
     setConfs(data.default_confirmations_required ?? 1);
     setMempool(data.mempool_max_usd == null ? "" : String(data.mempool_max_usd));
+    setFast(!!data.mempool_accept_fast);
+    setSlow(!!data.mempool_accept_slow);
   }, [data]);
 
   async function onSave() {
     const mRaw = mempool.trim();
     const mNum = mRaw === "" ? null : Number(mRaw);
     if (mNum != null && (!Number.isFinite(mNum) || mNum < 0)) {
-      toast.error("Mempool threshold must be a non-negative number, or blank.");
+      toast.error("Mempool cap must be a non-negative number, or blank.");
       return;
     }
     setSaving(true);
@@ -305,6 +309,8 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
         .update({
           default_confirmations_required: Math.max(0, Number(confs) || 0),
           mempool_max_usd: mNum,
+          mempool_accept_fast: fast,
+          mempool_accept_slow: slow,
         })
         .eq("id", storeId);
       if (error) throw error;
@@ -340,23 +346,44 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
           <p className="mt-1 text-xs text-muted-foreground">Blocks before settlement.</p>
         </div>
         <div>
-          <Label htmlFor="mempool-max" className="text-xs">Accept mempool (0-conf) up to (USD)</Label>
+          <Label htmlFor="mempool-max" className="text-xs">Mempool (0-conf) cap (USD)</Label>
           <Input
             id="mempool-max"
             inputMode="decimal"
-            placeholder="e.g. 100 — leave blank to always require confirmations"
+            placeholder="e.g. 100 — leave blank for no cap"
             value={mempool}
             onChange={(e) => setMempool(e.target.value)}
           />
           <p className="mt-1 text-xs text-muted-foreground">
-            Payments at or under this USD value clear as soon as we see them in the mempool. Above it,
-            we wait for the confirmations.
+            Payments at or under this USD value can settle from the mempool — on chains you've enabled
+            below. Blank = no cap (any amount).
           </p>
         </div>
         <Button onClick={onSave} disabled={saving}>
           <Save className="mr-2 h-4 w-4" />
           {saving ? "Saving…" : "Save"}
         </Button>
+      </div>
+
+      <div className="mt-5 grid gap-3 border-t border-primary/15 pt-4 sm:grid-cols-2">
+        <label className="flex cursor-pointer items-start gap-3 rounded-md border border-border bg-background/40 p-3 hover:bg-background/70">
+          <Switch checked={fast} onCheckedChange={setFast} className="mt-0.5" />
+          <div className="min-w-0">
+            <div className="text-sm font-medium">Fast chains · accept mempool</div>
+            <p className="text-xs text-muted-foreground">
+              Base, BSC, Solana, Tron. Low reorg risk — typically settles in ~2s.
+            </p>
+          </div>
+        </label>
+        <label className="flex cursor-pointer items-start gap-3 rounded-md border border-border bg-background/40 p-3 hover:bg-background/70">
+          <Switch checked={slow} onCheckedChange={setSlow} className="mt-0.5" />
+          <div className="min-w-0">
+            <div className="text-sm font-medium">Slow chains · accept mempool</div>
+            <p className="text-xs text-muted-foreground">
+              Bitcoin, Ethereum L1, TXC. Higher reorg / RBF risk — best paired with a low cap.
+            </p>
+          </div>
+        </label>
       </div>
     </div>
   );
