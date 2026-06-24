@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, Link2, Save, Pencil, Copy, Check, Settings } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import QRCode from "qrcode";
+import { ChevronLeft, Link2, Save, Pencil, Copy, Check, Settings, Smartphone, RefreshCw, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { createWalletLinkCode } from "@/lib/wallet-link.functions";
 // Inlined client-safe validators (mirror src/lib/chains/derive.server.ts).
 function isXpubLike(s: string): boolean {
   return /^([xtuvyz]pub)[1-9A-HJ-NP-Za-km-z]{100,120}$/.test(s.trim());
@@ -175,7 +178,10 @@ function ChainsPage() {
         unique per-invoice addresses) or a single static receive address.
       </p>
 
+      <WalletLinkCard storeId={storeId} onLinked={() => refetch()} />
+
       <StoreSettingsCard storeId={storeId} />
+
 
       {isLoading ? (
         <div className="mt-8 text-sm text-muted-foreground">Loading…</div>
@@ -506,3 +512,130 @@ function ChainCard({
     </div>
   );
 }
+
+function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () => void }) {
+  const createCode = useServerFn(createWalletLinkCode);
+  const [token, setToken] = useState<string | null>(null);
+  const [expiresAt, setExpiresAt] = useState<number | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [now, setNow] = useState<number>(() => Date.now());
+  const [busy, setBusy] = useState(false);
+  const [linked, setLinked] = useState(false);
+
+  // Tick once a second for countdown.
+  useEffect(() => {
+    const i = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(i);
+  }, []);
+
+  const expired = expiresAt != null && now >= expiresAt;
+  const secondsLeft = expiresAt == null ? 0 : Math.max(0, Math.floor((expiresAt - now) / 1000));
+
+  // Poll for the token being consumed.
+  useEffect(() => {
+    if (!token || expired || linked) return;
+    const hash = token; // we don't have sha256 client-side; instead query by used_at across our codes
+    void hash;
+    const i = setInterval(async () => {
+      const { data } = await supabase
+        .from("wallet_link_codes")
+        .select("id, used_at")
+        .eq("store_id", storeId)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (data?.[0]?.used_at) {
+        setLinked(true);
+        toast.success("Wallet linked — xpubs imported.");
+        onLinked();
+      }
+    }, 2500);
+    return () => clearInterval(i);
+  }, [token, expired, linked, storeId, onLinked]);
+
+  async function onGenerate() {
+    setBusy(true);
+    setLinked(false);
+    try {
+      const result = await createCode({ data: { storeId } });
+      const origin = window.location.origin;
+      const payload = JSON.stringify({
+        nectar: "merchant-link",
+        v: 1,
+        url: `${origin}/api/public/v1/wallet-link`,
+        token: result.token,
+      });
+      const qr = await QRCode.toDataURL(payload, { width: 320, margin: 1 });
+      setQrDataUrl(qr);
+      setToken(result.token);
+      setExpiresAt(new Date(result.expires_at).getTime());
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not issue link code.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function reset() {
+    setToken(null);
+    setExpiresAt(null);
+    setQrDataUrl(null);
+    setLinked(false);
+  }
+
+  return (
+    <div className="mt-6 rounded-lg border border-primary/40 bg-primary/5 p-5">
+      <div className="flex items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/15 text-primary">
+          <Smartphone className="h-4 w-4" />
+        </div>
+        <div className="flex-1">
+          <h2 className="text-sm font-medium">Link a Nectar wallet</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Skip the copy-paste. Scan this QR with the Nectar wallet on your phone and it pushes your
+            xpubs for every chain it supports (BTC, TXC, EVM, LTC, BCH, DOGE, TRX) in one tap. Chains
+            stay disabled until you flip them on — and we Telegram-alert you the moment any xpub on
+            this store changes.
+          </p>
+
+          {!token && (
+            <Button className="mt-4" onClick={onGenerate} disabled={busy}>
+              <Smartphone className="mr-2 h-4 w-4" />
+              {busy ? "Generating…" : "Generate link code"}
+            </Button>
+          )}
+
+          {token && qrDataUrl && (
+            <div className="mt-4 flex flex-col items-start gap-4 sm:flex-row">
+              <div className="rounded-md border border-border bg-white p-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={qrDataUrl} alt="Wallet link QR" className="h-48 w-48" />
+              </div>
+              <div className="flex-1 text-xs">
+                {linked ? (
+                  <div className="flex items-center gap-2 text-emerald-500">
+                    <ShieldCheck className="h-4 w-4" />
+                    Wallet linked. Review xpubs below and flip on the chains you accept.
+                  </div>
+                ) : expired ? (
+                  <div className="text-destructive">Code expired — generate a new one.</div>
+                ) : (
+                  <>
+                    <div className="font-medium">Scan with the Nectar wallet</div>
+                    <div className="mt-1 text-muted-foreground">
+                      Expires in {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, "0")}
+                    </div>
+                  </>
+                )}
+                <Button variant="ghost" size="sm" className="mt-3" onClick={reset}>
+                  <RefreshCw className="mr-2 h-3 w-3" />
+                  {linked ? "Done" : "Cancel"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+

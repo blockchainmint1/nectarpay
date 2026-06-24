@@ -82,6 +82,56 @@ export type Database = {
           },
         ]
       }
+      chain_config_audit: {
+        Row: {
+          action: string
+          chain: Database["public"]["Enums"]["chain_kind"]
+          created_at: string
+          id: string
+          new_xpub: string | null
+          new_xpub_or_address: string | null
+          notified_at: string | null
+          old_xpub: string | null
+          old_xpub_or_address: string | null
+          source: string | null
+          store_id: string
+        }
+        Insert: {
+          action: string
+          chain: Database["public"]["Enums"]["chain_kind"]
+          created_at?: string
+          id?: string
+          new_xpub?: string | null
+          new_xpub_or_address?: string | null
+          notified_at?: string | null
+          old_xpub?: string | null
+          old_xpub_or_address?: string | null
+          source?: string | null
+          store_id: string
+        }
+        Update: {
+          action?: string
+          chain?: Database["public"]["Enums"]["chain_kind"]
+          created_at?: string
+          id?: string
+          new_xpub?: string | null
+          new_xpub_or_address?: string | null
+          notified_at?: string | null
+          old_xpub?: string | null
+          old_xpub_or_address?: string | null
+          source?: string | null
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chain_config_audit_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chain_configs: {
         Row: {
           chain: Database["public"]["Enums"]["chain_kind"]
@@ -943,6 +993,44 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_link_codes: {
+        Row: {
+          code_hash: string
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          store_id: string
+          used_at: string | null
+        }
+        Insert: {
+          code_hash: string
+          created_at?: string
+          created_by: string
+          expires_at: string
+          id?: string
+          store_id: string
+          used_at?: string | null
+        }
+        Update: {
+          code_hash?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          store_id?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_link_codes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wallet_login_challenges: {
         Row: {
           consumed_at: string | null
@@ -1096,6 +1184,8 @@ export type Database = {
         | "tron"
         | "sol"
         | "bsc"
+        | "ltc"
+        | "bch"
       invoice_status:
         | "pending"
         | "detected"
@@ -1248,6 +1338,8 @@ export const Constants = {
         "tron",
         "sol",
         "bsc",
+        "ltc",
+        "bch",
       ],
       invoice_status: [
         "pending",
