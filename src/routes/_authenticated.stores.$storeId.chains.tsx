@@ -513,22 +513,33 @@ function ChainCard({
               >
                 {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
               </button>
-              <button
-                type="button"
-                onClick={() => setEditing(true)}
-                className="text-muted-foreground hover:text-foreground"
-                title="Replace"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-              </button>
+              {xpubLocked ? (
+                <span
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-primary"
+                  title="Locked by Beekeeper wallet — relink to change"
+                >
+                  <Lock className="h-3 w-3" /> Locked
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setEditing(true)}
+                  className="text-muted-foreground hover:text-foreground"
+                  title="Replace"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
           </div>
         )}
 
-        <Button onClick={onSave} disabled={saving}>
-          <Save className="mr-2 h-4 w-4" />
-          {saving ? "Saving…" : "Save"}
-        </Button>
+        {!xpubLocked && (
+          <Button onClick={onSave} disabled={saving}>
+            <Save className="mr-2 h-4 w-4" />
+            {saving ? "Saving…" : "Save"}
+          </Button>
+        )}
       </div>
 
       {STABLES_BY_CHAIN[meta.key] && STABLES_BY_CHAIN[meta.key]!.length > 0 && (
