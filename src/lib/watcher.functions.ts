@@ -629,7 +629,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               const usd = t.isNative ? human * (await getUsdRate(net.symbol)) : human;
               const confirmations = tip - t.blockNum + 1;
               const cfg = configList[0];
-              const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, usd);
+              const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, usd, net.symbol);
               const isConfirmed = confirmations >= required;
               await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed, t.asset);
               if (isConfirmed) {
