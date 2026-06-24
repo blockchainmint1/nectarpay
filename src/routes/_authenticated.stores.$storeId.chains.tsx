@@ -534,12 +534,10 @@ function ChainCard({
           </div>
         )}
 
-        {!xpubLocked && (
-          <Button onClick={onSave} disabled={saving}>
-            <Save className="mr-2 h-4 w-4" />
-            {saving ? "Saving…" : "Save"}
-          </Button>
-        )}
+        <Button onClick={onSave} disabled={saving}>
+          <Save className="mr-2 h-4 w-4" />
+          {saving ? "Saving…" : "Save"}
+        </Button>
       </div>
 
       {STABLES_BY_CHAIN[meta.key] && STABLES_BY_CHAIN[meta.key]!.length > 0 && (
