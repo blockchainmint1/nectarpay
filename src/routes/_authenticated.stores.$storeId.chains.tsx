@@ -368,19 +368,20 @@ function ChainCard({
   storeId,
   onChange,
   onSaved,
+  xpubLocked = false,
 }: {
   meta: ChainMeta;
   row: Row;
   storeId: string;
   onChange: (r: Row) => void;
   onSaved: () => void;
-
+  xpubLocked?: boolean;
 }) {
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
   const [copied, setCopied] = useState(false);
   const persisted = !!row.id;
-  const showInput = !persisted || editing;
+  const showInput = !xpubLocked && (!persisted || editing);
 
   const value = meta.inputKind === "xpub" ? row.xpub ?? "" : row.xpub_or_address;
 
