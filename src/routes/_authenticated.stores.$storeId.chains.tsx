@@ -273,7 +273,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("stores")
-        .select("default_confirmations_required, mempool_max_usd")
+        .select("default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow")
         .eq("id", storeId)
         .single();
       if (error) throw error;

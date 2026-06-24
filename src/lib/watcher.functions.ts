@@ -263,7 +263,7 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
-    .select("id, store_id, chain, address, fiat_amount, status, rate, stores!inner(default_confirmations_required, mempool_max_usd)")
+    .select("id, store_id, chain, address, fiat_amount, status, rate, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow)")
     .eq("id", invoiceId)
     .maybeSingle();
   if (!inv || !inv.address || (inv.chain !== "btc" && inv.chain !== "txc")) return false;
@@ -338,7 +338,7 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
-    .select("id, store_id, chain, address, fiat_amount, status, rate, token_symbol, created_at, expires_at, stores!inner(default_confirmations_required, mempool_max_usd)")
+    .select("id, store_id, chain, address, fiat_amount, status, rate, token_symbol, created_at, expires_at, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow)")
     .eq("id", invoiceId)
     .maybeSingle();
 
@@ -460,7 +460,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
 
   const { data: configs } = await supabaseAdmin
     .from("chain_configs")
-    .select("*, stores!inner(id, owner_id, default_confirmations_required, mempool_max_usd)")
+    .select("*, stores!inner(id, owner_id, default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow)")
     .not("xpub", "is", null)
     .eq("enabled", true);
 
