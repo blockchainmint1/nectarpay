@@ -57,7 +57,7 @@ export async function dispatchXpubChangeAlerts(): Promise<{ processed: number; s
       lines.push("If this wasn't you, sign in immediately and revert it.");
 
       await notifyUser(owner.ownerId, {
-        event: "security_xpub_change" as never, // event type added in migration
+        event: "security_xpub_change",
         subject,
         text: lines.join("\n"),
         metadata: {
