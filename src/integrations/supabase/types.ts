@@ -555,7 +555,13 @@ export type Database = {
       stores: {
         Row: {
           created_at: string
+          default_allowed_chains: string[] | null
           default_confirmations_required: number
+          default_display_currency: string | null
+          ext_ref_label: string | null
+          ext_ref_mode: string
+          ext_ref_required: boolean
+          ext_ref_scan_mode: boolean
           fiat_currency: string
           id: string
           invoice_ttl_seconds: number
@@ -569,14 +575,28 @@ export type Database = {
           mempool_max_usd: number | null
           name: string
           owner_id: string
+          pos_custom_tenders: Json
           pos_email_receipt_enabled: boolean
+          pos_eod_enabled: boolean
+          pos_hold_enabled: boolean
+          pos_other_tender_enabled: boolean
+          pos_quick_items: Json
+          pos_refund_enabled: boolean
+          pos_refund_reasons: string[]
+          pos_require_cashier_pin: boolean
           pos_signature_enabled: boolean
           pos_tip_enabled: boolean
+          pos_void_enabled: boolean
           receipt_address: string | null
           receipt_business_name: string | null
+          receipt_email_enabled: boolean
           receipt_footer: string | null
           receipt_logo_url: string | null
+          receipt_reprint_enabled: boolean
+          receipt_sms_enabled: boolean
           receipt_tax_id: string | null
+          tax_bps: number
+          tax_mode: string
           updated_at: string
           webhook_secret: string | null
           webhook_secret_hash: string | null
@@ -585,7 +605,13 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          default_allowed_chains?: string[] | null
           default_confirmations_required?: number
+          default_display_currency?: string | null
+          ext_ref_label?: string | null
+          ext_ref_mode?: string
+          ext_ref_required?: boolean
+          ext_ref_scan_mode?: boolean
           fiat_currency?: string
           id?: string
           invoice_ttl_seconds?: number
@@ -599,14 +625,28 @@ export type Database = {
           mempool_max_usd?: number | null
           name: string
           owner_id: string
+          pos_custom_tenders?: Json
           pos_email_receipt_enabled?: boolean
+          pos_eod_enabled?: boolean
+          pos_hold_enabled?: boolean
+          pos_other_tender_enabled?: boolean
+          pos_quick_items?: Json
+          pos_refund_enabled?: boolean
+          pos_refund_reasons?: string[]
+          pos_require_cashier_pin?: boolean
           pos_signature_enabled?: boolean
           pos_tip_enabled?: boolean
+          pos_void_enabled?: boolean
           receipt_address?: string | null
           receipt_business_name?: string | null
+          receipt_email_enabled?: boolean
           receipt_footer?: string | null
           receipt_logo_url?: string | null
+          receipt_reprint_enabled?: boolean
+          receipt_sms_enabled?: boolean
           receipt_tax_id?: string | null
+          tax_bps?: number
+          tax_mode?: string
           updated_at?: string
           webhook_secret?: string | null
           webhook_secret_hash?: string | null
@@ -615,7 +655,13 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          default_allowed_chains?: string[] | null
           default_confirmations_required?: number
+          default_display_currency?: string | null
+          ext_ref_label?: string | null
+          ext_ref_mode?: string
+          ext_ref_required?: boolean
+          ext_ref_scan_mode?: boolean
           fiat_currency?: string
           id?: string
           invoice_ttl_seconds?: number
@@ -629,14 +675,28 @@ export type Database = {
           mempool_max_usd?: number | null
           name?: string
           owner_id?: string
+          pos_custom_tenders?: Json
           pos_email_receipt_enabled?: boolean
+          pos_eod_enabled?: boolean
+          pos_hold_enabled?: boolean
+          pos_other_tender_enabled?: boolean
+          pos_quick_items?: Json
+          pos_refund_enabled?: boolean
+          pos_refund_reasons?: string[]
+          pos_require_cashier_pin?: boolean
           pos_signature_enabled?: boolean
           pos_tip_enabled?: boolean
+          pos_void_enabled?: boolean
           receipt_address?: string | null
           receipt_business_name?: string | null
+          receipt_email_enabled?: boolean
           receipt_footer?: string | null
           receipt_logo_url?: string | null
+          receipt_reprint_enabled?: boolean
+          receipt_sms_enabled?: boolean
           receipt_tax_id?: string | null
+          tax_bps?: number
+          tax_mode?: string
           updated_at?: string
           webhook_secret?: string | null
           webhook_secret_hash?: string | null
