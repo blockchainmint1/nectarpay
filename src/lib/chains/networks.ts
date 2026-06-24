@@ -141,7 +141,7 @@ export const BASE_NETWORK: EvmNetwork = {
     { symbol: "USDT", address: "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2", decimals: 6 },
     { symbol: "DAI", address: "0x50c5725949a6f0c72e6c4a641f24049a917db0cb", decimals: 18 },
   ],
-  confirmationsRequired: 3,
+  confirmationsRequired: 1,
 };
 
 export const BSC_NETWORK: EvmNetwork = {
