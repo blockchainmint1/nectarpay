@@ -45,7 +45,7 @@ function SettingsPage() {
   };
 
   return (
-    <div className="fixed inset-0 overflow-y-auto bg-[#0a0d12] text-white">
+    <div className="fixed inset-0 overflow-y-auto bg-[#1a1108] text-white">
       <div className="mx-auto w-full max-w-md px-5 py-6">
         <button onClick={() => navigate({ to: "/pos" })} className="text-xs font-bold tracking-widest text-white/60 hover:text-white">
           ← BACK
@@ -97,10 +97,10 @@ function SettingsPage() {
 
           <Field label="PIN lock">
             <div className="flex gap-2 text-xs">
-              <button onClick={() => setPinMode("keep")} className={`flex-1 h-9 rounded-lg border ${pinMode === "keep" ? "border-emerald-400 bg-emerald-400/10 text-emerald-300" : "border-white/15 text-white/70"}`}>
+              <button onClick={() => setPinMode("keep")} className={`flex-1 h-9 rounded-lg border ${pinMode === "keep" ? "border-amber-400 bg-amber-400/10 text-amber-300" : "border-white/15 text-white/70"}`}>
                 {draft.pinHash ? "Keep current" : "No PIN"}
               </button>
-              <button onClick={() => setPinMode("set")} className={`flex-1 h-9 rounded-lg border ${pinMode === "set" ? "border-emerald-400 bg-emerald-400/10 text-emerald-300" : "border-white/15 text-white/70"}`}>
+              <button onClick={() => setPinMode("set")} className={`flex-1 h-9 rounded-lg border ${pinMode === "set" ? "border-amber-400 bg-amber-400/10 text-amber-300" : "border-white/15 text-white/70"}`}>
                 Set new
               </button>
               {draft.pinHash && (
@@ -130,7 +130,7 @@ function SettingsPage() {
 
         <button
           onClick={submit}
-          className="mt-6 h-12 w-full rounded-lg bg-emerald-500 text-sm font-bold tracking-widest text-black hover:bg-emerald-400"
+          className="mt-6 h-12 w-full rounded-lg bg-amber-500 text-sm font-bold tracking-widest text-black hover:bg-amber-400"
         >
           {saved ? "SAVED ✓" : "SAVE"}
         </button>

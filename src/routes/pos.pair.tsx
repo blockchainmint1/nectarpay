@@ -140,11 +140,11 @@ function PairPage() {
   }
 
   if (alreadyPaired) {
-    return <div className="fixed inset-0 bg-[#0a0d12]" />;
+    return <div className="fixed inset-0 bg-[#1a1108]" />;
   }
 
   return (
-    <div className="fixed inset-0 bg-[#0a0d12] text-white flex flex-col items-center justify-center px-6">
+    <div className="fixed inset-0 bg-[#1a1108] text-white flex flex-col items-center justify-center px-6">
 
       <div className="text-[10px] font-bold tracking-[0.3em] text-white/50">PAIR TERMINAL</div>
       <h1 className="mt-2 text-2xl font-bold">Enter pairing code</h1>
@@ -170,7 +170,7 @@ function PairPage() {
         <button
           type="submit"
           disabled={m.isPending || code.length < 4}
-          className="w-full rounded-lg bg-emerald-500 py-3 text-sm font-bold tracking-widest text-black hover:bg-emerald-400 disabled:opacity-50"
+          className="w-full rounded-lg bg-amber-500 py-3 text-sm font-bold tracking-widest text-black hover:bg-amber-400 disabled:opacity-50"
         >
           {m.isPending ? "PAIRING…" : "PAIR"}
         </button>
@@ -293,7 +293,7 @@ function QrScanner({
         />
         <canvas ref={canvasRef} className="hidden" />
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="size-64 rounded-2xl border-2 border-emerald-400/80 shadow-[0_0_0_9999px_rgba(0,0,0,0.55)]" />
+          <div className="size-64 rounded-2xl border-2 border-amber-400/80 shadow-[0_0_0_9999px_rgba(0,0,0,0.55)]" />
         </div>
         <div className="absolute inset-x-0 bottom-6 text-center text-xs text-white/80">{status}</div>
       </div>

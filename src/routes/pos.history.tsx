@@ -33,7 +33,7 @@ function HistoryPage() {
   }, [navigate]);
 
   return (
-    <div className="fixed inset-0 overflow-y-auto bg-[#0a0d12] text-white">
+    <div className="fixed inset-0 overflow-y-auto bg-[#1a1108] text-white">
       <div className="mx-auto w-full max-w-md px-5 py-6">
         <Link to="/pos" className="inline-flex items-center text-xs font-bold tracking-widest text-white/60 hover:text-white">
           <ChevronLeft className="size-4" /> BACK

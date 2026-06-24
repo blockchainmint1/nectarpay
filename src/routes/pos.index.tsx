@@ -117,7 +117,7 @@ function PosShell() {
 
 function Splash({ label }: { label: string }) {
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#0a0d12] text-white">
+    <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#1a1108] text-white">
       <Lock className="size-8 text-white/40" />
       <p className="mt-3 text-[10px] font-bold tracking-[0.3em] text-white/60">{label}</p>
     </div>
@@ -139,12 +139,12 @@ function PinLock({ pinHash, onUnlock }: { pinHash: string; onUnlock: () => void 
     }
   };
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#0a0d12] text-white px-6">
+    <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#1a1108] text-white px-6">
       <Lock className="size-10 text-white/40" />
       <p className="mt-3 text-[10px] font-bold tracking-[0.3em] text-white/60">TERMINAL LOCKED</p>
       <div className="mt-6 flex gap-3">
         {[0,1,2,3].map((i) => (
-          <span key={i} className={`size-4 rounded-full border-2 ${pin.length > i ? "border-emerald-400 bg-emerald-400" : "border-white/20"}`} />
+          <span key={i} className={`size-4 rounded-full border-2 ${pin.length > i ? "border-amber-400 bg-amber-400" : "border-white/20"}`} />
         ))}
       </div>
       {err && <p className="mt-3 text-xs text-red-400">Wrong PIN</p>}
@@ -301,7 +301,7 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
   };
 
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#0a0d12] text-white">
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#1a1108] text-white">
       <Header onLock={onLock} hasPin={!!settings.pinHash} />
       <main className="flex min-h-0 flex-1 flex-col">
         {screen === "amount" && (
@@ -367,8 +367,8 @@ function Header({ onLock, hasPin }: { onLock: () => void; hasPin: boolean }) {
   return (
     <header className="flex shrink-0 items-center justify-between border-b border-white/5 bg-black/40 px-4 py-2 backdrop-blur">
       <div className="flex items-center gap-2">
-        <div className="size-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
-        <span className="text-[10px] font-bold tracking-[0.25em] text-emerald-300/90">NECTAR.PAY · POS</span>
+        <div className="size-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.75)]" />
+        <span className="text-[10px] font-bold tracking-[0.25em] text-amber-300/90">NECTAR.PAY · POS</span>
       </div>
       <div className="flex items-center gap-1">
         <Link to="/pos/history" className="rounded-md p-1.5 text-white/70 hover:bg-white/10" aria-label="History">
@@ -423,7 +423,7 @@ function AmountScreen({
           <button
             onClick={onCharge}
             disabled={subtotalCents <= 0 || busy}
-            className="col-span-2 h-12 rounded-lg bg-emerald-500 text-sm font-bold tracking-widest text-black hover:bg-emerald-400 disabled:opacity-40"
+            className="col-span-2 h-12 rounded-lg bg-amber-500 text-sm font-bold tracking-widest text-black hover:bg-amber-400 disabled:opacity-40"
           >
             {busy ? "…" : `CHARGE ${fmt(subtotalCents + taxCents)}`}
           </button>
@@ -471,7 +471,7 @@ function TipScreen({
                 <button
                   key={bps}
                   onClick={() => onPickPreset(bps)}
-                  className={`flex h-20 flex-col items-center justify-center rounded-xl border-2 transition ${active ? "border-emerald-400 bg-emerald-400/10" : "border-white/15 hover:border-white/30"}`}
+                  className={`flex h-20 flex-col items-center justify-center rounded-xl border-2 transition ${active ? "border-amber-400 bg-amber-400/10" : "border-white/15 hover:border-white/30"}`}
                 >
                   <span className="text-2xl font-black">{(bps / 100).toFixed(0)}%</span>
                   <span className="text-[10px] tabular-nums text-white/60">{fmt(Math.round((subtotalCents * bps) / 10_000))}</span>
@@ -491,7 +491,7 @@ function TipScreen({
             <button onClick={onBack} className="h-11 rounded-lg border border-white/15 text-xs font-bold tracking-widest text-white/60 hover:bg-white/5">
               ← BACK
             </button>
-            <button onClick={onConfirm} disabled={busy} className="h-11 rounded-lg bg-emerald-500 text-xs font-bold tracking-widest text-black hover:bg-emerald-400 disabled:opacity-40">
+            <button onClick={onConfirm} disabled={busy} className="h-11 rounded-lg bg-amber-500 text-xs font-bold tracking-widest text-black hover:bg-amber-400 disabled:opacity-40">
               {busy ? "…" : `CHARGE ${fmt(totalCents)}`}
             </button>
           </div>
@@ -510,7 +510,7 @@ function TipScreen({
           <button
             onClick={() => { onPickCustom(customInput); setShowCustom(false); }}
             disabled={customInput <= 0}
-            className="mt-3 h-11 w-full rounded-lg bg-emerald-500 text-xs font-bold tracking-widest text-black hover:bg-emerald-400 disabled:opacity-40"
+            className="mt-3 h-11 w-full rounded-lg bg-amber-500 text-xs font-bold tracking-widest text-black hover:bg-amber-400 disabled:opacity-40"
           >
             ADD {fmt(customInput)} TIP
           </button>
@@ -555,7 +555,7 @@ function ChainScreen({
             key={opt.key}
             disabled={busy}
             onClick={() => onPick(opt.key)}
-            className="group flex w-full items-center justify-between rounded-xl border-2 border-white/15 bg-white/[0.03] px-4 py-4 text-left transition hover:border-emerald-400/60 hover:bg-emerald-400/[0.05] disabled:opacity-40"
+            className="group flex w-full items-center justify-between rounded-xl border-2 border-white/15 bg-white/[0.03] px-4 py-4 text-left transition hover:border-amber-400/60 hover:bg-amber-400/[0.05] disabled:opacity-40"
           >
             <div className="min-w-0 flex-1">
               <div className="text-base font-bold">{opt.label}</div>
@@ -563,7 +563,7 @@ function ChainScreen({
                 {opt.tokenSymbol ? `${opt.tokenSymbol} · ${opt.chain}` : opt.chain}
               </div>
             </div>
-            <span className="ml-3 text-white/40 group-hover:text-emerald-300">→</span>
+            <span className="ml-3 text-white/40 group-hover:text-amber-300">→</span>
           </button>
         ))}
 
@@ -697,8 +697,8 @@ function WaitingScreen({
 
       <div className="mt-2 flex items-center gap-2 text-[10px] font-mono text-white/60">
         <span className="relative flex size-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-          <span className="relative inline-flex size-2 rounded-full bg-emerald-400" />
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+          <span className="relative inline-flex size-2 rounded-full bg-amber-400" />
         </span>
         {detected ? `detected · ${status?.chain ?? ""}` : `listening · ${mm}:${ss}`}
       </div>
@@ -713,7 +713,7 @@ function WaitingScreen({
               type="checkbox"
               checked={!addressOnly}
               onChange={(e) => setAddressOnly(!e.target.checked)}
-              className="size-4 accent-emerald-400"
+              className="size-4 accent-amber-400"
             />
             Include amount &amp; token in QR
           </label>
@@ -773,7 +773,7 @@ function UnderpaidScreen({
           </div>
           <div>
             <p className="text-[9px] font-bold tracking-widest text-white/50">PAID</p>
-            <p className="mt-0.5 text-base font-bold tabular-nums text-emerald-300">{fmt(paidUsd * 100, status.currency)}</p>
+            <p className="mt-0.5 text-base font-bold tabular-nums text-amber-300">{fmt(paidUsd * 100, status.currency)}</p>
           </div>
           <div>
             <p className="text-[9px] font-bold tracking-widest text-white/50">DUE</p>
@@ -826,12 +826,12 @@ function UnderpaidScreen({
 function PaidScreen({ status, onDone }: { status: InvoiceStatus; onDone: () => void }) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 py-4 text-center">
-      <div className="flex size-20 items-center justify-center rounded-full border-2 border-emerald-400/40 bg-emerald-400/15">
-        <svg viewBox="0 0 24 24" className="size-10 text-emerald-300" fill="none" stroke="currentColor" strokeWidth="3">
+      <div className="flex size-20 items-center justify-center rounded-full border-2 border-amber-400/40 bg-amber-400/15">
+        <svg viewBox="0 0 24 24" className="size-10 text-amber-300" fill="none" stroke="currentColor" strokeWidth="3">
           <path d="M5 12l5 5L20 7" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
-      <p className="mt-4 text-[10px] font-bold tracking-[0.25em] text-emerald-300">PAYMENT RECEIVED</p>
+      <p className="mt-4 text-[10px] font-bold tracking-[0.25em] text-amber-300">PAYMENT RECEIVED</p>
       <div className="mt-1 text-4xl font-black tabular-nums">{fmt(status.fiat_amount * 100, status.currency)}</div>
       {status.chain && (
         <p className="text-[10px] tracking-widest text-white/60">via {status.chain.toUpperCase()}</p>
@@ -842,7 +842,7 @@ function PaidScreen({ status, onDone }: { status: InvoiceStatus; onDone: () => v
           <p className="mt-0.5 break-all font-mono text-[10px] leading-snug text-white/80">{status.tx_hash}</p>
         </div>
       )}
-      <button onClick={onDone} className="mt-6 h-12 rounded-lg bg-emerald-500 px-10 text-sm font-bold tracking-widest text-black hover:bg-emerald-400">
+      <button onClick={onDone} className="mt-6 h-12 rounded-lg bg-amber-500 px-10 text-sm font-bold tracking-widest text-black hover:bg-amber-400">
         NEW SALE
       </button>
     </div>
@@ -854,7 +854,7 @@ function DoneScreen({ label, onDone }: { label: string; onDone: () => void }) {
     <div className="flex flex-1 flex-col items-center justify-center px-4 py-4 text-center">
       <X className="size-10 text-white/40" />
       <p className="mt-3 text-[10px] font-bold tracking-[0.25em] text-white/60">{label}</p>
-      <button onClick={onDone} className="mt-4 h-12 rounded-lg bg-emerald-500 px-10 text-sm font-bold tracking-widest text-black hover:bg-emerald-400">
+      <button onClick={onDone} className="mt-4 h-12 rounded-lg bg-amber-500 px-10 text-sm font-bold tracking-widest text-black hover:bg-amber-400">
         NEW SALE
       </button>
     </div>
@@ -928,7 +928,7 @@ function SignatureScreen({ onSubmit, onSkip }: { onSubmit: (dataUrl: string) => 
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 py-4 text-center">
-      <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.25em] text-emerald-300">
+      <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.25em] text-amber-300">
         <PenLine className="size-3.5" /> SIGN BELOW
       </div>
       <p className="mt-1 max-w-xs text-[11px] text-white/50">Customer signs to confirm receipt.</p>
@@ -945,7 +945,7 @@ function SignatureScreen({ onSubmit, onSkip }: { onSubmit: (dataUrl: string) => 
       <div className="mt-4 grid w-full max-w-md grid-cols-3 gap-2">
         <button onClick={onSkip} className="h-11 rounded-lg border border-white/15 text-xs font-bold tracking-widest text-white/60 hover:bg-white/5">SKIP</button>
         <button onClick={clear} className="h-11 rounded-lg border border-white/15 text-xs font-bold tracking-widest text-white/60 hover:bg-white/5">CLEAR</button>
-        <button onClick={submit} disabled={!hasInk || submitting} className="h-11 rounded-lg bg-emerald-500 text-xs font-bold tracking-widest text-black hover:bg-emerald-400 disabled:opacity-40">
+        <button onClick={submit} disabled={!hasInk || submitting} className="h-11 rounded-lg bg-amber-500 text-xs font-bold tracking-widest text-black hover:bg-amber-400 disabled:opacity-40">
           {submitting ? "…" : "DONE"}
         </button>
       </div>
@@ -966,8 +966,8 @@ function EmailReceiptScreen({ onSubmit, onSkip }: { onSubmit: (email: string) =>
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-6 py-6 text-center">
-      <Mail className="size-8 text-emerald-300" />
-      <p className="mt-3 text-[10px] font-bold tracking-[0.25em] text-emerald-300">EMAIL RECEIPT</p>
+      <Mail className="size-8 text-amber-300" />
+      <p className="mt-3 text-[10px] font-bold tracking-[0.25em] text-amber-300">EMAIL RECEIPT</p>
       <p className="mt-1 max-w-xs text-[11px] text-white/50">Optional — enter the customer's email to send them a copy.</p>
 
       <form onSubmit={(e) => { e.preventDefault(); void go(); }} className="mt-5 w-full max-w-sm">
@@ -979,13 +979,13 @@ function EmailReceiptScreen({ onSubmit, onSkip }: { onSubmit: (email: string) =>
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="customer@example.com"
-          className="w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-center text-base lowercase placeholder:text-white/20 focus:border-emerald-400 focus:outline-none"
+          className="w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-center text-base lowercase placeholder:text-white/20 focus:border-amber-400 focus:outline-none"
         />
         <div className="mt-3 grid grid-cols-2 gap-2">
           <button type="button" onClick={onSkip} className="h-11 rounded-lg border border-white/15 text-xs font-bold tracking-widest text-white/60 hover:bg-white/5">
             SKIP
           </button>
-          <button type="submit" disabled={!valid || submitting} className="h-11 rounded-lg bg-emerald-500 text-xs font-bold tracking-widest text-black hover:bg-emerald-400 disabled:opacity-40">
+          <button type="submit" disabled={!valid || submitting} className="h-11 rounded-lg bg-amber-500 text-xs font-bold tracking-widest text-black hover:bg-amber-400 disabled:opacity-40">
             {submitting ? "…" : "SEND"}
           </button>
         </div>
