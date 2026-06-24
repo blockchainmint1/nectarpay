@@ -401,7 +401,7 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
       const confirmations = Math.max(0, tip - blockNum + 1);
       const lockedRate = inv.rate == null ? null : Number(inv.rate);
       const paidUsd = token ? human : human * (lockedRate && lockedRate > 0 ? lockedRate : await getUsdRate(net.symbol));
-      const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd);
+      const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd, net.symbol);
       const isConfirmed = confirmations >= required;
 
       await recordTransaction(inv.id, t.hash, human, confirmations, blockNum, isConfirmed, token ? token : null);
