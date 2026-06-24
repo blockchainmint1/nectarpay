@@ -225,6 +225,24 @@ export function evmChainsForStable(symbol: string): (typeof EVM_CHAIN_KEYS)[numb
   );
 }
 
+// ---- finality tiers (for mempool / 0-conf acceptance) ----
+
+/**
+ * Fast-finality chains: L2s and high-throughput chains where mempool / first
+ * confirmation is low-risk. Base, BSC, Solana, Tron.
+ */
+export const FAST_FINALITY_CHAINS: readonly ChainKind[] = ["base", "bsc", "tron", "sol"] as const;
+
+/**
+ * Slow-finality chains: Bitcoin family + Ethereum L1, where reorgs/double-spends
+ * carry meaningfully more risk. Mempool acceptance here is the "yolo" tier.
+ */
+export const SLOW_FINALITY_CHAINS: readonly ChainKind[] = ["btc", "txc", "eth", "doge", "isk", "zcu"] as const;
+
+export function isFastFinality(chain: string): boolean {
+  return (FAST_FINALITY_CHAINS as readonly string[]).includes(chain);
+}
+
 
 export interface StableMeta {
   chain: ChainKind;
