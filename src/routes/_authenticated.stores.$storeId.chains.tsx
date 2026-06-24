@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import QRCode from "qrcode";
-import { ChevronLeft, Link2, Save, Pencil, Copy, Check, Settings, Smartphone, RefreshCw, ShieldCheck } from "lucide-react";
+import { ChevronLeft, Link2, Save, Pencil, Copy, Check, Settings, Smartphone, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { createWalletLinkCode } from "@/lib/wallet-link.functions";
 // Inlined client-safe validators (mirror src/lib/chains/derive.server.ts).
