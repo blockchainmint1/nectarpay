@@ -16,7 +16,7 @@ export const Route = createFileRoute("/pos/pair")({
     meta: [
       { title: "Pair terminal · Nectar.Pay POS" },
       { name: "viewport", content: "width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" },
-      { name: "theme-color", content: "#0a0d12" },
+      { name: "theme-color", content: "#1a1108" },
       { name: "robots", content: "noindex" },
     ],
   }),
