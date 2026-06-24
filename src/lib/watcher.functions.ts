@@ -522,7 +522,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             const lockedRate = inv.rate == null ? null : Number(inv.rate);
             const usdRate = lockedRate && lockedRate > 0 ? lockedRate : await getUsdRate(chain);
             const paidUsd = paidCrypto * usdRate;
-            const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, paidUsd);
+            const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, paidUsd, chain);
             const isConfirmed = credit.confirmations >= required;
             await recordTransaction(
               inv.id,
