@@ -12,7 +12,7 @@
 //       "payload": {
 //         "v": 1, "type": "hm-link-xpubs",
 //         "challenge_id": "...", "from": "nectar-pay.com",
-//         "callback_url": "https://nectar-pay.com/api/public/v1/wallet-link",
+//         "callback_url": "https://nectar-pay.com/api/public/v1/wallet-link?token=...",
 //         "chains": ["BTC","TXC","EVM","LTC","BCH","TRX"],
 //         "xpubs": { "BTC":"zpub...", "TXC":"xpub...", "EVM":"xpub...",
 //                    "LTC":"...", "BCH":"...", "TRX":"<hex pubkey>" },
@@ -121,6 +121,17 @@ function isTrxPubkeyHex(s: string): boolean {
   return /^[0-9a-fA-F]+$/.test(v) && (v.length === 66 || v.length === 128 || v.length === 130);
 }
 
+function extractTokenFromCallback(callbackUrl: string, expectedOrigin: string): string | null {
+  try {
+    const parsed = new URL(callbackUrl);
+    if (parsed.origin !== expectedOrigin) return null;
+    if (parsed.pathname !== "/api/public/v1/wallet-link") return null;
+    return parsed.searchParams.get("token")?.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
 function manifestFor(opts: {
   token: string;
   origin: string;
@@ -132,7 +143,7 @@ function manifestFor(opts: {
     v: 1,
     type: "hm-link-manifest",
     challenge_id: opts.token,
-    callback_url: `${opts.origin}/api/public/v1/wallet-link`,
+    callback_url: `${opts.origin}/api/public/v1/wallet-link?token=${encodeURIComponent(opts.token)}`,
     from: opts.host,
     merchant: opts.storeName,
     chains: WIRE_CHAINS,
@@ -229,8 +240,12 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
           }
           const { payload, signature, address } = parse.data;
 
-          // 1. Token lookup.
-          const code_hash = createHash("sha256").update(payload.challenge_id).digest("hex");
+          // 1. Token lookup. Beekeeper sends a wallet-side UUID as challenge_id
+          // and keeps our one-time bearer in the signed callback_url query.
+          const url = new URL(request.url);
+          const callbackToken = extractTokenFromCallback(payload.callback_url, url.origin);
+          const lookupToken = callbackToken ?? payload.challenge_id;
+          const code_hash = createHash("sha256").update(lookupToken).digest("hex");
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { data: codeRow } = await supabaseAdmin
             .from("wallet_link_codes")
@@ -242,9 +257,17 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
               challenge_id_len: payload.challenge_id.length,
               challenge_id_prefix: payload.challenge_id.slice(0, 8),
               challenge_id_suffix: payload.challenge_id.slice(-4),
+              token_source: callbackToken ? "callback_url" : "challenge_id",
               hash_prefix: code_hash.slice(0, 12),
               from: payload.from,
-              callback_url: payload.callback_url,
+              callback_path: (() => {
+                try {
+                  const parsed = new URL(payload.callback_url);
+                  return parsed.pathname;
+                } catch {
+                  return "invalid";
+                }
+              })(),
             });
             return json({ error: "Unknown link token." }, 404);
           }
@@ -255,9 +278,9 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
 
 
           // 2. Envelope sanity — must match what the manifest advertised.
-          const url = new URL(request.url);
           const expectedCallback = `${url.origin}/api/public/v1/wallet-link`;
-          if (payload.callback_url !== expectedCallback) {
+          const expectedCallbackWithToken = `${expectedCallback}?token=${encodeURIComponent(lookupToken)}`;
+          if (payload.callback_url !== expectedCallback && payload.callback_url !== expectedCallbackWithToken) {
             return json({ error: "callback_url mismatch." }, 400);
           }
           if (payload.from !== url.host) {
