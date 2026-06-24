@@ -157,7 +157,7 @@ export const BSC_NETWORK: EvmNetwork = {
     { symbol: "USDC", address: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d", decimals: 18 },
     { symbol: "DAI", address: "0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3", decimals: 18 },
   ],
-  confirmationsRequired: 6,
+  confirmationsRequired: 3,
 };
 
 /** EVM networks that share a derivation path — one xpub covers all of them. */
