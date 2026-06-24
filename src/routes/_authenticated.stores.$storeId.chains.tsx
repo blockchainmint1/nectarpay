@@ -214,13 +214,25 @@ function ChainsPage() {
         unique per-invoice addresses) or a single static receive address.
       </p>
 
-      <WalletLinkCard
-        storeId={storeId}
-        onLinked={() => {
-          refetch();
-          setSuggestStables(true);
-        }}
-      />
+      {isLinked ? (
+        <WalletLinkedCard
+          storeId={storeId}
+          linkedAt={linkInfo?.used_at ?? null}
+          onRelinked={() => {
+            refetch();
+            refetchLink();
+          }}
+        />
+      ) : (
+        <WalletLinkCard
+          storeId={storeId}
+          onLinked={() => {
+            refetch();
+            refetchLink();
+            setSuggestStables(true);
+          }}
+        />
+      )}
 
       <StablecoinSuggestionDialog
         open={suggestStables}
