@@ -153,9 +153,7 @@ export function MarketingNav() {
                 <Link to="/auth">Sign in</Link>
               </Button>
               <Button asChild size="sm">
-                <Link to="/auth" search={{ mode: "signup" }}>
-                  Start free
-                </Link>
+                <Link to="/signup">Start free</Link>
               </Button>
             </>
           )}
