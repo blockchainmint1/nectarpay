@@ -77,13 +77,6 @@ export type Database = {
             foreignKeyName: "api_keys_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
-            referencedRelation: "merchant_map_pins"
-            referencedColumns: ["store_id"]
-          },
-          {
-            foreignKeyName: "api_keys_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
@@ -130,13 +123,6 @@ export type Database = {
           store_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "chain_config_audit_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "merchant_map_pins"
-            referencedColumns: ["store_id"]
-          },
           {
             foreignKeyName: "chain_config_audit_store_id_fkey"
             columns: ["store_id"]
@@ -203,13 +189,6 @@ export type Database = {
             foreignKeyName: "chain_configs_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
-            referencedRelation: "merchant_map_pins"
-            referencedColumns: ["store_id"]
-          },
-          {
-            foreignKeyName: "chain_configs_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
@@ -247,13 +226,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "chain_configs"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "derived_addresses_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "merchant_map_pins"
-            referencedColumns: ["store_id"]
           },
           {
             foreignKeyName: "derived_addresses_store_id_fkey"
@@ -344,13 +316,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "invoices_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "merchant_map_pins"
-            referencedColumns: ["store_id"]
-          },
           {
             foreignKeyName: "invoices_store_id_fkey"
             columns: ["store_id"]
@@ -908,13 +873,6 @@ export type Database = {
             foreignKeyName: "terminal_pairing_codes_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
-            referencedRelation: "merchant_map_pins"
-            referencedColumns: ["store_id"]
-          },
-          {
-            foreignKeyName: "terminal_pairing_codes_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
@@ -967,13 +925,6 @@ export type Database = {
           store_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "terminals_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "merchant_map_pins"
-            referencedColumns: ["store_id"]
-          },
           {
             foreignKeyName: "terminals_store_id_fkey"
             columns: ["store_id"]
@@ -1198,13 +1149,6 @@ export type Database = {
             foreignKeyName: "wallet_link_codes_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
-            referencedRelation: "merchant_map_pins"
-            referencedColumns: ["store_id"]
-          },
-          {
-            foreignKeyName: "wallet_link_codes_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
@@ -1334,25 +1278,26 @@ export type Database = {
       }
     }
     Views: {
-      merchant_map_pins: {
-        Row: {
-          address: string | null
-          category: string | null
-          city: string | null
-          country: string | null
-          description: string | null
-          lat: number | null
-          listing_visibility: string | null
-          lng: number | null
-          logo_url: string | null
-          name: string | null
-          store_id: string | null
-          website: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
+      get_merchant_map_pins: {
+        Args: never
+        Returns: {
+          address: string
+          category: string
+          city: string
+          country: string
+          description: string
+          lat: number
+          listing_visibility: string
+          lng: number
+          logo_url: string
+          name: string
+          store_id: string
+          website: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
