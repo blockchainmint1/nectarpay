@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, KeyRound, Link2, Receipt, Settings as SettingsIcon, ShieldCheck, Smartphone, Sliders } from "lucide-react";
+import { ChevronLeft, KeyRound, Link2, MapPin, Receipt, Settings as SettingsIcon, ShieldCheck, Smartphone, Sliders } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -83,6 +83,12 @@ function StoreDetailPage() {
           title="POS terminal experience"
           body="Tip step, signature capture, email receipts, and receipt header (logo, address, footer)."
           to={`/stores/${storeId}/pos-settings`}
+        />
+        <CardLink
+          icon={<MapPin className="h-4 w-4" />}
+          title="Public listing"
+          body="Opt in to the public 'where to spend crypto' map. Hidden, anonymous city pin, or a full listing with address and logo."
+          to={`/stores/${storeId}/listing`}
         />
         <CardLink
           icon={<Receipt className="h-4 w-4" />}

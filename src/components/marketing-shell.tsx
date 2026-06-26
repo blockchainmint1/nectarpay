@@ -128,6 +128,7 @@ export function MarketingNav() {
           <NectarWordmark />
         </Link>
         <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
+          <Link to="/where" className="hover:text-foreground">Where to spend</Link>
           <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
           <Link to="/docs" className="hover:text-foreground">Docs</Link>
           <Link to="/integrations" className="hover:text-foreground">Integrations</Link>
@@ -185,6 +186,7 @@ export function MarketingFooter() {
           </span>
         </div>
         <nav className="flex flex-wrap gap-4">
+          <Link to="/where" className="hover:text-foreground">Find merchants</Link>
           <Link to="/manifesto" className="hover:text-foreground">Manifesto</Link>
           <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
           <Link to="/terms" className="hover:text-foreground">Terms</Link>
