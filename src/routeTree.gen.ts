@@ -17,6 +17,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PosRouteImport } from './routes/pos'
 import { Route as ManifestoRouteImport } from './routes/manifesto'
 import { Route as DocsRouteImport } from './routes/docs'
+import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CashOutRouteImport } from './routes/cash-out'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -108,6 +109,11 @@ const ManifestoRoute = ManifestoRouteImport.update({
 const DocsRoute = DocsRouteImport.update({
   id: '/docs',
   path: '/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CashOutRoute = CashOutRouteImport.update({
@@ -400,6 +406,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/cash-out': typeof CashOutRoute
+  '/compare': typeof CompareRoute
   '/docs': typeof DocsRouteWithChildren
   '/manifesto': typeof ManifestoRoute
   '/pos': typeof PosRouteWithChildren
@@ -461,6 +468,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/cash-out': typeof CashOutRoute
+  '/compare': typeof CompareRoute
   '/docs': typeof DocsRouteWithChildren
   '/manifesto': typeof ManifestoRoute
   '/pricing': typeof PricingRoute
@@ -521,6 +529,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
   '/cash-out': typeof CashOutRoute
+  '/compare': typeof CompareRoute
   '/docs': typeof DocsRouteWithChildren
   '/manifesto': typeof ManifestoRoute
   '/pos': typeof PosRouteWithChildren
@@ -584,6 +593,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/cash-out'
+    | '/compare'
     | '/docs'
     | '/manifesto'
     | '/pos'
@@ -645,6 +655,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/cash-out'
+    | '/compare'
     | '/docs'
     | '/manifesto'
     | '/pricing'
@@ -704,6 +715,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/cash-out'
+    | '/compare'
     | '/docs'
     | '/manifesto'
     | '/pos'
@@ -767,6 +779,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
   CashOutRoute: typeof CashOutRoute
+  CompareRoute: typeof CompareRoute
   DocsRoute: typeof DocsRouteWithChildren
   ManifestoRoute: typeof ManifestoRoute
   PosRoute: typeof PosRouteWithChildren
@@ -853,6 +866,13 @@ declare module '@tanstack/react-router' {
       path: '/docs'
       fullPath: '/docs'
       preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cash-out': {
@@ -1361,6 +1381,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
   CashOutRoute: CashOutRoute,
+  CompareRoute: CompareRoute,
   DocsRoute: DocsRouteWithChildren,
   ManifestoRoute: ManifestoRoute,
   PosRoute: PosRouteWithChildren,
@@ -1394,13 +1415,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
