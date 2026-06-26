@@ -510,6 +510,9 @@ export type Database = {
           created_at: string
           email: string | null
           full_name: string | null
+          onboarding_completed_at: string | null
+          onboarding_step: string | null
+          terminal_order_clicked_at: string | null
           updated_at: string
           user_id: string
         }
@@ -518,6 +521,9 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name?: string | null
+          onboarding_completed_at?: string | null
+          onboarding_step?: string | null
+          terminal_order_clicked_at?: string | null
           updated_at?: string
           user_id: string
         }
@@ -526,6 +532,9 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name?: string | null
+          onboarding_completed_at?: string | null
+          onboarding_step?: string | null
+          terminal_order_clicked_at?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -554,6 +563,15 @@ export type Database = {
       }
       stores: {
         Row: {
+          business_address: string | null
+          business_category: string | null
+          business_city: string | null
+          business_country: string | null
+          business_description: string | null
+          business_lat: number | null
+          business_lng: number | null
+          business_logo_url: string | null
+          business_region: string | null
           created_at: string
           default_allowed_chains: string[] | null
           default_confirmations_required: number
@@ -572,6 +590,7 @@ export type Database = {
           kyc_basic_require_email: boolean
           kyc_level: Database["public"]["Enums"]["kyc_level"]
           kyc_threshold_usd: number | null
+          listing_visibility: string
           mempool_accept_fast: boolean
           mempool_accept_slow: boolean
           mempool_max_usd: number | null
@@ -606,6 +625,15 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          business_address?: string | null
+          business_category?: string | null
+          business_city?: string | null
+          business_country?: string | null
+          business_description?: string | null
+          business_lat?: number | null
+          business_lng?: number | null
+          business_logo_url?: string | null
+          business_region?: string | null
           created_at?: string
           default_allowed_chains?: string[] | null
           default_confirmations_required?: number
@@ -624,6 +652,7 @@ export type Database = {
           kyc_basic_require_email?: boolean
           kyc_level?: Database["public"]["Enums"]["kyc_level"]
           kyc_threshold_usd?: number | null
+          listing_visibility?: string
           mempool_accept_fast?: boolean
           mempool_accept_slow?: boolean
           mempool_max_usd?: number | null
@@ -658,6 +687,15 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          business_address?: string | null
+          business_category?: string | null
+          business_city?: string | null
+          business_country?: string | null
+          business_description?: string | null
+          business_lat?: number | null
+          business_lng?: number | null
+          business_logo_url?: string | null
+          business_region?: string | null
           created_at?: string
           default_allowed_chains?: string[] | null
           default_confirmations_required?: number
@@ -676,6 +714,7 @@ export type Database = {
           kyc_basic_require_email?: boolean
           kyc_level?: Database["public"]["Enums"]["kyc_level"]
           kyc_threshold_usd?: number | null
+          listing_visibility?: string
           mempool_accept_fast?: boolean
           mempool_accept_slow?: boolean
           mempool_max_usd?: number | null
@@ -842,28 +881,46 @@ export type Database = {
       terminals: {
         Row: {
           created_at: string
+          geoip_updated_at: string | null
           hmac_secret_hash: string
           id: string
           label: string
           last_seen_at: string | null
+          last_seen_city: string | null
+          last_seen_country: string | null
+          last_seen_ip: unknown
+          last_seen_lat: number | null
+          last_seen_lng: number | null
           revoked_at: string | null
           store_id: string
         }
         Insert: {
           created_at?: string
+          geoip_updated_at?: string | null
           hmac_secret_hash: string
           id?: string
           label?: string
           last_seen_at?: string | null
+          last_seen_city?: string | null
+          last_seen_country?: string | null
+          last_seen_ip?: unknown
+          last_seen_lat?: number | null
+          last_seen_lng?: number | null
           revoked_at?: string | null
           store_id: string
         }
         Update: {
           created_at?: string
+          geoip_updated_at?: string | null
           hmac_secret_hash?: string
           id?: string
           label?: string
           last_seen_at?: string | null
+          last_seen_city?: string | null
+          last_seen_country?: string | null
+          last_seen_ip?: unknown
+          last_seen_lat?: number | null
+          last_seen_lng?: number | null
           revoked_at?: string | null
           store_id?: string
         }
@@ -1224,6 +1281,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_merchant_map_pins: {
+        Args: never
+        Returns: {
+          address: string
+          category: string
+          city: string
+          country: string
+          description: string
+          lat: number
+          listing_visibility: string
+          lng: number
+          logo_url: string
+          name: string
+          store_id: string
+          website: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

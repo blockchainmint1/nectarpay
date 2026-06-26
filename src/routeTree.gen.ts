@@ -9,7 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WhereRouteImport } from './routes/where'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PosRouteImport } from './routes/pos'
@@ -56,6 +58,7 @@ import { Route as ApiPublicAuthWalletChallengeRouteImport } from './routes/api/p
 import { Route as ApiPublicAuthWalletCallbackRouteImport } from './routes/api/public/auth/wallet-callback'
 import { Route as AuthenticatedStoresStoreIdTerminalsRouteImport } from './routes/_authenticated.stores.$storeId.terminals'
 import { Route as AuthenticatedStoresStoreIdPosSettingsRouteImport } from './routes/_authenticated.stores.$storeId.pos-settings'
+import { Route as AuthenticatedStoresStoreIdListingRouteImport } from './routes/_authenticated.stores.$storeId.listing'
 import { Route as AuthenticatedStoresStoreIdKycRouteImport } from './routes/_authenticated.stores.$storeId.kyc'
 import { Route as AuthenticatedStoresStoreIdKeysRouteImport } from './routes/_authenticated.stores.$storeId.keys'
 import { Route as AuthenticatedStoresStoreIdChainsRouteImport } from './routes/_authenticated.stores.$storeId.chains'
@@ -67,9 +70,19 @@ import { Route as ApiPublicV1TerminalsInvoiceIdRouteImport } from './routes/api/
 import { Route as ApiPublicV1TerminalsInvoiceIdReceiptRouteImport } from './routes/api/public/v1/terminals/invoice.$id.receipt'
 import { Route as ApiPublicV1TerminalsInvoiceIdCancelRouteImport } from './routes/api/public/v1/terminals/invoice.$id.cancel'
 
+const WhereRoute = WhereRouteImport.update({
+  id: '/where',
+  path: '/where',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -316,6 +329,12 @@ const AuthenticatedStoresStoreIdPosSettingsRoute =
     path: '/pos-settings',
     getParentRoute: () => AuthenticatedStoresStoreIdRoute,
   } as any)
+const AuthenticatedStoresStoreIdListingRoute =
+  AuthenticatedStoresStoreIdListingRouteImport.update({
+    id: '/listing',
+    path: '/listing',
+    getParentRoute: () => AuthenticatedStoresStoreIdRoute,
+  } as any)
 const AuthenticatedStoresStoreIdKycRoute =
   AuthenticatedStoresStoreIdKycRouteImport.update({
     id: '/kyc',
@@ -386,7 +405,9 @@ export interface FileRoutesByFullPath {
   '/pos': typeof PosRouteWithChildren
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/where': typeof WhereRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -412,6 +433,7 @@ export interface FileRoutesByFullPath {
   '/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
   '/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
+  '/stores/$storeId/listing': typeof AuthenticatedStoresStoreIdListingRoute
   '/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
   '/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
@@ -443,7 +465,9 @@ export interface FileRoutesByTo {
   '/manifesto': typeof ManifestoRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/where': typeof WhereRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exports': typeof AuthenticatedExportsRoute
@@ -467,6 +491,7 @@ export interface FileRoutesByTo {
   '/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
   '/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
+  '/stores/$storeId/listing': typeof AuthenticatedStoresStoreIdListingRoute
   '/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
   '/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
@@ -501,7 +526,9 @@ export interface FileRoutesById {
   '/pos': typeof PosRouteWithChildren
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/signup': typeof SignupRoute
   '/terms': typeof TermsRoute
+  '/where': typeof WhereRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -527,6 +554,7 @@ export interface FileRoutesById {
   '/_authenticated/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
   '/_authenticated/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/_authenticated/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
+  '/_authenticated/stores/$storeId/listing': typeof AuthenticatedStoresStoreIdListingRoute
   '/_authenticated/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
   '/_authenticated/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
@@ -561,7 +589,9 @@ export interface FileRouteTypes {
     | '/pos'
     | '/pricing'
     | '/privacy'
+    | '/signup'
     | '/terms'
+    | '/where'
     | '/admin'
     | '/billing'
     | '/dashboard'
@@ -587,6 +617,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId/chains'
     | '/stores/$storeId/keys'
     | '/stores/$storeId/kyc'
+    | '/stores/$storeId/listing'
     | '/stores/$storeId/pos-settings'
     | '/stores/$storeId/terminals'
     | '/api/public/auth/wallet-callback'
@@ -618,7 +649,9 @@ export interface FileRouteTypes {
     | '/manifesto'
     | '/pricing'
     | '/privacy'
+    | '/signup'
     | '/terms'
+    | '/where'
     | '/billing'
     | '/dashboard'
     | '/exports'
@@ -642,6 +675,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId/chains'
     | '/stores/$storeId/keys'
     | '/stores/$storeId/kyc'
+    | '/stores/$storeId/listing'
     | '/stores/$storeId/pos-settings'
     | '/stores/$storeId/terminals'
     | '/api/public/auth/wallet-callback'
@@ -675,7 +709,9 @@ export interface FileRouteTypes {
     | '/pos'
     | '/pricing'
     | '/privacy'
+    | '/signup'
     | '/terms'
+    | '/where'
     | '/_authenticated/admin'
     | '/_authenticated/billing'
     | '/_authenticated/dashboard'
@@ -701,6 +737,7 @@ export interface FileRouteTypes {
     | '/_authenticated/stores/$storeId/chains'
     | '/_authenticated/stores/$storeId/keys'
     | '/_authenticated/stores/$storeId/kyc'
+    | '/_authenticated/stores/$storeId/listing'
     | '/_authenticated/stores/$storeId/pos-settings'
     | '/_authenticated/stores/$storeId/terminals'
     | '/api/public/auth/wallet-callback'
@@ -735,7 +772,9 @@ export interface RootRouteChildren {
   PosRoute: typeof PosRouteWithChildren
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
+  SignupRoute: typeof SignupRoute
   TermsRoute: typeof TermsRoute
+  WhereRoute: typeof WhereRoute
   IInvoiceIdRoute: typeof IInvoiceIdRoute
   IntegrationsWoocommerceRoute: typeof IntegrationsWoocommerceRoute
   SdkPayhmeDotjsRoute: typeof SdkPayhmeDotjsRoute
@@ -760,11 +799,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/where': {
+      id: '/where'
+      path: '/where'
+      fullPath: '/where'
+      preLoaderRoute: typeof WhereRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -1089,6 +1142,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStoresStoreIdPosSettingsRouteImport
       parentRoute: typeof AuthenticatedStoresStoreIdRoute
     }
+    '/_authenticated/stores/$storeId/listing': {
+      id: '/_authenticated/stores/$storeId/listing'
+      path: '/listing'
+      fullPath: '/stores/$storeId/listing'
+      preLoaderRoute: typeof AuthenticatedStoresStoreIdListingRouteImport
+      parentRoute: typeof AuthenticatedStoresStoreIdRoute
+    }
     '/_authenticated/stores/$storeId/kyc': {
       id: '/_authenticated/stores/$storeId/kyc'
       path: '/kyc'
@@ -1183,6 +1243,7 @@ interface AuthenticatedStoresStoreIdRouteChildren {
   AuthenticatedStoresStoreIdChainsRoute: typeof AuthenticatedStoresStoreIdChainsRoute
   AuthenticatedStoresStoreIdKeysRoute: typeof AuthenticatedStoresStoreIdKeysRoute
   AuthenticatedStoresStoreIdKycRoute: typeof AuthenticatedStoresStoreIdKycRoute
+  AuthenticatedStoresStoreIdListingRoute: typeof AuthenticatedStoresStoreIdListingRoute
   AuthenticatedStoresStoreIdPosSettingsRoute: typeof AuthenticatedStoresStoreIdPosSettingsRoute
   AuthenticatedStoresStoreIdTerminalsRoute: typeof AuthenticatedStoresStoreIdTerminalsRoute
   AuthenticatedStoresStoreIdIndexRoute: typeof AuthenticatedStoresStoreIdIndexRoute
@@ -1194,6 +1255,8 @@ const AuthenticatedStoresStoreIdRouteChildren: AuthenticatedStoresStoreIdRouteCh
       AuthenticatedStoresStoreIdChainsRoute,
     AuthenticatedStoresStoreIdKeysRoute: AuthenticatedStoresStoreIdKeysRoute,
     AuthenticatedStoresStoreIdKycRoute: AuthenticatedStoresStoreIdKycRoute,
+    AuthenticatedStoresStoreIdListingRoute:
+      AuthenticatedStoresStoreIdListingRoute,
     AuthenticatedStoresStoreIdPosSettingsRoute:
       AuthenticatedStoresStoreIdPosSettingsRoute,
     AuthenticatedStoresStoreIdTerminalsRoute:
@@ -1303,7 +1366,9 @@ const rootRouteChildren: RootRouteChildren = {
   PosRoute: PosRouteWithChildren,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
+  SignupRoute: SignupRoute,
   TermsRoute: TermsRoute,
+  WhereRoute: WhereRoute,
   IInvoiceIdRoute: IInvoiceIdRoute,
   IntegrationsWoocommerceRoute: IntegrationsWoocommerceRoute,
   SdkPayhmeDotjsRoute: SdkPayhmeDotjsRoute,
@@ -1329,13 +1394,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
