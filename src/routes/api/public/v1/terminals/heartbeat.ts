@@ -81,7 +81,7 @@ export const Route = createFileRoute("/api/public/v1/terminals/heartbeat")({
 
           const ip = getClientIp(request);
           const now = new Date();
-          const update: Record<string, unknown> = {
+          const update: Database["public"]["Tables"]["terminals"]["Update"] = {
             last_seen_at: now.toISOString(),
           };
 
