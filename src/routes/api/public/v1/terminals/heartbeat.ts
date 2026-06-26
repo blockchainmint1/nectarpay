@@ -3,6 +3,7 @@
 // Also enriches last-seen IP + city/country via GeoIP for the /where map.
 
 import { createFileRoute } from "@tanstack/react-router";
+import type { Database } from "@/integrations/supabase/types";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
