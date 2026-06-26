@@ -104,8 +104,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", type: "image/svg+xml", href: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'><defs><linearGradient id='b' x1='0' y1='0' x2='0' y2='1'><stop offset='0%25' stop-color='%23f5c44a'/><stop offset='100%25' stop-color='%23c98a2a'/></linearGradient></defs><ellipse cx='11.5' cy='14' rx='7' ry='9' fill='%23fff3cf' fill-opacity='0.7' transform='rotate(-22 11.5 14)'/><ellipse cx='28.5' cy='14' rx='7' ry='9' fill='%23fff3cf' fill-opacity='0.7' transform='rotate(22 28.5 14)'/><ellipse cx='20' cy='22' rx='10' ry='12' fill='url(%23b)' stroke='%231f1408' stroke-width='1.4'/><path d='M12.4 18 Q20 16 27.6 18' stroke='%231f1408' stroke-width='2.6' stroke-linecap='round' fill='none'/><path d='M11.2 24 Q20 22.4 28.8 24' stroke='%231f1408' stroke-width='2.6' stroke-linecap='round' fill='none'/><path d='M13 30 Q20 29 27 30' stroke='%231f1408' stroke-width='2.6' stroke-linecap='round' fill='none'/><path d='M18.6 33.6 L20 37 L21.4 33.6 Z' fill='%231f1408'/></svg>" },
+      { rel: "icon", type: "image/png", href: "/__l5e/assets-v1/9a1a15be-5b2c-4cc1-ad77-3fd244828324/nectar-hive-mark.png" },
+      { rel: "apple-touch-icon", href: "/__l5e/assets-v1/9a1a15be-5b2c-4cc1-ad77-3fd244828324/nectar-hive-mark.png" },
     ],
+
   }),
   shellComponent: RootShell,
   component: RootComponent,
