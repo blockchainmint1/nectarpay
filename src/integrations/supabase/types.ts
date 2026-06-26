@@ -77,6 +77,13 @@ export type Database = {
             foreignKeyName: "api_keys_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
+            referencedRelation: "merchant_map_pins"
+            referencedColumns: ["store_id"]
+          },
+          {
+            foreignKeyName: "api_keys_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
@@ -123,6 +130,13 @@ export type Database = {
           store_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "chain_config_audit_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_map_pins"
+            referencedColumns: ["store_id"]
+          },
           {
             foreignKeyName: "chain_config_audit_store_id_fkey"
             columns: ["store_id"]
@@ -189,6 +203,13 @@ export type Database = {
             foreignKeyName: "chain_configs_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
+            referencedRelation: "merchant_map_pins"
+            referencedColumns: ["store_id"]
+          },
+          {
+            foreignKeyName: "chain_configs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
@@ -226,6 +247,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "chain_configs"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "derived_addresses_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_map_pins"
+            referencedColumns: ["store_id"]
           },
           {
             foreignKeyName: "derived_addresses_store_id_fkey"
@@ -316,6 +344,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "invoices_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_map_pins"
+            referencedColumns: ["store_id"]
+          },
           {
             foreignKeyName: "invoices_store_id_fkey"
             columns: ["store_id"]
@@ -510,6 +545,9 @@ export type Database = {
           created_at: string
           email: string | null
           full_name: string | null
+          onboarding_completed_at: string | null
+          onboarding_step: string | null
+          terminal_order_clicked_at: string | null
           updated_at: string
           user_id: string
         }
@@ -518,6 +556,9 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name?: string | null
+          onboarding_completed_at?: string | null
+          onboarding_step?: string | null
+          terminal_order_clicked_at?: string | null
           updated_at?: string
           user_id: string
         }
@@ -526,6 +567,9 @@ export type Database = {
           created_at?: string
           email?: string | null
           full_name?: string | null
+          onboarding_completed_at?: string | null
+          onboarding_step?: string | null
+          terminal_order_clicked_at?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -554,6 +598,15 @@ export type Database = {
       }
       stores: {
         Row: {
+          business_address: string | null
+          business_category: string | null
+          business_city: string | null
+          business_country: string | null
+          business_description: string | null
+          business_lat: number | null
+          business_lng: number | null
+          business_logo_url: string | null
+          business_region: string | null
           created_at: string
           default_allowed_chains: string[] | null
           default_confirmations_required: number
@@ -572,6 +625,7 @@ export type Database = {
           kyc_basic_require_email: boolean
           kyc_level: Database["public"]["Enums"]["kyc_level"]
           kyc_threshold_usd: number | null
+          listing_visibility: string
           mempool_accept_fast: boolean
           mempool_accept_slow: boolean
           mempool_max_usd: number | null
@@ -606,6 +660,15 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          business_address?: string | null
+          business_category?: string | null
+          business_city?: string | null
+          business_country?: string | null
+          business_description?: string | null
+          business_lat?: number | null
+          business_lng?: number | null
+          business_logo_url?: string | null
+          business_region?: string | null
           created_at?: string
           default_allowed_chains?: string[] | null
           default_confirmations_required?: number
@@ -624,6 +687,7 @@ export type Database = {
           kyc_basic_require_email?: boolean
           kyc_level?: Database["public"]["Enums"]["kyc_level"]
           kyc_threshold_usd?: number | null
+          listing_visibility?: string
           mempool_accept_fast?: boolean
           mempool_accept_slow?: boolean
           mempool_max_usd?: number | null
@@ -658,6 +722,15 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          business_address?: string | null
+          business_category?: string | null
+          business_city?: string | null
+          business_country?: string | null
+          business_description?: string | null
+          business_lat?: number | null
+          business_lng?: number | null
+          business_logo_url?: string | null
+          business_region?: string | null
           created_at?: string
           default_allowed_chains?: string[] | null
           default_confirmations_required?: number
@@ -676,6 +749,7 @@ export type Database = {
           kyc_basic_require_email?: boolean
           kyc_level?: Database["public"]["Enums"]["kyc_level"]
           kyc_threshold_usd?: number | null
+          listing_visibility?: string
           mempool_accept_fast?: boolean
           mempool_accept_slow?: boolean
           mempool_max_usd?: number | null
@@ -834,6 +908,13 @@ export type Database = {
             foreignKeyName: "terminal_pairing_codes_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
+            referencedRelation: "merchant_map_pins"
+            referencedColumns: ["store_id"]
+          },
+          {
+            foreignKeyName: "terminal_pairing_codes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
@@ -842,32 +923,57 @@ export type Database = {
       terminals: {
         Row: {
           created_at: string
+          geoip_updated_at: string | null
           hmac_secret_hash: string
           id: string
           label: string
           last_seen_at: string | null
+          last_seen_city: string | null
+          last_seen_country: string | null
+          last_seen_ip: unknown
+          last_seen_lat: number | null
+          last_seen_lng: number | null
           revoked_at: string | null
           store_id: string
         }
         Insert: {
           created_at?: string
+          geoip_updated_at?: string | null
           hmac_secret_hash: string
           id?: string
           label?: string
           last_seen_at?: string | null
+          last_seen_city?: string | null
+          last_seen_country?: string | null
+          last_seen_ip?: unknown
+          last_seen_lat?: number | null
+          last_seen_lng?: number | null
           revoked_at?: string | null
           store_id: string
         }
         Update: {
           created_at?: string
+          geoip_updated_at?: string | null
           hmac_secret_hash?: string
           id?: string
           label?: string
           last_seen_at?: string | null
+          last_seen_city?: string | null
+          last_seen_country?: string | null
+          last_seen_ip?: unknown
+          last_seen_lat?: number | null
+          last_seen_lng?: number | null
           revoked_at?: string | null
           store_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "terminals_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "merchant_map_pins"
+            referencedColumns: ["store_id"]
+          },
           {
             foreignKeyName: "terminals_store_id_fkey"
             columns: ["store_id"]
@@ -1092,6 +1198,13 @@ export type Database = {
             foreignKeyName: "wallet_link_codes_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
+            referencedRelation: "merchant_map_pins"
+            referencedColumns: ["store_id"]
+          },
+          {
+            foreignKeyName: "wallet_link_codes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
             referencedRelation: "stores"
             referencedColumns: ["id"]
           },
@@ -1221,7 +1334,23 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      merchant_map_pins: {
+        Row: {
+          address: string | null
+          category: string | null
+          city: string | null
+          country: string | null
+          description: string | null
+          lat: number | null
+          listing_visibility: string | null
+          lng: number | null
+          logo_url: string | null
+          name: string | null
+          store_id: string | null
+          website: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
