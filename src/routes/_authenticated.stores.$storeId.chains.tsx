@@ -664,11 +664,15 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
     setLinked(false);
     try {
       const result = await createCode({ data: { storeId, allowNewWallet } });
-      const origin = window.location.origin;
-      // QR is a plain HTTPS URL — the wallet is a web/PWA, custom schemes
-      // don't fire. Wallet GETs this to fetch the link manifest, then POSTs
-      // the signed xpubs back to callback_url from the manifest.
-      const linkUrl = `${origin}/api/public/v1/wallet-link?token=${encodeURIComponent(result.token)}`;
+      // QR ALWAYS points at the canonical production host. Beekeeper
+      // allowlists nectar-pay.com — a preview/staging origin would be
+      // rejected as "Bad manifest" even though our payload is well-formed.
+      // Override locally with VITE_PUBLIC_SITE_URL if you need to test
+      // against a different host.
+      const canonical =
+        (import.meta.env.VITE_PUBLIC_SITE_URL as string | undefined)?.replace(/\/$/, "") ||
+        "https://nectar-pay.com";
+      const linkUrl = `${canonical}/api/public/v1/wallet-link?token=${encodeURIComponent(result.token)}`;
       const qr = await QRCode.toDataURL(linkUrl, { width: 320, margin: 1 });
       setQrDataUrl(qr);
       setToken(result.token);
