@@ -13,7 +13,14 @@ function base64url(buf: Buffer): string {
 
 export const createWalletLinkCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ storeId: z.string().uuid() }).parse(d))
+  .inputValidator((d) =>
+    z
+      .object({
+        storeId: z.string().uuid(),
+        allowNewWallet: z.boolean().optional().default(false),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     // RLS confirms ownership.
     const { data: store, error: sErr } = await context.supabase
@@ -33,6 +40,7 @@ export const createWalletLinkCode = createServerFn({ method: "POST" })
       code_hash,
       expires_at,
       created_by: context.userId,
+      allow_new_wallet: data.allowNewWallet,
     });
     if (error) throw new Error(error.message);
 
@@ -41,5 +49,7 @@ export const createWalletLinkCode = createServerFn({ method: "POST" })
       expires_at,
       store_id: store.id,
       store_name: store.name,
+      allow_new_wallet: data.allowNewWallet,
     };
   });
+
