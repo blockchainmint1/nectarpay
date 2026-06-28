@@ -64,6 +64,38 @@ function json(body: unknown, status = 200) {
   });
 }
 
+// Escape `</script>` and HTML-special chars so embedding JSON inside a
+// <script type="hm-link-manifest"> block can never break out of the tag.
+function escapeForScriptTag(s: string): string {
+  return s
+    .replace(/\\/g, "\\\\")
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+}
+
+// Beekeeper wallet's manifest discovery looks for an HTML page containing
+// `<script type="hm-link-manifest">…JSON…</script>`. Browsers/fetchers that
+// ask for `application/json` still get raw JSON.
+function manifestResponse(manifest: unknown, accept: string, status = 200) {
+  const wantsJson = /application\/json/i.test(accept);
+  const body = JSON.stringify(manifest);
+  if (wantsJson) {
+    return new Response(body, {
+      status,
+      headers: { "Content-Type": "application/json", ...CORS },
+    });
+  }
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Nectar Pay wallet link</title><script type="hm-link-manifest">${escapeForScriptTag(body)}</script></head><body><pre>${escapeForScriptTag(body)}</pre></body></html>`;
+  return new Response(html, {
+    status,
+    headers: { "Content-Type": "text/html; charset=utf-8", ...CORS },
+  });
+}
+
+
 // Uppercase wire-protocol chain keys (wallet side).
 const WIRE_CHAINS = ["BTC", "TXC", "EVM", "LTC", "BCH", "DOGE", "TRX"] as const;
 type WireChain = (typeof WIRE_CHAINS)[number];
@@ -254,7 +286,7 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
             .eq("user_id", codeRow.created_by);
           const knownAddresses = (addrRows ?? []).map((r) => r.wallet_address);
 
-          return json(
+          return manifestResponse(
             manifestFor({
               token,
               origin: url.origin,
@@ -264,7 +296,9 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
               allowNewWallet: !!codeRow.allow_new_wallet,
               knownAddresses,
             }),
+            request.headers.get("accept") ?? "",
           );
+
         } catch (err) {
           return json(
             { error: err instanceof Error ? err.message : "Server error" },
