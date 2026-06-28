@@ -452,16 +452,11 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
             chainsLinked.push(wireKey);
           }
 
-          if (chainsLinked.length > 0) {
-            await supabaseAdmin
-              .from("wallet_link_codes")
-              .update({ used_at: new Date().toISOString() })
-              .eq("id", codeRow.id);
-          }
-
+          // Code was already claimed pre-flight; no second update needed.
           if (chainsLinked.length === 0) {
             return json({ ok: false, error: "No chains accepted.", rejected }, 400);
           }
+
 
           return json({
             ok: true,
