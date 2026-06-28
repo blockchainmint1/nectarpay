@@ -118,7 +118,9 @@ async function rolloverBilling(): Promise<{
 export const Route = createFileRoute("/api/public/cron/billing")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const unauthorized = requireCronAuth(request);
+        if (unauthorized) return unauthorized;
         try {
           const result = await rolloverBilling();
           return Response.json({ ok: true, ...result });
@@ -129,7 +131,9 @@ export const Route = createFileRoute("/api/public/cron/billing")({
           );
         }
       },
-      GET: async () => {
+      GET: async ({ request }) => {
+        const unauthorized = requireCronAuth(request);
+        if (unauthorized) return unauthorized;
         const result = await rolloverBilling();
         return Response.json({ ok: true, ...result });
       },
