@@ -269,7 +269,7 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { data: codeRow } = await supabaseAdmin
             .from("wallet_link_codes")
-            .select("id, store_id, expires_at, used_at, created_by")
+            .select("id, store_id, expires_at, used_at, created_by, allow_new_wallet")
             .eq("code_hash", code_hash)
             .maybeSingle();
           if (!codeRow) {
@@ -310,7 +310,15 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
             return json({ error: "Signed payload expired." }, 410);
           }
 
-          // 3. Signature check — address must be registered to the token issuer.
+          // 3. Signature check.
+          //   - Default: signing address must already be registered to the
+          //     merchant (wallet_accounts.user_id = codeRow.created_by). This
+          //     means the merchant has previously signed into Nectar with
+          //     this wallet.
+          //   - Trust-on-first-use: if the merchant explicitly opted in via
+          //     `allow_new_wallet` when minting the link code, we accept a
+          //     never-seen address and register it. The Beekeeper wallet is
+          //     expected to show a big warning before signing in this mode.
           const { data: addrRows } = await supabaseAdmin
             .from("wallet_accounts")
             .select("wallet_address")
@@ -318,13 +326,37 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
           const allowed = new Set(
             (addrRows ?? []).map((r) => r.wallet_address.trim().toLowerCase()),
           );
-          if (!allowed.has(address.trim().toLowerCase())) {
-            return json({ error: "Signing address not registered to this merchant." }, 403);
+          const addrLower = address.trim().toLowerCase();
+          const addressKnown = allowed.has(addrLower);
+
+          if (!addressKnown && !codeRow.allow_new_wallet) {
+            return json(
+              {
+                error: "Signing address not registered to this merchant.",
+                code: "unknown_signer",
+                hint:
+                  "Either sign in to Nectar with this wallet first, or have the merchant re-mint the link code with 'link a new wallet' enabled.",
+              },
+              403,
+            );
           }
 
           const message = canonicalize(payload);
           const sigOk = verifyTxcSignature({ address, message, signature });
           if (!sigOk) return json({ error: "Invalid signature." }, 401);
+
+          // Trust-on-first-use: register this address to the merchant so
+          // future links (and Nectar sign-in) recognize it.
+          if (!addressKnown && codeRow.allow_new_wallet) {
+            await supabaseAdmin
+              .from("wallet_accounts")
+              .insert({
+                user_id: codeRow.created_by,
+                wallet_address: address.trim(),
+              });
+          }
+
+
 
           const { data: store } = await supabaseAdmin
             .from("stores")
