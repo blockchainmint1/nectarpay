@@ -132,17 +132,22 @@ function extractTokenFromCallback(callbackUrl: string, expectedOrigin: string): 
   }
 }
 
-// Hash the set of addresses already bound to this merchant, so the manifest
-// can advertise "do you (wallet) already know me?" without leaking the raw
-// list of every device a merchant has linked. Beekeeper computes the same
-// hash locally over `[myAddress]` (or its own remembered set) to decide
-// whether to warn the user.
+// Locked hash recipe (byte-exact, matches Beekeeper):
+//
+//   sha256( addresses.map(a => a.trim()).sort().join("\n") )
+//
+// - hex-encoded lowercase
+// - NO trailing newline
+// - addresses compared CASE-SENSITIVELY (TXC is base58check, case matters —
+//   lowercasing would corrupt the address)
+// - de-duplicated on the exact trimmed string
+// - empty set → sha256 of the empty string
+//   ("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
 function hashAddressSet(addrs: string[]): string {
-  const norm = Array.from(new Set(addrs.map((a) => a.trim().toLowerCase())))
-    .filter(Boolean)
-    .sort();
+  const norm = Array.from(new Set(addrs.map((a) => a.trim()))).filter(Boolean).sort();
   return createHash("sha256").update(norm.join("\n")).digest("hex");
 }
+
 
 function manifestFor(opts: {
   token: string;
