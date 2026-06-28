@@ -138,6 +138,8 @@ function manifestFor(opts: {
   host: string;
   storeName: string;
   expiresAtIso: string;
+  allowNewWallet: boolean;
+  knownAddresses: string[];
 }) {
   return {
     v: 1,
@@ -149,6 +151,14 @@ function manifestFor(opts: {
     chains: WIRE_CHAINS,
     exp: Math.floor(new Date(opts.expiresAtIso).getTime() / 1000), // unix SECONDS
     issued_at: new Date().toISOString(),
+    // Trust-on-first-use hint. When `allow_new_wallet` is true, the merchant
+    // explicitly opted in to linking a wallet they have not previously signed
+    // into Nectar with — the wallet SHOULD prominently warn the user before
+    // signing ("you're about to bind this brand-new wallet to merchant X").
+    // When false, the wallet's signing address MUST be one of
+    // `known_addresses` or the POST will be rejected 403.
+    allow_new_wallet: opts.allowNewWallet,
+    known_addresses: opts.knownAddresses,
     signing: {
       curve: "secp256k1",
       hash: "sha256d-magic",
@@ -173,6 +183,7 @@ function manifestFor(opts: {
     },
   };
 }
+
 
 export const Route = createFileRoute("/api/public/v1/wallet-link")({
   server: {
