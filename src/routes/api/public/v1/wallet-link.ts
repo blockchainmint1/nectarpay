@@ -132,6 +132,18 @@ function extractTokenFromCallback(callbackUrl: string, expectedOrigin: string): 
   }
 }
 
+// Hash the set of addresses already bound to this merchant, so the manifest
+// can advertise "do you (wallet) already know me?" without leaking the raw
+// list of every device a merchant has linked. Beekeeper computes the same
+// hash locally over `[myAddress]` (or its own remembered set) to decide
+// whether to warn the user.
+function hashAddressSet(addrs: string[]): string {
+  const norm = Array.from(new Set(addrs.map((a) => a.trim().toLowerCase())))
+    .filter(Boolean)
+    .sort();
+  return createHash("sha256").update(norm.join("\n")).digest("hex");
+}
+
 function manifestFor(opts: {
   token: string;
   origin: string;
@@ -141,24 +153,37 @@ function manifestFor(opts: {
   allowNewWallet: boolean;
   knownAddresses: string[];
 }) {
+  const callbackUrl = `${opts.origin}/api/public/v1/wallet-link?token=${encodeURIComponent(opts.token)}`;
   return {
     v: 1,
     type: "hm-link-manifest",
     challenge_id: opts.token,
-    callback_url: `${opts.origin}/api/public/v1/wallet-link?token=${encodeURIComponent(opts.token)}`,
+    callback_url: callbackUrl,
+    // Same host as callback_url. Beekeeper SHOULD assert
+    // `new URL(manifest_url).host === new URL(callback_url).host`
+    // before signing.
+    manifest_url: callbackUrl,
     from: opts.host,
     merchant: opts.storeName,
     chains: WIRE_CHAINS,
-    exp: Math.floor(new Date(opts.expiresAtIso).getTime() / 1000), // unix SECONDS
+    // Unix SECONDS, equal to the link code's expires_at. Beekeeper MUST
+    // refuse to sign if Date.now()/1000 > manifest.exp, independent of the
+    // payload `exp` it constructs.
+    exp: Math.floor(new Date(opts.expiresAtIso).getTime() / 1000),
     issued_at: new Date().toISOString(),
-    // Trust-on-first-use hint. When `allow_new_wallet` is true, the merchant
-    // explicitly opted in to linking a wallet they have not previously signed
-    // into Nectar with — the wallet SHOULD prominently warn the user before
-    // signing ("you're about to bind this brand-new wallet to merchant X").
-    // When false, the wallet's signing address MUST be one of
-    // `known_addresses` or the POST will be rejected 403.
+    // Trust-on-first-use hint. Per-code (single-use): the merchant ticked
+    // "this is a new wallet" when minting this QR; the flag dies with the
+    // code (used_at + 5-min TTL). When true, Beekeeper SHOULD prominently
+    // warn the user before signing and SHOULD name the first/last 6 chars
+    // of the address being bound. When false, the wallet's signing address
+    // MUST hash-match `known_addresses_hash` or the POST will be 403.
     allow_new_wallet: opts.allowNewWallet,
-    known_addresses: opts.knownAddresses,
+    // Privacy: we DO NOT return the raw address list. Wallet computes the
+    // same hash over its candidate set and compares; mismatch + !allow_new
+    // means "this wallet isn't bound here yet, ask the merchant to re-mint
+    // with new-wallet enabled."
+    known_addresses_count: opts.knownAddresses.length,
+    known_addresses_hash: hashAddressSet(opts.knownAddresses),
     signing: {
       curve: "secp256k1",
       hash: "sha256d-magic",
@@ -183,6 +208,7 @@ function manifestFor(opts: {
     },
   };
 }
+
 
 
 export const Route = createFileRoute("/api/public/v1/wallet-link")({
@@ -345,8 +371,25 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
           const sigOk = verifyTxcSignature({ address, message, signature });
           if (!sigOk) return json({ error: "Invalid signature." }, 401);
 
+          // CLAIM the code atomically BEFORE any side effects. This makes
+          // allow_new_wallet strictly single-use: a parallel POST against
+          // the same QR loses the race and gets 410. We re-check used_at
+          // via the conditional update and bail if it returns zero rows.
+          const claimedAt = new Date().toISOString();
+          const { data: claimed, error: claimErr } = await supabaseAdmin
+            .from("wallet_link_codes")
+            .update({ used_at: claimedAt })
+            .eq("id", codeRow.id)
+            .is("used_at", null)
+            .select("id")
+            .maybeSingle();
+          if (claimErr || !claimed) {
+            return json({ error: "Token already used." }, 410);
+          }
+
           // Trust-on-first-use: register this address to the merchant so
-          // future links (and Nectar sign-in) recognize it.
+          // future links (and Nectar sign-in) recognize it. Safe to do
+          // AFTER claim — only one POST can reach this point per code.
           if (!addressKnown && codeRow.allow_new_wallet) {
             await supabaseAdmin
               .from("wallet_accounts")
@@ -356,14 +399,13 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
               });
           }
 
-
-
           const { data: store } = await supabaseAdmin
             .from("stores")
             .select("id, name")
             .eq("id", codeRow.store_id)
             .maybeSingle();
           if (!store) return json({ error: "Store not found." }, 404);
+
 
           // 4. Per-chain validate + upsert chain_configs.
           const chainsLinked: WireChain[] = [];
@@ -410,16 +452,11 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
             chainsLinked.push(wireKey);
           }
 
-          if (chainsLinked.length > 0) {
-            await supabaseAdmin
-              .from("wallet_link_codes")
-              .update({ used_at: new Date().toISOString() })
-              .eq("id", codeRow.id);
-          }
-
+          // Code was already claimed pre-flight; no second update needed.
           if (chainsLinked.length === 0) {
             return json({ ok: false, error: "No chains accepted.", rejected }, 400);
           }
+
 
           return json({
             ok: true,
