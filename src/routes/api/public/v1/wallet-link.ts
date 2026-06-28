@@ -371,8 +371,25 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
           const sigOk = verifyTxcSignature({ address, message, signature });
           if (!sigOk) return json({ error: "Invalid signature." }, 401);
 
+          // CLAIM the code atomically BEFORE any side effects. This makes
+          // allow_new_wallet strictly single-use: a parallel POST against
+          // the same QR loses the race and gets 410. We re-check used_at
+          // via the conditional update and bail if it returns zero rows.
+          const claimedAt = new Date().toISOString();
+          const { data: claimed, error: claimErr } = await supabaseAdmin
+            .from("wallet_link_codes")
+            .update({ used_at: claimedAt })
+            .eq("id", codeRow.id)
+            .is("used_at", null)
+            .select("id")
+            .maybeSingle();
+          if (claimErr || !claimed) {
+            return json({ error: "Token already used." }, 410);
+          }
+
           // Trust-on-first-use: register this address to the merchant so
-          // future links (and Nectar sign-in) recognize it.
+          // future links (and Nectar sign-in) recognize it. Safe to do
+          // AFTER claim — only one POST can reach this point per code.
           if (!addressKnown && codeRow.allow_new_wallet) {
             await supabaseAdmin
               .from("wallet_accounts")
@@ -382,14 +399,13 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
               });
           }
 
-
-
           const { data: store } = await supabaseAdmin
             .from("stores")
             .select("id, name")
             .eq("id", codeRow.store_id)
             .maybeSingle();
           if (!store) return json({ error: "Store not found." }, 404);
+
 
           // 4. Per-chain validate + upsert chain_configs.
           const chainsLinked: WireChain[] = [];
