@@ -286,7 +286,7 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
             .eq("user_id", codeRow.created_by);
           const knownAddresses = (addrRows ?? []).map((r) => r.wallet_address);
 
-          return json(
+          return manifestResponse(
             manifestFor({
               token,
               origin: url.origin,
@@ -296,7 +296,9 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
               allowNewWallet: !!codeRow.allow_new_wallet,
               knownAddresses,
             }),
+            request.headers.get("accept") ?? "",
           );
+
         } catch (err) {
           return json(
             { error: err instanceof Error ? err.message : "Server error" },
