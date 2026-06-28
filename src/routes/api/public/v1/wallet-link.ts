@@ -201,7 +201,7 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
 
           const { data: codeRow } = await supabaseAdmin
             .from("wallet_link_codes")
-            .select("id, store_id, expires_at, used_at")
+            .select("id, store_id, expires_at, used_at, created_by, allow_new_wallet")
             .eq("code_hash", code_hash)
             .maybeSingle();
           if (!codeRow) return json({ error: "Unknown link token." }, 404);
@@ -217,6 +217,12 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
             .maybeSingle();
           if (!store) return json({ error: "Store not found." }, 404);
 
+          const { data: addrRows } = await supabaseAdmin
+            .from("wallet_accounts")
+            .select("wallet_address")
+            .eq("user_id", codeRow.created_by);
+          const knownAddresses = (addrRows ?? []).map((r) => r.wallet_address);
+
           return json(
             manifestFor({
               token,
@@ -224,6 +230,8 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
               host: url.host,
               storeName: store.name,
               expiresAtIso: codeRow.expires_at,
+              allowNewWallet: !!codeRow.allow_new_wallet,
+              knownAddresses,
             }),
           );
         } catch (err) {
@@ -233,6 +241,7 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
           );
         }
       },
+
 
       POST: async ({ request }) => {
         try {
