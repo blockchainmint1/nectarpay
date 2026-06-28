@@ -193,7 +193,7 @@ function manifestFor(opts: {
   const callbackUrl = `${opts.origin}/api/public/v1/wallet-link?token=${encodeURIComponent(opts.token)}`;
   return {
     v: 1,
-    type: "hm-link-manifest",
+    type: "hm-link-xpubs",
     challenge_id: opts.token,
     callback_url: callbackUrl,
     // Same host as callback_url. Beekeeper SHOULD assert
