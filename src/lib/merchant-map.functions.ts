@@ -3,8 +3,6 @@
 // anon can fetch a safe, filtered projection without hitting stores RLS.
 
 import { createServerFn } from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
 
 export type MapPin = {
   store_id: string;
@@ -23,18 +21,9 @@ export type MapPin = {
 
 export const getMerchantMapPins = createServerFn({ method: "GET" }).handler(
   async (): Promise<{ pins: MapPin[] }> => {
-    const supabase = createClient<Database>(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_PUBLISHABLE_KEY!,
-      {
-        auth: {
-          storage: undefined,
-          persistSession: false,
-          autoRefreshToken: false,
-        },
-      },
-    );
-    const { data, error } = await supabase.rpc("get_merchant_map_pins");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin.rpc("get_merchant_map_pins");
+
     if (error) {
       console.error("[merchant-map] rpc error", error);
       return { pins: [] };
