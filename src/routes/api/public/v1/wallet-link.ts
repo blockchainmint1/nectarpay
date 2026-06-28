@@ -88,7 +88,7 @@ function manifestResponse(manifest: unknown, accept: string, status = 200) {
       headers: { "Content-Type": "application/json", ...CORS },
     });
   }
-  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Nectar Pay wallet link</title><script type="hm-link-manifest">${escapeForScriptTag(body)}</script></head><body><pre>${escapeForScriptTag(body)}</pre></body></html>`;
+  const html = `<!doctype html><html><head><meta charset="utf-8"><title>Nectar Pay wallet link</title><script type="hm-link-xpubs">${escapeForScriptTag(body)}</script></head><body><pre>${escapeForScriptTag(body)}</pre></body></html>`;
   return new Response(html, {
     status,
     headers: { "Content-Type": "text/html; charset=utf-8", ...CORS },
@@ -193,7 +193,7 @@ function manifestFor(opts: {
   const callbackUrl = `${opts.origin}/api/public/v1/wallet-link?token=${encodeURIComponent(opts.token)}`;
   return {
     v: 1,
-    type: "hm-link-manifest",
+    type: "hm-link-xpubs",
     challenge_id: opts.token,
     callback_url: callbackUrl,
     // Same host as callback_url. Beekeeper SHOULD assert
