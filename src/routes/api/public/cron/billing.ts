@@ -2,6 +2,7 @@
 // auto-renew paid plans from TXC balance, send grace-period warnings.
 
 import { createFileRoute } from "@tanstack/react-router";
+import { requireCronAuth } from "@/lib/cron-auth.server";
 import { notifyUser } from "@/lib/notify.server";
 import { getUsdRate } from "@/lib/rates.functions";
 import { scanTxcDeposits } from "@/lib/txc-deposit-scanner.server";
