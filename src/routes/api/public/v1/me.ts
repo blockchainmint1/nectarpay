@@ -56,18 +56,22 @@ export const Route = createFileRoute("/api/public/v1/me")({
 
           const { data: store } = await supabaseAdmin
             .from("stores")
-            .select("id, name, slug, fiat_currency, owner_user_id, webhook_url")
+            .select("id, name, fiat_currency, owner_id, webhook_url, receipt_business_name, website")
             .eq("id", keyRow.store_id)
             .maybeSingle();
           if (!store) return json({ error: "Store not found." }, 404);
 
           // Best-effort owner email; not fatal if missing.
           let ownerEmail: string | null = null;
-          if (store.owner_user_id) {
-            const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(
-              store.owner_user_id,
-            );
-            ownerEmail = userRes?.user?.email ?? null;
+          if (store.owner_id) {
+            try {
+              const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(
+                store.owner_id,
+              );
+              ownerEmail = userRes?.user?.email ?? null;
+            } catch {
+              ownerEmail = null;
+            }
           }
 
           // Touch last_used_at so this counts as a real key usage.
@@ -90,9 +94,9 @@ export const Route = createFileRoute("/api/public/v1/me")({
             },
             merchant: {
               store_id: store.id,
-              store_name: store.name,
-              store_slug: store.slug,
+              store_name: store.receipt_business_name || store.name,
               fiat_currency: store.fiat_currency,
+              website: store.website ?? null,
               owner_email: ownerEmail,
               webhook_url: store.webhook_url ?? null,
             },
