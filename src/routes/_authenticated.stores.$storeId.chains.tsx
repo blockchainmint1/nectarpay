@@ -627,6 +627,7 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
   const [now, setNow] = useState<number>(() => Date.now());
   const [busy, setBusy] = useState(false);
   const [linked, setLinked] = useState(false);
+  const [allowNewWallet, setAllowNewWallet] = useState(false);
 
   // Tick once a second for countdown.
   useEffect(() => {
@@ -662,7 +663,7 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
     setBusy(true);
     setLinked(false);
     try {
-      const result = await createCode({ data: { storeId } });
+      const result = await createCode({ data: { storeId, allowNewWallet } });
       const origin = window.location.origin;
       // QR is a plain HTTPS URL — the wallet is a web/PWA, custom schemes
       // don't fire. Wallet GETs this to fetch the link manifest, then POSTs
@@ -702,11 +703,27 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
           </p>
 
           {!token && (
-            <Button className="mt-4" onClick={onGenerate} disabled={busy}>
-              <Smartphone className="mr-2 h-4 w-4" />
-              {busy ? "Generating…" : "Generate link code"}
-            </Button>
+            <>
+              <label className="mt-4 flex items-start gap-2 text-xs">
+                <input
+                  type="checkbox"
+                  className="mt-0.5"
+                  checked={allowNewWallet}
+                  onChange={(e) => setAllowNewWallet(e.target.checked)}
+                />
+                <span className="text-muted-foreground">
+                  This is a <strong className="text-foreground">new wallet</strong> I haven't signed
+                  into Nectar with yet. Beekeeper will show a warning before signing, and we'll
+                  register this wallet to your account on first use.
+                </span>
+              </label>
+              <Button className="mt-3" onClick={onGenerate} disabled={busy}>
+                <Smartphone className="mr-2 h-4 w-4" />
+                {busy ? "Generating…" : "Generate link code"}
+              </Button>
+            </>
           )}
+
 
           {token && qrDataUrl && (
             <div className="mt-4 flex flex-col items-start gap-4 sm:flex-row">
