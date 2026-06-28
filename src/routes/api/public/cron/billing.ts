@@ -2,6 +2,7 @@
 // auto-renew paid plans from TXC balance, send grace-period warnings.
 
 import { createFileRoute } from "@tanstack/react-router";
+import { requireCronAuth } from "@/lib/cron-auth.server";
 import { notifyUser } from "@/lib/notify.server";
 import { getUsdRate } from "@/lib/rates.functions";
 import { scanTxcDeposits } from "@/lib/txc-deposit-scanner.server";
@@ -117,7 +118,9 @@ async function rolloverBilling(): Promise<{
 export const Route = createFileRoute("/api/public/cron/billing")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const unauthorized = requireCronAuth(request);
+        if (unauthorized) return unauthorized;
         try {
           const result = await rolloverBilling();
           return Response.json({ ok: true, ...result });
@@ -128,7 +131,9 @@ export const Route = createFileRoute("/api/public/cron/billing")({
           );
         }
       },
-      GET: async () => {
+      GET: async ({ request }) => {
+        const unauthorized = requireCronAuth(request);
+        if (unauthorized) return unauthorized;
         const result = await rolloverBilling();
         return Response.json({ ok: true, ...result });
       },

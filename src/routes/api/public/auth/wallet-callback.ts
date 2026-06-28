@@ -160,15 +160,11 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
             signaturePrefix: signature.slice(0, 10),
             recovered,
           });
-          if (recoveredAddress && recoveredAddress.toLowerCase() !== address.toLowerCase()) {
-            return Response.json(
-              {
-                error: `signature was made by ${recoveredAddress}, not ${address}`,
-              },
-              { status: 401, headers: CORS },
-            );
-          }
+          // Do NOT leak the recovered address back to the caller — it would
+          // disclose third-party wallet ownership to anyone who can hit this
+          // endpoint. The recovered address is already in server logs above.
           return Response.json({ error: "bad signature" }, { status: 401, headers: CORS });
+
         }
 
         const oneTimeToken = randomBytes(32).toString("hex");

@@ -1,10 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { pollRates } from "@/lib/rates.functions";
+import { requireCronAuth } from "@/lib/cron-auth.server";
 
 export const Route = createFileRoute("/api/public/cron/rates")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const unauthorized = requireCronAuth(request);
+        if (unauthorized) return unauthorized;
         try {
           const result = await pollRates();
           return Response.json({ ok: true, ...result });
@@ -15,8 +18,9 @@ export const Route = createFileRoute("/api/public/cron/rates")({
           );
         }
       },
-      GET: async () => {
-        // Allow manual trigger for debugging
+      GET: async ({ request }) => {
+        const unauthorized = requireCronAuth(request);
+        if (unauthorized) return unauthorized;
         const result = await pollRates();
         return Response.json({ ok: true, ...result });
       },

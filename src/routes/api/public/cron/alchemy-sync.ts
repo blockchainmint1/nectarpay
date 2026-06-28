@@ -7,11 +7,14 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import { reconcileAllEvmChains } from "@/lib/alchemy-notify.server";
+import { requireCronAuth } from "@/lib/cron-auth.server";
 
 export const Route = createFileRoute("/api/public/cron/alchemy-sync")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const unauthorized = requireCronAuth(request);
+        if (unauthorized) return unauthorized;
         if (!process.env.ALCHEMY_AUTH_TOKEN) {
           return Response.json(
             { ok: false, error: "ALCHEMY_AUTH_TOKEN not configured" },
@@ -28,7 +31,9 @@ export const Route = createFileRoute("/api/public/cron/alchemy-sync")({
           );
         }
       },
-      GET: async () => {
+      GET: async ({ request }) => {
+        const unauthorized = requireCronAuth(request);
+        if (unauthorized) return unauthorized;
         if (!process.env.ALCHEMY_AUTH_TOKEN) {
           return Response.json(
             { ok: false, error: "ALCHEMY_AUTH_TOKEN not configured" },
@@ -41,3 +46,4 @@ export const Route = createFileRoute("/api/public/cron/alchemy-sync")({
     },
   },
 });
+
