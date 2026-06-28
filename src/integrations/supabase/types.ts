@@ -1118,6 +1118,7 @@ export type Database = {
       }
       wallet_link_codes: {
         Row: {
+          allow_new_wallet: boolean
           code_hash: string
           created_at: string
           created_by: string
@@ -1127,6 +1128,7 @@ export type Database = {
           used_at: string | null
         }
         Insert: {
+          allow_new_wallet?: boolean
           code_hash: string
           created_at?: string
           created_by: string
@@ -1136,6 +1138,7 @@ export type Database = {
           used_at?: string | null
         }
         Update: {
+          allow_new_wallet?: boolean
           code_hash?: string
           created_at?: string
           created_by?: string
