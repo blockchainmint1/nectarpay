@@ -354,11 +354,12 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
             .from("wallet_accounts")
             .select("wallet_address")
             .eq("user_id", codeRow.created_by);
+          // Case-sensitive: TXC addresses are base58check — lowercasing
+          // would corrupt the comparison.
           const allowed = new Set(
-            (addrRows ?? []).map((r) => r.wallet_address.trim().toLowerCase()),
+            (addrRows ?? []).map((r) => r.wallet_address.trim()),
           );
-          const addrLower = address.trim().toLowerCase();
-          const addressKnown = allowed.has(addrLower);
+          const addressKnown = allowed.has(address.trim());
 
           if (!addressKnown && !codeRow.allow_new_wallet) {
             return json(
