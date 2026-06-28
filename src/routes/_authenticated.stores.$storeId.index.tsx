@@ -62,7 +62,7 @@ function StoreDetailPage() {
       <div className="mt-8 grid gap-4 md:grid-cols-2">
         <CardLink
           icon={<Link2 className="h-4 w-4" />}
-          title="Chains"
+          title="Wallets & Chains"
           body="Configure xpubs and addresses per chain."
           to={`/stores/${storeId}/chains`}
         />
