@@ -62,7 +62,7 @@ export async function verifyTerminalSignature(
   // terminals.id is the PK there is at most one row, so this is fine.
   const { data: row } = await supabaseAdmin
     .from("terminals")
-    .select("id, store_id, label, hmac_secret_hash, revoked_at")
+    .select("id, store_id, label, hmac_secret_hash, revoked_at, last_seen_ip, geoip_updated_at")
     .eq("id", terminalId)
     .maybeSingle();
 
