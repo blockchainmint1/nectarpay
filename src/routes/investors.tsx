@@ -117,7 +117,7 @@ function InvestorsPage() {
         logo={vertexLogo}
         name="Vertex Horizon Capital"
         round="Series A — $14,000,000"
-        blurb="This firm does not exist. We invented them. Their 'portfolio' is a list of companies that went public in dreams."
+        blurb="This firm does not exist. We invented them. Their 'portfolio' is a list of companies that went public in dreams. Does it make us look more impressive?"
       />
 
       <Rule />
