@@ -273,7 +273,7 @@ function InvestorsPage() {
           <li><strong>10,000 merchants</strong> in 6 months.</li>
           <li><strong>100 sales</strong> at each merchant per week.</li>
           <li>
-            Hardware distribution via our partnership with{" "}
+            Promotion and customers referred via our partnership with{" "}
             <strong>CryptoPOP</strong>.
           </li>
           <li>
