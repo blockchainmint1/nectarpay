@@ -16,6 +16,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PosRouteImport } from './routes/pos'
 import { Route as ManifestoRouteImport } from './routes/manifesto'
+import { Route as InvestorsRouteImport } from './routes/investors'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CashOutRouteImport } from './routes/cash-out'
@@ -105,6 +106,11 @@ const PosRoute = PosRouteImport.update({
 const ManifestoRoute = ManifestoRouteImport.update({
   id: '/manifesto',
   path: '/manifesto',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InvestorsRoute = InvestorsRouteImport.update({
+  id: '/investors',
+  path: '/investors',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsRoute = DocsRouteImport.update({
@@ -414,6 +420,7 @@ export interface FileRoutesByFullPath {
   '/cash-out': typeof CashOutRoute
   '/compare': typeof CompareRoute
   '/docs': typeof DocsRouteWithChildren
+  '/investors': typeof InvestorsRoute
   '/manifesto': typeof ManifestoRoute
   '/pos': typeof PosRouteWithChildren
   '/pricing': typeof PricingRoute
@@ -477,6 +484,7 @@ export interface FileRoutesByTo {
   '/cash-out': typeof CashOutRoute
   '/compare': typeof CompareRoute
   '/docs': typeof DocsRouteWithChildren
+  '/investors': typeof InvestorsRoute
   '/manifesto': typeof ManifestoRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -539,6 +547,7 @@ export interface FileRoutesById {
   '/cash-out': typeof CashOutRoute
   '/compare': typeof CompareRoute
   '/docs': typeof DocsRouteWithChildren
+  '/investors': typeof InvestorsRoute
   '/manifesto': typeof ManifestoRoute
   '/pos': typeof PosRouteWithChildren
   '/pricing': typeof PricingRoute
@@ -604,6 +613,7 @@ export interface FileRouteTypes {
     | '/cash-out'
     | '/compare'
     | '/docs'
+    | '/investors'
     | '/manifesto'
     | '/pos'
     | '/pricing'
@@ -667,6 +677,7 @@ export interface FileRouteTypes {
     | '/cash-out'
     | '/compare'
     | '/docs'
+    | '/investors'
     | '/manifesto'
     | '/pricing'
     | '/privacy'
@@ -728,6 +739,7 @@ export interface FileRouteTypes {
     | '/cash-out'
     | '/compare'
     | '/docs'
+    | '/investors'
     | '/manifesto'
     | '/pos'
     | '/pricing'
@@ -793,6 +805,7 @@ export interface RootRouteChildren {
   CashOutRoute: typeof CashOutRoute
   CompareRoute: typeof CompareRoute
   DocsRoute: typeof DocsRouteWithChildren
+  InvestorsRoute: typeof InvestorsRoute
   ManifestoRoute: typeof ManifestoRoute
   PosRoute: typeof PosRouteWithChildren
   PricingRoute: typeof PricingRoute
@@ -872,6 +885,13 @@ declare module '@tanstack/react-router' {
       path: '/manifesto'
       fullPath: '/manifesto'
       preLoaderRoute: typeof ManifestoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/investors': {
+      id: '/investors'
+      path: '/investors'
+      fullPath: '/investors'
+      preLoaderRoute: typeof InvestorsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs': {
@@ -1403,6 +1423,7 @@ const rootRouteChildren: RootRouteChildren = {
   CashOutRoute: CashOutRoute,
   CompareRoute: CompareRoute,
   DocsRoute: DocsRouteWithChildren,
+  InvestorsRoute: InvestorsRoute,
   ManifestoRoute: ManifestoRoute,
   PosRoute: PosRouteWithChildren,
   PricingRoute: PricingRoute,

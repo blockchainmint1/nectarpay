@@ -45,6 +45,7 @@ export function MarketingNav() {
           <Link to="/compare" className="hover:text-foreground">Compare</Link>
           <Link to="/docs" className="hover:text-foreground">Docs</Link>
           <Link to="/integrations" className="hover:text-foreground">Integrations</Link>
+          <Link to="/investors" className="hover:text-foreground">Investors</Link>
           <a
             href="https://beekeeper.honest.money"
             target="_blank"
@@ -99,6 +100,7 @@ export function MarketingFooter() {
         <nav className="flex flex-wrap gap-4">
           <Link to="/where" className="hover:text-foreground">Find merchants</Link>
           <Link to="/manifesto" className="hover:text-foreground">Manifesto</Link>
+          <Link to="/investors" className="hover:text-foreground">Investors</Link>
           <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
           <Link to="/terms" className="hover:text-foreground">Terms</Link>
           <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
