@@ -184,17 +184,17 @@ function InvestorsPage() {
           No exchange signup. No KYC tollbooth. Send stablecoins from any major
           chain, get TXC delivered to your wallet. Powered by our friends at{" "}
           <a
-            href="https://swap.texitcoin.org"
+            href="https://swap.honest.money"
             target="_blank"
             rel="noreferrer"
             className="text-primary underline-offset-4 hover:underline"
           >
-            swap.texitcoin.org
+            swap.honest.money
           </a>.
         </p>
         <div className="overflow-hidden rounded-xl border border-border/60 bg-card/40">
           <iframe
-            src="https://swap.texitcoin.org/swap"
+            src="https://swap.honest.money/swap"
             title="Swap stablecoins for TXC"
             className="block h-[1100px] w-full border-0"
             loading="lazy"
@@ -204,7 +204,7 @@ function InvestorsPage() {
         <p className="mt-3 text-center text-xs text-muted-foreground">
           Embedded live. Having trouble?{" "}
           <a
-            href="https://swap.texitcoin.org/swap"
+            href="https://swap.honest.money/swap"
             target="_blank"
             rel="noreferrer"
             className="text-primary hover:underline"
