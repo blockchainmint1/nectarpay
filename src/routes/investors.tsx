@@ -246,59 +246,63 @@ function InvestorsPage() {
       <Rule />
 
       <section>
-        <h2 className="mb-6 text-2xl font-bold uppercase tracking-wide">
+        <h2 className="mb-4 text-2xl font-bold uppercase tracking-wide">
           Case Study: Dollar Shave Club vs. Gillette
         </h2>
-        <div className="space-y-6 text-lg leading-relaxed text-foreground/85">
-          <p>
-            In 2011 Gillette owned <strong>70% of the global razor market</strong>.
-            A multi-billion-dollar fortress with NFL ad budgets, Olympic
-            sponsorships, and patent-protected five-blade engineering nobody
-            asked for.
-          </p>
-          <p>
-            Then a guy named Michael Dubin made a $4,500 YouTube video that
-            opened with "Our blades are f***ing great." Five years later
-            Unilever bought his company for{" "}
-            <strong>$1 billion in cash</strong>. Gillette's market share
-            collapsed from 70% to under 50%. They're still bleeding.
-          </p>
-          <blockquote className="my-6 border-l-2 border-primary/60 pl-6 text-base italic text-foreground/80">
-            Gillette didn't lose because their razors got worse. They lost
-            because they kept charging $32 for something that should cost $3,
-            and a smaller, faster, honest competitor walked in the door and
-            said so out loud.
-          </blockquote>
-          <p>
-            Sound familiar? <strong>2.9% + 30¢</strong> is the new
-            five-blade titanium-coated swivel-head razor cartridge.
-          </p>
+        <div className="rounded-xl border border-border/60 border-l-4 border-l-primary/70 bg-card/60 p-8 shadow-sm">
+          <div className="space-y-5 text-lg leading-relaxed text-foreground/85">
+            <p>
+              In 2011 Gillette owned <strong>70% of the global razor market</strong>.
+              A multi-billion-dollar fortress with NFL ad budgets, Olympic
+              sponsorships, and patent-protected five-blade engineering nobody
+              asked for.
+            </p>
+            <p>
+              Then a guy named Michael Dubin made a $4,500 YouTube video that
+              opened with "Our blades are f***ing great." Five years later
+              Unilever bought his company for{" "}
+              <strong>$1 billion in cash</strong>. Gillette's market share
+              collapsed from 70% to under 50%. They're still bleeding.
+            </p>
+            <blockquote className="my-4 border-l-2 border-primary/60 pl-6 text-base italic text-foreground/80">
+              Gillette didn't lose because their razors got worse. They lost
+              because they kept charging $32 for something that should cost $3,
+              and a smaller, faster, honest competitor walked in the door and
+              said so out loud.
+            </blockquote>
+            <p>
+              Sound familiar? <strong>2.9% + 30¢</strong> is the new
+              five-blade titanium-coated swivel-head razor cartridge.
+            </p>
+          </div>
         </div>
       </section>
 
       <Rule />
 
       <section>
-        <h2 className="mb-6 text-2xl font-bold uppercase tracking-wide">
+        <h2 className="mb-4 text-2xl font-bold uppercase tracking-wide">
           Case Study: Kodak vs. The Camera Phone
         </h2>
-        <div className="space-y-6 text-lg leading-relaxed text-foreground/85">
-          <p>
-            Kodak invented the digital camera in <strong>1975</strong>. Their
-            own engineer, Steven Sasson, built the first one. Management
-            shelved it because it threatened the film business.
-          </p>
-          <p>
-            By 1996 Kodak was worth <strong>$28 billion</strong> with 140,000
-            employees. By 2012 they filed for bankruptcy. Not because digital
-            photography failed — because <em>they</em> refused to disrupt
-            their own profitable, boring, gatekept rail.
-          </p>
-          <p>
-            The card networks invented the rails that crypto runs circles
-            around. They know it. They're shelving it. The Kodak moment for
-            payments isn't coming — it's here, and we're holding the camera.
-          </p>
+        <div className="rounded-xl border border-border/60 border-t-4 border-t-warning/60 bg-card/60 p-8 shadow-sm">
+          <div className="space-y-5 text-lg leading-relaxed text-foreground/85">
+            <p>
+              Kodak invented the digital camera in <strong>1975</strong>. Their
+              own engineer, Steven Sasson, built the first one. Management
+              shelved it because it threatened the film business.
+            </p>
+            <p>
+              By 1996 Kodak was worth <strong>$28 billion</strong> with 140,000
+              employees. By 2012 they filed for bankruptcy. Not because digital
+              photography failed — because <em>they</em> refused to disrupt
+              their own profitable, boring, gatekept rail.
+            </p>
+            <p>
+              The card networks invented the rails that crypto runs circles
+              around. They know it. They're shelving it. The Kodak moment for
+              payments isn't coming — it's here, and we're holding the camera.
+            </p>
+          </div>
         </div>
       </section>
 
