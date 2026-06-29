@@ -257,7 +257,7 @@ function InvestorsPage() {
         logo={ghostLogo}
         name="Ghost Money Capital"
         round="Series B — $22,000,000"
-        blurb="Invisible LPs. Invisible returns. Zero portfolio companies. One very convincing landing page that loads to a 404."
+        blurb="Invisible LPs. Invisible returns. Zero portfolio companies. One very convincing landing page that loads to a 404. They don't return phone calls."
       />
 
       <Rule />
