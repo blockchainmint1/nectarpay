@@ -79,7 +79,6 @@ function PricingPage() {
               cta="Go Unlimited"
               features={[
                 "Everything in Cheap",
-                "Unlimited transactions",
                 "Advanced APIs (REST + WebSocket)",
                 "Priority chain support",
                 "Expanded chain coverage",
