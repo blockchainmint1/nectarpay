@@ -169,7 +169,7 @@ function InvestorsPage() {
         logo={schrodingerLogo}
         name="Schrödinger's Fund"
         round="Strategic Round — $8,000,000"
-        blurb="Simultaneously our largest investor and not an investor at all. When we opened the term sheet, the signature collapsed into a single probability."
+        blurb="Simultaneously our largest investor and not an investor at all. When we opened the term sheet, the signature collapsed into a single probability. Are we more trustworthy with this here?"
       />
 
       <Rule />
