@@ -174,7 +174,7 @@ function ManifestoPage() {
             <strong>Because small business is hard enough.</strong> If you're
             just getting started, or you only take the occasional crypto
             payment, the free tier is yours. No card on file, no "starter"
-            asterisk that turns into a bill at 10,001 in volume. We're just
+            asterisk that turns into a bill at day 30. We're just
             getting started too — grow with us.
           </p>
           <p>
