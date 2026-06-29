@@ -27,6 +27,8 @@ function Rule() {
 
 function ManifestoPage() {
   return (
+    <div className="min-h-screen bg-background">
+      <MarketingNav />
     <article className="mx-auto max-w-3xl px-6 py-20">
       <Link
         to="/"
