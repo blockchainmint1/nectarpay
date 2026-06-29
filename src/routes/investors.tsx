@@ -366,8 +366,8 @@ function InvestorsPage() {
         </p>
         <p className="mt-4 text-xl leading-relaxed text-foreground/90">
           You can't buy a piece of Nectar.Pay. But you can buy a piece of
-          the rail it runs on, the community that built it, and the future
-          it's pulling toward us.
+          the digital commodity from the rail it runs on, join the community
+          that built it, and help write the bright future it's pulling toward us.
         </p>
         <p className="mt-6 text-2xl font-bold uppercase">
           Pick up a handful of <span className="text-primary">TXC.</span>
