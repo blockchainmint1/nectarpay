@@ -235,5 +235,7 @@ function ManifestoPage() {
         </p>
       </section>
     </article>
+      <MarketingFooter />
+    </div>
   );
 }
