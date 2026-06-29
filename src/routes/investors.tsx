@@ -82,17 +82,24 @@ function InvestorsPage() {
       <article className="mx-auto max-w-3xl px-6 py-20">
 
 
-      <header className="border-y border-border/60 py-10 text-center">
-        <p className="text-[0.7rem] uppercase tracking-[0.6em] text-muted-foreground">
-          Investor Relations
-        </p>
-        <h1 className="mt-4 text-4xl font-bold uppercase leading-tight sm:text-5xl">
-          Bad News.<br />
-          You <span className="text-primary">Can't Invest</span> in Nectar.Pay.
-        </h1>
-        <p className="mt-6 text-[0.7rem] uppercase tracking-[0.4em] text-muted-foreground">
-          No seed round · No VCs · No board · No exit
-        </p>
+      <header className="rounded-xl border border-border/60 bg-card/40 p-6 sm:p-10">
+        <div className="grid grid-cols-1 items-center gap-6 sm:grid-cols-4">
+          <div className="flex justify-center sm:col-span-1 sm:justify-start">
+            <NectarMark className="h-24 w-24 sm:h-32 sm:w-32" />
+          </div>
+          <div className="sm:col-span-3 sm:text-left text-center">
+            <p className="text-[0.7rem] uppercase tracking-[0.6em] text-muted-foreground">
+              Investor Relations
+            </p>
+            <h1 className="mt-4 text-4xl font-bold uppercase leading-tight sm:text-5xl">
+              Bad News.<br />
+              You <span className="text-primary">Can't Invest</span> in Nectar.Pay.
+            </h1>
+            <p className="mt-6 text-[0.7rem] uppercase tracking-[0.4em] text-muted-foreground">
+              No seed round · No VCs · No board · No exit
+            </p>
+          </div>
+        </div>
       </header>
 
       <section className="mt-16 space-y-6 text-lg leading-relaxed text-foreground/85">
