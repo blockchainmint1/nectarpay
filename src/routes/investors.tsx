@@ -65,8 +65,8 @@ function FakeInvestorCallout({
 }) {
   return (
     <div className="my-10 rounded-xl border border-border/60 bg-card/40 p-6 text-center">
-      <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-background">
-        <img src={logo} alt={`${name} logo`} className="h-20 w-20 object-contain" loading="lazy" width={80} height={80} />
+      <div className="mx-auto flex h-72 w-72 items-center justify-center rounded-full bg-background">
+        <img src={logo} alt={`${name} logo`} className="h-60 w-60 object-contain" loading="lazy" width={240} height={240} />
       </div>
       <p className="mt-4 text-lg font-bold tracking-wide">{name}</p>
       <p className="text-xs uppercase tracking-[0.3em] text-primary">{round}</p>
