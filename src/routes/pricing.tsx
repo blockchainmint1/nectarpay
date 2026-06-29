@@ -80,7 +80,7 @@ function PricingPage() {
               features={[
                 "Everything in Cheap",
                 "Advanced APIs (REST + WebSocket)",
-                "Priority chain support",
+                "Priority new chain support",
                 "Expanded chain coverage",
                 "SLA-backed webhook delivery",
                 "Team seats + audit log",
