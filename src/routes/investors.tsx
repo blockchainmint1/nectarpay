@@ -409,8 +409,8 @@ function InvestorsPage() {
           <p>
             Second, for <strong>TEXITcoin</strong> to win (that's our upside), we
             need real utility, purpose and value to come from our work, efforts
-            and results. So we're killing two birds with one stone: fixing
-            something the industry forgot to do, and increasing TXC's value in
+            and results. So we're killing two birds with one stone: building the
+            important service the industry forgot, and increasing TXC's value in
             the marketplace.
           </p>
           <p>
