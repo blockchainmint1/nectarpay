@@ -27,16 +27,51 @@ type GeoLookup = {
 };
 
 async function lookupGeo(ip: string): Promise<GeoLookup | null> {
+  // Try ipwho.is first — free, HTTPS, no key, no Worker rate limits.
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 1500);
-    // ipapi.co — 1000 req/day free, no key required.
+    const timeout = setTimeout(() => controller.abort(), 2500);
+    const res = await fetch(`https://ipwho.is/${encodeURIComponent(ip)}`, {
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data = (await res.json()) as {
+        success?: boolean;
+        latitude?: number;
+        longitude?: number;
+        city?: string;
+        country?: string;
+      };
+      if (data.success !== false) {
+        return {
+          lat: typeof data.latitude === "number" ? data.latitude : null,
+          lng: typeof data.longitude === "number" ? data.longitude : null,
+          city: data.city ?? null,
+          country: data.country ?? null,
+        };
+      }
+      console.warn("[geoip] ipwho.is returned success=false for", ip, data);
+    } else {
+      console.warn("[geoip] ipwho.is non-OK", res.status, "for", ip);
+    }
+  } catch (e) {
+    console.warn("[geoip] ipwho.is failed for", ip, e instanceof Error ? e.message : e);
+  }
+
+  // Fallback: ipapi.co
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2500);
     const res = await fetch(`https://ipapi.co/${encodeURIComponent(ip)}/json/`, {
       signal: controller.signal,
       headers: { "User-Agent": "NectarPay-Heartbeat/1.0" },
     });
     clearTimeout(timeout);
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.warn("[geoip] ipapi.co non-OK", res.status, "for", ip);
+      return null;
+    }
     const data = (await res.json()) as {
       latitude?: number;
       longitude?: number;
@@ -49,10 +84,12 @@ async function lookupGeo(ip: string): Promise<GeoLookup | null> {
       city: data.city ?? null,
       country: data.country_name ?? null,
     };
-  } catch {
+  } catch (e) {
+    console.warn("[geoip] ipapi.co failed for", ip, e instanceof Error ? e.message : e);
     return null;
   }
 }
+
 
 /**
  * Touch last_seen_at + opportunistically refresh GeoIP for this terminal.
