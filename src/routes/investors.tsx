@@ -392,6 +392,74 @@ function InvestorsPage() {
         </div>
       </section>
 
+      <Rule />
+
+      <section>
+        <h2 className="mb-6 text-2xl font-bold uppercase tracking-wide">
+          Why Are We Doing All This?
+        </h2>
+        <div className="space-y-5 text-lg leading-relaxed text-foreground/85">
+          <p>
+            Two reasons. First, we think crypto is the most honest money
+            civilization has ever seen — and yet the crypto industry is doing
+            it all wrong. Distracted by shiny things, everyone forgot to get
+            crypto used as money before moving on to the fun stuff. That's okay.
+            We'll do that part.
+          </p>
+          <p>
+            Second, for <strong>TEXITcoin</strong> to win (that's our upside), we
+            need real utility, purpose and value to come from our work, efforts
+            and results. So we're killing two birds with one stone: fixing
+            something the industry forgot to do, and increasing TXC's value in
+            the marketplace.
+          </p>
+          <p>
+            If we're right — we'll get rich. <strong>Win along with us.</strong>
+          </p>
+        </div>
+      </section>
+
+      <Rule />
+
+      <section className="rounded-xl border border-dashed border-border/60 bg-card/30 p-6">
+        <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.3em] text-muted-foreground">
+          Disclaimers & Fine Print
+        </h3>
+        <ul className="space-y-3 text-sm leading-relaxed text-foreground/65">
+          <li>
+            <strong>Fake investors are fake.</strong> The logos and firm names
+            scattered across this page are entirely fictional. They do not
+            exist. They have never existed. No money changed hands. No term
+            sheets were signed. No 6am Pacific Zoom calls were endured. They
+            are satirical decorations parodying the "proudly backed by" badges
+            every other startup plasters on their website. If you believed they
+            were real, that's kind of the point.
+          </li>
+          <li>
+            <strong>Not financial advice.</strong> We are not financial
+            advisors. We are not even sure we're qualified to advise you on
+            what to have for lunch.
+          </li>
+          <li>
+            <strong>Past performance does not indicate future results.</strong>{" "}
+            In our case, there is no past performance because we haven't
+            started yet.
+          </li>
+          <li>
+            <strong>No animals were harmed</strong> in the making of this
+            page. Several egos were bruised.
+          </li>
+          <li>
+            <strong>TEXITcoin may go up, down, or sideways.</strong> That's
+            generally how markets work.
+          </li>
+          <li>
+            <strong>This page contains satire.</strong> If you are a regulatory
+            body, please re-read the first sentence of this list.
+          </li>
+        </ul>
+      </section>
+
       <footer className="mt-16 text-center text-sm text-muted-foreground">
         <p>
           Part of the{" "}
