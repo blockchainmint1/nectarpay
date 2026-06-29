@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WhereRouteImport } from './routes/where'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as StartRouteImport } from './routes/start'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
@@ -81,6 +82,11 @@ const WhereRoute = WhereRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StartRoute = StartRouteImport.update({
+  id: '/start',
+  path: '/start',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignupRoute = SignupRouteImport.update({
@@ -426,6 +432,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
+  '/start': typeof StartRoute
   '/terms': typeof TermsRoute
   '/where': typeof WhereRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
@@ -489,6 +496,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
+  '/start': typeof StartRoute
   '/terms': typeof TermsRoute
   '/where': typeof WhereRoute
   '/billing': typeof AuthenticatedBillingRoute
@@ -553,6 +561,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
+  '/start': typeof StartRoute
   '/terms': typeof TermsRoute
   '/where': typeof WhereRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
@@ -619,6 +628,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/signup'
+    | '/start'
     | '/terms'
     | '/where'
     | '/admin'
@@ -682,6 +692,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/signup'
+    | '/start'
     | '/terms'
     | '/where'
     | '/billing'
@@ -745,6 +756,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy'
     | '/signup'
+    | '/start'
     | '/terms'
     | '/where'
     | '/_authenticated/admin'
@@ -811,6 +823,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   SignupRoute: typeof SignupRoute
+  StartRoute: typeof StartRoute
   TermsRoute: typeof TermsRoute
   WhereRoute: typeof WhereRoute
   IInvoiceIdRoute: typeof IInvoiceIdRoute
@@ -850,6 +863,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/start': {
+      id: '/start'
+      path: '/start'
+      fullPath: '/start'
+      preLoaderRoute: typeof StartRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
@@ -1429,6 +1449,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   SignupRoute: SignupRoute,
+  StartRoute: StartRoute,
   TermsRoute: TermsRoute,
   WhereRoute: WhereRoute,
   IInvoiceIdRoute: IInvoiceIdRoute,
@@ -1457,13 +1478,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
