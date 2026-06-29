@@ -235,7 +235,7 @@ function InvestorsPage() {
           <iframe
             src="https://swap.honest.money/embed"
             title="Swap stablecoins for TXC"
-            className="block h-[800px] w-full border-0"
+            className="block h-[520px] w-full border-0"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
           />
