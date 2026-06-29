@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 
 export const Route = createFileRoute("/terms")({
   head: () => ({
