@@ -19,6 +19,8 @@ const EFFECTIVE = "June 21, 2026";
 
 function PrivacyPage() {
   return (
+    <div className="min-h-screen bg-background">
+      <MarketingNav />
     <article className="mx-auto max-w-3xl px-6 py-16">
       <Link
         to="/"
