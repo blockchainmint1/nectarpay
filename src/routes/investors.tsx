@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
+import { MarketingNav, MarketingFooter, NectarMark } from "@/components/marketing-shell";
 import vertexLogo from "../assets/fake-logo-vertex.png";
 import schrodingerLogo from "../assets/fake-logo-schrodinger.png";
 import ghostLogo from "../assets/fake-logo-ghost.png";
