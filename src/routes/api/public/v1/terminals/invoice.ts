@@ -120,11 +120,11 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice")({
             }
           }
 
-          // Touch last_seen_at; ignore errors.
-          await supabaseAdmin
-            .from("terminals")
-            .update({ last_seen_at: new Date().toISOString() })
-            .eq("id", auth.terminal.id);
+          // Touch last_seen_at + opportunistically refresh GeoIP; ignore errors.
+          {
+            const { touchTerminalSeen } = await import("@/lib/terminal-geo.server");
+            await touchTerminalSeen(request, auth.terminal as Parameters<typeof touchTerminalSeen>[1]);
+          }
 
           const origin = new URL(request.url).origin;
           // Re-read derived fields so terminal can render a wallet QR directly.
