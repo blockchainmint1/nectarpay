@@ -77,13 +77,10 @@ function FakeInvestorCallout({
 
 function InvestorsPage() {
   return (
-    <article className="mx-auto max-w-3xl px-6 py-20">
-      <Link
-        to="/"
-        className="mb-12 inline-flex items-center gap-2 text-[0.7rem] uppercase tracking-[0.4em] text-muted-foreground hover:text-foreground"
-      >
-        ← Nectar.Pay
-      </Link>
+    <div className="min-h-screen bg-background">
+      <MarketingNav />
+      <article className="mx-auto max-w-3xl px-6 py-20">
+
 
       <header className="border-y border-border/60 py-10 text-center">
         <p className="text-[0.7rem] uppercase tracking-[0.6em] text-muted-foreground">
