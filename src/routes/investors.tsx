@@ -235,9 +235,9 @@ function InvestorsPage() {
         </p>
         <div className="overflow-hidden rounded-xl border border-border/60 bg-card/40">
           <iframe
-            src="https://swap.honest.money/swap"
+            src="https://swap.honest.money/embed"
             title="Swap stablecoins for TXC"
-            className="block h-[1100px] w-full border-0"
+            className="block h-[800px] w-full border-0"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
           />
@@ -245,7 +245,7 @@ function InvestorsPage() {
         <p className="mt-3 text-center text-xs text-muted-foreground">
           Embedded live. Having trouble?{" "}
           <a
-            href="https://swap.honest.money/swap"
+            href="https://swap.honest.money/embed"
             target="_blank"
             rel="noreferrer"
             className="text-primary hover:underline"
