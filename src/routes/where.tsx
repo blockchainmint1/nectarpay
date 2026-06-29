@@ -138,35 +138,37 @@ function WherePage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl space-y-12 px-4 py-10">
-        {MARKETS.map((market) => {
-          const marketPins = pinsInBbox(pins, market.bbox);
-          return (
-            <div key={market.id} id={market.id} className="scroll-mt-20">
-              <div className="mb-3 flex items-end justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl font-semibold tracking-tight">
-                    {market.label}
-                  </h2>
-                  <p className="text-xs text-muted-foreground">
-                    {isLoading
-                      ? "Loading…"
-                      : marketPins.length === 0
-                        ? "No merchants visible yet. Be the first."
-                        : `${marketPins.length} merchant${marketPins.length === 1 ? "" : "s"} on the map.`}
-                  </p>
+      <section className="mx-auto max-w-6xl px-4 py-10">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {MARKETS.map((market) => {
+            const marketPins = pinsInBbox(pins, market.bbox);
+            return (
+              <div key={market.id} id={market.id} className="scroll-mt-20">
+                <div className="mb-3 flex items-end justify-between gap-4">
+                  <div>
+                    <h2 className="text-xl font-semibold tracking-tight">
+                      {market.label}
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                      {isLoading
+                        ? "Loading…"
+                        : marketPins.length === 0
+                          ? "No merchants visible yet. Be the first."
+                          : `${marketPins.length} merchant${marketPins.length === 1 ? "" : "s"} on the map.`}
+                    </p>
+                  </div>
                 </div>
+                {isLoading ? (
+                  <div className="flex h-[300px] items-center justify-center rounded-xl border border-border bg-card/40 text-sm text-muted-foreground">
+                    Loading map…
+                  </div>
+                ) : (
+                  <ClientMap market={market} pins={marketPins} />
+                )}
               </div>
-              {isLoading ? (
-                <div className="flex h-[420px] items-center justify-center rounded-xl border border-border bg-card/40 text-sm text-muted-foreground">
-                  Loading map…
-                </div>
-              ) : (
-                <ClientMap market={market} pins={marketPins} />
-              )}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </section>
 
       <section className="border-t border-border/60 bg-card/30">
