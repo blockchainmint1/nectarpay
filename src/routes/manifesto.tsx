@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 
 export const Route = createFileRoute("/manifesto")({
   head: () => ({
@@ -26,6 +27,8 @@ function Rule() {
 
 function ManifestoPage() {
   return (
+    <div className="min-h-screen bg-background">
+      <MarketingNav />
     <article className="mx-auto max-w-3xl px-6 py-20">
       <Link
         to="/"
@@ -232,5 +235,7 @@ function ManifestoPage() {
         </p>
       </section>
     </article>
+      <MarketingFooter />
+    </div>
   );
 }

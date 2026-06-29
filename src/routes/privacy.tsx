@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 
 export const Route = createFileRoute("/privacy")({
   head: () => ({
@@ -18,6 +19,8 @@ const EFFECTIVE = "June 21, 2026";
 
 function PrivacyPage() {
   return (
+    <div className="min-h-screen bg-background">
+      <MarketingNav />
     <article className="mx-auto max-w-3xl px-6 py-16">
       <Link
         to="/"
@@ -165,5 +168,7 @@ function PrivacyPage() {
         </p>
       </div>
     </article>
+      <MarketingFooter />
+    </div>
   );
 }
