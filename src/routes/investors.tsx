@@ -1,4 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import vertexLogo from "../assets/fake-logo-vertex.png";
+import schrodingerLogo from "../assets/fake-logo-schrodinger.png";
+import ghostLogo from "../assets/fake-logo-ghost.png";
+import imaginaryLogo from "../assets/fake-logo-imaginary.png";
 
 export const Route = createFileRoute("/investors")({
   head: () => ({
@@ -47,6 +51,29 @@ function StatCard({
   );
 }
 
+function FakeInvestorCallout({
+  logo,
+  name,
+  round,
+  blurb,
+}: {
+  logo: string;
+  name: string;
+  round: string;
+  blurb: string;
+}) {
+  return (
+    <div className="my-10 rounded-xl border border-border/60 bg-card/40 p-6 text-center">
+      <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-background">
+        <img src={logo} alt={`${name} logo`} className="h-20 w-20 object-contain" loading="lazy" width={80} height={80} />
+      </div>
+      <p className="mt-4 text-lg font-bold tracking-wide">{name}</p>
+      <p className="text-xs uppercase tracking-[0.3em] text-primary">{round}</p>
+      <p className="mt-4 text-sm leading-relaxed text-foreground/70">{blurb}</p>
+    </div>
+  );
+}
+
 function InvestorsPage() {
   return (
     <article className="mx-auto max-w-3xl px-6 py-20">
@@ -85,6 +112,13 @@ function InvestorsPage() {
           gatekeeping who's allowed to transact, and taking a cut for the privilege.
         </p>
       </section>
+
+      <FakeInvestorCallout
+        logo={vertexLogo}
+        name="Vertex Horizon Capital"
+        round="Series A — $14,000,000"
+        blurb="This firm does not exist. We invented them. Their 'portfolio' is a list of companies that went public in dreams."
+      />
 
       <Rule />
 
@@ -130,6 +164,13 @@ function InvestorsPage() {
           in our first month and we won't ask anyone for permission to do it.
         </p>
       </section>
+
+      <FakeInvestorCallout
+        logo={schrodingerLogo}
+        name="Schrödinger's Fund"
+        round="Strategic Round — $8,000,000"
+        blurb="Simultaneously our largest investor and not an investor at all. When we opened the term sheet, the signature collapsed into a single probability."
+      />
 
       <Rule />
 
@@ -214,8 +255,14 @@ function InvestorsPage() {
         </p>
       </section>
 
-      <Rule />
+      <FakeInvestorCallout
+        logo={ghostLogo}
+        name="Ghost Money Capital"
+        round="Series B — $22,000,000"
+        blurb="Invisible LPs. Invisible returns. Zero portfolio companies. One very convincing landing page that loads to a 404."
+      />
 
+      <Rule />
 
       <section>
         <h2 className="mb-6 text-2xl font-bold uppercase tracking-wide">
@@ -305,6 +352,13 @@ function InvestorsPage() {
           </div>
         </div>
       </section>
+
+      <FakeInvestorCallout
+        logo={imaginaryLogo}
+        name="Imaginary Number Partners"
+        round="Seed — $6,000,000"
+        blurb="They claim a 47x return on zero deployed capital. Their IRR involves the square root of negative one. Their due diligence was a calculus textbook."
+      />
 
       <Rule />
 
