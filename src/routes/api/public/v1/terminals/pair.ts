@@ -72,6 +72,12 @@ export const Route = createFileRoute("/api/public/v1/terminals/pair")({
             .update({ consumed_at: new Date().toISOString(), consumed_terminal_id: terminal.id })
             .eq("id", codeRow.id);
 
+          // Best-effort GeoIP on first pair so the merchant pin shows up immediately.
+          {
+            const { touchTerminalSeen } = await import("@/lib/terminal-geo.server");
+            await touchTerminalSeen(request, { id: terminal.id, last_seen_ip: null, geoip_updated_at: null });
+          }
+
           const origin = new URL(request.url).origin;
           return json({
             terminal_id: terminal.id,
