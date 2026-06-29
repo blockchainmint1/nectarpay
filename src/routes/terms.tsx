@@ -172,5 +172,7 @@ function TermsPage() {
         </p>
       </div>
     </article>
+      <MarketingFooter />
+    </div>
   );
 }
