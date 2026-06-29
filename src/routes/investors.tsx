@@ -470,6 +470,8 @@ function InvestorsPage() {
           <Link to="/manifesto" className="hover:text-foreground">Manifesto</Link>
         </p>
       </footer>
-    </article>
+      </article>
+      <MarketingFooter />
+    </div>
   );
 }
