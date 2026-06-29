@@ -57,12 +57,12 @@ function PricingPage() {
               name="Cheap"
               price="$19"
               priceSuffix="/mo"
-              tagline="For growing stores. Higher limits."
+              tagline="Unlimited transactions. No caps."
               cta="Be Cheap"
               highlight
               features={[
                 "Everything in Free",
-                "Higher monthly transaction limit",
+                "Unlimited transactions",
                 "CSV export (invoices, payouts)",
                 "Reports & analytics",
                 "Multiple stores",
@@ -80,19 +80,22 @@ function PricingPage() {
               features={[
                 "Everything in Cheap",
                 "Unlimited transactions",
+                "Advanced APIs (REST + WebSocket)",
                 "Priority chain support",
+                "Expanded chain coverage",
                 "SLA-backed webhook delivery",
                 "Team seats + audit log",
                 "Custom KYC rules",
                 "Priority support",
+                "Dedicated account manager",
               ]}
               footnote="Billed monthly in TEXITcoin. Cancel anytime."
             />
           </div>
 
           <p className="mt-8 text-xs text-muted-foreground">
-            All plans paid in TEXITcoin. Transaction limits on Free and Cheap are managed by our
-            team and may change as the network grows.
+            All plans paid in TEXITcoin. Transaction limits on Free are managed by our team and
+            may change as the network grows.
           </p>
         </div>
       </section>
