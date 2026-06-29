@@ -168,5 +168,7 @@ function PrivacyPage() {
         </p>
       </div>
     </article>
+      <MarketingFooter />
+    </div>
   );
 }
