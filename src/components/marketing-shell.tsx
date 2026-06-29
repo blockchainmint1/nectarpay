@@ -45,6 +45,7 @@ export function MarketingNav() {
           <Link to="/compare" className="hover:text-foreground">Compare</Link>
           <Link to="/docs" className="hover:text-foreground">Docs</Link>
           <Link to="/integrations" className="hover:text-foreground">Integrations</Link>
+          <Link to="/investors" className="hover:text-foreground">Investors</Link>
           <a
             href="https://beekeeper.honest.money"
             target="_blank"
