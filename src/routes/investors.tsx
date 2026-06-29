@@ -64,13 +64,19 @@ function FakeInvestorCallout({
   blurb: string;
 }) {
   return (
-    <div className="my-10 rounded-xl border border-border/60 bg-card/40 p-6 text-center">
-      <div className="mx-auto flex h-72 w-72 items-center justify-center rounded-full bg-background">
-        <img src={logo} alt={`${name} logo`} className="h-60 w-60 object-contain" loading="lazy" width={240} height={240} />
+    <div className="my-10 rounded-xl border border-border/60 bg-card/40 p-6 sm:p-8">
+      <div className="grid grid-cols-1 items-center gap-6 sm:grid-cols-4">
+        <div className="sm:col-span-3 sm:text-left text-center">
+          <p className="text-lg font-bold tracking-wide">{name}</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-primary">{round}</p>
+          <p className="mt-4 text-sm leading-relaxed text-foreground/70">{blurb}</p>
+        </div>
+        <div className="flex justify-center sm:col-span-1 sm:justify-end">
+          <div className="flex h-72 w-72 items-center justify-center rounded-full bg-background">
+            <img src={logo} alt={`${name} logo`} className="h-60 w-60 object-contain" loading="lazy" width={240} height={240} />
+          </div>
+        </div>
       </div>
-      <p className="mt-4 text-lg font-bold tracking-wide">{name}</p>
-      <p className="text-xs uppercase tracking-[0.3em] text-primary">{round}</p>
-      <p className="mt-4 text-sm leading-relaxed text-foreground/70">{blurb}</p>
     </div>
   );
 }
