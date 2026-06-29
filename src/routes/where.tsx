@@ -196,16 +196,26 @@ function WherePage() {
 /**
  * Renders Leaflet only in the browser — Leaflet touches `window` at import.
  */
+type LeafletMod = typeof import("leaflet");
+type ReactLeafletMod = typeof import("react-leaflet");
+
 function ClientMap({ market, pins }: { market: Market; pins: MapPin[] }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const [libs, setLibs] = useState<{ L: LeafletMod; RL: ReactLeafletMod } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([import("leaflet"), import("react-leaflet")]).then(([L, RL]) => {
+      if (!cancelled) setLibs({ L: L as unknown as LeafletMod, RL: RL as unknown as ReactLeafletMod });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const icons = useMemo(() => {
-    if (!mounted) return null;
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
-    const L = require("leaflet") as typeof import("leaflet");
+    if (!libs) return null;
+    const { L } = libs;
     return {
-      L,
       fullIcon: L.divIcon({
         className: "",
         html: `<div style="background:oklch(0.68 0.19 62);border:2px solid white;border-radius:9999px;width:18px;height:18px;box-shadow:0 1px 4px rgba(0,0,0,0.3)"></div>`,
@@ -219,14 +229,13 @@ function ClientMap({ market, pins }: { market: Market; pins: MapPin[] }) {
         iconAnchor: [6, 6],
       }),
     };
-  }, [mounted]);
+  }, [libs]);
 
-  if (!mounted || !icons) {
+  if (!libs || !icons) {
     return <div className="h-[420px] rounded-xl border border-border bg-card/40" />;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
-  const RL = require("react-leaflet") as typeof import("react-leaflet");
+  const RL = libs.RL;
 
   return (
     <div className="h-[420px] overflow-hidden rounded-xl border border-border">
