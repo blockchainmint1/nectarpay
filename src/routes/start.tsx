@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import type React from "react";
 import { useEffect, useState } from "react";
 import { ArrowRight, CheckCircle2, ExternalLink, Mail, Smartphone, Wallet } from "lucide-react";
 import { toast } from "sonner";
@@ -29,7 +30,8 @@ export const Route = createFileRoute("/start")({
   component: StartPage,
 });
 
-type Step = "welcome" | "business" | "wallet" | "done";
+type Step = "welcome" | "business" | "wallet" | "terminal" | "done";
+const STEPS: Step[] = ["welcome", "business", "wallet", "terminal", "done"];
 
 function StartPage() {
   const { user, loading } = useAuth();
@@ -61,8 +63,8 @@ function StartPage() {
     })();
   }, [loading, user]);
 
-  const stepIdx = ["welcome", "business", "wallet", "done"].indexOf(step);
-  const progress = Math.round(((stepIdx + 1) / 4) * 100);
+  const stepIdx = STEPS.indexOf(step);
+  const progress = Math.round(((stepIdx + 1) / STEPS.length) * 100);
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
@@ -72,7 +74,7 @@ function StartPage() {
           <span className="text-sm font-semibold tracking-tight">Nectar.Pay</span>
         </Link>
         <span className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-          Step {Math.max(1, stepIdx + 1)} / 4
+          Step {Math.max(1, stepIdx + 1)} / {STEPS.length}
         </span>
       </header>
 
@@ -98,7 +100,10 @@ function StartPage() {
           />
         )}
         {step === "wallet" && storeId && (
-          <WalletLink storeId={storeId} onDone={() => setStep("done")} />
+          <WalletLink storeId={storeId} onDone={() => setStep("terminal")} />
+        )}
+        {step === "terminal" && storeId && (
+          <TerminalDefaults storeId={storeId} onDone={() => setStep("done")} />
         )}
         {step === "done" && storeId && (
           <Done
@@ -724,7 +729,257 @@ function WalletLink({ storeId, onDone }: { storeId: string; onDone: () => void }
   );
 }
 
+/* ---------------- Terminal Defaults ---------------- */
+
+interface TerminalDraft {
+  pos_tip_enabled: boolean;
+  pos_tip_presets_bps: number[];
+  tax_mode: "none" | "inclusive" | "added";
+  tax_bps: number;
+  pos_signature_enabled: boolean;
+  pos_email_receipt_enabled: boolean;
+  pos_require_cashier_pin: boolean;
+  pos_refund_enabled: boolean;
+}
+
+function TerminalDefaults({ storeId, onDone }: { storeId: string; onDone: () => void }) {
+  const [draft, setDraft] = useState<TerminalDraft | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    void (async () => {
+      const { data } = await supabase
+        .from("stores")
+        .select(
+          "pos_tip_enabled, pos_tip_presets_bps, tax_mode, tax_bps, pos_signature_enabled, pos_email_receipt_enabled, pos_require_cashier_pin, pos_refund_enabled",
+        )
+        .eq("id", storeId)
+        .maybeSingle();
+      setDraft({
+        pos_tip_enabled: (data?.pos_tip_enabled as boolean) ?? true,
+        pos_tip_presets_bps: ((data?.pos_tip_presets_bps as number[]) ?? [1500, 1800, 2000]),
+        tax_mode: ((data?.tax_mode as TerminalDraft["tax_mode"]) ?? "none"),
+        tax_bps: (data?.tax_bps as number) ?? 0,
+        pos_signature_enabled: (data?.pos_signature_enabled as boolean) ?? false,
+        pos_email_receipt_enabled: (data?.pos_email_receipt_enabled as boolean) ?? true,
+        pos_require_cashier_pin: (data?.pos_require_cashier_pin as boolean) ?? false,
+        pos_refund_enabled: (data?.pos_refund_enabled as boolean) ?? false,
+      });
+    })();
+  }, [storeId]);
+
+  async function save() {
+    if (!draft) return;
+    setSaving(true);
+    try {
+      const tipPresets = draft.pos_tip_presets_bps
+        .map((n) => Math.max(0, Math.round(n)))
+        .slice(0, 3);
+      const { error } = await supabase
+        .from("stores")
+        .update({
+          pos_tip_enabled: draft.pos_tip_enabled,
+          pos_tip_presets_bps: tipPresets,
+          tax_mode: draft.tax_mode,
+          tax_bps: Math.max(0, Math.round(draft.tax_bps)),
+          pos_signature_enabled: draft.pos_signature_enabled,
+          pos_email_receipt_enabled: draft.pos_email_receipt_enabled,
+          pos_require_cashier_pin: draft.pos_require_cashier_pin,
+          pos_refund_enabled: draft.pos_refund_enabled,
+        })
+        .eq("id", storeId);
+      if (error) throw error;
+      toast.success("Terminal defaults saved.");
+      onDone();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not save");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!draft) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <span className="text-xs text-muted-foreground">Loading…</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-1 flex-col">
+      <div className="flex-1">
+        <h1 className="text-2xl font-semibold tracking-tight">Terminal defaults</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Quick toggles for every device on your account. Fine-tune anything else later from the
+          desktop dashboard.
+        </p>
+
+        <div className="mt-6 space-y-3">
+          {/* Tipping */}
+          <ToggleCard
+            title="Tipping"
+            desc="Show tip prompt before payment."
+            checked={draft.pos_tip_enabled}
+            onChange={(v) => setDraft({ ...draft, pos_tip_enabled: v })}
+          >
+            {draft.pos_tip_enabled && (
+              <div className="mt-3 flex gap-2">
+                {draft.pos_tip_presets_bps.map((bps, i) => (
+                  <div
+                    key={i}
+                    className="flex flex-1 items-center rounded-md border border-border bg-background"
+                  >
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      inputMode="numeric"
+                      value={Math.round(bps / 100)}
+                      onChange={(e) => {
+                        const next = [...draft.pos_tip_presets_bps];
+                        next[i] = Math.max(0, Math.min(100, Number(e.target.value || 0))) * 100;
+                        setDraft({ ...draft, pos_tip_presets_bps: next });
+                      }}
+                      className="w-full bg-transparent px-2 py-2 text-center text-sm outline-none"
+                    />
+                    <span className="pr-2 text-xs text-muted-foreground">%</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ToggleCard>
+
+          {/* Tax */}
+          <ToggleCard
+            title="Sales tax"
+            desc="Add or include tax on totals."
+            checked={draft.tax_mode !== "none"}
+            onChange={(v) =>
+              setDraft({ ...draft, tax_mode: v ? "added" : "none", tax_bps: v ? draft.tax_bps || 825 : 0 })
+            }
+          >
+            {draft.tax_mode !== "none" && (
+              <div className="mt-3 flex gap-2">
+                <select
+                  value={draft.tax_mode}
+                  onChange={(e) =>
+                    setDraft({ ...draft, tax_mode: e.target.value as TerminalDraft["tax_mode"] })
+                  }
+                  className="flex-1 rounded-md border border-border bg-background px-2 py-2 text-sm"
+                >
+                  <option value="added">Added on top</option>
+                  <option value="inclusive">Already included</option>
+                </select>
+                <div className="flex flex-1 items-center rounded-md border border-border bg-background">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    max={30}
+                    inputMode="decimal"
+                    value={(draft.tax_bps / 100).toFixed(2)}
+                    onChange={(e) =>
+                      setDraft({
+                        ...draft,
+                        tax_bps: Math.max(0, Math.min(3000, Math.round(Number(e.target.value || 0) * 100))),
+                      })
+                    }
+                    className="w-full bg-transparent px-2 py-2 text-center text-sm outline-none"
+                  />
+                  <span className="pr-2 text-xs text-muted-foreground">%</span>
+                </div>
+              </div>
+            )}
+          </ToggleCard>
+
+          <ToggleCard
+            title="Signature capture"
+            desc="Ask customer to sign on screen."
+            checked={draft.pos_signature_enabled}
+            onChange={(v) => setDraft({ ...draft, pos_signature_enabled: v })}
+          />
+
+          <ToggleCard
+            title="Receipt prompt"
+            desc="Offer email receipt after payment. Customize from desktop."
+            checked={draft.pos_email_receipt_enabled}
+            onChange={(v) => setDraft({ ...draft, pos_email_receipt_enabled: v })}
+          />
+
+          <ToggleCard
+            title="Cashier PIN"
+            desc="Require a 4-digit PIN to unlock the terminal."
+            checked={draft.pos_require_cashier_pin}
+            onChange={(v) => setDraft({ ...draft, pos_require_cashier_pin: v })}
+          />
+
+          <ToggleCard
+            title="Refunds on terminal"
+            desc="Allow cashiers to refund a recent payment."
+            checked={draft.pos_refund_enabled}
+            onChange={(v) => setDraft({ ...draft, pos_refund_enabled: v })}
+          />
+        </div>
+
+        <p className="mt-4 text-[11px] text-muted-foreground">
+          More options on desktop: quick items, custom tenders, end-of-day reports, reference
+          codes, refund reasons, receipt branding, void/hold, SMS receipts, idle-lock timeout.
+        </p>
+      </div>
+
+      <div className="sticky bottom-0 mt-8 space-y-2 bg-background pb-[env(safe-area-inset-bottom)] pt-4">
+        <Button size="lg" onClick={save} disabled={saving} className="h-14 w-full text-base">
+          {saving ? "Saving…" : "Save & continue"}
+          {!saving && <ArrowRight className="ml-2 h-5 w-5" />}
+        </Button>
+        <button
+          type="button"
+          onClick={onDone}
+          className="block w-full text-center text-xs text-muted-foreground underline"
+        >
+          Skip — use defaults
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ToggleCard({
+  title,
+  desc,
+  checked,
+  onChange,
+  children,
+}: {
+  title: string;
+  desc: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card/50 p-4">
+      <label className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-sm font-medium">{title}</div>
+          <div className="mt-0.5 text-xs text-muted-foreground">{desc}</div>
+        </div>
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className="mt-1 h-5 w-5 shrink-0 accent-primary"
+        />
+      </label>
+      {children}
+    </div>
+  );
+}
+
 /* ---------------- Done ---------------- */
+
+
 
 function Done({ storeId, onDashboard }: { storeId: string; onDashboard: () => void }) {
   return (

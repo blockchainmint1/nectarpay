@@ -729,6 +729,7 @@ export type Database = {
           pos_require_cashier_pin: boolean
           pos_signature_enabled: boolean
           pos_tip_enabled: boolean
+          pos_tip_presets_bps: number[]
           pos_void_enabled: boolean
           receipt_address: string | null
           receipt_business_name: string | null
@@ -791,6 +792,7 @@ export type Database = {
           pos_require_cashier_pin?: boolean
           pos_signature_enabled?: boolean
           pos_tip_enabled?: boolean
+          pos_tip_presets_bps?: number[]
           pos_void_enabled?: boolean
           receipt_address?: string | null
           receipt_business_name?: string | null
@@ -853,6 +855,7 @@ export type Database = {
           pos_require_cashier_pin?: boolean
           pos_signature_enabled?: boolean
           pos_tip_enabled?: boolean
+          pos_tip_presets_bps?: number[]
           pos_void_enabled?: boolean
           receipt_address?: string | null
           receipt_business_name?: string | null
