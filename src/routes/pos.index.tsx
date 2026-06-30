@@ -371,7 +371,7 @@ function Header({ onLock, hasPin, storeName }: { onLock: () => void; hasPin: boo
       <div className="flex items-center gap-2 min-w-0">
         <div className="size-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.75)] flex-shrink-0" />
         <span className="text-[10px] font-bold tracking-[0.25em] text-amber-300/90 truncate">
-          NECTAR.PAY{storeName ? ` · ${storeName.toUpperCase()}` : " · POS"}
+          NECTAR-PAY{storeName ? ` · ${storeName.toUpperCase()}` : " · POS"}
         </span>
       </div>
       <div className="flex items-center gap-1 flex-shrink-0">
