@@ -309,7 +309,7 @@ function ComparePage() {
           <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             <Versus
               title="vs BitPay"
-              gap="BitPay holds your crypto and takes 1% per transaction."
+              gap="BitPay holds your crypto and takes 1-2% per transaction."
               win="We never touch your funds. Flat monthly fee. Same chains, no escrow risk."
             />
             <Versus
