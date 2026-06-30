@@ -3,7 +3,7 @@
 // When a terminal creates an invoice it also mints a short-lived single-use
 // nonce. The terminal writes an NDEF tag (or pushes via HCE) containing:
 //
-//   hme://pay?inv=<invoice_id>&t=<nonce>           (Android intent / deep link)
+//   nectar://pay?inv=<invoice_id>&t=<nonce>        (Android intent / deep link)
 //   https://nectar-pay.com/pay/<invoice_id>?t=<nonce>   (iOS universal-link fallback)
 //
 // The customer taps their phone → HME Mobile wallet opens and calls
@@ -18,7 +18,7 @@ export const TAP_NONCE_TTL_MS = 10 * 60 * 1000;
 
 const PUBLIC_ORIGIN =
   process.env.PUBLIC_ORIGIN || "https://nectar-pay.com";
-const APP_SCHEME = "hme"; // HME Mobile wallet URI scheme
+const APP_SCHEME = "nectar"; // Custom URI scheme handled by HME Mobile wallet
 
 export interface TapHandoff {
   nonce: string;
