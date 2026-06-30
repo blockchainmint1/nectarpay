@@ -11,7 +11,7 @@ export const Route = createFileRoute("/compare")({
       {
         name: "description",
         content:
-          "Side-by-side: non-custodial settlement, branded hardware, merchant map, multi-chain support, and fees. The only network that ships all four.",
+          "Side-by-side: non-custodial settlement, branded hardware, merchant map, multi-chain support, and fees. The only network that ships all three.",
       },
       { property: "og:title", content: "Nectar.Pay vs the field" },
       {
