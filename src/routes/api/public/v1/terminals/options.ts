@@ -101,6 +101,7 @@ export const Route = createFileRoute("/api/public/v1/terminals/options")({
 
           return json({
             options,
+            store_name: store?.name ?? null,
             experience: {
               tip_enabled: store?.pos_tip_enabled ?? true,
               signature_enabled: store?.pos_signature_enabled ?? false,
