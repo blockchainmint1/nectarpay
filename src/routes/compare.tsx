@@ -198,7 +198,7 @@ function ComparePage() {
             <br />A real merchant map.
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
-            We're the only network shipping all four. BitPay holds your funds. BTCPay makes you host
+            We're the only network shipping all three. BitPay holds your funds. BTCPay makes you host
             your own server. Strike and Square own your settlement. IVPay is closest — but still
             custodial. Here's the field, on one page.
           </p>
