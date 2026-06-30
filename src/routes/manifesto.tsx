@@ -45,7 +45,7 @@ function ManifestoPage() {
           A Declaration
         </p>
         <h1 className="mt-4 text-4xl font-bold uppercase leading-tight sm:text-5xl">
-          The Nectar<span className="text-primary">.Pay</span> Manifesto
+          The Nectar<span className="text-primary">-Pay</span> Manifesto
         </h1>
         <p className="mt-6 text-[0.7rem] uppercase tracking-[0.4em] text-muted-foreground">
           Honest Money · For the Marketplace · 2026
