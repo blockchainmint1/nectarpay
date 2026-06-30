@@ -570,6 +570,41 @@ function WalletLink({ storeId, onDone }: { storeId: string; onDone: () => void }
     }
   }
 
+  const [enablingStables, setEnablingStables] = useState(false);
+  const [stablesEnabled, setStablesEnabled] = useState(false);
+
+  async function enableStandardStables() {
+    setEnablingStables(true);
+    try {
+      const { data, error } = await supabase
+        .from("chain_configs")
+        .select("id, chain, stables")
+        .eq("store_id", storeId);
+      if (error) throw error;
+      const targets = (data ?? []).filter(
+        (c) => Array.isArray(c.stables) && c.stables.length > 0,
+      );
+      if (targets.length === 0) {
+        toast.error("No stablecoin-capable chains found yet.");
+        return;
+      }
+      const { error: upErr } = await supabase
+        .from("chain_configs")
+        .update({ enabled: true, qr_address_only: false })
+        .in(
+          "id",
+          targets.map((t) => t.id),
+        );
+      if (upErr) throw upErr;
+      setStablesEnabled(true);
+      toast.success(`Enabled stablecoins on ${targets.length} chain${targets.length === 1 ? "" : "s"}.`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not enable stablecoins");
+    } finally {
+      setEnablingStables(false);
+    }
+  }
+
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex-1">
@@ -617,20 +652,44 @@ function WalletLink({ storeId, onDone }: { storeId: string; onDone: () => void }
           )}
         </div>
 
-        <div className="mt-4 space-y-2 text-xs text-muted-foreground">
-          <p className="flex items-start gap-2">
-            <Wallet className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-            Don&apos;t have Beekeeper yet?{" "}
-            <a
-              href="https://beekeeper.honest.money"
-              target="_blank"
-              rel="noreferrer"
-              className="text-primary underline"
+        {linked ? (
+          <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4">
+            <p className="text-sm font-medium">Enable standard stablecoin settings</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              We&apos;ll turn on USDC, USDT &amp; PYUSD on the EVM chains (Ethereum, Base, BSC,
+              Polygon) plus USDT-TRC20 on Tron. You can get more complex later, when you&apos;re
+              ready.
+            </p>
+            <Button
+              size="sm"
+              variant={stablesEnabled ? "secondary" : "default"}
+              className="mt-3 w-full"
+              onClick={enableStandardStables}
+              disabled={enablingStables || stablesEnabled}
             >
-              Get it free
-            </a>
-          </p>
-        </div>
+              {stablesEnabled
+                ? "Stablecoins enabled ✓"
+                : enablingStables
+                  ? "Enabling…"
+                  : "Enable standard stablecoins"}
+            </Button>
+          </div>
+        ) : (
+          <div className="mt-4 space-y-2 text-xs text-muted-foreground">
+            <p className="flex items-start gap-2">
+              <Wallet className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+              Don&apos;t have Beekeeper yet?{" "}
+              <a
+                href="https://beekeeper.honest.money"
+                target="_blank"
+                rel="noreferrer"
+                className="text-primary underline"
+              >
+                Get it free
+              </a>
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="sticky bottom-0 mt-8 space-y-2 bg-background pb-[env(safe-area-inset-bottom)] pt-4">
@@ -643,13 +702,15 @@ function WalletLink({ storeId, onDone }: { storeId: string; onDone: () => void }
           {linked ? "Continue" : "Waiting for scan…"}
           {linked && <ArrowRight className="ml-2 h-5 w-5" />}
         </Button>
-        <button
-          type="button"
-          onClick={onDone}
-          className="block w-full text-center text-xs text-muted-foreground underline"
-        >
-          Skip for now — I&apos;ll link a wallet later
-        </button>
+        {!linked && (
+          <button
+            type="button"
+            onClick={onDone}
+            className="block w-full text-center text-xs text-muted-foreground underline"
+          >
+            Skip for now — I&apos;ll link a wallet later
+          </button>
+        )}
       </div>
     </div>
   );
