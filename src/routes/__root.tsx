@@ -83,6 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "Nectar.Pay" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "google-site-verification", content: "NDf4f7KhIuawD5rOq3HXdn7plw1sox07A5sUbeFQu6M" },
     ],
 
     links: [
