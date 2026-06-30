@@ -75,7 +75,7 @@ function ManifestoPage() {
         <ol className="space-y-5 text-lg leading-relaxed text-foreground/85">
           <li>
             <strong>The merchant should hold the money, not us.</strong>{" "}
-            Every Nectar.Pay invoice settles to an address the merchant controls.
+            Every Nectar-Pay invoice settles to an address the merchant controls.
             We never touch the funds. We never freeze them. We can't.
           </li>
           <li>
