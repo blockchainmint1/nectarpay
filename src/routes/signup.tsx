@@ -5,16 +5,20 @@ import {
   CheckCircle2,
   ExternalLink,
   Globe,
+  Mail,
   MapPin,
   PackageOpen,
   Smartphone,
   Wallet,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
+
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
