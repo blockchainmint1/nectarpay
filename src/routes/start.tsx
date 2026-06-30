@@ -984,6 +984,36 @@ function ToggleCard({
 
 
 function Done({ storeId, onDashboard }: { storeId: string; onDashboard: () => void }) {
+  const pair = useServerFn(createPairingCode);
+  const [pairing, setPairing] = useState(false);
+
+  async function useThisDeviceAsTerminal() {
+    setPairing(true);
+    try {
+      const row = await pair({ data: { storeId, label: "This device" } });
+      const origin = window.location.origin;
+      const res = await fetch(`${origin}/api/public/v1/terminals/pair`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ code: row.code }),
+      });
+      const body = await res.json().catch(() => ({} as Record<string, unknown>));
+      if (!res.ok) throw new Error((body as { error?: string })?.error ?? "Pair failed");
+      const creds = body as { terminal_id: string; hmac_secret: string; api_base?: string };
+      saveCreds({
+        terminalId: creds.terminal_id,
+        secret: creds.hmac_secret,
+        apiBase: creds.api_base ?? origin,
+      });
+      window.TerminalAuth?.save?.(creds.terminal_id, creds.hmac_secret);
+      toast.success("This device is now a terminal.");
+      window.location.href = "/pos";
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not pair this device.");
+      setPairing(false);
+    }
+  }
+
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex-1">
@@ -998,14 +1028,32 @@ function Done({ storeId, onDashboard }: { storeId: string; onDashboard: () => vo
         </p>
 
         <div className="mt-6 space-y-3">
+          <button
+            type="button"
+            onClick={useThisDeviceAsTerminal}
+            disabled={pairing}
+            className="block w-full rounded-lg border border-primary/60 bg-primary/10 p-4 text-left transition active:scale-[0.99] hover:bg-primary/15 disabled:opacity-60"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="text-sm font-semibold text-foreground">
+                  {pairing ? "Pairing this device…" : "Use this device as a terminal"}
+                </div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  Already on the terminal? Skip the pairing code — we&apos;ll set it up right now.
+                </div>
+              </div>
+              <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-primary" />
+            </div>
+          </button>
           <NextCard
             title="Take a test payment"
             desc="Open the POS on any phone or tablet. No app needed."
             to="/pos"
           />
           <NextCard
-            title="Pair your terminal"
-            desc="Enter the 6-digit code from your CryptoPOP device."
+            title="Pair another terminal"
+            desc="Generate a 6-char code for a CryptoPOP or extra device."
             to="/stores/$storeId/terminals"
             params={{ storeId }}
           />
@@ -1019,7 +1067,7 @@ function Done({ storeId, onDashboard }: { storeId: string; onDashboard: () => vo
       </div>
 
       <div className="sticky bottom-0 mt-8 bg-background pb-[env(safe-area-inset-bottom)] pt-4">
-        <Button size="lg" onClick={onDashboard} className="h-14 w-full text-base">
+        <Button size="lg" onClick={onDashboard} variant="outline" className="h-14 w-full text-base">
           Go to dashboard <ArrowRight className="ml-2 h-5 w-5" />
         </Button>
       </div>
