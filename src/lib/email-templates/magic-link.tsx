@@ -28,7 +28,7 @@ export const MagicLinkEmail = ({
   token,
   qrDataUrl,
 }: MagicLinkEmailProps) => {
-  const codeDisplay = token ? token.replace(/(.{3})(.{3})/, '$1 $2') : null
+  const codeDisplay = token ? formatCode(token) : null
   return (
     <Html lang="en" dir="ltr">
       <Head />
@@ -39,13 +39,14 @@ export const MagicLinkEmail = ({
 
           {codeDisplay && (
             <Section style={codeBox}>
-              <Text style={codeLabel}>Your 6-digit code</Text>
+              <Text style={codeLabel}>Your sign-in code</Text>
               <Text style={codeStyle}>{codeDisplay}</Text>
               <Text style={codeHint}>
                 Type this code into the terminal or sign-in screen.
               </Text>
             </Section>
           )}
+
 
           {qrDataUrl && (
             <Section style={qrBox}>
