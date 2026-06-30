@@ -29,7 +29,8 @@ export const Route = createFileRoute("/start")({
   component: StartPage,
 });
 
-type Step = "welcome" | "business" | "wallet" | "done";
+type Step = "welcome" | "business" | "wallet" | "terminal" | "done";
+const STEPS: Step[] = ["welcome", "business", "wallet", "terminal", "done"];
 
 function StartPage() {
   const { user, loading } = useAuth();
