@@ -48,6 +48,7 @@ import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminStoresRouteImport } from './routes/_authenticated.admin.stores'
 import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated.admin.invoices'
 import { Route as AuthenticatedStoresStoreIdIndexRouteImport } from './routes/_authenticated.stores.$storeId.index'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicV1WalletLinkRouteImport } from './routes/api/public/v1/wallet-link'
 import { Route as ApiPublicV1MeRouteImport } from './routes/api/public/v1/me'
 import { Route as ApiPublicV1InvoicesRouteImport } from './routes/api.public.v1.invoices'
@@ -276,6 +277,12 @@ const AuthenticatedStoresStoreIdIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedStoresStoreIdRoute,
   } as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicV1WalletLinkRoute = ApiPublicV1WalletLinkRouteImport.update({
   id: '/api/public/v1/wallet-link',
   path: '/api/public/v1/wallet-link',
@@ -489,6 +496,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
@@ -553,6 +561,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdIndexRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
@@ -622,6 +631,7 @@ export interface FileRoutesById {
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/_authenticated/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
@@ -691,6 +701,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/invoices'
     | '/api/public/v1/me'
     | '/api/public/v1/wallet-link'
+    | '/lovable/email/queue/process'
     | '/stores/$storeId/'
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/terminals/heartbeat'
@@ -755,6 +766,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/invoices'
     | '/api/public/v1/me'
     | '/api/public/v1/wallet-link'
+    | '/lovable/email/queue/process'
     | '/stores/$storeId'
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/terminals/heartbeat'
@@ -823,6 +835,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/invoices'
     | '/api/public/v1/me'
     | '/api/public/v1/wallet-link'
+    | '/lovable/email/queue/process'
     | '/_authenticated/stores/$storeId/'
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/terminals/heartbeat'
@@ -868,6 +881,7 @@ export interface RootRouteChildren {
   ApiPublicV1InvoicesRoute: typeof ApiPublicV1InvoicesRoute
   ApiPublicV1MeRoute: typeof ApiPublicV1MeRoute
   ApiPublicV1WalletLinkRoute: typeof ApiPublicV1WalletLinkRoute
+  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   ApiPublicV1PayInvoiceIdRoute: typeof ApiPublicV1PayInvoiceIdRoute
   ApiPublicV1TerminalsHeartbeatRoute: typeof ApiPublicV1TerminalsHeartbeatRoute
   ApiPublicV1TerminalsInvoiceRoute: typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
@@ -1149,6 +1163,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/stores/$storeId/'
       preLoaderRoute: typeof AuthenticatedStoresStoreIdIndexRouteImport
       parentRoute: typeof AuthenticatedStoresStoreIdRoute
+    }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/v1/wallet-link': {
       id: '/api/public/v1/wallet-link'
@@ -1510,6 +1531,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1InvoicesRoute: ApiPublicV1InvoicesRoute,
   ApiPublicV1MeRoute: ApiPublicV1MeRoute,
   ApiPublicV1WalletLinkRoute: ApiPublicV1WalletLinkRoute,
+  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   ApiPublicV1PayInvoiceIdRoute: ApiPublicV1PayInvoiceIdRoute,
   ApiPublicV1TerminalsHeartbeatRoute: ApiPublicV1TerminalsHeartbeatRoute,
   ApiPublicV1TerminalsInvoiceRoute:
