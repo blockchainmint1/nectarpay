@@ -232,9 +232,10 @@ SHA-256 cert fingerprint.
 
 1. **HME Mobile bundle/package details:** iOS App ID prefix + bundle ID,
    Android package name + signing-cert SHA-256.
-2. **Confirmation:** is `nectar://` available, or is it already in use by HME
-   Wallet (the merchant Beekeeper wallet)? If conflicted, propose an
-   alternative scheme (`hmepay://`, `nectarpay://`) — we'll update the tag.
+2. **Scheme registration:** register `nectar://pay` as an intent filter on
+   Android and confirm no collision with another installed app. (We picked
+   `nectar://` over `hme://` to keep the consumer wallet distinct from the
+   merchant Beekeeper/HME Wallet scheme.)
 3. **Asset-balance read:** the wallet needs to enumerate balances across at
    least Base/USDC, Tron/USDT, Sol/USDC, ETH/USDC, BTC, TXC to do
    priority pick. Confirm that's already supported.
