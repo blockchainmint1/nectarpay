@@ -53,7 +53,7 @@ function HomePage() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">
               <NectarMark className="h-3.5 w-3.5" />
-              Non-custodial · Zero per-tx fees · TEXITcoin native
+              Non-custodial · Zero per-tx fees · TXC native
             </div>
             <h1 className="mt-6 text-5xl font-semibold leading-[1.05] tracking-tight md:text-7xl">
               <span className="honey-text">No keys.</span>
