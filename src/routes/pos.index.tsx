@@ -365,14 +365,16 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
   );
 }
 
-function Header({ onLock, hasPin }: { onLock: () => void; hasPin: boolean }) {
+function Header({ onLock, hasPin, storeName }: { onLock: () => void; hasPin: boolean; storeName: string | null }) {
   return (
     <header className="flex shrink-0 items-center justify-between border-b border-white/5 bg-black/40 px-4 py-2 backdrop-blur">
-      <div className="flex items-center gap-2">
-        <div className="size-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.75)]" />
-        <span className="text-[10px] font-bold tracking-[0.25em] text-amber-300/90">NECTAR.PAY · POS</span>
+      <div className="flex items-center gap-2 min-w-0">
+        <div className="size-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.75)] flex-shrink-0" />
+        <span className="text-[10px] font-bold tracking-[0.25em] text-amber-300/90 truncate">
+          NECTAR.PAY{storeName ? ` · ${storeName.toUpperCase()}` : " · POS"}
+        </span>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 flex-shrink-0">
         <Link to="/pos/history" className="rounded-md p-1.5 text-white/70 hover:bg-white/10" aria-label="History">
           <History className="size-4" />
         </Link>
