@@ -118,6 +118,31 @@ function Welcome({ signedIn }: { signedIn: boolean }) {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+  const [code, setCode] = useState("");
+  const [verifying, setVerifying] = useState(false);
+
+  async function verifyCode() {
+    const trimmed = email.trim().toLowerCase();
+    const token = code.replace(/\D/g, "");
+    if (token.length < 6) {
+      toast.error("Enter the 6-digit code from your email");
+      return;
+    }
+    setVerifying(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: trimmed,
+        token,
+        type: "email",
+      });
+      if (error) throw error;
+      toast.success("Signed in!");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Invalid or expired code");
+    } finally {
+      setVerifying(false);
+    }
+  }
 
   async function signInGoogle() {
     setBusy(true);
