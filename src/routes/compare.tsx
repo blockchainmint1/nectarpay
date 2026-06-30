@@ -11,7 +11,7 @@ export const Route = createFileRoute("/compare")({
       {
         name: "description",
         content:
-          "Side-by-side: non-custodial settlement, branded hardware, merchant map, multi-chain support, and fees. The only network that ships all four.",
+          "Side-by-side: non-custodial settlement, branded hardware, merchant map, multi-chain support, and fees. The only network that ships all three.",
       },
       { property: "og:title", content: "Nectar.Pay vs the field" },
       {
@@ -198,7 +198,7 @@ function ComparePage() {
             <br />A real merchant map.
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
-            We're the only network shipping all four. BitPay holds your funds. BTCPay makes you host
+            We're the only network shipping all three. BitPay holds your funds. BTCPay makes you host
             your own server. Strike and Square own your settlement. IVPay is closest — but still
             custodial. Here's the field, on one page.
           </p>
