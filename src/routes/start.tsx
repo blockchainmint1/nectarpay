@@ -73,7 +73,7 @@ function StartPage() {
           <span className="text-sm font-semibold tracking-tight">Nectar.Pay</span>
         </Link>
         <span className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-          Step {Math.max(1, stepIdx + 1)} / 4
+          Step {Math.max(1, stepIdx + 1)} / {STEPS.length}
         </span>
       </header>
 
