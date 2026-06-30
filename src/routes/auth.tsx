@@ -1,6 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import QRCode from "qrcode";
 import { z } from "zod";
 import { toast } from "sonner";
 
@@ -9,6 +8,7 @@ import { useAuth } from "@/lib/auth-context";
 import { MarketingNav } from "@/components/marketing-shell";
 import { Button } from "@/components/ui/button";
 import { WALLET_POLL_INTERVAL_MS } from "@/lib/wallet-auth-shared";
+import { qrToString } from "@/lib/qr";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
@@ -89,7 +89,7 @@ function AuthPage() {
       const ch = (await res.json()) as Challenge;
       if (cancelled.current) return;
 
-      const svg = await QRCode.toString(ch.qr_data, {
+      const svg = await qrToString(ch.qr_data, {
         type: "svg",
         margin: 1,
         width: 280,

@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowRight, CheckCircle2, ExternalLink, Mail, Smartphone, Wallet } from "lucide-react";
-import QRCode from "qrcode";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 
@@ -11,6 +10,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { NectarMark } from "@/components/marketing-shell";
 import { createWalletLinkCode } from "@/lib/wallet-link.functions";
+import { qrToDataURL } from "@/lib/qr";
 
 export const Route = createFileRoute("/start")({
   head: () => ({
@@ -559,7 +559,7 @@ function WalletLink({ storeId, onDone }: { storeId: string; onDone: () => void }
         (import.meta.env.VITE_PUBLIC_SITE_URL as string | undefined)?.replace(/\/$/, "") ||
         "https://nectar-pay.com";
       const linkUrl = `${canonical}/api/public/v1/wallet-link?token=${encodeURIComponent(result.token)}`;
-      const dataUrl = await QRCode.toDataURL(linkUrl, { width: 320, margin: 1 });
+      const dataUrl = await qrToDataURL(linkUrl, { width: 320, margin: 1 });
       setQrDataUrl(dataUrl);
       setToken(result.token);
       setExpiresAt(new Date(result.expires_at).getTime());

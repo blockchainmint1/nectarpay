@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import QRCode from "qrcode";
 import {
   Check,
   Copy,
@@ -21,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { KycGate } from "@/components/kyc-gate";
 import { cn } from "@/lib/utils";
+import { qrToCanvas } from "@/lib/qr";
 
 export const Route = createFileRoute("/i/$invoiceId")({
   head: ({ params }) => ({
@@ -157,7 +157,7 @@ function QrCanvas({ value, dark }: { value: string; dark: boolean }) {
   const ref = useRef<HTMLCanvasElement | null>(null);
   useEffect(() => {
     if (!ref.current) return;
-    QRCode.toCanvas(ref.current, value, {
+    qrToCanvas(ref.current, value, {
       errorCorrectionLevel: "M",
       margin: 1,
       width: 280,
