@@ -12,13 +12,13 @@ import { getMerchantMapPins, type MapPin } from "@/lib/merchant-map.functions";
 export const Route = createFileRoute("/where")({
   head: () => ({
     meta: [
-      { title: "Where to spend crypto · Nectar.Pay" },
+      { title: "Where · Nectar.Pay" },
       {
         name: "description",
         content:
           "Live maps of merchants accepting crypto via Nectar.Pay across DFW, LA, Denver, Nashville, Salt Lake and Singapore — Bitcoin, TEXITcoin, USDC, USDT, PYUSD and more.",
       },
-      { property: "og:title", content: "Where to spend crypto · Nectar.Pay" },
+      { property: "og:title", content: "Where · Nectar.Pay" },
       {
         property: "og:description",
         content:
@@ -119,7 +119,7 @@ function WherePage() {
             Live merchant maps · 6 launch markets
           </div>
           <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
-            Where to spend crypto
+            Where
           </h1>
           <p className="mt-3 max-w-2xl text-foreground/70">
             Six launch metros, six live maps. Every pin is a real merchant

@@ -40,7 +40,7 @@ export function MarketingNav() {
           <NectarWordmark />
         </Link>
         <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
-          <Link to="/where" className="hover:text-foreground">Where to spend</Link>
+          <Link to="/where" className="hover:text-foreground">Where</Link>
           <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
           <Link to="/compare" className="hover:text-foreground">Compare</Link>
           <Link to="/docs" className="hover:text-foreground">Docs</Link>
