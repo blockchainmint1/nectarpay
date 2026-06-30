@@ -85,18 +85,24 @@ export const MagicLinkEmail = ({
 
 export default MagicLinkEmail
 
-export async function buildQrDataUrl(url: string): Promise<string | undefined> {
-  try {
-    return await qrToSvgDataURL(url, {
-      width: 440,
-      margin: 1,
-      errorCorrectionLevel: 'M',
-      color: { dark: '#000000', light: '#FFFFFF' },
-    })
-  } catch {
-    return undefined
-  }
+function formatCode(token: string): string {
+  const clean = token.trim()
+  const mid = Math.ceil(clean.length / 2)
+  return `${clean.slice(0, mid)} ${clean.slice(mid)}`.trim()
 }
+
+export function buildQrImageUrl(url: string): string {
+  const encoded = encodeURIComponent(url)
+  return `https://api.qrserver.com/v1/create-qr-code/?size=440x440&margin=10&format=png&data=${encoded}`
+}
+
+/**
+ * @deprecated Use buildQrImageUrl - returns an absolute https URL that email clients reliably render.
+ */
+export async function buildQrDataUrl(url: string): Promise<string | undefined> {
+  return buildQrImageUrl(url)
+}
+
 
 const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
 const container = { padding: '20px 25px', maxWidth: '520px' }
