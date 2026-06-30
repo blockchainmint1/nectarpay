@@ -2,6 +2,14 @@ import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
 import hiveMark from "@/assets/nectar-hive-mark.png.asset.json";
 
 /**
@@ -30,6 +38,16 @@ export function NectarWordmark() {
   );
 }
 
+const navLinks = [
+  { to: "/where", label: "Where" },
+  { to: "/pricing", label: "Pricing" },
+  { to: "/compare", label: "Compare" },
+  { to: "/docs", label: "Docs" },
+  { to: "/integrations", label: "Integrations" },
+  { to: "/investors", label: "Investors" },
+  { href: "https://beekeeper.honest.money", label: "Wallet", external: true },
+];
+
 export function MarketingNav() {
   const { user, loading } = useAuth();
   return (
@@ -40,37 +58,106 @@ export function MarketingNav() {
           <NectarWordmark />
         </Link>
         <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
-          <Link to="/where" className="hover:text-foreground">Where</Link>
-          <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
-          <Link to="/compare" className="hover:text-foreground">Compare</Link>
-          <Link to="/docs" className="hover:text-foreground">Docs</Link>
-          <Link to="/integrations" className="hover:text-foreground">Integrations</Link>
-          <Link to="/investors" className="hover:text-foreground">Investors</Link>
-          <a
-            href="https://beekeeper.honest.money"
-            target="_blank"
-            rel="noreferrer"
-            className="hover:text-foreground"
-          >
-            Wallet
-          </a>
+          {navLinks.map((link) =>
+            link.external ? (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-foreground"
+              >
+                {link.label}
+              </a>
+            ) : (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="hover:text-foreground"
+              >
+                {link.label}
+              </Link>
+            )
+          )}
         </nav>
         <div className="flex items-center gap-2">
-          <ThemeToggle />
-          {loading ? null : user ? (
-            <Button asChild size="sm">
-              <Link to="/dashboard">Dashboard</Link>
-            </Button>
-          ) : (
-            <>
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/auth">Sign in</Link>
-              </Button>
+          <div className="hidden md:block">
+            <ThemeToggle />
+          </div>
+          <div className="hidden md:flex items-center gap-2">
+            {loading ? null : user ? (
               <Button asChild size="sm">
-                <Link to="/signup">Start free</Link>
+                <Link to="/dashboard">Dashboard</Link>
               </Button>
-            </>
-          )}
+            ) : (
+              <>
+                <Button asChild variant="ghost" size="sm">
+                  <Link to="/auth">Sign in</Link>
+                </Button>
+                <Button asChild size="sm">
+                  <Link to="/signup">Start free</Link>
+                </Button>
+              </>
+            )}
+          </div>
+
+          {/* Mobile hamburger */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="flex flex-col">
+              <SheetTitle className="sr-only">Navigation menu</SheetTitle>
+              <nav className="mt-8 flex flex-col gap-4 text-base">
+                {navLinks.map((link) =>
+                  link.external ? (
+                    <SheetClose asChild key={link.href}>
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {link.label}
+                      </a>
+                    </SheetClose>
+                  ) : (
+                    <SheetClose asChild key={link.to}>
+                      <Link
+                        to={link.to}
+                        className="text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        {link.label}
+                      </Link>
+                    </SheetClose>
+                  )
+                )}
+              </nav>
+              <div className="mt-auto flex flex-col gap-3 border-t border-border/60 pt-6">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Theme</span>
+                  <ThemeToggle />
+                </div>
+                {loading ? null : user ? (
+                  <Button asChild size="sm">
+                    <Link to="/dashboard">Dashboard</Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Button asChild variant="outline" size="sm">
+                      <Link to="/auth">Sign in</Link>
+                    </Button>
+                    <Button asChild size="sm">
+                      <Link to="/signup">Start free</Link>
+                    </Button>
+                  </>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>
