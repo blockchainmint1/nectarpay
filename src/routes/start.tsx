@@ -99,7 +99,10 @@ function StartPage() {
           />
         )}
         {step === "wallet" && storeId && (
-          <WalletLink storeId={storeId} onDone={() => setStep("done")} />
+          <WalletLink storeId={storeId} onDone={() => setStep("terminal")} />
+        )}
+        {step === "terminal" && storeId && (
+          <TerminalDefaults storeId={storeId} onDone={() => setStep("done")} />
         )}
         {step === "done" && storeId && (
           <Done
