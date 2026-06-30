@@ -739,6 +739,9 @@ export type Database = {
       }
       stores: {
         Row: {
+          admin_market: string | null
+          admin_notes: string | null
+          admin_rep: string | null
           business_address: string | null
           business_category: string | null
           business_city: string | null
@@ -802,6 +805,9 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          admin_market?: string | null
+          admin_notes?: string | null
+          admin_rep?: string | null
           business_address?: string | null
           business_category?: string | null
           business_city?: string | null
@@ -865,6 +871,9 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          admin_market?: string | null
+          admin_notes?: string | null
+          admin_rep?: string | null
           business_address?: string | null
           business_category?: string | null
           business_city?: string | null
