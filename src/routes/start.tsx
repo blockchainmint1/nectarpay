@@ -231,25 +231,65 @@ function Welcome({ signedIn }: { signedIn: boolean }) {
             </p>
           </div>
         ) : sent ? (
-          <div className="mt-10 rounded-xl border border-primary/30 bg-primary/5 p-6 text-center">
-            <Mail className="mx-auto h-10 w-10 text-primary" />
-            <p className="mt-3 text-base font-medium">Check your inbox</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              We sent a one-tap login link to <strong className="text-foreground">{email.trim()}</strong>.
-              Open it on this device to continue.
-            </p>
+          <div className="mt-8 space-y-4">
+            <div className="rounded-xl border border-primary/30 bg-primary/5 p-6 text-center">
+              <Mail className="mx-auto h-10 w-10 text-primary" />
+              <p className="mt-3 text-base font-medium">Check your inbox</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                We sent a sign-in email to{" "}
+                <strong className="text-foreground">{email.trim()}</strong>.
+              </p>
+              <p className="mt-3 text-[11px] text-muted-foreground">
+                <strong className="text-foreground">On a phone or laptop?</strong> Just tap the link
+                in the email.
+                <br />
+                <strong className="text-foreground">On a terminal?</strong> Type the 6-digit code
+                below.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-input bg-card p-4">
+              <label className="block">
+                <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                  6-digit code
+                </span>
+                <input
+                  autoFocus
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  pattern="[0-9]*"
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="••••••"
+                  className="mt-1 h-14 w-full rounded-lg border border-input bg-background px-4 text-center font-mono text-2xl tracking-[0.5em]"
+                />
+              </label>
+              <Button
+                size="lg"
+                onClick={verifyCode}
+                disabled={verifying || code.length < 6}
+                className="mt-3 h-12 w-full text-base"
+              >
+                {verifying ? "Verifying…" : "Sign in with code"}
+              </Button>
+            </div>
+
             <button
               type="button"
               onClick={() => {
                 setSent(false);
+                setCode("");
                 setEmail("");
                 setMode("choose");
               }}
-              className="mt-4 text-xs text-muted-foreground underline"
+              className="block w-full text-center text-xs text-muted-foreground underline"
             >
               Use a different method
             </button>
           </div>
+
         ) : (
           <div className="mt-8 space-y-3">
             <label className="block">
