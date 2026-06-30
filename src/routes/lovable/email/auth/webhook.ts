@@ -132,6 +132,11 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
         }
 
         // Build template props from payload.data (HookData structure)
+        const qrDataUrl =
+          emailType === 'magiclink' && payload.data.url
+            ? await buildQrDataUrl(payload.data.url)
+            : undefined
+
         const templateProps = {
           siteName: SITE_NAME,
           siteUrl: `https://${ROOT_DOMAIN}`,
@@ -141,6 +146,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
           email: payload.data.email,
           oldEmail: payload.data.old_email,
           newEmail: payload.data.new_email,
+          qrDataUrl,
         }
 
         // Render React Email to HTML and plain text
