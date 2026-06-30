@@ -2,25 +2,19 @@
 //
 // On iOS, tapping the NDEF tag opens the OS banner with this https URL.
 // If HME Mobile is installed, the universal-link/associated-domain config
-// routes it directly to the wallet. Otherwise we land here and bounce the
-// user to the regular checkout flow, preserving the tap nonce so the wallet
-// can still claim it if they install + open it within the TTL.
+// routes it directly to the wallet. Otherwise we land here and forward
+// the customer to the regular checkout flow.
 
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Navigate, useParams, useSearch } from "@tanstack/react-router";
+import { z } from "zod";
 
 export const Route = createFileRoute("/pay/$invoiceId")({
-  // Server-side redirect — fast, no flash, no JS needed.
-  beforeLoad: ({ params, location }) => {
-    const t = new URLSearchParams(location.searchStr).get("t");
-    const suffix = t ? `?t=${encodeURIComponent(t)}` : "";
-    throw redirect({
-      to: "/i/$invoiceId",
-      params: { invoiceId: params.invoiceId },
-      search: t ? { t } : undefined,
-      // Fall back to plain string if router rejects extras
-      replace: true,
-    });
-    // Unreachable — return for type happiness
-    return suffix;
-  },
+  validateSearch: z.object({ t: z.string().optional() }),
+  component: PayLanding,
 });
+
+function PayLanding() {
+  const { invoiceId } = useParams({ from: "/pay/$invoiceId" });
+  useSearch({ from: "/pay/$invoiceId" }); // included for future use
+  return <Navigate to="/i/$invoiceId" params={{ invoiceId }} replace />;
+}
