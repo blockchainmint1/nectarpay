@@ -49,6 +49,8 @@ import { Route as AuthenticatedAdminStoresRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated.admin.invoices'
 import { Route as AuthenticatedStoresStoreIdIndexRouteImport } from './routes/_authenticated.stores.$storeId.index'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
+import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as ApiPublicV1WalletLinkRouteImport } from './routes/api/public/v1/wallet-link'
 import { Route as ApiPublicV1MeRouteImport } from './routes/api/public/v1/me'
 import { Route as ApiPublicV1InvoicesRouteImport } from './routes/api.public.v1.invoices'
@@ -283,6 +285,16 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
+  id: '/lovable/email/auth/webhook',
+  path: '/lovable/email/auth/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
+  id: '/lovable/email/auth/preview',
+  path: '/lovable/email/auth/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicV1WalletLinkRoute = ApiPublicV1WalletLinkRouteImport.update({
   id: '/api/public/v1/wallet-link',
   path: '/api/public/v1/wallet-link',
@@ -496,6 +508,8 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
@@ -561,6 +575,8 @@ export interface FileRoutesByTo {
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdIndexRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
@@ -631,6 +647,8 @@ export interface FileRoutesById {
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRoute
+  '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
+  '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/_authenticated/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
@@ -701,6 +719,8 @@ export interface FileRouteTypes {
     | '/api/public/v1/invoices'
     | '/api/public/v1/me'
     | '/api/public/v1/wallet-link'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
     | '/stores/$storeId/'
     | '/api/public/v1/pay/$invoiceId'
@@ -766,6 +786,8 @@ export interface FileRouteTypes {
     | '/api/public/v1/invoices'
     | '/api/public/v1/me'
     | '/api/public/v1/wallet-link'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
     | '/stores/$storeId'
     | '/api/public/v1/pay/$invoiceId'
@@ -835,6 +857,8 @@ export interface FileRouteTypes {
     | '/api/public/v1/invoices'
     | '/api/public/v1/me'
     | '/api/public/v1/wallet-link'
+    | '/lovable/email/auth/preview'
+    | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
     | '/_authenticated/stores/$storeId/'
     | '/api/public/v1/pay/$invoiceId'
@@ -881,6 +905,8 @@ export interface RootRouteChildren {
   ApiPublicV1InvoicesRoute: typeof ApiPublicV1InvoicesRoute
   ApiPublicV1MeRoute: typeof ApiPublicV1MeRoute
   ApiPublicV1WalletLinkRoute: typeof ApiPublicV1WalletLinkRoute
+  LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
+  LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   ApiPublicV1PayInvoiceIdRoute: typeof ApiPublicV1PayInvoiceIdRoute
   ApiPublicV1TerminalsHeartbeatRoute: typeof ApiPublicV1TerminalsHeartbeatRoute
@@ -1169,6 +1195,20 @@ declare module '@tanstack/react-router' {
       path: '/lovable/email/queue/process'
       fullPath: '/lovable/email/queue/process'
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/webhook': {
+      id: '/lovable/email/auth/webhook'
+      path: '/lovable/email/auth/webhook'
+      fullPath: '/lovable/email/auth/webhook'
+      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/preview': {
+      id: '/lovable/email/auth/preview'
+      path: '/lovable/email/auth/preview'
+      fullPath: '/lovable/email/auth/preview'
+      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/v1/wallet-link': {
@@ -1531,6 +1571,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1InvoicesRoute: ApiPublicV1InvoicesRoute,
   ApiPublicV1MeRoute: ApiPublicV1MeRoute,
   ApiPublicV1WalletLinkRoute: ApiPublicV1WalletLinkRoute,
+  LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
+  LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   ApiPublicV1PayInvoiceIdRoute: ApiPublicV1PayInvoiceIdRoute,
   ApiPublicV1TerminalsHeartbeatRoute: ApiPublicV1TerminalsHeartbeatRoute,
