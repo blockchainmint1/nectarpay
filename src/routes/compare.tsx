@@ -19,7 +19,9 @@ export const Route = createFileRoute("/compare")({
         content:
           "1,200 terminals shipping. Non-custodial. 8+ chains. First-party merchant map. Compare us to BitPay, BTCPay, IVPay, Strike, and Square.",
       },
-    ],
+          { property: "og:url", content: "https://nectar-pay.com/compare" },
+],
+    links: [{ rel: "canonical", href: "https://nectar-pay.com/compare" }],
   }),
   component: ComparePage,
 });

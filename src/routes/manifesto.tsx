@@ -8,7 +8,7 @@ export const Route = createFileRoute("/manifesto")({
       {
         name: "description",
         content:
-          "Why Nectar.Pay exists: non-custodial crypto payments built on TEXITcoin and the Honest Money Ecosystem. A merchant gateway with no middleman, no debasement, no permission.",
+          "Why Nectar.Pay exists: non-custodial crypto payments built on TEXITcoin. No middleman, no debasement, no permission.",
       },
       { property: "og:title", content: "The Nectar.Pay Manifesto" },
       {
@@ -16,8 +16,11 @@ export const Route = createFileRoute("/manifesto")({
         content:
           "A merchant payment rail for the Honest Money Ecosystem. Non-custodial, principled, and built to ignore the Fed.",
       },
+      { property: "og:url", content: "https://nectar-pay.com/manifesto" },
     ],
+    links: [{ rel: "canonical", href: "https://nectar-pay.com/manifesto" }],
   }),
+
   component: ManifestoPage,
 });
 

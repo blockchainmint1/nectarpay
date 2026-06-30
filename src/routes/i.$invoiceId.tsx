@@ -440,6 +440,8 @@ function PayingFrame({
 
   return (
     <div className="grid gap-0 md:grid-cols-[1fr_320px]">
+      <h1 className="sr-only">Pay invoice</h1>
+
       {/* left: amount + address */}
       <div className="p-6 md:p-8">
         <div className="flex items-center justify-between">
@@ -712,6 +714,8 @@ function ChainPickerFrame({
 
   return (
     <div className="p-6 md:p-10">
+      <h1 className="sr-only">Select payment method</h1>
+
       <div className="flex items-center justify-between">
         <StatusPill status="pending" />
         {countdown && (

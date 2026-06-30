@@ -20,7 +20,9 @@ export const Route = createFileRoute("/investors")({
         content:
           "Crypto payment gateways raised hundreds of millions and process 220 tx/day. We took zero and we'll beat that our first month. Here's how to win with us.",
       },
-    ],
+          { property: "og:url", content: "https://nectar-pay.com/investors" },
+],
+    links: [{ rel: "canonical", href: "https://nectar-pay.com/investors" }],
   }),
   component: InvestorsPage,
 });

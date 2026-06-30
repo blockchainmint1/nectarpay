@@ -10,7 +10,9 @@ export const Route = createFileRoute("/terms")({
         content:
           "The terms governing use of Nectar.Pay, a non-custodial crypto payment gateway built for the Honest Money Ecosystem.",
       },
-    ],
+          { property: "og:url", content: "https://nectar-pay.com/terms" },
+],
+    links: [{ rel: "canonical", href: "https://nectar-pay.com/terms" }],
   }),
   component: TermsPage,
 });

@@ -22,7 +22,9 @@ export const Route = createFileRoute("/start")({
           "Mobile-first onboarding. Sign in with your wallet, name your business, link a wallet, done. About 90 seconds.",
       },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-    ],
+          { property: "og:url", content: "https://nectar-pay.com/start" },
+],
+    links: [{ rel: "canonical", href: "https://nectar-pay.com/start" }],
   }),
   component: StartPage,
 });
