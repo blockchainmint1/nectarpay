@@ -2,6 +2,14 @@ import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetTitle,
+  SheetClose,
+} from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
 import hiveMark from "@/assets/nectar-hive-mark.png.asset.json";
 
 /**
