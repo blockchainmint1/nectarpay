@@ -268,7 +268,7 @@ function Welcome({ signedIn }: { signedIn: boolean }) {
                   inputMode="numeric"
                   autoComplete="one-time-code"
                   pattern="[0-9]*"
-                  maxLength={8}
+                  maxLength={20}
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
                   placeholder="••••••"
