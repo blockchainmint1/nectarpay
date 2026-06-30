@@ -33,7 +33,7 @@ export function NectarMark({ className = "h-6 w-6" }: { className?: string }) {
 export function NectarWordmark() {
   return (
     <span className="font-semibold tracking-tight">
-      Nectar<span className="text-primary">.Pay</span>
+      Nectar<span className="text-primary">-Pay</span>
     </span>
   );
 }
