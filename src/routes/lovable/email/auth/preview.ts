@@ -100,7 +100,10 @@ export const Route = createFileRoute("/lovable/email/auth/preview")({
           )
         }
 
-        const sampleData = SAMPLE_DATA[type] || {}
+        const sampleData: Record<string, unknown> = { ...(SAMPLE_DATA[type] || {}) }
+        if (type === 'magiclink') {
+          sampleData.qrDataUrl = await buildQrDataUrl(SAMPLE_PROJECT_URL)
+        }
         const html = await render(React.createElement(EmailTemplate, sampleData))
 
         return new Response(html, {
