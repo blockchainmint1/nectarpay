@@ -149,7 +149,7 @@ const ROWS: Row[] = [
     label: "Flat monthly fee (no % of revenue)",
     cells: {
       nectar: { v: "yes", note: "$0–$99/mo" },
-      bitpay: { v: "no", note: "1% per tx" },
+      bitpay: { v: "no", note: "1-2% per tx" },
       btcpay: { v: "yes", note: "Self-hosted" },
       ivpay: { v: "no" },
       strike: { v: "no" },
