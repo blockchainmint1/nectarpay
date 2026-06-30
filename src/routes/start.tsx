@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import type React from "react";
 import { useEffect, useState } from "react";
 import { ArrowRight, CheckCircle2, ExternalLink, Mail, Smartphone, Wallet } from "lucide-react";
 import { toast } from "sonner";
