@@ -246,7 +246,7 @@ function CheckoutPage() {
       <header className="relative z-10 mx-auto flex max-w-3xl items-center justify-between px-4 py-5">
         <div className="flex items-center gap-2 text-sm font-semibold tracking-tight">
           <span className="inline-block h-2.5 w-2.5 rounded-sm bg-primary glow" />
-          Nectar<span className="text-primary">-Pay</span>
+          Nectar<span className="text-primary">-PAY</span>
           {store && (
             <span className="ml-3 hidden text-muted-foreground sm:inline">
               for <span className="text-foreground">{store.name}</span>

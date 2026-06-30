@@ -33,7 +33,7 @@ export function NectarMark({ className = "h-6 w-6" }: { className?: string }) {
 export function NectarWordmark() {
   return (
     <span className="font-semibold tracking-tight">
-      Nectar<span className="text-primary">-Pay</span>
+      Nectar<span className="text-primary">-PAY</span>
     </span>
   );
 }
@@ -170,7 +170,7 @@ export function MarketingFooter() {
       <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-3 px-4 py-8 text-xs text-muted-foreground md:flex-row md:items-center">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <NectarMark className="h-4 w-4" />
-          <span>© {new Date().getFullYear()} Nectar-Pay · No keys. No fees.</span>
+          <span>© {new Date().getFullYear()} Nectar-PAY · No keys. No fees.</span>
           <span className="hidden md:inline">·</span>
           <span>
             Part of the{" "}

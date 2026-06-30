@@ -25,7 +25,7 @@ function AdminLayout() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-8">
             <Link to="/admin" className="text-sm font-bold uppercase tracking-[0.3em]">
-              Nectar<span className="text-primary">-Pay</span> · admin
+              Nectar<span className="text-primary">-PAY</span> · admin
             </Link>
             <nav className="flex gap-6 text-xs uppercase tracking-[0.25em] text-muted-foreground">
               <Link
