@@ -512,6 +512,60 @@ export type Database = {
           },
         ]
       }
+      leads: {
+        Row: {
+          admin_notes: string | null
+          assignee: string | null
+          created_at: string
+          email: string
+          id: string
+          interest: string
+          ip_address: string | null
+          market: string
+          message: string | null
+          name: string
+          source: string | null
+          status: string
+          telegram: string | null
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          assignee?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          interest: string
+          ip_address?: string | null
+          market: string
+          message?: string | null
+          name: string
+          source?: string | null
+          status?: string
+          telegram?: string | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          assignee?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          interest?: string
+          ip_address?: string | null
+          market?: string
+          message?: string | null
+          name?: string
+          source?: string | null
+          status?: string
+          telegram?: string | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       notification_log: {
         Row: {
           body: string | null
