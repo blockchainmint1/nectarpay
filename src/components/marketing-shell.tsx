@@ -102,8 +102,10 @@ export function MarketingFooter() {
           <Link to="/manifesto" className="hover:text-foreground">Manifesto</Link>
           <Link to="/investors" className="hover:text-foreground">Investors</Link>
           <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
+          <Link to="/contact" className="hover:text-foreground">Contact</Link>
           <Link to="/terms" className="hover:text-foreground">Terms</Link>
           <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
+
         </nav>
       </div>
     </footer>
