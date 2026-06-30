@@ -185,6 +185,7 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
   const [optionsErr, setOptionsErr] = useState<string | null>(null);
   const [finalTipCents, setFinalTipCents] = useState(0);
   const [experience, setExperience] = useState<Experience>(DEFAULT_EXPERIENCE);
+  const [storeName, setStoreName] = useState<string | null>(null);
 
   const taxCents = Math.round((subtotalCents * settings.taxBps) / 10_000);
   const tipCents = customTipCents !== null ? customTipCents : Math.round((subtotalCents * tipBps) / 10_000);
