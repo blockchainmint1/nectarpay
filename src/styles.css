@@ -218,3 +218,7 @@
     color: transparent;
   }
 }
+
+html {
+  scrollbar-gutter: stable;
+}
