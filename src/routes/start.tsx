@@ -62,8 +62,8 @@ function StartPage() {
     })();
   }, [loading, user]);
 
-  const stepIdx = ["welcome", "business", "wallet", "done"].indexOf(step);
-  const progress = Math.round(((stepIdx + 1) / 4) * 100);
+  const stepIdx = STEPS.indexOf(step);
+  const progress = Math.round(((stepIdx + 1) / STEPS.length) * 100);
 
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col">
