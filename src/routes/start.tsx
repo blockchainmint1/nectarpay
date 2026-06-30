@@ -245,7 +245,7 @@ function Welcome({ signedIn }: { signedIn: boolean }) {
                 <strong className="text-foreground">On a phone or laptop?</strong> Just tap the link
                 in the email.
                 <br />
-                <strong className="text-foreground">On a terminal?</strong> Type the 6-digit code
+                <strong className="text-foreground">On a terminal?</strong> Type the code
                 below.
               </p>
             </div>
@@ -253,7 +253,7 @@ function Welcome({ signedIn }: { signedIn: boolean }) {
             <div className="rounded-xl border border-input bg-card p-4">
               <label className="block">
                 <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
-                  6-digit code
+                  Sign-in code
                 </span>
                 <input
                   autoFocus
@@ -261,9 +261,9 @@ function Welcome({ signedIn }: { signedIn: boolean }) {
                   inputMode="numeric"
                   autoComplete="one-time-code"
                   pattern="[0-9]*"
-                  maxLength={6}
+                  maxLength={8}
                   value={code}
-                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
                   placeholder="••••••"
                   className="mt-1 h-14 w-full rounded-lg border border-input bg-background px-4 text-center font-mono text-2xl tracking-[0.5em]"
                 />
