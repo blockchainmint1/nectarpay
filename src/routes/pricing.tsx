@@ -151,7 +151,7 @@ function PlanCard({
       </ul>
       <div className="mt-6 flex-1" />
       <Button asChild className="mt-2 w-full" variant={highlight ? "default" : "outline"}>
-        <Link to="/auth" search={{ mode: "signup" }}>{cta}</Link>
+        <Link to="/signup">{cta}</Link>
       </Button>
       {footnote ? (
         <p className="mt-3 text-xs text-muted-foreground">{footnote}</p>
