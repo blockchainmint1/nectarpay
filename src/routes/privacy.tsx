@@ -28,7 +28,7 @@ function PrivacyPage() {
         to="/"
         className="mb-8 inline-flex items-center gap-2 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground"
       >
-        ← Nectar.Pay
+        ← NECTAR-PAY
       </Link>
       <h1 className="text-4xl font-bold tracking-tight">Privacy Policy</h1>
       <p className="mt-2 text-sm text-muted-foreground">Effective {EFFECTIVE}</p>

@@ -37,7 +37,7 @@ function ManifestoPage() {
         to="/"
         className="mb-12 inline-flex items-center gap-2 text-[0.7rem] uppercase tracking-[0.4em] text-muted-foreground hover:text-foreground"
       >
-        ← Nectar.Pay
+        ← NECTAR-PAY
       </Link>
 
       <header className="border-y border-border/60 py-10 text-center">
