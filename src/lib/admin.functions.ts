@@ -157,7 +157,7 @@ export const updateAdminStore = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const patch: Record<string, unknown> = {};
+    const patch: { admin_market?: string | null; admin_rep?: string | null; admin_notes?: string | null } = {};
     if (data.market !== undefined) patch.admin_market = data.market || null;
     if (data.rep !== undefined) patch.admin_rep = data.rep || null;
     if (data.notes !== undefined) patch.admin_notes = data.notes || null;
