@@ -97,10 +97,11 @@ function IntegrationCard({
         available ? "border-border bg-card/60" : "border-border/60 bg-card/30 opacity-80"
       }`}
     >
-      <div className="flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-muted-foreground">
+      <h2 className="flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-muted-foreground">
         <span className="text-primary">{icon}</span>
         {name}
-      </div>
+      </h2>
+
       <div className="mt-3 text-lg font-medium">{tagline}</div>
       <p className="mt-2 text-sm text-muted-foreground">{description}</p>
       {available && to && cta ? (

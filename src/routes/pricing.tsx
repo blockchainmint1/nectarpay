@@ -128,9 +128,10 @@ function PlanCard({
         highlight ? "border-primary/40 bg-primary/[0.04]" : "border-border bg-card/60"
       }`}
     >
-      <div className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
+      <h2 className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
         {name}
-      </div>
+      </h2>
+
       <div className="mt-2 flex items-baseline gap-1">
         <span className="font-mono text-4xl tracking-tight">{price}</span>
         {priceSuffix ? (

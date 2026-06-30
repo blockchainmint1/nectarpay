@@ -11,16 +11,19 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Nothing could be sweeter than keeping all of your money. Nectar.Pay is a non-custodial crypto payment gateway for BTC, TEXITcoin and EVM stablecoins. Paste a public key. Get paid. Zero per-transaction fees.",
+          "Non-custodial crypto payment gateway for BTC, TEXITcoin and EVM stablecoins. Paste a public key, get paid, zero per-transaction fees.",
       },
       { property: "og:title", content: "Nectar.Pay — No keys. No fees." },
       {
         property: "og:description",
         content:
-          "Nothing could be sweeter than keeping all of your money. Non-custodial crypto payments — direct to your wallet, zero per-transaction fees.",
+          "Non-custodial crypto payments — direct to your wallet, zero per-transaction fees.",
       },
+      { property: "og:url", content: "https://nectar-pay.com/" },
     ],
+    links: [{ rel: "canonical", href: "https://nectar-pay.com/" }],
   }),
+
   component: HomePage,
 });
 

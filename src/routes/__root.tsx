@@ -80,28 +80,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Nectar.Pay — No keys. No fees." },
-      {
-        name: "description",
-        content:
-          "Nothing could be sweeter than keeping all of your money. Non-custodial crypto payment gateway for BTC, TEXITcoin and EVM stablecoins.",
-      },
-      { property: "og:title", content: "Nectar.Pay — No keys. No fees." },
-      {
-        property: "og:description",
-        content:
-          "Nothing could be sweeter than keeping all of your money. Non-custodial crypto payments, direct to your wallet.",
-      },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "Nectar.Pay" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Nectar.Pay — No keys. No fees." },
-      {
-        name: "twitter:description",
-        content:
-          "Nothing could be sweeter than keeping all of your money. Non-custodial crypto payments, direct to your wallet.",
-      },
     ],
+
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "icon", type: "image/png", href: "/__l5e/assets-v1/9a1a15be-5b2c-4cc1-ad77-3fd244828324/nectar-hive-mark.png" },
