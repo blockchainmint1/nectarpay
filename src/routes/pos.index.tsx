@@ -4,11 +4,11 @@
 
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import QRCode from "qrcode";
 import { Settings, History, Lock, X, PenLine, Mail } from "lucide-react";
 import { loadCreds, signedJson, type TerminalCreds } from "@/lib/pos-client";
 import { loadSettings, sha256, type PosSettings } from "@/lib/pos-settings";
 import { EVM_CHAIN_LABEL, evmChainsForStable } from "@/lib/chains/networks";
+import { qrToDataURL } from "@/lib/qr";
 
 function joinNets(names: string[]): string {
   if (names.length <= 1) return names.join("");
@@ -657,7 +657,7 @@ function WaitingScreen({
 
   useEffect(() => {
     let cancelled = false;
-    QRCode.toDataURL(qrValue, { width: 640, margin: 1, color: { dark: "#000", light: "#fff" } })
+    qrToDataURL(qrValue, { width: 640, margin: 1, color: { dark: "#000", light: "#fff" } })
       .then((url) => { if (!cancelled) setQrDataUrl(url); })
       .catch(() => {});
     return () => { cancelled = true; };
@@ -755,7 +755,7 @@ function UnderpaidScreen({
   useEffect(() => {
     if (!showQr || !qrValue) return;
     let cancelled = false;
-    QRCode.toDataURL(qrValue, { width: 640, margin: 1, color: { dark: "#000", light: "#fff" } })
+    qrToDataURL(qrValue, { width: 640, margin: 1, color: { dark: "#000", light: "#fff" } })
       .then((url) => { if (!cancelled) setQrDataUrl(url); })
       .catch(() => {});
     return () => { cancelled = true; };

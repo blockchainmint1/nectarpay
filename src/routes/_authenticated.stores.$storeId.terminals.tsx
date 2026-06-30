@@ -5,13 +5,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ChevronLeft, Smartphone, Plus, Trash2 } from "lucide-react";
-import QRCode from "qrcode";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { listTerminals, createPairingCode, revokeTerminal } from "@/lib/terminals.functions";
+import { qrToDataURL } from "@/lib/qr";
 
 export const Route = createFileRoute("/_authenticated/stores/$storeId/terminals")({
   head: () => ({ meta: [{ title: "Terminals · Nectar.Pay" }] }),
@@ -37,7 +37,7 @@ function TerminalsPage() {
     onSuccess: async (row) => {
       const origin = window.location.origin;
       const payload = JSON.stringify({ code: row.code, api: origin });
-      const qr = await QRCode.toDataURL(payload, { width: 320, margin: 1 });
+      const qr = await qrToDataURL(payload, { width: 320, margin: 1 });
       setPairing({ code: row.code, expiresAt: row.expires_at, qr });
     },
     onError: (e: Error) => toast.error(e.message),

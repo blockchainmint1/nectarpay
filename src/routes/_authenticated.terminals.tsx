@@ -6,7 +6,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Smartphone, Plus, Trash2, ArrowRight } from "lucide-react";
-import QRCode from "qrcode";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +21,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { createPairingCode, revokeTerminal } from "@/lib/terminals.functions";
+import { qrToDataURL } from "@/lib/qr";
 
 export const Route = createFileRoute("/_authenticated/terminals")({
   head: () => ({ meta: [{ title: "Terminals · Nectar.Pay" }] }),
@@ -89,7 +89,7 @@ function TerminalsAggregatePage() {
     onSuccess: async (row) => {
       const origin = window.location.origin;
       const payload = JSON.stringify({ code: row.code, api: origin });
-      const qr = await QRCode.toDataURL(payload, { width: 320, margin: 1 });
+      const qr = await qrToDataURL(payload, { width: 320, margin: 1 });
       setPairing({ code: row.code, expiresAt: row.expires_at, qr });
     },
     onError: (e: Error) => toast.error(e.message),

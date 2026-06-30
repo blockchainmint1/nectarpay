@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import QRCode from "qrcode";
 import { ChevronLeft, Link2, Save, Pencil, Copy, Check, Settings, Smartphone, RefreshCw, ShieldCheck, Sparkles, Lock } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { createWalletLinkCode } from "@/lib/wallet-link.functions";
+import { qrToDataURL } from "@/lib/qr";
 // Inlined client-safe validators (mirror src/lib/chains/derive.server.ts).
 function isXpubLike(s: string): boolean {
   return /^([xtuvyz]pub)[1-9A-HJ-NP-Za-km-z]{100,120}$/.test(s.trim());
@@ -673,7 +673,7 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
         (import.meta.env.VITE_PUBLIC_SITE_URL as string | undefined)?.replace(/\/$/, "") ||
         "https://nectar-pay.com";
       const linkUrl = `${canonical}/api/public/v1/wallet-link?token=${encodeURIComponent(result.token)}`;
-      const qr = await QRCode.toDataURL(linkUrl, { width: 320, margin: 1 });
+      const qr = await qrToDataURL(linkUrl, { width: 320, margin: 1 });
       setQrDataUrl(qr);
       setToken(result.token);
       setExpiresAt(new Date(result.expires_at).getTime());

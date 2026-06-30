@@ -1,5 +1,4 @@
 import * as React from 'react'
-import QRCode from 'qrcode'
 
 import {
   Body,
@@ -14,6 +13,7 @@ import {
   Section,
   Text,
 } from '@react-email/components'
+import { qrToDataURL } from '@/lib/qr'
 
 interface MagicLinkEmailProps {
   siteName: string
@@ -86,7 +86,7 @@ export default MagicLinkEmail
 
 export async function buildQrDataUrl(url: string): Promise<string | undefined> {
   try {
-    return await QRCode.toDataURL(url, {
+    return await qrToDataURL(url, {
       width: 440,
       margin: 1,
       errorCorrectionLevel: 'M',
