@@ -576,34 +576,42 @@ function WalletLink({ storeId, onDone }: { storeId: string; onDone: () => void }
   async function enableStandardStables() {
     setEnablingStables(true);
     try {
+      const { SUPPORTED_STABLES_BY_CHAIN } = await import("@/lib/chains/networks");
       const { data, error } = await supabase
         .from("chain_configs")
         .select("id, chain, stables")
         .eq("store_id", storeId);
       if (error) throw error;
-      const targets = (data ?? []).filter(
-        (c) => Array.isArray(c.stables) && c.stables.length > 0,
-      );
-      if (targets.length === 0) {
-        toast.error("No stablecoin-capable chains found yet.");
+      const updates = (data ?? [])
+        .map((c) => {
+          const defaults = SUPPORTED_STABLES_BY_CHAIN[c.chain as keyof typeof SUPPORTED_STABLES_BY_CHAIN];
+          if (!defaults || defaults.length === 0) return null;
+          const merged = Array.from(
+            new Set([...(c.stables ?? []), ...defaults.map((s) => s.toUpperCase())]),
+          );
+          return { id: c.id, stables: merged };
+        })
+        .filter((x): x is { id: string; stables: string[] } => x !== null);
+      if (updates.length === 0) {
+        toast.error("No stablecoin-capable chains found yet. Try re-linking your wallet.");
         return;
       }
-      const { error: upErr } = await supabase
-        .from("chain_configs")
-        .update({ enabled: true, qr_address_only: false })
-        .in(
-          "id",
-          targets.map((t) => t.id),
-        );
-      if (upErr) throw upErr;
+      for (const u of updates) {
+        const { error: upErr } = await supabase
+          .from("chain_configs")
+          .update({ enabled: true, qr_address_only: false, stables: u.stables })
+          .eq("id", u.id);
+        if (upErr) throw upErr;
+      }
       setStablesEnabled(true);
-      toast.success(`Enabled stablecoins on ${targets.length} chain${targets.length === 1 ? "" : "s"}.`);
+      toast.success(`Enabled stablecoins on ${updates.length} chain${updates.length === 1 ? "" : "s"}.`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not enable stablecoins");
     } finally {
       setEnablingStables(false);
     }
   }
+
 
   return (
     <div className="flex flex-1 flex-col">
