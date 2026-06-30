@@ -1,41 +1,75 @@
-## Goal
 
-Replace the placeholder cartoon-bee `NectarMark` and inline SVG favicon with the new beehive identity from `logo_nectar_pay.pdf` everywhere it appears in the app.
+# NFC Tap-to-Pay: Terminal → Customer Wallet
 
-## What the new logo is
+Yes, this is doable — and it's basically how Apple Pay / Google Pay work under the hood, just with our own wallet and crypto rails instead of EMV. Here's the realistic shape.
 
-- Icon: concentric honey-gradient arcs forming a beehive dome (warm amber → orange).
-- Wordmark: "Pay" in matching gradient (paired with "Nectar" in app type to read as "NectarPay").
-- We'll treat the **hive dome** as the standalone mark (used at favicon/nav/hero sizes) and let the existing text "Nectar/Pay" continue rendering as type next to it, since the PDF wordmark is a static raster and won't theme well at small sizes.
+## The honest constraints first
 
-## Steps
+Android phones can read NFC freely. **iPhones cannot read arbitrary NFC tags from third-party apps in the background** — only Apple's Wallet auto-launches on tap, and only for EMV/transit. So:
 
-1. **Upload assets to CDN** (via `lovable-assets`):
-   - `nectar-hive-mark.png` — square transparent crop of just the hive (for nav + favicon + hero).
-   - `nectar-hive-mark.svg` — vector version if extractable from the PDF; otherwise rely on the PNG.
-   - `nectar-pay-lockup.png` — full hive + "Pay" lockup (for the marketing footer / share cards).
-   - Source PDF copy `nectar-pay-logo.pdf` (kept as the canonical brand file, linked from a brand section if useful — optional).
+- **Android**: full magic flow works (tap → HME Wallet auto-opens with invoice loaded).
+- **iOS**: tap shows a system notification banner with a URL; user taps the banner to open HME Wallet. One extra tap, but still smooth.
 
-2. **Replace `NectarMark` component** in `src/components/marketing-shell.tsx`:
-   - Swap the inline cartoon-bee SVG for `<img src={hiveAsset.url} alt="NectarPay" className={...} />`.
-   - Preserve the `className` API so all existing call sites (`h-3.5 w-3.5`, `h-4 w-4`, `h-6 w-6`, `h-12 w-12`) keep working at every size.
-   - Keep export name so `src/routes/index.tsx` imports stay untouched.
+The Senraise terminal acts as an **NFC tag emitter (HCE-style)**, not a reader. The customer's phone reads it.
 
-3. **Update favicon** in `src/routes/__root.tsx`:
-   - Replace the inline `data:image/svg+xml` icon with the CDN URL pointing at `nectar-hive-mark.png` (use a `.png` `rel="icon"` link; add an `apple-touch-icon` link to the same asset).
+## The flow
 
-4. **Update OG image** in `src/routes/__root.tsx` head defaults — point `og:image` / `twitter:image` to the full `nectar-pay-lockup.png` so social shares show the new brand.
+```text
+1. Merchant POS:  builds invoice → "choose payment method" screen
+                  POS asks Nectar API for invoice ID + short-lived nonce
+                  POS pushes an NDEF payload to the Senraise NFC chip:
+                    hme://pay?inv=<id>&t=<nonce>
+                    (or https://pay.hme.app/i/<id>?t=<nonce> for iOS fallback)
 
-5. **POS theme check** — POS already uses honey/amber accents, so the new mark drops in cleanly. No color changes required.
+2. Customer taps phone to terminal
+                  Android: OS sees the URI scheme → auto-launches HME Wallet
+                  iOS:     OS shows banner with the https URL → user taps it
 
-## Out of scope (this turn)
+3. HME Wallet opens, fetches invoice from Nectar:
+                    GET /api/public/v1/invoices/<id>?t=<nonce>
+                  Wallet sees: $9 USD, merchant "Joe's Coffee"
+                  Wallet scans local balances → picks best option
+                    (priority: stable on cheap chain, then native)
+                  Wallet shows: "Pay $9 with USDC on Base • [Approve]"
 
-- Redesigning the marketing hero / wordmark typography.
-- Replacing the `/where` map pin icons (still generic category pins).
-- Generating dark-on-light vs light-on-dark variants — the transparent PNG works on both walnut and cream surfaces in this app.
+4. Customer taps Approve
+                  Wallet signs + broadcasts the tx
+                  Wallet POSTs tx hash to Nectar:
+                    POST /api/public/v1/invoices/<id>/claim
+                      { txHash, chain, token, payerAddress, sig(nonce) }
 
-## Technical notes
+5. Nectar watcher confirms on-chain (already built — hot-scan in pos polling)
+   POS terminal flips to "PAID" within seconds
+```
 
-- All four image assets live on the Lovable CDN under `/__l5e/assets-v1/...`; the repo only holds `.asset.json` pointers.
-- `NectarMark` becomes a thin `<img>` wrapper — no logic, no SVG inline. This avoids re-encoding the PDF artwork as hand-written paths.
-- Favicon switches from `image/svg+xml` to `image/png`; browsers cache aggressively, so a hard refresh may be needed to see the new tab icon during testing.
+## What we'd need to build
+
+**Nectar.Pay side** (this project):
+- New endpoint `GET /api/public/v1/invoices/:id` (public, nonce-gated, returns invoice + merchant name + accepted chains/tokens — no PII).
+- New endpoint `POST /api/public/v1/invoices/:id/claim` — wallet declares its choice; we derive the right receiving address for that chain/token on demand (we already do this in `selectInvoiceChain`) and return it so the wallet knows where to send.
+- POS UI: a "Tap to Pay" button on the payment-method screen that emits the NDEF push to the Senraise terminal (this is the Senraise SDK integration — needs their NFC write API).
+- Nonce is a short-lived single-use token bound to the invoice (5 min, revoked on first claim).
+
+**HME Wallet side** (separate project):
+- Register URL scheme `hme://` (Android intent filter) + universal link for `https://pay.hme.app/i/*` (iOS associated domain).
+- "Pay flow" screen: fetch invoice, pick best asset, show approve button.
+- Asset-selection logic: prefer stable > native, prefer cheap chain (Base/BSC) > expensive (ETH mainnet), prefer chains the merchant accepts.
+
+**Senraise terminal**:
+- We need their SDK / docs to confirm they expose NFC write (HCE or tag emulation). If their NFC is read-only (card reader mode), the flow inverts: customer phone would emit an NDEF tag and terminal reads it — that works too but is less elegant because customer has to enter the amount in the wallet first. Worth checking before committing to a direction.
+
+## Open questions for you
+
+1. Do we have Senraise SDK docs confirming NFC write/HCE mode is available, or do we need to ask them?
+2. iOS universal-link domain — do we own `pay.hme.app` (or similar) for the associated-domain file? Or piggyback on `nectar-pay.com`?
+3. Wallet asset-priority rules — do you want merchants to influence this (e.g., "I prefer USDC on Base, take that first if available"), or is it 100% customer-side preference?
+4. For the "best asset" pick, do we surface a chooser if the customer has multiple eligible balances, or just auto-pick and let them swap before approving?
+
+## Why this is genuinely magical
+
+- No QR scanning, no typing addresses, no app-switching dance.
+- Customer's wallet picks the cheapest rail automatically — settles in seconds on Base/BSC for cents.
+- Merchant terminal flow is identical whether the customer taps or scans a QR — NFC is just a faster handoff.
+- It's the first crypto checkout that actually feels like Apple Pay.
+
+Sleep on it. When you're back, answer the four questions above (or just say "you decide") and I'll write the build plan.
