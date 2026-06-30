@@ -25,7 +25,9 @@ export const Route = createFileRoute("/signup")({
         content:
           "Take crypto payments in person or online. Non-custodial — funds settle straight to your wallet. Zero per-transaction fees.",
       },
-    ],
+          { property: "og:url", content: "https://nectar-pay.com/signup" },
+],
+    links: [{ rel: "canonical", href: "https://nectar-pay.com/signup" }],
   }),
   component: SignupPage,
 });

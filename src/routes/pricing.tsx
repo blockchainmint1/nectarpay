@@ -18,7 +18,9 @@ export const Route = createFileRoute("/pricing")({
         property: "og:description",
         content: "Free, $19/mo, or $99/mo. Pay in TEXITcoin. Non-custodial settlement.",
       },
-    ],
+          { property: "og:url", content: "https://nectar-pay.com/pricing" },
+],
+    links: [{ rel: "canonical", href: "https://nectar-pay.com/pricing" }],
   }),
   component: PricingPage,
 });

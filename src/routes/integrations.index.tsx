@@ -18,7 +18,9 @@ export const Route = createFileRoute("/integrations/")({
         property: "og:description",
         content: "WooCommerce plugin, REST API, and webhooks. Drop us in wherever you sell.",
       },
-    ],
+          { property: "og:url", content: "https://nectar-pay.com/integrations" },
+],
+    links: [{ rel: "canonical", href: "https://nectar-pay.com/integrations" }],
   }),
   component: IntegrationsIndex,
 });

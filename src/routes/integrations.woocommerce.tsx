@@ -18,7 +18,9 @@ export const Route = createFileRoute("/integrations/woocommerce")({
         property: "og:description",
         content: "Non-custodial crypto payments for WooCommerce. Five-minute setup.",
       },
-    ],
+          { property: "og:url", content: "https://nectar-pay.com/integrations/woocommerce" },
+],
+    links: [{ rel: "canonical", href: "https://nectar-pay.com/integrations/woocommerce" }],
   }),
   component: WooPage,
 });

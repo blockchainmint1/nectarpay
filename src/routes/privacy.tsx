@@ -10,7 +10,9 @@ export const Route = createFileRoute("/privacy")({
         content:
           "How Nectar.Pay handles merchant and customer data. Non-custodial by design: we never see customer wallets, balances, or private keys.",
       },
-    ],
+          { property: "og:url", content: "https://nectar-pay.com/privacy" },
+],
+    links: [{ rel: "canonical", href: "https://nectar-pay.com/privacy" }],
   }),
   component: PrivacyPage,
 });

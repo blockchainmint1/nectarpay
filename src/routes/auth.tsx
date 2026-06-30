@@ -24,7 +24,9 @@ export const Route = createFileRoute("/auth")({
         content:
           "Scan with your TEXITcoin wallet to sign in. Nectar.Pay is wallet-only — no email, no password, no custody.",
       },
-    ],
+          { property: "og:url", content: "https://nectar-pay.com/auth" },
+],
+    links: [{ rel: "canonical", href: "https://nectar-pay.com/auth" }],
   }),
   component: AuthPage,
 });

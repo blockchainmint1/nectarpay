@@ -24,7 +24,8 @@ export const Route = createFileRoute("/where")({
         content:
           "Find a merchant near you accepting BTC, TEXITcoin, and stablecoins through Nectar.Pay.",
       },
-    ],
+          { property: "og:url", content: "https://nectar-pay.com/where" },
+],
     links: [
       {
         rel: "stylesheet",
@@ -33,7 +34,8 @@ export const Route = createFileRoute("/where")({
           "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=",
         crossOrigin: "",
       },
-    ],
+          { rel: "canonical", href: "https://nectar-pay.com/where" },
+],
   }),
   component: WherePage,
 });

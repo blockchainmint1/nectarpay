@@ -26,7 +26,9 @@ export const Route = createFileRoute("/docs/wallet-setup")({
         content:
           "How to find the xpub or address for every chain Nectar.Pay supports — without exposing your private keys.",
       },
-    ],
+          { property: "og:url", content: "https://nectar-pay.com/docs/wallet-setup" },
+],
+    links: [{ rel: "canonical", href: "https://nectar-pay.com/docs/wallet-setup" }],
   }),
   component: WalletSetupGuide,
 });
