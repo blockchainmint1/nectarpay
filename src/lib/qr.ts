@@ -41,6 +41,5 @@ export async function qrToSvgDataURL(
   options?: QRCode.QRCodeToStringOptions,
 ): Promise<string> {
   const svg = await qrToString(text, { ...options, type: "svg" });
-  const encoded = Buffer.from(svg).toString("base64");
-  return `data:image/svg+xml;base64,${encoded}`;
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
