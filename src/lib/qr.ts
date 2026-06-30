@@ -30,7 +30,7 @@ export async function qrToString(
 export async function qrToCanvas(
   canvas: HTMLCanvasElement,
   text: string,
-  options?: QRCode.QRCodeToCanvasOptions,
+  options?: QRCode.QRCodeRenderersOptions,
 ): Promise<void> {
   const qr = await getQrModule();
   await qr.toCanvas(canvas, text, options);
