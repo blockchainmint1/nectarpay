@@ -394,8 +394,9 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
             (addrRows ?? []).map((r) => r.wallet_address.trim()),
           );
           const addressKnown = allowed.has(address.trim());
+          const firstWalletEnrollment = allowed.size === 0;
 
-          if (!addressKnown && !codeRow.allow_new_wallet) {
+          if (!addressKnown && !firstWalletEnrollment && !codeRow.allow_new_wallet) {
             return json(
               {
                 error: "Signing address not registered to this merchant.",
@@ -430,7 +431,7 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
           // Trust-on-first-use: register this address to the merchant so
           // future links (and Nectar sign-in) recognize it. Safe to do
           // AFTER claim — only one POST can reach this point per code.
-          if (!addressKnown && codeRow.allow_new_wallet) {
+          if (!addressKnown && (firstWalletEnrollment || codeRow.allow_new_wallet)) {
             await supabaseAdmin
               .from("wallet_accounts")
               .insert({
