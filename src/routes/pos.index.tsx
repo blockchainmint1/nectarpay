@@ -304,7 +304,7 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
 
   return (
     <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#1a1108] text-white">
-      <Header onLock={onLock} hasPin={!!settings.pinHash} />
+      <Header onLock={onLock} hasPin={!!settings.pinHash} storeName={storeName} />
       <main className="flex min-h-0 flex-1 flex-col">
         {screen === "amount" && (
           <AmountScreen subtotalCents={subtotalCents} taxCents={taxCents} taxBps={settings.taxBps} press={press} onCharge={onChargePress} busy={busy} err={err} />
