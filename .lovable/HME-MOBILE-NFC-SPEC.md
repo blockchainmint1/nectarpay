@@ -29,11 +29,11 @@ The terminal app (Senraise SDK on Android) writes a single NDEF message with
 **two URI records** to its NFC reader/writer in tag-emulation mode:
 
 ```
-Record 1 (URI):   hme://pay?inv=<invoice_id>&t=<nonce>
+Record 1 (URI):   nectar://pay?inv=<invoice_id>&t=<nonce>
 Record 2 (URI):   https://nectar-pay.com/pay/<invoice_id>?t=<nonce>
 ```
 
-- **Android phone with HME Mobile installed** → OS routes the `hme://` URI
+- **Android phone with HME Mobile installed** → OS routes the `nectar://` URI
   to the wallet via intent filter. Instant.
 - **iPhone with HME Mobile installed** → OS shows the universal-link banner
   on the HTTPS URL; tap once → wallet opens.
@@ -66,7 +66,7 @@ HMAC-signed endpoint) the response now includes:
   "address": null,
   "crypto_amount": null,
   "expires_at": "...",
-  "tap_url": "hme://pay?inv=<id>&t=<nonce>",
+  "tap_url": "nectar://pay?inv=<id>&t=<nonce>",
   "tap_universal_url": "https://nectar-pay.com/pay/<id>?t=<nonce>",
   "tap_expires_at": "..."       // ~10 min
 }
@@ -211,7 +211,7 @@ Android intent filter goes in the wallet's `AndroidManifest.xml`:
   <action android:name="android.intent.action.VIEW" />
   <category android:name="android.intent.category.DEFAULT" />
   <category android:name="android.intent.category.BROWSABLE" />
-  <data android:scheme="hme" android:host="pay" />
+  <data android:scheme="nectar" android:host="pay" />
 </intent-filter>
 <intent-filter android:autoVerify="true">
   <action android:name="android.intent.action.VIEW" />
@@ -232,9 +232,10 @@ SHA-256 cert fingerprint.
 
 1. **HME Mobile bundle/package details:** iOS App ID prefix + bundle ID,
    Android package name + signing-cert SHA-256.
-2. **Confirmation:** is `hme://` available, or is it already in use by HME
-   Wallet (the merchant Beekeeper wallet)? If conflicted, propose an
-   alternative scheme (`hmepay://`, `nectarpay://`) — we'll update the tag.
+2. **Scheme registration:** register `nectar://pay` as an intent filter on
+   Android and confirm no collision with another installed app. (We picked
+   `nectar://` over `hme://` to keep the consumer wallet distinct from the
+   merchant Beekeeper/HME Wallet scheme.)
 3. **Asset-balance read:** the wallet needs to enumerate balances across at
    least Base/USDC, Tron/USDT, Sol/USDC, ETH/USDC, BTC, TXC to do
    priority pick. Confirm that's already supported.
