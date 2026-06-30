@@ -111,7 +111,55 @@ function StartPage() {
 
 /* ---------------- Welcome ---------------- */
 
+/* ---------------- Welcome / Choose sign-in ---------------- */
+
 function Welcome({ signedIn }: { signedIn: boolean }) {
+  const [mode, setMode] = useState<"choose" | "email">("choose");
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  async function signInGoogle() {
+    setBusy(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: typeof window !== "undefined" ? `${window.location.origin}/start` : undefined,
+      });
+      if (result.error) {
+        toast.error(result.error.message || "Google sign-in failed");
+      }
+      // If redirected, browser navigates away. If tokens returned, useAuth picks up.
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Google sign-in failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function sendMagicLink() {
+    const trimmed = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      toast.error("Enter a valid email");
+      return;
+    }
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: trimmed,
+        options: {
+          emailRedirectTo: `${window.location.origin}/start`,
+          shouldCreateUser: true,
+        },
+      });
+      if (error) throw error;
+      setSent(true);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not send magic link");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex-1">
@@ -120,46 +168,123 @@ function Welcome({ signedIn }: { signedIn: boolean }) {
           Start accepting crypto today.
         </h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          Non-custodial. Zero per-transaction fees. Your wallet IS your account — no email,
-          no password.
+          Non-custodial. Zero per-transaction fees. Pick how you want to sign in — you can link a
+          wallet for payouts in the next step.
         </p>
 
-        <ul className="mt-8 space-y-3 text-sm">
-          {[
-            "Sign in with your TXC wallet",
-            "Name your business",
-            "Link a wallet to receive funds",
-            "Take your first payment",
-          ].map((line, i) => (
-            <li key={line} className="flex items-start gap-3">
-              <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary/15 text-[11px] font-semibold text-primary">
-                {i + 1}
-              </span>
-              <span>{line}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="sticky bottom-0 mt-8 space-y-2 bg-background pb-[env(safe-area-inset-bottom)] pt-4">
         {signedIn ? (
-          <p className="text-center text-xs text-muted-foreground">Loading your account…</p>
+          <p className="mt-10 text-center text-xs text-muted-foreground">Loading your account…</p>
+        ) : mode === "choose" ? (
+          <div className="mt-8 space-y-3">
+            <button
+              type="button"
+              onClick={signInGoogle}
+              disabled={busy}
+              className="flex h-14 w-full items-center justify-center gap-3 rounded-lg border border-input bg-card text-base font-medium transition hover:bg-accent disabled:opacity-50"
+            >
+              <GoogleGlyph className="h-5 w-5" />
+              Continue with Google
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("email")}
+              className="flex h-14 w-full items-center justify-center gap-3 rounded-lg border border-input bg-card text-base font-medium transition hover:bg-accent"
+            >
+              <Mail className="h-5 w-5" />
+              Continue with email
+            </button>
+            <Link
+              to="/auth"
+              search={{ redirect: "/start" }}
+              className="flex h-14 w-full items-center justify-center gap-3 rounded-lg border border-primary/40 bg-primary/10 text-base font-medium text-primary transition hover:bg-primary/15"
+            >
+              <Wallet className="h-5 w-5" />
+              Continue with TXC wallet
+            </Link>
+            <p className="pt-2 text-center text-[11px] text-muted-foreground">
+              Wallet sign-in is fully non-custodial — recommended once you&apos;re comfortable.
+            </p>
+          </div>
+        ) : sent ? (
+          <div className="mt-10 rounded-xl border border-primary/30 bg-primary/5 p-6 text-center">
+            <Mail className="mx-auto h-10 w-10 text-primary" />
+            <p className="mt-3 text-base font-medium">Check your inbox</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              We sent a one-tap login link to <strong className="text-foreground">{email.trim()}</strong>.
+              Open it on this device to continue.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setSent(false);
+                setEmail("");
+                setMode("choose");
+              }}
+              className="mt-4 text-xs text-muted-foreground underline"
+            >
+              Use a different method
+            </button>
+          </div>
         ) : (
-          <>
-            <Button asChild size="lg" className="h-14 w-full text-base">
-              <Link to="/auth" search={{ redirect: "/start" }}>
-                Sign in with TXC wallet <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
+          <div className="mt-8 space-y-3">
+            <label className="block">
+              <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                Email
+              </span>
+              <input
+                autoFocus
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@business.com"
+                className="mt-1 h-14 w-full rounded-lg border border-input bg-background px-4 text-lg"
+              />
+            </label>
+            <Button
+              size="lg"
+              onClick={sendMagicLink}
+              disabled={busy || !email.trim()}
+              className="h-14 w-full text-base"
+            >
+              {busy ? "Sending…" : "Send magic link"} <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            <Button asChild variant="ghost" className="h-12 w-full text-sm">
-              <a href="https://beekeeper.honest.money" target="_blank" rel="noreferrer">
-                I need a wallet first <ExternalLink className="ml-1 h-3.5 w-3.5" />
-              </a>
-            </Button>
-          </>
+            <button
+              type="button"
+              onClick={() => setMode("choose")}
+              className="block w-full text-center text-xs text-muted-foreground underline"
+            >
+              ← Back to sign-in options
+            </button>
+            <p className="pt-2 text-center text-[11px] text-muted-foreground">
+              No password. We&apos;ll email you a one-tap login link.
+            </p>
+          </div>
         )}
       </div>
+
+      {!signedIn && mode === "choose" && (
+        <div className="sticky bottom-0 mt-8 bg-background pb-[env(safe-area-inset-bottom)] pt-4">
+          <Button asChild variant="ghost" className="h-12 w-full text-sm">
+            <a href="https://beekeeper.honest.money" target="_blank" rel="noreferrer">
+              I need a wallet first <ExternalLink className="ml-1 h-3.5 w-3.5" />
+            </a>
+          </Button>
+        </div>
+      )}
     </div>
+  );
+}
+
+function GoogleGlyph({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 48 48" aria-hidden="true">
+      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.4-.4-3.5z" />
+      <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
+      <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.5-5.2l-6.2-5.2C29.2 35 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.6 39.7 16.2 44 24 44z" />
+      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.6l6.2 5.2c-.4.4 6.7-4.9 6.7-14.8 0-1.3-.1-2.4-.4-3.5z" />
+    </svg>
   );
 }
 
