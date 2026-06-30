@@ -11,6 +11,8 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { NectarMark } from "@/components/marketing-shell";
 import { createWalletLinkCode } from "@/lib/wallet-link.functions";
+import { createPairingCode } from "@/lib/terminals.functions";
+import { saveCreds } from "@/lib/pos-client";
 import { qrToDataURL } from "@/lib/qr";
 
 export const Route = createFileRoute("/start")({
