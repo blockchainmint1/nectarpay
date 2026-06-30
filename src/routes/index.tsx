@@ -25,8 +25,8 @@ export const Route = createFileRoute("/")({
 });
 
 const CHAINS = [
-  { label: "Bitcoin", live: true },
-  { label: "TEXITcoin", live: true },
+  { label: "BTC", live: true },
+  { label: "TXC", live: true },
   { label: "USDC", live: true },
   { label: "USDT", live: true },
   { label: "PYUSD", live: true },
