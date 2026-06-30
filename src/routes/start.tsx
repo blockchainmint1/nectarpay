@@ -424,6 +424,8 @@ function Business({
             business_country: country.trim() || null,
             listing_visibility: "city_only",
             fiat_currency: "USD",
+            mempool_accept_fast: true,
+            mempool_max_usd: 1000,
           })
           .select("id")
           .single();
