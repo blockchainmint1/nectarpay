@@ -60,7 +60,7 @@ function ManifestoPage() {
           the printing press.
         </p>
         <p>
-          Nectar.Pay is the till for that economy. A merchant payment gateway built
+          Nectar-Pay is the till for that economy. A merchant payment gateway built
           for the <strong>Honest Money Ecosystem</strong> — non-custodial,
           permissionless, and aimed straight at the rails that already work.
         </p>
