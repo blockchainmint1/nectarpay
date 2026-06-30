@@ -20,6 +20,7 @@ import { Route as PosRouteImport } from './routes/pos'
 import { Route as ManifestoRouteImport } from './routes/manifesto'
 import { Route as InvestorsRouteImport } from './routes/investors'
 import { Route as DocsRouteImport } from './routes/docs'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CashOutRouteImport } from './routes/cash-out'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -47,6 +48,7 @@ import { Route as AuthenticatedStoresNewRouteImport } from './routes/_authentica
 import { Route as AuthenticatedStoresStoreIdRouteImport } from './routes/_authenticated.stores.$storeId'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated.admin.users'
 import { Route as AuthenticatedAdminStoresRouteImport } from './routes/_authenticated.admin.stores'
+import { Route as AuthenticatedAdminLeadsRouteImport } from './routes/_authenticated.admin.leads'
 import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated.admin.invoices'
 import { Route as AuthenticatedStoresStoreIdIndexRouteImport } from './routes/_authenticated.stores.$storeId.index'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
@@ -133,6 +135,11 @@ const InvestorsRoute = InvestorsRouteImport.update({
 const DocsRoute = DocsRouteImport.update({
   id: '/docs',
   path: '/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -273,6 +280,11 @@ const AuthenticatedAdminStoresRoute =
     path: '/stores',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminLeadsRoute = AuthenticatedAdminLeadsRouteImport.update({
+  id: '/leads',
+  path: '/leads',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedAdminInvoicesRoute =
   AuthenticatedAdminInvoicesRouteImport.update({
     id: '/invoices',
@@ -462,6 +474,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/cash-out': typeof CashOutRoute
   '/compare': typeof CompareRoute
+  '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
   '/investors': typeof InvestorsRoute
   '/manifesto': typeof ManifestoRoute
@@ -490,6 +503,7 @@ export interface FileRoutesByFullPath {
   '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
+  '/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/admin/stores': typeof AuthenticatedAdminStoresRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
@@ -533,6 +547,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/cash-out': typeof CashOutRoute
   '/compare': typeof CompareRoute
+  '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
   '/investors': typeof InvestorsRoute
   '/manifesto': typeof ManifestoRoute
@@ -559,6 +574,7 @@ export interface FileRoutesByTo {
   '/integrations': typeof IntegrationsIndexRoute
   '/pos': typeof PosIndexRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
+  '/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/admin/stores': typeof AuthenticatedAdminStoresRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/stores/new': typeof AuthenticatedStoresNewRoute
@@ -603,6 +619,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/cash-out': typeof CashOutRoute
   '/compare': typeof CompareRoute
+  '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
   '/investors': typeof InvestorsRoute
   '/manifesto': typeof ManifestoRoute
@@ -631,6 +648,7 @@ export interface FileRoutesById {
   '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
+  '/_authenticated/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/_authenticated/admin/stores': typeof AuthenticatedAdminStoresRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
@@ -676,6 +694,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cash-out'
     | '/compare'
+    | '/contact'
     | '/docs'
     | '/investors'
     | '/manifesto'
@@ -704,6 +723,7 @@ export interface FileRouteTypes {
     | '/integrations/'
     | '/pos/'
     | '/admin/invoices'
+    | '/admin/leads'
     | '/admin/stores'
     | '/admin/users'
     | '/stores/$storeId'
@@ -747,6 +767,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cash-out'
     | '/compare'
+    | '/contact'
     | '/docs'
     | '/investors'
     | '/manifesto'
@@ -773,6 +794,7 @@ export interface FileRouteTypes {
     | '/integrations'
     | '/pos'
     | '/admin/invoices'
+    | '/admin/leads'
     | '/admin/stores'
     | '/admin/users'
     | '/stores/new'
@@ -816,6 +838,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cash-out'
     | '/compare'
+    | '/contact'
     | '/docs'
     | '/investors'
     | '/manifesto'
@@ -844,6 +867,7 @@ export interface FileRouteTypes {
     | '/integrations/'
     | '/pos/'
     | '/_authenticated/admin/invoices'
+    | '/_authenticated/admin/leads'
     | '/_authenticated/admin/stores'
     | '/_authenticated/admin/users'
     | '/_authenticated/stores/$storeId'
@@ -889,6 +913,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CashOutRoute: typeof CashOutRoute
   CompareRoute: typeof CompareRoute
+  ContactRoute: typeof ContactRoute
   DocsRoute: typeof DocsRouteWithChildren
   InvestorsRoute: typeof InvestorsRoute
   ManifestoRoute: typeof ManifestoRoute
@@ -1005,6 +1030,13 @@ declare module '@tanstack/react-router' {
       path: '/docs'
       fullPath: '/docs'
       preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -1194,6 +1226,13 @@ declare module '@tanstack/react-router' {
       path: '/stores'
       fullPath: '/admin/stores'
       preLoaderRoute: typeof AuthenticatedAdminStoresRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/leads': {
+      id: '/_authenticated/admin/leads'
+      path: '/leads'
+      fullPath: '/admin/leads'
+      preLoaderRoute: typeof AuthenticatedAdminLeadsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/invoices': {
@@ -1425,6 +1464,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminInvoicesRoute: typeof AuthenticatedAdminInvoicesRoute
+  AuthenticatedAdminLeadsRoute: typeof AuthenticatedAdminLeadsRoute
   AuthenticatedAdminStoresRoute: typeof AuthenticatedAdminStoresRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -1432,6 +1472,7 @@ interface AuthenticatedAdminRouteChildren {
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminInvoicesRoute: AuthenticatedAdminInvoicesRoute,
+  AuthenticatedAdminLeadsRoute: AuthenticatedAdminLeadsRoute,
   AuthenticatedAdminStoresRoute: AuthenticatedAdminStoresRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
@@ -1563,6 +1604,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CashOutRoute: CashOutRoute,
   CompareRoute: CompareRoute,
+  ContactRoute: ContactRoute,
   DocsRoute: DocsRouteWithChildren,
   InvestorsRoute: InvestorsRoute,
   ManifestoRoute: ManifestoRoute,

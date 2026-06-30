@@ -83,13 +83,14 @@ export const updateLead = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const patch: Record<string, unknown> = {};
+    const patch: { status?: string; admin_notes?: string } = {};
     if (data.status !== undefined) patch.status = data.status;
     if (data.admin_notes !== undefined) patch.admin_notes = data.admin_notes;
     const { error } = await supabaseAdmin.from("leads").update(patch).eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
 
 export const LEAD_MARKETS = MARKETS;
 export const LEAD_INTERESTS = INTERESTS;
