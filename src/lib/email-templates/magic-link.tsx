@@ -13,7 +13,7 @@ import {
   Section,
   Text,
 } from '@react-email/components'
-import { qrToDataURL } from '@/lib/qr'
+import { qrToSvgDataURL } from '@/lib/qr'
 
 interface MagicLinkEmailProps {
   siteName: string
@@ -86,7 +86,7 @@ export default MagicLinkEmail
 
 export async function buildQrDataUrl(url: string): Promise<string | undefined> {
   try {
-    return await qrToDataURL(url, {
+    return await qrToSvgDataURL(url, {
       width: 440,
       margin: 1,
       errorCorrectionLevel: 'M',

@@ -6,7 +6,7 @@ let qrModulePromise: Promise<QrModule> | null = null;
 
 async function getQrModule(): Promise<QrModule> {
   if (!qrModulePromise) {
-    qrModulePromise = import("qrcode") as Promise<QrModule>;
+    qrModulePromise = import("qrcode/lib/browser") as Promise<QrModule>;
   }
   return qrModulePromise;
 }
@@ -34,4 +34,13 @@ export async function qrToCanvas(
 ): Promise<void> {
   const qr = await getQrModule();
   await qr.toCanvas(canvas, text, options);
+}
+
+export async function qrToSvgDataURL(
+  text: string,
+  options?: QRCode.QRCodeToStringOptions,
+): Promise<string> {
+  const svg = await qrToString(text, { ...options, type: "svg" });
+  const encoded = Buffer.from(svg).toString("base64");
+  return `data:image/svg+xml;base64,${encoded}`;
 }
