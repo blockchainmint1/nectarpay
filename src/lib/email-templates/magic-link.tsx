@@ -13,7 +13,7 @@ import {
   Section,
   Text,
 } from '@react-email/components'
-import { qrToSvgDataURL } from '@/lib/qr'
+
 
 interface MagicLinkEmailProps {
   siteName: string
