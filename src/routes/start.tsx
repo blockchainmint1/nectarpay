@@ -127,7 +127,7 @@ function Welcome({ signedIn }: { signedIn: boolean }) {
     const trimmed = email.trim().toLowerCase();
     const token = code.replace(/\D/g, "");
     if (token.length < 6) {
-      toast.error("Enter the 6-digit code from your email");
+      toast.error("Enter the code from your email");
       return;
     }
     setVerifying(true);
