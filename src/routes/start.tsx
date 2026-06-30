@@ -73,7 +73,7 @@ function StartPage() {
       <header className="flex items-center justify-between px-5 pt-5">
         <Link to="/" className="flex items-center gap-2">
           <NectarMark className="h-7 w-7" />
-          <span className="text-sm font-semibold tracking-tight">Nectar-Pay</span>
+          <span className="text-sm font-semibold tracking-tight">Nectar-PAY</span>
         </Link>
         <span className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
           Step {Math.max(1, stepIdx + 1)} / {STEPS.length}
