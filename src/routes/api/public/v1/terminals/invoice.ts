@@ -133,6 +133,18 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice")({
             .select("address, crypto_amount")
             .eq("id", inserted.id)
             .maybeSingle();
+
+          // Mint an NFC tap-handoff nonce so the terminal app can write an
+          // NDEF tag for the HME Mobile wallet (or any compatible wallet).
+          // See src/lib/tap-handoff.server.ts for the URL scheme.
+          let tap: Awaited<ReturnType<typeof import("@/lib/tap-handoff.server").issueTapHandoff>> | null = null;
+          try {
+            const { issueTapHandoff } = await import("@/lib/tap-handoff.server");
+            tap = await issueTapHandoff(inserted.id, origin);
+          } catch (e) {
+            console.error("[terminal-invoice] tap handoff issue failed:", e);
+          }
+
           return json({
             id: inserted.id,
             checkout_url: `${origin}/i/${inserted.id}`,
@@ -144,7 +156,11 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice")({
             address: full?.address ?? null,
             crypto_amount: full?.crypto_amount ?? null,
             expires_at: expiresAt,
+            tap_url: tap?.tap_url ?? null,
+            tap_universal_url: tap?.tap_universal_url ?? null,
+            tap_expires_at: tap?.expires_at ?? null,
           }, 201);
+
         } catch (err) {
           return json({ error: err instanceof Error ? err.message : "Server error" }, 500);
         }

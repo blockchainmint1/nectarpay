@@ -236,6 +236,41 @@ export type Database = {
           },
         ]
       }
+      invoice_tap_nonces: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          invoice_id: string
+          nonce: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          invoice_id: string
+          nonce: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invoice_id?: string
+          nonce?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_tap_nonces_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoices: {
         Row: {
           address: string | null
