@@ -788,6 +788,7 @@ export type Database = {
           pos_tip_enabled: boolean
           pos_tip_presets_bps: number[]
           pos_void_enabled: boolean
+          preferred_evm_chain: string
           receipt_address: string | null
           receipt_business_name: string | null
           receipt_email_enabled: boolean
@@ -854,6 +855,7 @@ export type Database = {
           pos_tip_enabled?: boolean
           pos_tip_presets_bps?: number[]
           pos_void_enabled?: boolean
+          preferred_evm_chain?: string
           receipt_address?: string | null
           receipt_business_name?: string | null
           receipt_email_enabled?: boolean
@@ -920,6 +922,7 @@ export type Database = {
           pos_tip_enabled?: boolean
           pos_tip_presets_bps?: number[]
           pos_void_enabled?: boolean
+          preferred_evm_chain?: string
           receipt_address?: string | null
           receipt_business_name?: string | null
           receipt_email_enabled?: boolean
