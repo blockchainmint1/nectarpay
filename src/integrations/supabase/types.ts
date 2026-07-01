@@ -566,6 +566,42 @@ export type Database = {
         }
         Relationships: []
       }
+      members_geo: {
+        Row: {
+          city: string | null
+          country: string
+          created_at: string
+          id: number
+          lat: number
+          lng: number
+          source: string | null
+          state: string | null
+          zip: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string
+          created_at?: string
+          id?: number
+          lat: number
+          lng: number
+          source?: string | null
+          state?: string | null
+          zip?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string
+          created_at?: string
+          id?: number
+          lat?: number
+          lng?: number
+          source?: string | null
+          state?: string | null
+          zip?: string | null
+        }
+        Relationships: []
+      }
       notification_log: {
         Row: {
           body: string | null
