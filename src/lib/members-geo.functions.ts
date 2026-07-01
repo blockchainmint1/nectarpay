@@ -39,9 +39,9 @@ export const getMemberHeatPoints = createServerFn({ method: "GET" })
     const bucket = new Map<string, MemberHeatPoint>();
     for (const r of data ?? []) {
       if (typeof r.lat !== "number" || typeof r.lng !== "number") continue;
-      // ~0.05° grid — visually smooth, keeps payload tiny
-      const lat = Math.round(r.lat * 20) / 20;
-      const lng = Math.round(r.lng * 20) / 20;
+      // ~0.01° grid (~0.7mi) — much finer resolution, still compact
+      const lat = Math.round(r.lat * 100) / 100;
+      const lng = Math.round(r.lng * 100) / 100;
       const key = `${lat},${lng}`;
       const cur = bucket.get(key);
       if (cur) cur.count += 1;
