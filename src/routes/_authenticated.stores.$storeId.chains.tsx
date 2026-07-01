@@ -273,7 +273,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("stores")
-        .select("default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow")
+        .select("default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, preferred_evm_chain")
         .eq("id", storeId)
         .single();
       if (error) throw error;
@@ -285,6 +285,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
   const [mempool, setMempool] = useState<string>("");
   const [fast, setFast] = useState<boolean>(false);
   const [slow, setSlow] = useState<boolean>(false);
+  const [preferredEvm, setPreferredEvm] = useState<string>("base");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -293,7 +294,9 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
     setMempool(data.mempool_max_usd == null ? "" : String(data.mempool_max_usd));
     setFast(!!data.mempool_accept_fast);
     setSlow(!!data.mempool_accept_slow);
+    setPreferredEvm(((data as { preferred_evm_chain?: string }).preferred_evm_chain) ?? "base");
   }, [data]);
+
 
   async function onSave() {
     const mRaw = mempool.trim();
@@ -311,11 +314,13 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
           mempool_max_usd: mNum,
           mempool_accept_fast: fast,
           mempool_accept_slow: slow,
+          preferred_evm_chain: preferredEvm,
         })
         .eq("id", storeId);
       if (error) throw error;
       toast.success("Payment settings saved.");
       refetch();
+
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Save failed.");
     } finally {
@@ -385,9 +390,34 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
           </div>
         </label>
       </div>
+
+      <div className="mt-5 border-t border-primary/15 pt-4">
+        <Label className="text-xs">Preferred EVM chain for QR</Label>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {(["base", "bsc", "eth"] as const).map((k) => (
+            <button
+              key={k}
+              type="button"
+              onClick={() => setPreferredEvm(k)}
+              className={cn(
+                "rounded-md border px-3 py-1.5 text-xs font-medium transition",
+                preferredEvm === k
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border bg-background/40 text-muted-foreground hover:bg-background/70",
+              )}
+            >
+              {k === "base" ? "Base" : k === "bsc" ? "BSC" : "Ethereum"}
+            </button>
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          When a customer scans the QR, their wallet auto-fills the token and amount for this chain (one-tap pay). The same address still works on the other EVM chains — customers on those chains just pick their network in-wallet.
+        </p>
+      </div>
     </div>
   );
 }
+
 
 function ChainCard({
   meta,
