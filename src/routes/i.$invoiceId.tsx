@@ -21,6 +21,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { KycGate } from "@/components/kyc-gate";
 import { cn } from "@/lib/utils";
 import { qrToCanvas } from "@/lib/qr";
+import { buildPaymentUri } from "@/lib/payment-uri";
 
 export const Route = createFileRoute("/i/$invoiceId")({
   head: ({ params }) => ({
@@ -72,29 +73,15 @@ function chainAccent(chain: string): string {
   }
 }
 
+
+
 function paymentUri(
   chain: string,
   address: string,
   amount: number | null,
-  memo: string | null = null,
+  tokenSymbol: string | null = null,
 ): string {
-  if (chain === "btc") return `bitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
-  if (chain === "txc") return `texitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
-  if (chain === "eth" || chain === "base") return `ethereum:${address}`;
-  if (chain === "tron") return `tron:${address}`;
-  if (chain === "sol") {
-    // Solana Pay URI: solana:<address>?amount=<sol>&memo=<text>&label=<text>
-    const params = new URLSearchParams();
-    if (amount) params.set("amount", String(amount));
-    if (memo) {
-      params.set("memo", memo);
-      params.set("reference", memo);
-    }
-    params.set("label", "Nectar.Pay");
-    const qs = params.toString();
-    return `solana:${address}${qs ? `?${qs}` : ""}`;
-  }
-  return address;
+  return buildPaymentUri(chain, address, amount, tokenSymbol);
 }
 
 
@@ -434,7 +421,7 @@ function PayingFrame({
 
   const uri = addressOnlyQr
     ? inv.address
-    : paymentUri(inv.chain, inv.address, inv.cryptoAmount, memo);
+    : paymentUri(inv.chain, inv.address, inv.cryptoAmount, inv.tokenSymbol);
 
 
 

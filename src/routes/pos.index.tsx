@@ -9,6 +9,7 @@ import { loadCreds, signedJson, type TerminalCreds } from "@/lib/pos-client";
 import { loadSettings, sha256, type PosSettings } from "@/lib/pos-settings";
 import { EVM_CHAIN_LABEL, evmChainsForStable } from "@/lib/chains/networks";
 import { qrToDataURL } from "@/lib/qr";
+import { buildPaymentUri } from "@/lib/payment-uri";
 
 function joinNets(names: string[]): string {
   if (names.length <= 1) return names.join("");
@@ -605,21 +606,10 @@ function ChainScreen({
 }
 
 
+
+
 function paymentUri(chain: string, address: string, amount: number | null, tokenSymbol: string | null): string {
-  if (chain === "btc") return `bitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
-  if (chain === "txc") return `texitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
-  if (chain === "doge") return `dogecoin:${address}${amount ? `?amount=${amount}` : ""}`;
-  if (chain === "eth" || chain === "base" || chain === "bsc") return `ethereum:${address}`;
-  if (chain === "tron") return `tron:${address}`;
-  if (chain === "sol") {
-    const params = new URLSearchParams();
-    if (amount) params.set("amount", String(amount));
-    if (tokenSymbol) params.set("spl-token", tokenSymbol);
-    params.set("label", "Nectar.Pay");
-    const qs = params.toString();
-    return `solana:${address}${qs ? `?${qs}` : ""}`;
-  }
-  return address;
+  return buildPaymentUri(chain, address, amount, tokenSymbol);
 }
 
 function WaitingScreen({
