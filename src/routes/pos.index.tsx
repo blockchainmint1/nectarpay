@@ -606,7 +606,8 @@ function ChainScreen({
 }
 
 
-import { buildPaymentUri } from "@/lib/payment-uri";
+
+
 function paymentUri(chain: string, address: string, amount: number | null, tokenSymbol: string | null): string {
   return buildPaymentUri(chain, address, amount, tokenSymbol);
 }

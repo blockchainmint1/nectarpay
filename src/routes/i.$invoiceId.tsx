@@ -73,7 +73,8 @@ function chainAccent(chain: string): string {
   }
 }
 
-import { buildPaymentUri } from "@/lib/payment-uri";
+
+
 function paymentUri(
   chain: string,
   address: string,
