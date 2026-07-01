@@ -35,6 +35,7 @@ const NAV: NavGroup[] = [
   {
     title: "Ecosystem",
     items: [
+      { to: `${BASE}/members-heatmap`, label: "Members Heatmap (US)" },
       { to: `${BASE}/manifesto`, label: "Manifesto" },
       { to: `${BASE}/terms`, label: "Terms" },
       { to: `${BASE}/privacy`, label: "Privacy" },

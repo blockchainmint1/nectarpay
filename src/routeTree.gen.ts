@@ -77,6 +77,7 @@ import { Route as AuthenticatedStoresStoreIdKeysRouteImport } from './routes/_au
 import { Route as AuthenticatedStoresStoreIdChainsRouteImport } from './routes/_authenticated.stores.$storeId.chains'
 import { Route as AuthenticatedAdminKnowledgeTermsRouteImport } from './routes/_authenticated.admin.knowledge.terms'
 import { Route as AuthenticatedAdminKnowledgePrivacyRouteImport } from './routes/_authenticated.admin.knowledge.privacy'
+import { Route as AuthenticatedAdminKnowledgeMembersHeatmapRouteImport } from './routes/_authenticated.admin.knowledge.members-heatmap'
 import { Route as AuthenticatedAdminKnowledgeManifestoRouteImport } from './routes/_authenticated.admin.knowledge.manifesto'
 import { Route as AuthenticatedAdminKnowledgeExecutiveSummaryRouteImport } from './routes/_authenticated.admin.knowledge.executive-summary'
 import { Route as AuthenticatedAdminKnowledgeConvenienceDoctrineRouteImport } from './routes/_authenticated.admin.knowledge.convenience-doctrine'
@@ -458,6 +459,12 @@ const AuthenticatedAdminKnowledgePrivacyRoute =
     path: '/privacy',
     getParentRoute: () => AuthenticatedAdminKnowledgeRoute,
   } as any)
+const AuthenticatedAdminKnowledgeMembersHeatmapRoute =
+  AuthenticatedAdminKnowledgeMembersHeatmapRouteImport.update({
+    id: '/members-heatmap',
+    path: '/members-heatmap',
+    getParentRoute: () => AuthenticatedAdminKnowledgeRoute,
+  } as any)
 const AuthenticatedAdminKnowledgeManifestoRoute =
   AuthenticatedAdminKnowledgeManifestoRouteImport.update({
     id: '/manifesto',
@@ -605,6 +612,7 @@ export interface FileRoutesByFullPath {
   '/admin/knowledge/convenience-doctrine': typeof AuthenticatedAdminKnowledgeConvenienceDoctrineRoute
   '/admin/knowledge/executive-summary': typeof AuthenticatedAdminKnowledgeExecutiveSummaryRoute
   '/admin/knowledge/manifesto': typeof AuthenticatedAdminKnowledgeManifestoRoute
+  '/admin/knowledge/members-heatmap': typeof AuthenticatedAdminKnowledgeMembersHeatmapRoute
   '/admin/knowledge/privacy': typeof AuthenticatedAdminKnowledgePrivacyRoute
   '/admin/knowledge/terms': typeof AuthenticatedAdminKnowledgeTermsRoute
   '/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
@@ -687,6 +695,7 @@ export interface FileRoutesByTo {
   '/admin/knowledge/convenience-doctrine': typeof AuthenticatedAdminKnowledgeConvenienceDoctrineRoute
   '/admin/knowledge/executive-summary': typeof AuthenticatedAdminKnowledgeExecutiveSummaryRoute
   '/admin/knowledge/manifesto': typeof AuthenticatedAdminKnowledgeManifestoRoute
+  '/admin/knowledge/members-heatmap': typeof AuthenticatedAdminKnowledgeMembersHeatmapRoute
   '/admin/knowledge/privacy': typeof AuthenticatedAdminKnowledgePrivacyRoute
   '/admin/knowledge/terms': typeof AuthenticatedAdminKnowledgeTermsRoute
   '/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
@@ -775,6 +784,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/knowledge/convenience-doctrine': typeof AuthenticatedAdminKnowledgeConvenienceDoctrineRoute
   '/_authenticated/admin/knowledge/executive-summary': typeof AuthenticatedAdminKnowledgeExecutiveSummaryRoute
   '/_authenticated/admin/knowledge/manifesto': typeof AuthenticatedAdminKnowledgeManifestoRoute
+  '/_authenticated/admin/knowledge/members-heatmap': typeof AuthenticatedAdminKnowledgeMembersHeatmapRoute
   '/_authenticated/admin/knowledge/privacy': typeof AuthenticatedAdminKnowledgePrivacyRoute
   '/_authenticated/admin/knowledge/terms': typeof AuthenticatedAdminKnowledgeTermsRoute
   '/_authenticated/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
@@ -863,6 +873,7 @@ export interface FileRouteTypes {
     | '/admin/knowledge/convenience-doctrine'
     | '/admin/knowledge/executive-summary'
     | '/admin/knowledge/manifesto'
+    | '/admin/knowledge/members-heatmap'
     | '/admin/knowledge/privacy'
     | '/admin/knowledge/terms'
     | '/stores/$storeId/chains'
@@ -945,6 +956,7 @@ export interface FileRouteTypes {
     | '/admin/knowledge/convenience-doctrine'
     | '/admin/knowledge/executive-summary'
     | '/admin/knowledge/manifesto'
+    | '/admin/knowledge/members-heatmap'
     | '/admin/knowledge/privacy'
     | '/admin/knowledge/terms'
     | '/stores/$storeId/chains'
@@ -1032,6 +1044,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/knowledge/convenience-doctrine'
     | '/_authenticated/admin/knowledge/executive-summary'
     | '/_authenticated/admin/knowledge/manifesto'
+    | '/_authenticated/admin/knowledge/members-heatmap'
     | '/_authenticated/admin/knowledge/privacy'
     | '/_authenticated/admin/knowledge/terms'
     | '/_authenticated/stores/$storeId/chains'
@@ -1598,6 +1611,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminKnowledgePrivacyRouteImport
       parentRoute: typeof AuthenticatedAdminKnowledgeRoute
     }
+    '/_authenticated/admin/knowledge/members-heatmap': {
+      id: '/_authenticated/admin/knowledge/members-heatmap'
+      path: '/members-heatmap'
+      fullPath: '/admin/knowledge/members-heatmap'
+      preLoaderRoute: typeof AuthenticatedAdminKnowledgeMembersHeatmapRouteImport
+      parentRoute: typeof AuthenticatedAdminKnowledgeRoute
+    }
     '/_authenticated/admin/knowledge/manifesto': {
       id: '/_authenticated/admin/knowledge/manifesto'
       path: '/manifesto'
@@ -1724,6 +1744,7 @@ interface AuthenticatedAdminKnowledgeRouteChildren {
   AuthenticatedAdminKnowledgeConvenienceDoctrineRoute: typeof AuthenticatedAdminKnowledgeConvenienceDoctrineRoute
   AuthenticatedAdminKnowledgeExecutiveSummaryRoute: typeof AuthenticatedAdminKnowledgeExecutiveSummaryRoute
   AuthenticatedAdminKnowledgeManifestoRoute: typeof AuthenticatedAdminKnowledgeManifestoRoute
+  AuthenticatedAdminKnowledgeMembersHeatmapRoute: typeof AuthenticatedAdminKnowledgeMembersHeatmapRoute
   AuthenticatedAdminKnowledgePrivacyRoute: typeof AuthenticatedAdminKnowledgePrivacyRoute
   AuthenticatedAdminKnowledgeTermsRoute: typeof AuthenticatedAdminKnowledgeTermsRoute
   AuthenticatedAdminKnowledgeIndexRoute: typeof AuthenticatedAdminKnowledgeIndexRoute
@@ -1743,6 +1764,8 @@ const AuthenticatedAdminKnowledgeRouteChildren: AuthenticatedAdminKnowledgeRoute
       AuthenticatedAdminKnowledgeExecutiveSummaryRoute,
     AuthenticatedAdminKnowledgeManifestoRoute:
       AuthenticatedAdminKnowledgeManifestoRoute,
+    AuthenticatedAdminKnowledgeMembersHeatmapRoute:
+      AuthenticatedAdminKnowledgeMembersHeatmapRoute,
     AuthenticatedAdminKnowledgePrivacyRoute:
       AuthenticatedAdminKnowledgePrivacyRoute,
     AuthenticatedAdminKnowledgeTermsRoute:
@@ -1956,13 +1979,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
