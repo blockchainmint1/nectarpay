@@ -419,7 +419,7 @@ function PayingFrame({
 
   const uri = addressOnlyQr
     ? inv.address
-    : paymentUri(inv.chain, inv.address, inv.cryptoAmount, memo);
+    : paymentUri(inv.chain, inv.address, inv.cryptoAmount, inv.tokenSymbol);
 
 
 

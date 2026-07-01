@@ -605,21 +605,9 @@ function ChainScreen({
 }
 
 
+import { buildPaymentUri } from "@/lib/payment-uri";
 function paymentUri(chain: string, address: string, amount: number | null, tokenSymbol: string | null): string {
-  if (chain === "btc") return `bitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
-  if (chain === "txc") return `texitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
-  if (chain === "doge") return `dogecoin:${address}${amount ? `?amount=${amount}` : ""}`;
-  if (chain === "eth" || chain === "base" || chain === "bsc") return `ethereum:${address}`;
-  if (chain === "tron") return `tron:${address}`;
-  if (chain === "sol") {
-    const params = new URLSearchParams();
-    if (amount) params.set("amount", String(amount));
-    if (tokenSymbol) params.set("spl-token", tokenSymbol);
-    params.set("label", "Nectar.Pay");
-    const qs = params.toString();
-    return `solana:${address}${qs ? `?${qs}` : ""}`;
-  }
-  return address;
+  return buildPaymentUri(chain, address, amount, tokenSymbol);
 }
 
 function WaitingScreen({
