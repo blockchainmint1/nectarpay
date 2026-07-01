@@ -166,6 +166,119 @@ export const updateAdminStore = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const listAdminMerchants = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: allStores, error } = await supabaseAdmin
+      .from("stores")
+      .select("id, name, owner_id, fiat_currency, business_city, business_country, admin_market, admin_rep, created_at")
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+
+    const ownerIds = Array.from(new Set((allStores ?? []).map((s) => s.owner_id)));
+    const storeIds = (allStores ?? []).map((s) => s.id);
+
+    const [profilesRes, subsRes, invoicesRes, rolesRes] = await Promise.all([
+      ownerIds.length
+        ? supabaseAdmin.from("profiles").select("user_id, email, full_name, created_at").in("user_id", ownerIds)
+        : Promise.resolve({ data: [] as any[] }),
+      ownerIds.length
+        ? supabaseAdmin
+            .from("subscriptions")
+            .select("user_id, plan_id, status, current_period_end, grace_period_ends_at")
+            .in("user_id", ownerIds)
+        : Promise.resolve({ data: [] as any[] }),
+      storeIds.length
+        ? supabaseAdmin
+            .from("invoices")
+            .select("store_id, status, fiat_amount")
+            .in("store_id", storeIds)
+            .in("status", ["confirmed", "overpaid", "underpaid"])
+        : Promise.resolve({ data: [] as any[] }),
+      ownerIds.length
+        ? supabaseAdmin.from("user_roles").select("user_id, role").in("user_id", ownerIds)
+        : Promise.resolve({ data: [] as any[] }),
+    ]);
+
+    const profileMap = new Map((profilesRes.data ?? []).map((p: any) => [p.user_id, p]));
+    const subMap = new Map((subsRes.data ?? []).map((s: any) => [s.user_id, s]));
+    const rolesMap = new Map<string, string[]>();
+    for (const r of rolesRes.data ?? []) {
+      const arr = rolesMap.get((r as any).user_id) ?? [];
+      arr.push((r as any).role);
+      rolesMap.set((r as any).user_id, arr);
+    }
+    const invAgg = new Map<string, { count: number; total: number }>();
+    for (const inv of invoicesRes.data ?? []) {
+      const cur = invAgg.get((inv as any).store_id) ?? { count: 0, total: 0 };
+      cur.count += 1;
+      cur.total += Number((inv as any).fiat_amount) || 0;
+      invAgg.set((inv as any).store_id, cur);
+    }
+
+    const byOwner = new Map<string, any[]>();
+    for (const s of allStores ?? []) {
+      const arr = byOwner.get(s.owner_id) ?? [];
+      arr.push(s);
+      byOwner.set(s.owner_id, arr);
+    }
+
+    const merchants = Array.from(byOwner.entries()).map(([owner_id, stores]) => {
+      const profile: any = profileMap.get(owner_id);
+      const sub: any = subMap.get(owner_id);
+      let tx = 0;
+      let sales = 0;
+      const currencies = new Set<string>();
+      const markets = new Set<string>();
+      const storeRows = stores.map((s: any) => {
+        const agg = invAgg.get(s.id) ?? { count: 0, total: 0 };
+        tx += agg.count;
+        sales += agg.total;
+        if (s.fiat_currency) currencies.add(s.fiat_currency);
+        const derivedMarket = [s.business_city, s.business_country].filter(Boolean).join(", ");
+        const m = s.admin_market ?? (derivedMarket || null);
+        if (m) markets.add(m);
+        return {
+          id: s.id,
+          name: s.name,
+          fiat_currency: s.fiat_currency,
+          market: m,
+          rep: s.admin_rep ?? null,
+          created_at: s.created_at,
+          tx_count: agg.count,
+          total_sales: agg.total,
+        };
+      });
+      return {
+        owner_id,
+        email: profile?.email ?? null,
+        display_name: profile?.full_name ?? null,
+        signed_up_at: profile?.created_at ?? stores[stores.length - 1]?.created_at ?? null,
+        roles: rolesMap.get(owner_id) ?? [],
+        plan_id: sub?.plan_id ?? "free",
+        sub_status: sub?.status ?? null,
+        expires_at: sub?.current_period_end ?? sub?.grace_period_ends_at ?? null,
+        store_count: storeRows.length,
+        tx_count: tx,
+        total_sales: sales,
+        primary_currency: [...currencies][0] ?? "USD",
+        markets: [...markets],
+        stores: storeRows,
+      };
+    });
+
+    merchants.sort((a, b) => {
+      const ta = a.signed_up_at ? new Date(a.signed_up_at).getTime() : 0;
+      const tb = b.signed_up_at ? new Date(b.signed_up_at).getTime() : 0;
+      return tb - ta;
+    });
+
+    return merchants;
+  });
+
 export const listAdminInvoices = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
