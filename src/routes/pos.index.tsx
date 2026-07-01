@@ -648,11 +648,22 @@ function WaitingScreen({
   })();
 
   // Build the QR value: wallet URI when chain pre-selected, else checkout page.
+  // For the multi-chain EVM umbrella ("eth"), retarget to the merchant's
+  // preferred EVM chain so wallets auto-fill token + amount (one-tap pay).
+  // The same address works on the other EVM chains — see caption below.
   const qrValue = useMemo(() => {
     if (!hasWallet) return invoice.checkout_url;
     if (addressOnly) return invoice.address!;
-    return paymentUri(invoice.chain!, invoice.address!, invoice.crypto_amount, invoice.token_symbol);
+    const preferred = invoice.preferred_evm_chain || "base";
+    const effectiveChain =
+      invoice.chain === "eth" && invoice.token_symbol
+        ? (evmChainsForStable(invoice.token_symbol).includes(preferred as never)
+            ? preferred
+            : invoice.chain)
+        : invoice.chain!;
+    return paymentUri(effectiveChain, invoice.address!, invoice.crypto_amount, invoice.token_symbol);
   }, [hasWallet, addressOnly, invoice]);
+
 
   useEffect(() => {
     let cancelled = false;
