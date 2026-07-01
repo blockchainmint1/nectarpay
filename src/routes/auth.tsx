@@ -210,87 +210,122 @@ function AuthPage() {
         <div className="rounded-xl border border-border bg-card/60 p-8">
           <div className="text-center">
             <p className="text-[0.7rem] uppercase tracking-[0.4em] text-muted-foreground">
-              Wallet-only · no passwords
+              {mode === "wallet"
+                ? "Non-custodial · no passwords"
+                : "Welcome back"}
             </p>
             <h1 className="mt-3 text-2xl font-semibold tracking-tight">
-              Sign in with your TXC wallet
+              {mode === "choose"
+                ? "Sign in to Nectar-PAY"
+                : mode === "email"
+                  ? "Sign in with email"
+                  : "Sign in with your TXC wallet"}
             </h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Scan this QR with your TEXITcoin mobile wallet and approve the sign-in request.
-            </p>
-          </div>
-
-          <div className="mt-8 flex flex-col items-center">
-            {status.kind === "loading" ? (
-              <div className="flex h-[280px] w-[280px] items-center justify-center rounded-lg border border-border bg-muted/20">
-                <span className="text-xs text-muted-foreground">Generating challenge…</span>
-              </div>
-            ) : status.kind === "expired" ? (
-              <div className="flex h-[280px] w-[280px] flex-col items-center justify-center gap-3 rounded-lg border border-destructive/40 bg-destructive/5">
-                <p className="text-sm text-destructive">QR code expired</p>
-                <Button size="sm" onClick={createChallenge}>
-                  New QR
-                </Button>
-              </div>
-            ) : status.kind === "error" ? (
-              <div className="flex h-[280px] w-[280px] flex-col items-center justify-center gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-center">
-                <p className="text-sm text-destructive">{status.message}</p>
-                <Button size="sm" onClick={createChallenge}>
-                  Try again
-                </Button>
-              </div>
-            ) : (
-              <>
-                <div
-                  className="rounded-lg border border-border bg-white p-4"
-                  dangerouslySetInnerHTML={{ __html: qrSvg }}
-                />
-                <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
-                  <span
-                    className={`inline-block h-2 w-2 rounded-full ${
-                      status.kind === "signing"
-                        ? "animate-pulse bg-primary"
-                        : "animate-pulse bg-emerald-500"
-                    }`}
-                  />
-                  {status.kind === "signing"
-                    ? "Verifying signature…"
-                    : `Waiting for wallet · expires in ${formatTime(remaining)}`}
-                </div>
-                <a
-                  href={status.challenge.deep_link}
-                  className="mt-4 text-xs uppercase tracking-[0.3em] text-primary hover:underline"
-                >
-                  Open on this device →
-                </a>
-              </>
+            {mode === "wallet" && (
+              <p className="mt-2 text-sm text-muted-foreground">
+                Scan this QR with your TEXITcoin mobile wallet and approve the sign-in request.
+              </p>
             )}
           </div>
 
-          {(status.kind === "waiting" || status.kind === "signing") && (
-            <ManualSignIn
-              challenge={status.challenge}
-              onError={(message) => setStatus({ kind: "error", message })}
+          {mode === "choose" && (
+            <ChooseMode
+              onGoogle={() => void signInGoogle()}
+              onEmail={() => setMode("email")}
+              onWallet={() => setMode("wallet")}
             />
           )}
 
-          <div className="mt-8 space-y-3 border-t border-border/60 pt-6 text-xs text-muted-foreground">
-            <p>
-              <strong className="text-foreground">No TXC wallet yet?</strong>{" "}
-              <a
-                href="https://beekeeper.honest.money"
-                target="_blank"
-                rel="noreferrer"
-                className="text-primary hover:underline"
+          {mode === "email" && (
+            <EmailSignIn
+              redirect={search.redirect}
+              onBack={() => setMode("choose")}
+            />
+          )}
+
+          {mode === "wallet" && (
+            <>
+              <div className="mt-8 flex flex-col items-center">
+                {status.kind === "loading" ? (
+                  <div className="flex h-[280px] w-[280px] items-center justify-center rounded-lg border border-border bg-muted/20">
+                    <span className="text-xs text-muted-foreground">Generating challenge…</span>
+                  </div>
+                ) : status.kind === "expired" ? (
+                  <div className="flex h-[280px] w-[280px] flex-col items-center justify-center gap-3 rounded-lg border border-destructive/40 bg-destructive/5">
+                    <p className="text-sm text-destructive">QR code expired</p>
+                    <Button size="sm" onClick={createChallenge}>
+                      New QR
+                    </Button>
+                  </div>
+                ) : status.kind === "error" ? (
+                  <div className="flex h-[280px] w-[280px] flex-col items-center justify-center gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-center">
+                    <p className="text-sm text-destructive">{status.message}</p>
+                    <Button size="sm" onClick={createChallenge}>
+                      Try again
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div
+                      className="rounded-lg border border-border bg-white p-4"
+                      dangerouslySetInnerHTML={{ __html: qrSvg }}
+                    />
+                    <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
+                      <span
+                        className={`inline-block h-2 w-2 rounded-full ${
+                          status.kind === "signing"
+                            ? "animate-pulse bg-primary"
+                            : "animate-pulse bg-emerald-500"
+                        }`}
+                      />
+                      {status.kind === "signing"
+                        ? "Verifying signature…"
+                        : `Waiting for wallet · expires in ${formatTime(remaining)}`}
+                    </div>
+                    <a
+                      href={status.challenge.deep_link}
+                      className="mt-4 text-xs uppercase tracking-[0.3em] text-primary hover:underline"
+                    >
+                      Open on this device →
+                    </a>
+                  </>
+                )}
+              </div>
+
+              {(status.kind === "waiting" || status.kind === "signing") && (
+                <ManualSignIn
+                  challenge={status.challenge}
+                  onError={(message) => setStatus({ kind: "error", message })}
+                />
+              )}
+
+              <div className="mt-8 space-y-3 border-t border-border/60 pt-6 text-xs text-muted-foreground">
+                <p>
+                  <strong className="text-foreground">No TXC wallet yet?</strong>{" "}
+                  <a
+                    href="https://beekeeper.honest.money"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Get Beekeeper.money Wallet →
+                  </a>
+                </p>
+                <p>
+                  Signing a sign-in request <strong className="text-foreground">does not</strong> move
+                  any funds. Nectar-PAY never holds your keys or your crypto.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setMode("choose")}
+                className="mt-6 block w-full text-center text-xs text-muted-foreground underline"
               >
-                Get Beekeeper.money Wallet →
-              </a>
-            </p>
-            <p>
-              Signing a sign-in request <strong className="text-foreground">does not</strong> move
-              any funds. Nectar.Pay never holds your keys or your crypto.
-            </p>
-          </div>
+                ← Back to sign-in options
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
