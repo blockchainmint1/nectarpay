@@ -718,6 +718,18 @@ function WaitingScreen({
           <div className="mt-3 w-full max-w-sm rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-[11px] font-bold text-amber-200">
             ⚠ ONLY SEND {assetLabel} TO THIS ADDRESS
           </div>
+          {invoice.chain === "eth" && invoice.token_symbol && !addressOnly && (() => {
+            const preferred = (invoice.preferred_evm_chain || "base") as never;
+            const supported = evmChainsForStable(invoice.token_symbol);
+            const others = supported.filter((k) => k !== preferred).map((k) => EVM_CHAIN_LABEL[k]);
+            const preferredLabel = supported.includes(preferred) ? EVM_CHAIN_LABEL[preferred] : "Base";
+            return (
+              <p className="mt-2 max-w-sm text-[10px] leading-snug text-white/45">
+                QR prefers <span className="text-white/70">{invoice.token_symbol} on {preferredLabel}</span>
+                {others.length > 0 && <> — same address works on {joinNets(others)}</>}
+              </p>
+            );
+          })()}
           <label className="mt-3 flex cursor-pointer items-center gap-2 text-[11px] text-white/70">
             <input
               type="checkbox"
@@ -729,6 +741,7 @@ function WaitingScreen({
           </label>
         </>
       ) : (
+
         <p className="mt-2 max-w-xs text-[11px] text-white/50">
           Customer scans with any wallet and picks their chain on their phone.
         </p>
