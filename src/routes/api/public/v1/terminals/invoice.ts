@@ -157,10 +157,12 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice")({
             address: full?.address ?? null,
             crypto_amount: full?.crypto_amount ?? null,
             expires_at: expiresAt,
+            preferred_evm_chain: (store as { preferred_evm_chain?: string }).preferred_evm_chain ?? "base",
             tap_url: tap?.tap_url ?? null,
             tap_universal_url: tap?.tap_universal_url ?? null,
             tap_expires_at: tap?.expires_at ?? null,
           }, 201);
+
 
         } catch (err) {
           return json({ error: err instanceof Error ? err.message : "Server error" }, 500);
