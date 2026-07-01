@@ -273,7 +273,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("stores")
-        .select("default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow")
+        .select("default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, preferred_evm_chain")
         .eq("id", storeId)
         .single();
       if (error) throw error;
@@ -285,6 +285,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
   const [mempool, setMempool] = useState<string>("");
   const [fast, setFast] = useState<boolean>(false);
   const [slow, setSlow] = useState<boolean>(false);
+  const [preferredEvm, setPreferredEvm] = useState<string>("base");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -293,7 +294,9 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
     setMempool(data.mempool_max_usd == null ? "" : String(data.mempool_max_usd));
     setFast(!!data.mempool_accept_fast);
     setSlow(!!data.mempool_accept_slow);
+    setPreferredEvm(((data as { preferred_evm_chain?: string }).preferred_evm_chain) ?? "base");
   }, [data]);
+
 
   async function onSave() {
     const mRaw = mempool.trim();
