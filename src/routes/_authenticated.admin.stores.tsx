@@ -107,7 +107,7 @@ function AdminMerchants() {
             {merchants.map((m: Merchant) => {
               const open = expanded.has(m.owner_id);
               return (
-                <>
+                <Fragment key={m.owner_id}>
                   <tr
                     key={m.owner_id}
                     className="border-t border-border/40 cursor-pointer hover:bg-muted/30"
