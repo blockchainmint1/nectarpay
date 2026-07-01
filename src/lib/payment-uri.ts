@@ -26,6 +26,7 @@ export function buildPaymentUri(
   address: string,
   amount: number | null,
   tokenSymbol: string | null,
+  opts?: { multiChainEvm?: boolean },
 ): string {
   if (chain === "btc") return `bitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
   if (chain === "txc") return `texitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
@@ -35,6 +36,20 @@ export function buildPaymentUri(
     const net = getNetwork(chain as ChainKind);
     const chainId = net && net.kind === "evm" ? net.chainId : undefined;
 
+    // Flexible multi-chain EVM mode: merchant accepts the same address on
+    // multiple EVM chains, so we must NOT bind the QR to a specific chainId
+    // or a chain-specific token contract. Emit a bare `ethereum:<addr>` and
+    // let the payer's wallet choose chain + asset. (For a native amount hint
+    // we can safely add `?value=<wei>` — units are the same on every EVM chain.)
+    if (opts?.multiChainEvm) {
+      if (!tokenSymbol && amount) {
+        const wei = toBaseUnits(amount, 18);
+        return `ethereum:${address}?value=${wei}`;
+      }
+      return `ethereum:${address}`;
+    }
+
+    // Chain-locked: emit full EIP-681 with token contract + chainId.
     if (tokenSymbol) {
       const stable = getStable(chain as ChainKind, tokenSymbol);
       if (stable && chainId) {
@@ -53,6 +68,7 @@ export function buildPaymentUri(
     }
     return `ethereum:${address}${chainId ? `@${chainId}` : ""}`;
   }
+
 
   if (chain === "tron") {
     const params = new URLSearchParams();
