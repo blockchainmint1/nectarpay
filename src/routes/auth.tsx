@@ -493,3 +493,212 @@ function formatTime(seconds: number): string {
   const s = seconds % 60;
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
+
+function ChooseMode({
+  onGoogle,
+  onEmail,
+  onWallet,
+}: {
+  onGoogle: () => void;
+  onEmail: () => void;
+  onWallet: () => void;
+}) {
+  return (
+    <div className="mt-8 space-y-3">
+      <button
+        type="button"
+        onClick={onGoogle}
+        className="flex h-14 w-full items-center justify-center gap-3 rounded-lg border border-input bg-card text-base font-medium transition hover:bg-accent"
+      >
+        <GoogleGlyph className="h-5 w-5" />
+        Continue with Google
+      </button>
+      <button
+        type="button"
+        onClick={onEmail}
+        className="flex h-14 w-full items-center justify-center gap-3 rounded-lg border border-input bg-card text-base font-medium transition hover:bg-accent"
+      >
+        <Mail className="h-5 w-5" />
+        Continue with email
+      </button>
+      <button
+        type="button"
+        onClick={onWallet}
+        className="flex h-14 w-full items-center justify-center gap-3 rounded-lg border border-primary/40 bg-primary/10 text-base font-medium text-primary transition hover:bg-primary/15"
+      >
+        <Wallet className="h-5 w-5" />
+        Continue with TXC wallet
+      </button>
+      <p className="pt-2 text-center text-[11px] text-muted-foreground">
+        Wallet sign-in is fully non-custodial — recommended once you&apos;re comfortable.
+      </p>
+    </div>
+  );
+}
+
+function EmailSignIn({
+  redirect,
+  onBack,
+}: {
+  redirect?: string;
+  onBack: () => void;
+}) {
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [code, setCode] = useState("");
+  const [verifying, setVerifying] = useState(false);
+
+  async function sendMagicLink() {
+    const trimmed = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      toast.error("Enter a valid email");
+      return;
+    }
+    setBusy(true);
+    try {
+      const target = redirect ?? "/dashboard";
+      const { error } = await supabase.auth.signInWithOtp({
+        email: trimmed,
+        options: {
+          emailRedirectTo: `${window.location.origin}${target}`,
+          shouldCreateUser: true,
+        },
+      });
+      if (error) throw error;
+      setSent(true);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not send magic link");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function verifyCode() {
+    const trimmed = email.trim().toLowerCase();
+    const token = code.replace(/\D/g, "");
+    if (token.length < 6) {
+      toast.error("Enter the code from your email");
+      return;
+    }
+    setVerifying(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email: trimmed,
+        token,
+        type: "email",
+      });
+      if (error) throw error;
+      toast.success("Signed in!");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Invalid or expired code");
+    } finally {
+      setVerifying(false);
+    }
+  }
+
+  if (sent) {
+    return (
+      <div className="mt-8 space-y-4">
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-6 text-center">
+          <Mail className="mx-auto h-10 w-10 text-primary" />
+          <p className="mt-3 text-base font-medium">Check your inbox</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            We sent a sign-in email to <strong className="text-foreground">{email.trim()}</strong>.
+          </p>
+          <p className="mt-3 text-[11px] text-muted-foreground">
+            Tap the link on this device, or type the code below.
+          </p>
+        </div>
+        <div className="rounded-xl border border-input bg-card p-4">
+          <label className="block">
+            <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+              Sign-in code
+            </span>
+            <input
+              autoFocus
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              pattern="[0-9]*"
+              maxLength={20}
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
+              placeholder="••••••"
+              className="mt-1 h-14 w-full rounded-lg border border-input bg-background px-4 text-center font-mono text-2xl tracking-[0.5em]"
+            />
+          </label>
+          <Button
+            size="lg"
+            onClick={verifyCode}
+            disabled={verifying || code.length < 6}
+            className="mt-3 h-12 w-full text-base"
+          >
+            {verifying ? "Verifying…" : "Sign in with code"}
+          </Button>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setSent(false);
+            setCode("");
+            setEmail("");
+            onBack();
+          }}
+          className="block w-full text-center text-xs text-muted-foreground underline"
+        >
+          Use a different method
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-8 space-y-3">
+      <label className="block">
+        <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+          Email
+        </span>
+        <input
+          autoFocus
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@business.com"
+          className="mt-1 h-14 w-full rounded-lg border border-input bg-background px-4 text-lg"
+        />
+      </label>
+      <Button
+        size="lg"
+        onClick={sendMagicLink}
+        disabled={busy || !email.trim()}
+        className="h-14 w-full text-base"
+      >
+        {busy ? "Sending…" : "Send magic link"} <ArrowRight className="ml-2 h-5 w-5" />
+      </Button>
+      <button
+        type="button"
+        onClick={onBack}
+        className="block w-full text-center text-xs text-muted-foreground underline"
+      >
+        ← Back to sign-in options
+      </button>
+      <p className="pt-2 text-center text-[11px] text-muted-foreground">
+        No password. We&apos;ll email you a code and a one-tap login link.
+      </p>
+    </div>
+  );
+}
+
+function GoogleGlyph({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 48 48" aria-hidden="true">
+      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.4-.4-3.5z" />
+      <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
+      <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.5-5.2l-6.2-5.2C29.2 35 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.6 39.7 16.2 44 24 44z" />
+      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.6l6.2 5.2c-.4.4 6.7-4.9 6.7-14.8 0-1.3-.1-2.4-.4-3.5z" />
+    </svg>
+  );
+}
