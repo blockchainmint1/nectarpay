@@ -81,7 +81,7 @@ function paymentUri(
   amount: number | null,
   tokenSymbol: string | null = null,
 ): string {
-  return buildPaymentUri(chain, address, amount, tokenSymbol);
+  return buildPaymentUri(chain, address, amount, tokenSymbol, { multiChainEvm: chain === "eth" });
 }
 
 
