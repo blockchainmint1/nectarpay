@@ -609,8 +609,11 @@ function ChainScreen({
 
 
 function paymentUri(chain: string, address: string, amount: number | null, tokenSymbol: string | null): string {
-  return buildPaymentUri(chain, address, amount, tokenSymbol);
+  // `chain === "eth"` is our multi-chain-EVM umbrella (address valid on ETH/Base/BSC).
+  // Emit a bare `ethereum:<addr>` so the payer's wallet picks the chain + token.
+  return buildPaymentUri(chain, address, amount, tokenSymbol, { multiChainEvm: chain === "eth" });
 }
+
 
 function WaitingScreen({
   invoice, status, onCancel,
