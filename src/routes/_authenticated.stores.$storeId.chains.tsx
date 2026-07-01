@@ -314,11 +314,13 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
           mempool_max_usd: mNum,
           mempool_accept_fast: fast,
           mempool_accept_slow: slow,
+          preferred_evm_chain: preferredEvm,
         })
         .eq("id", storeId);
       if (error) throw error;
       toast.success("Payment settings saved.");
       refetch();
+
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Save failed.");
     } finally {
