@@ -140,6 +140,13 @@
   --gradient-honey: linear-gradient(135deg, oklch(0.86 0.17 88), oklch(0.72 0.19 65));
   --gradient-honey-soft: linear-gradient(180deg, oklch(0.80 0.17 78 / 0.15), transparent);
   --shadow-honey: 0 20px 60px -20px oklch(0.80 0.17 78 / 0.45);
+
+  /* Business Builder Hub honey palette (used inside .knowledge-scope) */
+  --honey: oklch(0.78 0.17 78);
+  --honey-deep: oklch(0.60 0.16 55);
+  --comb: oklch(0.93 0.06 82);
+  --ink: oklch(0.18 0.025 60);
+  --ink-soft: oklch(0.28 0.03 60);
 }
 
 /* A light theme for marketing surfaces — cream + amber. */
