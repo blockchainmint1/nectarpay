@@ -51,9 +51,10 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice")({
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { data: store } = await supabaseAdmin
             .from("stores")
-            .select("id, fiat_currency, invoice_ttl_seconds")
+            .select("id, fiat_currency, invoice_ttl_seconds, preferred_evm_chain")
             .eq("id", auth.terminal.store_id)
             .maybeSingle();
+
           if (!store) return json({ error: "Store not found." }, 404);
 
           const ttl = body.expires_in_seconds ?? store.invoice_ttl_seconds ?? 900;
