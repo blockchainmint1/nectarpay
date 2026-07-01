@@ -390,9 +390,34 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
           </div>
         </label>
       </div>
+
+      <div className="mt-5 border-t border-primary/15 pt-4">
+        <Label className="text-xs">Preferred EVM chain for QR</Label>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {(["base", "bsc", "eth"] as const).map((k) => (
+            <button
+              key={k}
+              type="button"
+              onClick={() => setPreferredEvm(k)}
+              className={cn(
+                "rounded-md border px-3 py-1.5 text-xs font-medium transition",
+                preferredEvm === k
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border bg-background/40 text-muted-foreground hover:bg-background/70",
+              )}
+            >
+              {k === "base" ? "Base" : k === "bsc" ? "BSC" : "Ethereum"}
+            </button>
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          When a customer scans the QR, their wallet auto-fills the token and amount for this chain (one-tap pay). The same address still works on the other EVM chains — customers on those chains just pick their network in-wallet.
+        </p>
+      </div>
     </div>
   );
 }
+
 
 function ChainCard({
   meta,
