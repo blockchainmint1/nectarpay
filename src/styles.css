@@ -241,3 +241,63 @@
 html {
   scrollbar-gutter: stable;
 }
+
+/* ============================================================
+ * Knowledge (Business Builder Hub) — honey/ivory scoped theme.
+ * Applied inside <div class="knowledge-scope"> under /admin/knowledge
+ * ============================================================ */
+.knowledge-scope {
+  --background: oklch(0.985 0.012 85);
+  --foreground: oklch(0.18 0.025 60);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.025 60);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.025 60);
+  --primary: oklch(0.74 0.17 70);
+  --primary-foreground: oklch(0.18 0.04 60);
+  --secondary: oklch(0.95 0.025 85);
+  --secondary-foreground: oklch(0.22 0.03 60);
+  --muted: oklch(0.955 0.018 85);
+  --muted-foreground: oklch(0.48 0.025 65);
+  --accent: oklch(0.92 0.05 80);
+  --accent-foreground: oklch(0.22 0.03 60);
+  --border: oklch(0.9 0.02 80);
+  --input: oklch(0.9 0.02 80);
+  --ring: oklch(0.74 0.17 70);
+
+  background-color: var(--background);
+  color: var(--foreground);
+}
+.knowledge-scope h1,
+.knowledge-scope h2,
+.knowledge-scope h3,
+.knowledge-scope h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+@utility doc-prose {
+  & h2 { font-size: 1.75rem; font-weight: 600; margin-top: 2.5rem; margin-bottom: 1rem; color: var(--ink); font-family: var(--font-display); letter-spacing: -0.02em; }
+  & h3 { font-size: 1.25rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: var(--ink); font-family: var(--font-display); }
+  & p  { line-height: 1.7; margin-bottom: 1rem; color: var(--ink-soft); }
+  & ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1rem; color: var(--ink-soft); }
+  & ul li { margin-bottom: 0.4rem; line-height: 1.6; }
+  & ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1rem; color: var(--ink-soft); }
+  & ol li { margin-bottom: 0.4rem; line-height: 1.6; }
+  & strong { color: var(--ink); font-weight: 600; }
+  & a { color: var(--honey-deep); text-underline-offset: 4px; }
+  & a:hover { text-decoration: underline; }
+  & blockquote {
+    border-left: 3px solid var(--honey);
+    padding: 0.25rem 0 0.25rem 1rem;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--ink);
+    margin: 1.5rem 0;
+  }
+}
+
+@utility honey-gradient {
+  background: linear-gradient(135deg, oklch(0.82 0.16 82) 0%, oklch(0.70 0.18 60) 100%);
+}
