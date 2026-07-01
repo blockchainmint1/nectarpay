@@ -53,6 +53,7 @@ function AuthPage() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const [mode, setMode] = useState<"choose" | "wallet" | "email">("choose");
   const [status, setStatus] = useState<Status>({ kind: "loading" });
   const [qrSvg, setQrSvg] = useState<string>("");
   const [remaining, setRemaining] = useState<number>(0);
