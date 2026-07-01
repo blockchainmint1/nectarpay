@@ -39,7 +39,9 @@ type InvoiceResp = {
   address: string | null;
   crypto_amount: number | null;
   expires_at: string;
+  preferred_evm_chain?: string | null;
 };
+
 
 type InvoiceStatus = {
   id: string;
