@@ -49,8 +49,10 @@ import { Route as AuthenticatedStoresStoreIdRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated.admin.users'
 import { Route as AuthenticatedAdminStoresRouteImport } from './routes/_authenticated.admin.stores'
 import { Route as AuthenticatedAdminLeadsRouteImport } from './routes/_authenticated.admin.leads'
+import { Route as AuthenticatedAdminKnowledgeRouteImport } from './routes/_authenticated.admin.knowledge'
 import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated.admin.invoices'
 import { Route as AuthenticatedStoresStoreIdIndexRouteImport } from './routes/_authenticated.stores.$storeId.index'
+import { Route as AuthenticatedAdminKnowledgeIndexRouteImport } from './routes/_authenticated.admin.knowledge.index'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -73,11 +75,22 @@ import { Route as AuthenticatedStoresStoreIdListingRouteImport } from './routes/
 import { Route as AuthenticatedStoresStoreIdKycRouteImport } from './routes/_authenticated.stores.$storeId.kyc'
 import { Route as AuthenticatedStoresStoreIdKeysRouteImport } from './routes/_authenticated.stores.$storeId.keys'
 import { Route as AuthenticatedStoresStoreIdChainsRouteImport } from './routes/_authenticated.stores.$storeId.chains'
+import { Route as AuthenticatedAdminKnowledgeTermsRouteImport } from './routes/_authenticated.admin.knowledge.terms'
+import { Route as AuthenticatedAdminKnowledgePrivacyRouteImport } from './routes/_authenticated.admin.knowledge.privacy'
+import { Route as AuthenticatedAdminKnowledgeManifestoRouteImport } from './routes/_authenticated.admin.knowledge.manifesto'
+import { Route as AuthenticatedAdminKnowledgeExecutiveSummaryRouteImport } from './routes/_authenticated.admin.knowledge.executive-summary'
+import { Route as AuthenticatedAdminKnowledgeConvenienceDoctrineRouteImport } from './routes/_authenticated.admin.knowledge.convenience-doctrine'
 import { Route as ApiPublicV1TerminalsPairRouteImport } from './routes/api/public/v1/terminals/pair'
 import { Route as ApiPublicV1TerminalsOptionsRouteImport } from './routes/api/public/v1/terminals/options'
 import { Route as ApiPublicV1TerminalsInvoiceRouteImport } from './routes/api/public/v1/terminals/invoice'
 import { Route as ApiPublicV1TerminalsHeartbeatRouteImport } from './routes/api/public/v1/terminals/heartbeat'
 import { Route as ApiPublicV1PayInvoiceIdRouteImport } from './routes/api/public/v1/pay/$invoiceId'
+import { Route as AuthenticatedAdminKnowledgeTrainingSalesRepsRouteImport } from './routes/_authenticated.admin.knowledge.training.sales-reps'
+import { Route as AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRouteImport } from './routes/_authenticated.admin.knowledge.training.merchant-onboarding'
+import { Route as AuthenticatedAdminKnowledgeTrainingCryptopopRouteImport } from './routes/_authenticated.admin.knowledge.training.cryptopop'
+import { Route as AuthenticatedAdminKnowledgePitchNewMarketsRouteImport } from './routes/_authenticated.admin.knowledge.pitch.new-markets'
+import { Route as AuthenticatedAdminKnowledgePitchMerchantsRouteImport } from './routes/_authenticated.admin.knowledge.pitch.merchants'
+import { Route as AuthenticatedAdminKnowledgePitchConsumersRouteImport } from './routes/_authenticated.admin.knowledge.pitch.consumers'
 import { Route as ApiPublicV1TerminalsInvoiceIdRouteImport } from './routes/api/public/v1/terminals/invoice.$id'
 import { Route as ApiPublicV1TerminalsInvoiceIdReceiptRouteImport } from './routes/api/public/v1/terminals/invoice.$id.receipt'
 import { Route as ApiPublicV1TerminalsInvoiceIdCancelRouteImport } from './routes/api/public/v1/terminals/invoice.$id.cancel'
@@ -285,6 +298,12 @@ const AuthenticatedAdminLeadsRoute = AuthenticatedAdminLeadsRouteImport.update({
   path: '/leads',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminKnowledgeRoute =
+  AuthenticatedAdminKnowledgeRouteImport.update({
+    id: '/knowledge',
+    path: '/knowledge',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminInvoicesRoute =
   AuthenticatedAdminInvoicesRouteImport.update({
     id: '/invoices',
@@ -296,6 +315,12 @@ const AuthenticatedStoresStoreIdIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedStoresStoreIdRoute,
+  } as any)
+const AuthenticatedAdminKnowledgeIndexRoute =
+  AuthenticatedAdminKnowledgeIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAdminKnowledgeRoute,
   } as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
@@ -421,6 +446,36 @@ const AuthenticatedStoresStoreIdChainsRoute =
     path: '/chains',
     getParentRoute: () => AuthenticatedStoresStoreIdRoute,
   } as any)
+const AuthenticatedAdminKnowledgeTermsRoute =
+  AuthenticatedAdminKnowledgeTermsRouteImport.update({
+    id: '/terms',
+    path: '/terms',
+    getParentRoute: () => AuthenticatedAdminKnowledgeRoute,
+  } as any)
+const AuthenticatedAdminKnowledgePrivacyRoute =
+  AuthenticatedAdminKnowledgePrivacyRouteImport.update({
+    id: '/privacy',
+    path: '/privacy',
+    getParentRoute: () => AuthenticatedAdminKnowledgeRoute,
+  } as any)
+const AuthenticatedAdminKnowledgeManifestoRoute =
+  AuthenticatedAdminKnowledgeManifestoRouteImport.update({
+    id: '/manifesto',
+    path: '/manifesto',
+    getParentRoute: () => AuthenticatedAdminKnowledgeRoute,
+  } as any)
+const AuthenticatedAdminKnowledgeExecutiveSummaryRoute =
+  AuthenticatedAdminKnowledgeExecutiveSummaryRouteImport.update({
+    id: '/executive-summary',
+    path: '/executive-summary',
+    getParentRoute: () => AuthenticatedAdminKnowledgeRoute,
+  } as any)
+const AuthenticatedAdminKnowledgeConvenienceDoctrineRoute =
+  AuthenticatedAdminKnowledgeConvenienceDoctrineRouteImport.update({
+    id: '/convenience-doctrine',
+    path: '/convenience-doctrine',
+    getParentRoute: () => AuthenticatedAdminKnowledgeRoute,
+  } as any)
 const ApiPublicV1TerminalsPairRoute =
   ApiPublicV1TerminalsPairRouteImport.update({
     id: '/api/public/v1/terminals/pair',
@@ -450,6 +505,42 @@ const ApiPublicV1PayInvoiceIdRoute = ApiPublicV1PayInvoiceIdRouteImport.update({
   path: '/api/public/v1/pay/$invoiceId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminKnowledgeTrainingSalesRepsRoute =
+  AuthenticatedAdminKnowledgeTrainingSalesRepsRouteImport.update({
+    id: '/training/sales-reps',
+    path: '/training/sales-reps',
+    getParentRoute: () => AuthenticatedAdminKnowledgeRoute,
+  } as any)
+const AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute =
+  AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRouteImport.update({
+    id: '/training/merchant-onboarding',
+    path: '/training/merchant-onboarding',
+    getParentRoute: () => AuthenticatedAdminKnowledgeRoute,
+  } as any)
+const AuthenticatedAdminKnowledgeTrainingCryptopopRoute =
+  AuthenticatedAdminKnowledgeTrainingCryptopopRouteImport.update({
+    id: '/training/cryptopop',
+    path: '/training/cryptopop',
+    getParentRoute: () => AuthenticatedAdminKnowledgeRoute,
+  } as any)
+const AuthenticatedAdminKnowledgePitchNewMarketsRoute =
+  AuthenticatedAdminKnowledgePitchNewMarketsRouteImport.update({
+    id: '/pitch/new-markets',
+    path: '/pitch/new-markets',
+    getParentRoute: () => AuthenticatedAdminKnowledgeRoute,
+  } as any)
+const AuthenticatedAdminKnowledgePitchMerchantsRoute =
+  AuthenticatedAdminKnowledgePitchMerchantsRouteImport.update({
+    id: '/pitch/merchants',
+    path: '/pitch/merchants',
+    getParentRoute: () => AuthenticatedAdminKnowledgeRoute,
+  } as any)
+const AuthenticatedAdminKnowledgePitchConsumersRoute =
+  AuthenticatedAdminKnowledgePitchConsumersRouteImport.update({
+    id: '/pitch/consumers',
+    path: '/pitch/consumers',
+    getParentRoute: () => AuthenticatedAdminKnowledgeRoute,
+  } as any)
 const ApiPublicV1TerminalsInvoiceIdRoute =
   ApiPublicV1TerminalsInvoiceIdRouteImport.update({
     id: '/$id',
@@ -503,6 +594,7 @@ export interface FileRoutesByFullPath {
   '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
+  '/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
   '/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/admin/stores': typeof AuthenticatedAdminStoresRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -510,6 +602,11 @@ export interface FileRoutesByFullPath {
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/stores/': typeof AuthenticatedStoresIndexRoute
+  '/admin/knowledge/convenience-doctrine': typeof AuthenticatedAdminKnowledgeConvenienceDoctrineRoute
+  '/admin/knowledge/executive-summary': typeof AuthenticatedAdminKnowledgeExecutiveSummaryRoute
+  '/admin/knowledge/manifesto': typeof AuthenticatedAdminKnowledgeManifestoRoute
+  '/admin/knowledge/privacy': typeof AuthenticatedAdminKnowledgePrivacyRoute
+  '/admin/knowledge/terms': typeof AuthenticatedAdminKnowledgeTermsRoute
   '/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
   '/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
@@ -532,7 +629,14 @@ export interface FileRoutesByFullPath {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/admin/knowledge/': typeof AuthenticatedAdminKnowledgeIndexRoute
   '/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
+  '/admin/knowledge/pitch/consumers': typeof AuthenticatedAdminKnowledgePitchConsumersRoute
+  '/admin/knowledge/pitch/merchants': typeof AuthenticatedAdminKnowledgePitchMerchantsRoute
+  '/admin/knowledge/pitch/new-markets': typeof AuthenticatedAdminKnowledgePitchNewMarketsRoute
+  '/admin/knowledge/training/cryptopop': typeof AuthenticatedAdminKnowledgeTrainingCryptopopRoute
+  '/admin/knowledge/training/merchant-onboarding': typeof AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute
+  '/admin/knowledge/training/sales-reps': typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
@@ -580,6 +684,11 @@ export interface FileRoutesByTo {
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/stores': typeof AuthenticatedStoresIndexRoute
+  '/admin/knowledge/convenience-doctrine': typeof AuthenticatedAdminKnowledgeConvenienceDoctrineRoute
+  '/admin/knowledge/executive-summary': typeof AuthenticatedAdminKnowledgeExecutiveSummaryRoute
+  '/admin/knowledge/manifesto': typeof AuthenticatedAdminKnowledgeManifestoRoute
+  '/admin/knowledge/privacy': typeof AuthenticatedAdminKnowledgePrivacyRoute
+  '/admin/knowledge/terms': typeof AuthenticatedAdminKnowledgeTermsRoute
   '/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
   '/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
@@ -602,7 +711,14 @@ export interface FileRoutesByTo {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/admin/knowledge': typeof AuthenticatedAdminKnowledgeIndexRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdIndexRoute
+  '/admin/knowledge/pitch/consumers': typeof AuthenticatedAdminKnowledgePitchConsumersRoute
+  '/admin/knowledge/pitch/merchants': typeof AuthenticatedAdminKnowledgePitchMerchantsRoute
+  '/admin/knowledge/pitch/new-markets': typeof AuthenticatedAdminKnowledgePitchNewMarketsRoute
+  '/admin/knowledge/training/cryptopop': typeof AuthenticatedAdminKnowledgeTrainingCryptopopRoute
+  '/admin/knowledge/training/merchant-onboarding': typeof AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute
+  '/admin/knowledge/training/sales-reps': typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
@@ -648,6 +764,7 @@ export interface FileRoutesById {
   '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
+  '/_authenticated/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
   '/_authenticated/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/_authenticated/admin/stores': typeof AuthenticatedAdminStoresRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -655,6 +772,11 @@ export interface FileRoutesById {
   '/_authenticated/stores/new': typeof AuthenticatedStoresNewRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/stores/': typeof AuthenticatedStoresIndexRoute
+  '/_authenticated/admin/knowledge/convenience-doctrine': typeof AuthenticatedAdminKnowledgeConvenienceDoctrineRoute
+  '/_authenticated/admin/knowledge/executive-summary': typeof AuthenticatedAdminKnowledgeExecutiveSummaryRoute
+  '/_authenticated/admin/knowledge/manifesto': typeof AuthenticatedAdminKnowledgeManifestoRoute
+  '/_authenticated/admin/knowledge/privacy': typeof AuthenticatedAdminKnowledgePrivacyRoute
+  '/_authenticated/admin/knowledge/terms': typeof AuthenticatedAdminKnowledgeTermsRoute
   '/_authenticated/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
   '/_authenticated/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/_authenticated/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
@@ -677,7 +799,14 @@ export interface FileRoutesById {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/_authenticated/admin/knowledge/': typeof AuthenticatedAdminKnowledgeIndexRoute
   '/_authenticated/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
+  '/_authenticated/admin/knowledge/pitch/consumers': typeof AuthenticatedAdminKnowledgePitchConsumersRoute
+  '/_authenticated/admin/knowledge/pitch/merchants': typeof AuthenticatedAdminKnowledgePitchMerchantsRoute
+  '/_authenticated/admin/knowledge/pitch/new-markets': typeof AuthenticatedAdminKnowledgePitchNewMarketsRoute
+  '/_authenticated/admin/knowledge/training/cryptopop': typeof AuthenticatedAdminKnowledgeTrainingCryptopopRoute
+  '/_authenticated/admin/knowledge/training/merchant-onboarding': typeof AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute
+  '/_authenticated/admin/knowledge/training/sales-reps': typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
@@ -723,6 +852,7 @@ export interface FileRouteTypes {
     | '/integrations/'
     | '/pos/'
     | '/admin/invoices'
+    | '/admin/knowledge'
     | '/admin/leads'
     | '/admin/stores'
     | '/admin/users'
@@ -730,6 +860,11 @@ export interface FileRouteTypes {
     | '/stores/new'
     | '/admin/'
     | '/stores/'
+    | '/admin/knowledge/convenience-doctrine'
+    | '/admin/knowledge/executive-summary'
+    | '/admin/knowledge/manifesto'
+    | '/admin/knowledge/privacy'
+    | '/admin/knowledge/terms'
     | '/stores/$storeId/chains'
     | '/stores/$storeId/keys'
     | '/stores/$storeId/kyc'
@@ -752,7 +887,14 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/admin/knowledge/'
     | '/stores/$storeId/'
+    | '/admin/knowledge/pitch/consumers'
+    | '/admin/knowledge/pitch/merchants'
+    | '/admin/knowledge/pitch/new-markets'
+    | '/admin/knowledge/training/cryptopop'
+    | '/admin/knowledge/training/merchant-onboarding'
+    | '/admin/knowledge/training/sales-reps'
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
@@ -800,6 +942,11 @@ export interface FileRouteTypes {
     | '/stores/new'
     | '/admin'
     | '/stores'
+    | '/admin/knowledge/convenience-doctrine'
+    | '/admin/knowledge/executive-summary'
+    | '/admin/knowledge/manifesto'
+    | '/admin/knowledge/privacy'
+    | '/admin/knowledge/terms'
     | '/stores/$storeId/chains'
     | '/stores/$storeId/keys'
     | '/stores/$storeId/kyc'
@@ -822,7 +969,14 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/admin/knowledge'
     | '/stores/$storeId'
+    | '/admin/knowledge/pitch/consumers'
+    | '/admin/knowledge/pitch/merchants'
+    | '/admin/knowledge/pitch/new-markets'
+    | '/admin/knowledge/training/cryptopop'
+    | '/admin/knowledge/training/merchant-onboarding'
+    | '/admin/knowledge/training/sales-reps'
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
@@ -867,6 +1021,7 @@ export interface FileRouteTypes {
     | '/integrations/'
     | '/pos/'
     | '/_authenticated/admin/invoices'
+    | '/_authenticated/admin/knowledge'
     | '/_authenticated/admin/leads'
     | '/_authenticated/admin/stores'
     | '/_authenticated/admin/users'
@@ -874,6 +1029,11 @@ export interface FileRouteTypes {
     | '/_authenticated/stores/new'
     | '/_authenticated/admin/'
     | '/_authenticated/stores/'
+    | '/_authenticated/admin/knowledge/convenience-doctrine'
+    | '/_authenticated/admin/knowledge/executive-summary'
+    | '/_authenticated/admin/knowledge/manifesto'
+    | '/_authenticated/admin/knowledge/privacy'
+    | '/_authenticated/admin/knowledge/terms'
     | '/_authenticated/stores/$storeId/chains'
     | '/_authenticated/stores/$storeId/keys'
     | '/_authenticated/stores/$storeId/kyc'
@@ -896,7 +1056,14 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/_authenticated/admin/knowledge/'
     | '/_authenticated/stores/$storeId/'
+    | '/_authenticated/admin/knowledge/pitch/consumers'
+    | '/_authenticated/admin/knowledge/pitch/merchants'
+    | '/_authenticated/admin/knowledge/pitch/new-markets'
+    | '/_authenticated/admin/knowledge/training/cryptopop'
+    | '/_authenticated/admin/knowledge/training/merchant-onboarding'
+    | '/_authenticated/admin/knowledge/training/sales-reps'
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
@@ -1235,6 +1402,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminLeadsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/knowledge': {
+      id: '/_authenticated/admin/knowledge'
+      path: '/knowledge'
+      fullPath: '/admin/knowledge'
+      preLoaderRoute: typeof AuthenticatedAdminKnowledgeRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/invoices': {
       id: '/_authenticated/admin/invoices'
       path: '/invoices'
@@ -1248,6 +1422,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/stores/$storeId/'
       preLoaderRoute: typeof AuthenticatedStoresStoreIdIndexRouteImport
       parentRoute: typeof AuthenticatedStoresStoreIdRoute
+    }
+    '/_authenticated/admin/knowledge/': {
+      id: '/_authenticated/admin/knowledge/'
+      path: '/'
+      fullPath: '/admin/knowledge/'
+      preLoaderRoute: typeof AuthenticatedAdminKnowledgeIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminKnowledgeRoute
     }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
@@ -1403,6 +1584,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStoresStoreIdChainsRouteImport
       parentRoute: typeof AuthenticatedStoresStoreIdRoute
     }
+    '/_authenticated/admin/knowledge/terms': {
+      id: '/_authenticated/admin/knowledge/terms'
+      path: '/terms'
+      fullPath: '/admin/knowledge/terms'
+      preLoaderRoute: typeof AuthenticatedAdminKnowledgeTermsRouteImport
+      parentRoute: typeof AuthenticatedAdminKnowledgeRoute
+    }
+    '/_authenticated/admin/knowledge/privacy': {
+      id: '/_authenticated/admin/knowledge/privacy'
+      path: '/privacy'
+      fullPath: '/admin/knowledge/privacy'
+      preLoaderRoute: typeof AuthenticatedAdminKnowledgePrivacyRouteImport
+      parentRoute: typeof AuthenticatedAdminKnowledgeRoute
+    }
+    '/_authenticated/admin/knowledge/manifesto': {
+      id: '/_authenticated/admin/knowledge/manifesto'
+      path: '/manifesto'
+      fullPath: '/admin/knowledge/manifesto'
+      preLoaderRoute: typeof AuthenticatedAdminKnowledgeManifestoRouteImport
+      parentRoute: typeof AuthenticatedAdminKnowledgeRoute
+    }
+    '/_authenticated/admin/knowledge/executive-summary': {
+      id: '/_authenticated/admin/knowledge/executive-summary'
+      path: '/executive-summary'
+      fullPath: '/admin/knowledge/executive-summary'
+      preLoaderRoute: typeof AuthenticatedAdminKnowledgeExecutiveSummaryRouteImport
+      parentRoute: typeof AuthenticatedAdminKnowledgeRoute
+    }
+    '/_authenticated/admin/knowledge/convenience-doctrine': {
+      id: '/_authenticated/admin/knowledge/convenience-doctrine'
+      path: '/convenience-doctrine'
+      fullPath: '/admin/knowledge/convenience-doctrine'
+      preLoaderRoute: typeof AuthenticatedAdminKnowledgeConvenienceDoctrineRouteImport
+      parentRoute: typeof AuthenticatedAdminKnowledgeRoute
+    }
     '/api/public/v1/terminals/pair': {
       id: '/api/public/v1/terminals/pair'
       path: '/api/public/v1/terminals/pair'
@@ -1438,6 +1654,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1PayInvoiceIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/knowledge/training/sales-reps': {
+      id: '/_authenticated/admin/knowledge/training/sales-reps'
+      path: '/training/sales-reps'
+      fullPath: '/admin/knowledge/training/sales-reps'
+      preLoaderRoute: typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRouteImport
+      parentRoute: typeof AuthenticatedAdminKnowledgeRoute
+    }
+    '/_authenticated/admin/knowledge/training/merchant-onboarding': {
+      id: '/_authenticated/admin/knowledge/training/merchant-onboarding'
+      path: '/training/merchant-onboarding'
+      fullPath: '/admin/knowledge/training/merchant-onboarding'
+      preLoaderRoute: typeof AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRouteImport
+      parentRoute: typeof AuthenticatedAdminKnowledgeRoute
+    }
+    '/_authenticated/admin/knowledge/training/cryptopop': {
+      id: '/_authenticated/admin/knowledge/training/cryptopop'
+      path: '/training/cryptopop'
+      fullPath: '/admin/knowledge/training/cryptopop'
+      preLoaderRoute: typeof AuthenticatedAdminKnowledgeTrainingCryptopopRouteImport
+      parentRoute: typeof AuthenticatedAdminKnowledgeRoute
+    }
+    '/_authenticated/admin/knowledge/pitch/new-markets': {
+      id: '/_authenticated/admin/knowledge/pitch/new-markets'
+      path: '/pitch/new-markets'
+      fullPath: '/admin/knowledge/pitch/new-markets'
+      preLoaderRoute: typeof AuthenticatedAdminKnowledgePitchNewMarketsRouteImport
+      parentRoute: typeof AuthenticatedAdminKnowledgeRoute
+    }
+    '/_authenticated/admin/knowledge/pitch/merchants': {
+      id: '/_authenticated/admin/knowledge/pitch/merchants'
+      path: '/pitch/merchants'
+      fullPath: '/admin/knowledge/pitch/merchants'
+      preLoaderRoute: typeof AuthenticatedAdminKnowledgePitchMerchantsRouteImport
+      parentRoute: typeof AuthenticatedAdminKnowledgeRoute
+    }
+    '/_authenticated/admin/knowledge/pitch/consumers': {
+      id: '/_authenticated/admin/knowledge/pitch/consumers'
+      path: '/pitch/consumers'
+      fullPath: '/admin/knowledge/pitch/consumers'
+      preLoaderRoute: typeof AuthenticatedAdminKnowledgePitchConsumersRouteImport
+      parentRoute: typeof AuthenticatedAdminKnowledgeRoute
+    }
     '/api/public/v1/terminals/invoice/$id': {
       id: '/api/public/v1/terminals/invoice/$id'
       path: '/$id'
@@ -1462,8 +1720,57 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdminKnowledgeRouteChildren {
+  AuthenticatedAdminKnowledgeConvenienceDoctrineRoute: typeof AuthenticatedAdminKnowledgeConvenienceDoctrineRoute
+  AuthenticatedAdminKnowledgeExecutiveSummaryRoute: typeof AuthenticatedAdminKnowledgeExecutiveSummaryRoute
+  AuthenticatedAdminKnowledgeManifestoRoute: typeof AuthenticatedAdminKnowledgeManifestoRoute
+  AuthenticatedAdminKnowledgePrivacyRoute: typeof AuthenticatedAdminKnowledgePrivacyRoute
+  AuthenticatedAdminKnowledgeTermsRoute: typeof AuthenticatedAdminKnowledgeTermsRoute
+  AuthenticatedAdminKnowledgeIndexRoute: typeof AuthenticatedAdminKnowledgeIndexRoute
+  AuthenticatedAdminKnowledgePitchConsumersRoute: typeof AuthenticatedAdminKnowledgePitchConsumersRoute
+  AuthenticatedAdminKnowledgePitchMerchantsRoute: typeof AuthenticatedAdminKnowledgePitchMerchantsRoute
+  AuthenticatedAdminKnowledgePitchNewMarketsRoute: typeof AuthenticatedAdminKnowledgePitchNewMarketsRoute
+  AuthenticatedAdminKnowledgeTrainingCryptopopRoute: typeof AuthenticatedAdminKnowledgeTrainingCryptopopRoute
+  AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute: typeof AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute
+  AuthenticatedAdminKnowledgeTrainingSalesRepsRoute: typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRoute
+}
+
+const AuthenticatedAdminKnowledgeRouteChildren: AuthenticatedAdminKnowledgeRouteChildren =
+  {
+    AuthenticatedAdminKnowledgeConvenienceDoctrineRoute:
+      AuthenticatedAdminKnowledgeConvenienceDoctrineRoute,
+    AuthenticatedAdminKnowledgeExecutiveSummaryRoute:
+      AuthenticatedAdminKnowledgeExecutiveSummaryRoute,
+    AuthenticatedAdminKnowledgeManifestoRoute:
+      AuthenticatedAdminKnowledgeManifestoRoute,
+    AuthenticatedAdminKnowledgePrivacyRoute:
+      AuthenticatedAdminKnowledgePrivacyRoute,
+    AuthenticatedAdminKnowledgeTermsRoute:
+      AuthenticatedAdminKnowledgeTermsRoute,
+    AuthenticatedAdminKnowledgeIndexRoute:
+      AuthenticatedAdminKnowledgeIndexRoute,
+    AuthenticatedAdminKnowledgePitchConsumersRoute:
+      AuthenticatedAdminKnowledgePitchConsumersRoute,
+    AuthenticatedAdminKnowledgePitchMerchantsRoute:
+      AuthenticatedAdminKnowledgePitchMerchantsRoute,
+    AuthenticatedAdminKnowledgePitchNewMarketsRoute:
+      AuthenticatedAdminKnowledgePitchNewMarketsRoute,
+    AuthenticatedAdminKnowledgeTrainingCryptopopRoute:
+      AuthenticatedAdminKnowledgeTrainingCryptopopRoute,
+    AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute:
+      AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute,
+    AuthenticatedAdminKnowledgeTrainingSalesRepsRoute:
+      AuthenticatedAdminKnowledgeTrainingSalesRepsRoute,
+  }
+
+const AuthenticatedAdminKnowledgeRouteWithChildren =
+  AuthenticatedAdminKnowledgeRoute._addFileChildren(
+    AuthenticatedAdminKnowledgeRouteChildren,
+  )
+
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminInvoicesRoute: typeof AuthenticatedAdminInvoicesRoute
+  AuthenticatedAdminKnowledgeRoute: typeof AuthenticatedAdminKnowledgeRouteWithChildren
   AuthenticatedAdminLeadsRoute: typeof AuthenticatedAdminLeadsRoute
   AuthenticatedAdminStoresRoute: typeof AuthenticatedAdminStoresRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
@@ -1472,6 +1779,8 @@ interface AuthenticatedAdminRouteChildren {
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminInvoicesRoute: AuthenticatedAdminInvoicesRoute,
+  AuthenticatedAdminKnowledgeRoute:
+    AuthenticatedAdminKnowledgeRouteWithChildren,
   AuthenticatedAdminLeadsRoute: AuthenticatedAdminLeadsRoute,
   AuthenticatedAdminStoresRoute: AuthenticatedAdminStoresRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,

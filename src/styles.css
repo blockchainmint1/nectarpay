@@ -9,6 +9,10 @@
 @import "@fontsource/jetbrains-mono/400.css";
 @import "@fontsource/jetbrains-mono/500.css";
 @import "@fontsource/jetbrains-mono/600.css";
+@import "@fontsource/fraunces/400.css";
+@import "@fontsource/fraunces/500.css";
+@import "@fontsource/fraunces/600.css";
+@import "@fontsource/fraunces/700.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -22,6 +26,14 @@
 @theme inline {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-display: "Fraunces", Georgia, serif;
+
+  --color-honey: var(--honey);
+  --color-honey-deep: var(--honey-deep);
+  --color-comb: var(--comb);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -128,6 +140,13 @@
   --gradient-honey: linear-gradient(135deg, oklch(0.86 0.17 88), oklch(0.72 0.19 65));
   --gradient-honey-soft: linear-gradient(180deg, oklch(0.80 0.17 78 / 0.15), transparent);
   --shadow-honey: 0 20px 60px -20px oklch(0.80 0.17 78 / 0.45);
+
+  /* Business Builder Hub honey palette (used inside .knowledge-scope) */
+  --honey: oklch(0.78 0.17 78);
+  --honey-deep: oklch(0.60 0.16 55);
+  --comb: oklch(0.93 0.06 82);
+  --ink: oklch(0.18 0.025 60);
+  --ink-soft: oklch(0.28 0.03 60);
 }
 
 /* A light theme for marketing surfaces — cream + amber. */
@@ -221,4 +240,64 @@
 
 html {
   scrollbar-gutter: stable;
+}
+
+/* ============================================================
+ * Knowledge (Business Builder Hub) — honey/ivory scoped theme.
+ * Applied inside <div class="knowledge-scope"> under /admin/knowledge
+ * ============================================================ */
+.knowledge-scope {
+  --background: oklch(0.985 0.012 85);
+  --foreground: oklch(0.18 0.025 60);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.025 60);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.025 60);
+  --primary: oklch(0.74 0.17 70);
+  --primary-foreground: oklch(0.18 0.04 60);
+  --secondary: oklch(0.95 0.025 85);
+  --secondary-foreground: oklch(0.22 0.03 60);
+  --muted: oklch(0.955 0.018 85);
+  --muted-foreground: oklch(0.48 0.025 65);
+  --accent: oklch(0.92 0.05 80);
+  --accent-foreground: oklch(0.22 0.03 60);
+  --border: oklch(0.9 0.02 80);
+  --input: oklch(0.9 0.02 80);
+  --ring: oklch(0.74 0.17 70);
+
+  background-color: var(--background);
+  color: var(--foreground);
+}
+.knowledge-scope h1,
+.knowledge-scope h2,
+.knowledge-scope h3,
+.knowledge-scope h4 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+@utility doc-prose {
+  & h2 { font-size: 1.75rem; font-weight: 600; margin-top: 2.5rem; margin-bottom: 1rem; color: var(--ink); font-family: var(--font-display); letter-spacing: -0.02em; }
+  & h3 { font-size: 1.25rem; font-weight: 600; margin-top: 1.75rem; margin-bottom: 0.5rem; color: var(--ink); font-family: var(--font-display); }
+  & p  { line-height: 1.7; margin-bottom: 1rem; color: var(--ink-soft); }
+  & ul { list-style: disc; padding-left: 1.5rem; margin-bottom: 1rem; color: var(--ink-soft); }
+  & ul li { margin-bottom: 0.4rem; line-height: 1.6; }
+  & ol { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1rem; color: var(--ink-soft); }
+  & ol li { margin-bottom: 0.4rem; line-height: 1.6; }
+  & strong { color: var(--ink); font-weight: 600; }
+  & a { color: var(--honey-deep); text-underline-offset: 4px; }
+  & a:hover { text-decoration: underline; }
+  & blockquote {
+    border-left: 3px solid var(--honey);
+    padding: 0.25rem 0 0.25rem 1rem;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--ink);
+    margin: 1.5rem 0;
+  }
+}
+
+@utility honey-gradient {
+  background: linear-gradient(135deg, oklch(0.82 0.16 82) 0%, oklch(0.70 0.18 60) 100%);
 }
