@@ -93,16 +93,29 @@ function HeatMap({ points }: { points: Array<{ lat: number; lng: number; count: 
         mapRef.current = m;
       }
 
-      const max = points.reduce((a, p) => Math.max(a, p.count), 1);
-      const heatData = points.map((p) => [p.lat, p.lng, p.count / max] as [number, number, number]);
+      // Log-scale weights so a few mega-hotspots don't wash out mid-size clusters.
+      const maxCount = points.reduce((a, p) => Math.max(a, p.count), 1);
+      const logMax = Math.log(maxCount + 1);
+      const heatData = points.map(
+        (p) => [p.lat, p.lng, Math.log(p.count + 1) / logMax] as [number, number, number],
+      );
 
       if (layerRef.current) {
         (layerRef.current as { setLatLngs: (d: Array<[number, number, number]>) => void }).setLatLngs(heatData);
       } else {
         layerRef.current = LAny.heatLayer(heatData, {
-          radius: 18,
-          blur: 22,
-          maxZoom: 10,
+          radius: 14,
+          blur: 18,
+          maxZoom: 11,
+          minOpacity: 0.35,
+          gradient: {
+            0.0: "#312e81", // indigo-900
+            0.25: "#2563eb", // blue-600
+            0.5: "#10b981", // emerald-500
+            0.7: "#facc15", // yellow-400
+            0.9: "#f97316", // orange-500
+            1.0: "#dc2626", // red-600
+          },
         }).addTo(mapRef.current);
       }
     })();
