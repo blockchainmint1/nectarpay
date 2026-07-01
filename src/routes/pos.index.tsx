@@ -9,6 +9,7 @@ import { loadCreds, signedJson, type TerminalCreds } from "@/lib/pos-client";
 import { loadSettings, sha256, type PosSettings } from "@/lib/pos-settings";
 import { EVM_CHAIN_LABEL, evmChainsForStable } from "@/lib/chains/networks";
 import { qrToDataURL } from "@/lib/qr";
+import { buildPaymentUri } from "@/lib/payment-uri";
 
 function joinNets(names: string[]): string {
   if (names.length <= 1) return names.join("");

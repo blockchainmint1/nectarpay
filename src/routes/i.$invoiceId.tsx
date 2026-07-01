@@ -21,6 +21,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { KycGate } from "@/components/kyc-gate";
 import { cn } from "@/lib/utils";
 import { qrToCanvas } from "@/lib/qr";
+import { buildPaymentUri } from "@/lib/payment-uri";
 
 export const Route = createFileRoute("/i/$invoiceId")({
   head: ({ params }) => ({
