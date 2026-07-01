@@ -20,12 +20,21 @@ export const getMemberHeatPoints = createServerFn({ method: "GET" })
     // Aggregate in SQL via RPC-less approach: pull grouped rows through a view-less query.
     // Use a lightweight raw SQL through postgrest is not possible, so aggregate client-side
     // after streaming a compact projection. 49k rows @ 3 numbers ~ small payload.
-    const { data, error } = await supabaseAdmin
-      .from("members_geo")
-      .select("lat,lng")
-      .eq("country", "US")
-      .limit(60000);
-    if (error) throw error;
+    // PostgREST caps responses (default 1000). Page through all rows.
+    const pageSize = 1000;
+    const all: { lat: number | null; lng: number | null }[] = [];
+    for (let from = 0; ; from += pageSize) {
+      const { data, error } = await supabaseAdmin
+        .from("members_geo")
+        .select("lat,lng")
+        .eq("country", "US")
+        .range(from, from + pageSize - 1);
+      if (error) throw error;
+      if (!data || data.length === 0) break;
+      all.push(...data);
+      if (data.length < pageSize) break;
+    }
+    const data = all;
 
     const bucket = new Map<string, MemberHeatPoint>();
     for (const r of data ?? []) {
