@@ -73,14 +73,15 @@ function AuthPage() {
     })();
   }, [authLoading, user, navigate, search.redirect]);
 
-  // Create challenge on mount
+  // Create wallet challenge when entering wallet mode
   useEffect(() => {
+    if (mode !== "wallet") return;
     cancelled.current = false;
     void createChallenge();
     return () => {
       cancelled.current = true;
     };
-  }, []);
+  }, [mode]);
 
   async function createChallenge() {
     setStatus({ kind: "loading" });
