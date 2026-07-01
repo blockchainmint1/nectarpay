@@ -257,7 +257,7 @@ function AdminMerchants() {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               );
             })}
             {merchants.length === 0 && (
