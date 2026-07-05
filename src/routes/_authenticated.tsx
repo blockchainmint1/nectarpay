@@ -93,6 +93,40 @@ function AuthenticatedLayout() {
       </aside>
 
       <main className="flex-1 overflow-x-hidden">
+        <div className="sticky top-0 z-30 flex h-12 items-center justify-end gap-2 border-b border-border/60 bg-background/80 px-4 backdrop-blur">
+          <div className="md:hidden">
+            <ThemeToggle />
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-2">
+                <UserRound className="h-4 w-4" />
+                <span className="max-w-[160px] truncate text-xs">{user.email}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="truncate text-xs text-muted-foreground">
+                {user.email}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/dashboard" className="flex items-center gap-2">
+                  <LayoutDashboard className="h-4 w-4" /> Dashboard
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={async (e) => {
+                  e.preventDefault();
+                  await signOut();
+                  navigate({ to: "/" });
+                }}
+                className="flex items-center gap-2"
+              >
+                <LogOut className="h-4 w-4" /> Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
         <Outlet />
       </main>
     </div>
