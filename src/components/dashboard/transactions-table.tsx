@@ -188,11 +188,11 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
           </thead>
           <tbody>
             {query.isLoading ? (
-              <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">Loading…</td></tr>
+              <tr><td colSpan={9} className="p-8 text-center text-muted-foreground">Loading…</td></tr>
             ) : query.error ? (
-              <tr><td colSpan={8} className="p-8 text-center text-destructive">Failed to load transactions</td></tr>
+              <tr><td colSpan={9} className="p-8 text-center text-destructive">Failed to load transactions</td></tr>
             ) : (query.data?.rows ?? []).length === 0 ? (
-              <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">No transactions yet</td></tr>
+              <tr><td colSpan={9} className="p-8 text-center text-muted-foreground">No transactions yet</td></tr>
             ) : (
               query.data!.rows.map((r: any) => {
                 const inv = Array.isArray(r.invoice) ? r.invoice[0] : r.invoice;
