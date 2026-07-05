@@ -56,8 +56,8 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
       let q = supabase
         .from("transactions")
         .select(
-          `id, tx_hash, amount, confirmations, block_height, first_seen_at, confirmed_at, token_symbol,
-           invoice:invoices!inner(id, fiat_amount, fiat_currency, status, external_order_id, chain, store:stores!inner(id, name))`,
+          `id, tx_hash, amount, confirmations, block_height, first_seen_at, confirmed_at, token_symbol, raw, invoice_id,
+           invoice:invoices!inner(id, fiat_amount, fiat_currency, status, external_order_id, chain, crypto_amount, rate, address, derivation_index, address_index, description, redirect_url, buyer_email, customer_email, token_symbol, kyc_status, kyc_level_override, kyc_reference, expires_at, created_at, updated_at, store:stores!inner(id, name))`,
           { count: "exact" }
         )
         .order(sortKey, { ascending: sortDir === "asc", nullsFirst: false })
