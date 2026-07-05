@@ -42,6 +42,8 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounced(searchInput, 300);
   const [storeFilter, setStoreFilter] = useState<string>("all");
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
 
   const storeList = stores ?? [];
 
