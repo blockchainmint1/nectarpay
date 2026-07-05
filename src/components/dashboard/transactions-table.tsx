@@ -175,6 +175,7 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/30 text-left">
+              <th className="w-8 px-2 py-2.5"></th>
               <th className="px-4 py-2.5"><SortHead k="first_seen_at">Seen</SortHead></th>
               <th className="px-4 py-2.5">Store</th>
               <th className="px-4 py-2.5">Tx hash</th>
@@ -186,60 +187,85 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
           </thead>
           <tbody>
             {query.isLoading ? (
-              <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">Loading…</td></tr>
+              <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">Loading…</td></tr>
             ) : query.error ? (
-              <tr><td colSpan={7} className="p-8 text-center text-destructive">Failed to load transactions</td></tr>
+              <tr><td colSpan={8} className="p-8 text-center text-destructive">Failed to load transactions</td></tr>
             ) : (query.data?.rows ?? []).length === 0 ? (
-              <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">No transactions yet</td></tr>
+              <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">No transactions yet</td></tr>
             ) : (
               query.data!.rows.map((r: any) => {
                 const inv = Array.isArray(r.invoice) ? r.invoice[0] : r.invoice;
                 const store = inv ? (Array.isArray(inv.store) ? inv.store[0] : inv.store) : null;
                 const symbol = r.token_symbol || tickerForChain(inv?.chain);
-                const fiatCurrency = inv?.fiat_currency || store?.fiat_currency || "USD";
+                const fiatCurrency = inv?.fiat_currency || "USD";
                 const fiatVal = inv?.fiat_amount != null ? Number(inv.fiat_amount) : null;
+                const isOpen = expanded.has(r.id);
                 return (
-                  <tr key={r.id} className="border-b border-border/60 last:border-0 hover:bg-accent/30">
-                    <td className="px-4 py-2.5 whitespace-nowrap text-muted-foreground">
-                      {new Date(r.first_seen_at).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" })}
-                    </td>
-                    <td className="px-4 py-2.5 whitespace-nowrap">
-                      {store ? (
-                        <Link to="/stores/$storeId" params={{ storeId: store.id }} className="hover:underline">
-                          {store.name}
-                        </Link>
-                      ) : "—"}
-                    </td>
-                    <td className="px-4 py-2.5 font-mono text-xs">
-                      <span title={r.tx_hash}>{r.tx_hash.slice(0, 10)}…{r.tx_hash.slice(-6)}</span>
-                    </td>
-                    <td className="px-4 py-2.5 text-right font-mono tabular-nums whitespace-nowrap">
-                      <span title={String(r.amount)}>{formatCryptoAmount(r.amount, symbol)}</span>
-                      {symbol ? <span className="ml-1 text-xs text-muted-foreground">{symbol}</span> : null}
-                    </td>
-                    <td className="px-4 py-2.5 text-right font-mono tabular-nums whitespace-nowrap text-muted-foreground">
-                      {fiatVal != null
-                        ? new Intl.NumberFormat(undefined, { style: "currency", currency: fiatCurrency, maximumFractionDigits: 2 }).format(fiatVal)
-                        : "—"}
-                    </td>
-                    <td className="px-4 py-2.5 text-right tabular-nums">{r.confirmations}</td>
-                    <td className="px-4 py-2.5">
-                      {inv ? (
-                        <Link
-                          to="/i/$invoiceId"
-                          params={{ invoiceId: inv.id }}
-                          className="inline-flex items-center gap-1 text-primary hover:underline"
-                        >
-                          <StatusBadge status={inv.status} />
-                          <ExternalLink className="h-3 w-3" />
-                        </Link>
-                      ) : "—"}
-                    </td>
-                  </tr>
+                  <Fragment key={r.id}>
+                    <tr
+                      className="cursor-pointer border-b border-border/60 last:border-0 hover:bg-accent/30"
+                      onClick={() => {
+                        setExpanded((prev) => {
+                          const n = new Set(prev);
+                          if (n.has(r.id)) n.delete(r.id); else n.add(r.id);
+                          return n;
+                        });
+                      }}
+                    >
+                      <td className="px-2 py-2.5 text-muted-foreground">
+                        {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRightIcon className="h-4 w-4" />}
+                      </td>
+                      <td className="px-4 py-2.5 whitespace-nowrap text-muted-foreground">
+                        {new Date(r.first_seen_at).toLocaleString(undefined, { dateStyle: "short", timeStyle: "short" })}
+                      </td>
+                      <td className="px-4 py-2.5 whitespace-nowrap">
+                        {store ? (
+                          <Link to="/stores/$storeId" params={{ storeId: store.id }} className="hover:underline" onClick={(e) => e.stopPropagation()}>
+                            {store.name}
+                          </Link>
+                        ) : "—"}
+                      </td>
+                      <td className="px-4 py-2.5 font-mono text-xs">
+                        <span title={r.tx_hash}>{r.tx_hash.slice(0, 10)}…{r.tx_hash.slice(-6)}</span>
+                      </td>
+                      <td className="px-4 py-2.5 text-right font-mono tabular-nums whitespace-nowrap">
+                        <span title={String(r.amount)}>{formatCryptoAmount(r.amount, symbol)}</span>
+                        {symbol ? <span className="ml-1 text-xs text-muted-foreground">{symbol}</span> : null}
+                      </td>
+                      <td className="px-4 py-2.5 text-right font-mono tabular-nums whitespace-nowrap text-muted-foreground">
+                        {fiatVal != null
+                          ? new Intl.NumberFormat(undefined, { style: "currency", currency: fiatCurrency, maximumFractionDigits: 2 }).format(fiatVal)
+                          : "—"}
+                      </td>
+                      <td className="px-4 py-2.5 text-right tabular-nums">{r.confirmations}</td>
+                      <td className="px-4 py-2.5">
+                        {inv ? (
+                          <Link
+                            to="/i/$invoiceId"
+                            params={{ invoiceId: inv.id }}
+                            className="inline-flex items-center gap-1 text-primary hover:underline"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <StatusBadge status={inv.status} />
+                            <ExternalLink className="h-3 w-3" />
+                          </Link>
+                        ) : "—"}
+                      </td>
+                    </tr>
+                    {isOpen && (
+                      <tr className="border-b border-border/60 bg-muted/10">
+                        <td></td>
+                        <td colSpan={7} className="px-4 py-4">
+                          <TransactionDetails row={r} invoice={inv} store={store} symbol={symbol} />
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 );
               })
             )}
           </tbody>
+
         </table>
       </div>
 
