@@ -178,6 +178,7 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
               <th className="w-8 px-2 py-2.5"></th>
               <th className="px-4 py-2.5"><SortHead k="first_seen_at">Seen</SortHead></th>
               <th className="px-4 py-2.5">Store</th>
+              <th className="px-4 py-2.5">Order ID</th>
               <th className="px-4 py-2.5">Tx hash</th>
               <th className="px-4 py-2.5 text-right"><SortHead k="amount" align="right">Amount</SortHead></th>
               <th className="px-4 py-2.5 text-right">Value</th>
