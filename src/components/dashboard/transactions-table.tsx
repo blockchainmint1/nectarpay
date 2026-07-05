@@ -178,6 +178,7 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
               <th className="w-8 px-2 py-2.5"></th>
               <th className="px-4 py-2.5"><SortHead k="first_seen_at">Seen</SortHead></th>
               <th className="px-4 py-2.5">Store</th>
+              <th className="px-4 py-2.5">Order ID</th>
               <th className="px-4 py-2.5">Tx hash</th>
               <th className="px-4 py-2.5 text-right"><SortHead k="amount" align="right">Amount</SortHead></th>
               <th className="px-4 py-2.5 text-right">Value</th>
@@ -187,11 +188,11 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
           </thead>
           <tbody>
             {query.isLoading ? (
-              <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">Loading…</td></tr>
+              <tr><td colSpan={9} className="p-8 text-center text-muted-foreground">Loading…</td></tr>
             ) : query.error ? (
-              <tr><td colSpan={8} className="p-8 text-center text-destructive">Failed to load transactions</td></tr>
+              <tr><td colSpan={9} className="p-8 text-center text-destructive">Failed to load transactions</td></tr>
             ) : (query.data?.rows ?? []).length === 0 ? (
-              <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">No transactions yet</td></tr>
+              <tr><td colSpan={9} className="p-8 text-center text-muted-foreground">No transactions yet</td></tr>
             ) : (
               query.data!.rows.map((r: any) => {
                 const inv = Array.isArray(r.invoice) ? r.invoice[0] : r.invoice;
@@ -225,6 +226,9 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
                           </Link>
                         ) : "—"}
                       </td>
+                      <td className="px-4 py-2.5 font-mono text-xs whitespace-nowrap">
+                        {inv?.external_order_id ?? "—"}
+                      </td>
                       <td className="px-4 py-2.5 font-mono text-xs">
                         <span title={r.tx_hash}>{r.tx_hash.slice(0, 10)}…{r.tx_hash.slice(-6)}</span>
                       </td>
@@ -255,7 +259,7 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
                     {isOpen && (
                       <tr className="border-b border-border/60 bg-muted/10">
                         <td></td>
-                        <td colSpan={7} className="px-4 py-4">
+                        <td colSpan={8} className="px-4 py-4">
                           <TransactionDetails row={r} invoice={inv} store={store} symbol={symbol} />
                         </td>
                       </tr>
