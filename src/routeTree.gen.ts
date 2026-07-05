@@ -86,6 +86,7 @@ import { Route as ApiPublicV1TerminalsOptionsRouteImport } from './routes/api/pu
 import { Route as ApiPublicV1TerminalsInvoiceRouteImport } from './routes/api/public/v1/terminals/invoice'
 import { Route as ApiPublicV1TerminalsHeartbeatRouteImport } from './routes/api/public/v1/terminals/heartbeat'
 import { Route as ApiPublicV1PayInvoiceIdRouteImport } from './routes/api/public/v1/pay/$invoiceId'
+import { Route as ApiPublicV1InvoicesIdRouteImport } from './routes/api.public.v1.invoices.$id'
 import { Route as AuthenticatedAdminKnowledgeTrainingSalesRepsRouteImport } from './routes/_authenticated.admin.knowledge.training.sales-reps'
 import { Route as AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRouteImport } from './routes/_authenticated.admin.knowledge.training.merchant-onboarding'
 import { Route as AuthenticatedAdminKnowledgeTrainingCryptopopRouteImport } from './routes/_authenticated.admin.knowledge.training.cryptopop'
@@ -512,6 +513,11 @@ const ApiPublicV1PayInvoiceIdRoute = ApiPublicV1PayInvoiceIdRouteImport.update({
   path: '/api/public/v1/pay/$invoiceId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1InvoicesIdRoute = ApiPublicV1InvoicesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiPublicV1InvoicesRoute,
+} as any)
 const AuthenticatedAdminKnowledgeTrainingSalesRepsRoute =
   AuthenticatedAdminKnowledgeTrainingSalesRepsRouteImport.update({
     id: '/training/sales-reps',
@@ -631,7 +637,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
-  '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
+  '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -645,6 +651,7 @@ export interface FileRoutesByFullPath {
   '/admin/knowledge/training/cryptopop': typeof AuthenticatedAdminKnowledgeTrainingCryptopopRoute
   '/admin/knowledge/training/merchant-onboarding': typeof AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute
   '/admin/knowledge/training/sales-reps': typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRoute
+  '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
@@ -714,7 +721,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
-  '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
+  '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -728,6 +735,7 @@ export interface FileRoutesByTo {
   '/admin/knowledge/training/cryptopop': typeof AuthenticatedAdminKnowledgeTrainingCryptopopRoute
   '/admin/knowledge/training/merchant-onboarding': typeof AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute
   '/admin/knowledge/training/sales-reps': typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRoute
+  '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
@@ -803,7 +811,7 @@ export interface FileRoutesById {
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
-  '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRoute
+  '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -817,6 +825,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/knowledge/training/cryptopop': typeof AuthenticatedAdminKnowledgeTrainingCryptopopRoute
   '/_authenticated/admin/knowledge/training/merchant-onboarding': typeof AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute
   '/_authenticated/admin/knowledge/training/sales-reps': typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRoute
+  '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
@@ -906,6 +915,7 @@ export interface FileRouteTypes {
     | '/admin/knowledge/training/cryptopop'
     | '/admin/knowledge/training/merchant-onboarding'
     | '/admin/knowledge/training/sales-reps'
+    | '/api/public/v1/invoices/$id'
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
@@ -989,6 +999,7 @@ export interface FileRouteTypes {
     | '/admin/knowledge/training/cryptopop'
     | '/admin/knowledge/training/merchant-onboarding'
     | '/admin/knowledge/training/sales-reps'
+    | '/api/public/v1/invoices/$id'
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
@@ -1077,6 +1088,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/knowledge/training/cryptopop'
     | '/_authenticated/admin/knowledge/training/merchant-onboarding'
     | '/_authenticated/admin/knowledge/training/sales-reps'
+    | '/api/public/v1/invoices/$id'
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
@@ -1120,7 +1132,7 @@ export interface RootRouteChildren {
   ApiPublicCronWatcherRoute: typeof ApiPublicCronWatcherRoute
   ApiPublicHooksAlchemyActivityRoute: typeof ApiPublicHooksAlchemyActivityRoute
   ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
-  ApiPublicV1InvoicesRoute: typeof ApiPublicV1InvoicesRoute
+  ApiPublicV1InvoicesRoute: typeof ApiPublicV1InvoicesRouteWithChildren
   ApiPublicV1MeRoute: typeof ApiPublicV1MeRoute
   ApiPublicV1WalletLinkRoute: typeof ApiPublicV1WalletLinkRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -1674,6 +1686,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1PayInvoiceIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/invoices/$id': {
+      id: '/api/public/v1/invoices/$id'
+      path: '/$id'
+      fullPath: '/api/public/v1/invoices/$id'
+      preLoaderRoute: typeof ApiPublicV1InvoicesIdRouteImport
+      parentRoute: typeof ApiPublicV1InvoicesRoute
+    }
     '/_authenticated/admin/knowledge/training/sales-reps': {
       id: '/_authenticated/admin/knowledge/training/sales-reps'
       path: '/training/sales-reps'
@@ -1897,6 +1916,17 @@ const PosRouteChildren: PosRouteChildren = {
 
 const PosRouteWithChildren = PosRoute._addFileChildren(PosRouteChildren)
 
+interface ApiPublicV1InvoicesRouteChildren {
+  ApiPublicV1InvoicesIdRoute: typeof ApiPublicV1InvoicesIdRoute
+}
+
+const ApiPublicV1InvoicesRouteChildren: ApiPublicV1InvoicesRouteChildren = {
+  ApiPublicV1InvoicesIdRoute: ApiPublicV1InvoicesIdRoute,
+}
+
+const ApiPublicV1InvoicesRouteWithChildren =
+  ApiPublicV1InvoicesRoute._addFileChildren(ApiPublicV1InvoicesRouteChildren)
+
 interface ApiPublicV1TerminalsInvoiceIdRouteChildren {
   ApiPublicV1TerminalsInvoiceIdCancelRoute: typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
   ApiPublicV1TerminalsInvoiceIdReceiptRoute: typeof ApiPublicV1TerminalsInvoiceIdReceiptRoute
@@ -1963,7 +1993,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronWatcherRoute: ApiPublicCronWatcherRoute,
   ApiPublicHooksAlchemyActivityRoute: ApiPublicHooksAlchemyActivityRoute,
   ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
-  ApiPublicV1InvoicesRoute: ApiPublicV1InvoicesRoute,
+  ApiPublicV1InvoicesRoute: ApiPublicV1InvoicesRouteWithChildren,
   ApiPublicV1MeRoute: ApiPublicV1MeRoute,
   ApiPublicV1WalletLinkRoute: ApiPublicV1WalletLinkRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
