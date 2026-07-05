@@ -7,7 +7,7 @@ import { listAdminMerchants, updateAdminStore } from "@/lib/admin.functions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/_authenticated/admin/stores")({
+export const Route = createFileRoute("/_authenticated/admin/merchants")({
   component: AdminMerchants,
 });
 
