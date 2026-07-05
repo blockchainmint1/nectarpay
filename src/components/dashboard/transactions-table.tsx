@@ -41,9 +41,12 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounced(searchInput, 300);
+  const [storeFilter, setStoreFilter] = useState<string>("all");
+
+  const storeList = stores ?? [];
 
   const query = useQuery({
-    queryKey: ["dashboard-transactions", userId, page, pageSize, sortKey, sortDir, search],
+    queryKey: ["dashboard-transactions", userId, page, pageSize, sortKey, sortDir, search, storeFilter],
     queryFn: async () => {
       const from = page * pageSize;
       const to = from + pageSize - 1;
@@ -61,6 +64,10 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
       if (search.trim()) {
         const s = search.trim();
         q = q.or(`tx_hash.ilike.%${s}%`);
+      }
+
+      if (storeFilter !== "all") {
+        q = q.eq("invoice.store_id", storeFilter);
       }
 
       const { data, error, count } = await q;
