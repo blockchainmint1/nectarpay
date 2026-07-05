@@ -132,7 +132,7 @@ function DashboardPage() {
           <h2 className="text-lg font-semibold tracking-tight">Recent transactions</h2>
         </div>
         <div className="mt-4">
-          <TransactionsTable userId={user?.id} />
+          <TransactionsTable userId={user?.id} stores={stores ?? []} />
         </div>
       </div>
     </div>

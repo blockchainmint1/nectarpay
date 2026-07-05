@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { ArrowUpDown, ArrowUp, ArrowDown, Search, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, Search, ChevronLeft, ChevronRight, ExternalLink, Store } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,11 @@ import { Badge } from "@/components/ui/badge";
 type SortKey = "first_seen_at" | "amount" | "confirmations";
 type SortDir = "asc" | "desc";
 
+interface StoreItem {
+  id: string;
+  name: string;
+}
+
 const PAGE_SIZES = [10, 25, 50, 100];
 
 function useDebounced<T>(value: T, delay = 300) {
@@ -29,16 +34,19 @@ function useDebounced<T>(value: T, delay = 300) {
   return v;
 }
 
-export function TransactionsTable({ userId }: { userId: string | undefined }) {
+export function TransactionsTable({ userId, stores }: { userId: string | undefined; stores?: StoreItem[] }) {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(25);
   const [sortKey, setSortKey] = useState<SortKey>("first_seen_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounced(searchInput, 300);
+  const [storeFilter, setStoreFilter] = useState<string>("all");
+
+  const storeList = stores ?? [];
 
   const query = useQuery({
-    queryKey: ["dashboard-transactions", userId, page, pageSize, sortKey, sortDir, search],
+    queryKey: ["dashboard-transactions", userId, page, pageSize, sortKey, sortDir, search, storeFilter],
     queryFn: async () => {
       const from = page * pageSize;
       const to = from + pageSize - 1;
@@ -56,6 +64,10 @@ export function TransactionsTable({ userId }: { userId: string | undefined }) {
       if (search.trim()) {
         const s = search.trim();
         q = q.or(`tx_hash.ilike.%${s}%`);
+      }
+
+      if (storeFilter !== "all") {
+        q = q.eq("invoice.store_id", storeFilter);
       }
 
       const { data, error, count } = await q;
@@ -98,17 +110,41 @@ export function TransactionsTable({ userId }: { userId: string | undefined }) {
   return (
     <div className="rounded-lg border border-border bg-card/50">
       <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative max-w-xs flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={searchInput}
-            onChange={(e) => {
-              setSearchInput(e.target.value);
-              setPage(0);
-            }}
-            placeholder="Search by tx hash…"
-            className="pl-8"
-          />
+        <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative max-w-xs flex-1">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={searchInput}
+              onChange={(e) => {
+                setSearchInput(e.target.value);
+                setPage(0);
+              }}
+              placeholder="Search by tx hash…"
+              className="pl-8"
+            />
+          </div>
+          {storeList.length > 0 && (
+            <Select
+              value={storeFilter}
+              onValueChange={(v) => {
+                setStoreFilter(v);
+                setPage(0);
+              }}
+            >
+              <SelectTrigger className="h-9 w-[200px]">
+                <Store className="mr-1 h-3.5 w-3.5 text-muted-foreground" />
+                <SelectValue placeholder="All stores" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All stores</SelectItem>
+                {storeList.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>Rows per page</span>
