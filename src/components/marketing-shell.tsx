@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -9,7 +9,15 @@ import {
   SheetTitle,
   SheetClose,
 } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { LayoutDashboard, LogOut, Menu, UserRound } from "lucide-react";
 import hiveMark from "@/assets/nectar-hive-mark.png.asset.json";
 
 /**
@@ -49,7 +57,8 @@ const navLinks = [
 ];
 
 export function MarketingNav() {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
+  const navigate = useNavigate();
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
@@ -86,9 +95,35 @@ export function MarketingNav() {
           </div>
           <div className="hidden md:flex items-center gap-2">
             {loading ? null : user ? (
-              <Button asChild size="sm">
-                <Link to="/dashboard">Dashboard</Link>
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <UserRound className="h-4 w-4" />
+                    <span className="max-w-[160px] truncate">{user.email}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel className="truncate text-xs text-muted-foreground">
+                    {user.email}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/dashboard" className="flex items-center gap-2">
+                      <LayoutDashboard className="h-4 w-4" /> Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onSelect={async (e) => {
+                      e.preventDefault();
+                      await signOut();
+                      navigate({ to: "/" });
+                    }}
+                    className="flex items-center gap-2"
+                  >
+                    <LogOut className="h-4 w-4" /> Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <>
                 <Button asChild variant="ghost" size="sm">
@@ -142,9 +177,30 @@ export function MarketingNav() {
                   <ThemeToggle />
                 </div>
                 {loading ? null : user ? (
-                  <Button asChild size="sm">
-                    <Link to="/dashboard">Dashboard</Link>
-                  </Button>
+                  <>
+                    <div className="truncate text-xs text-muted-foreground">
+                      Signed in as <span className="text-foreground">{user.email}</span>
+                    </div>
+                    <SheetClose asChild>
+                      <Button asChild size="sm">
+                        <Link to="/dashboard">
+                          <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+                        </Link>
+                      </Button>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          await signOut();
+                          navigate({ to: "/" });
+                        }}
+                      >
+                        <LogOut className="mr-2 h-4 w-4" /> Sign out
+                      </Button>
+                    </SheetClose>
+                  </>
                 ) : (
                   <>
                     <Button asChild variant="outline" size="sm">
