@@ -38,12 +38,8 @@ function AdminLayout() {
               <Link to="/admin/leads" activeProps={{ className: "text-foreground" }}>
                 Leads
               </Link>
-              <Link to="/admin/users" activeProps={{ className: "text-foreground" }}>
-                Users
-              </Link>
-
-              <Link to="/admin/stores" activeProps={{ className: "text-foreground" }}>
-                Stores
+              <Link to="/admin/merchants" activeProps={{ className: "text-foreground" }}>
+                Merchants
               </Link>
               <Link to="/admin/invoices" activeProps={{ className: "text-foreground" }}>
                 Invoices
