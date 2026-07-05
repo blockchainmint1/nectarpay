@@ -1,10 +1,18 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { LayoutDashboard, Store, BookOpen, LogOut, CreditCard, Bell, Download, Smartphone } from "lucide-react";
+import { LayoutDashboard, Store, BookOpen, LogOut, CreditCard, Bell, Download, Smartphone, UserRound } from "lucide-react";
 
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
