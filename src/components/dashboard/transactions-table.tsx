@@ -110,17 +110,41 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
   return (
     <div className="rounded-lg border border-border bg-card/50">
       <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative max-w-xs flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={searchInput}
-            onChange={(e) => {
-              setSearchInput(e.target.value);
-              setPage(0);
-            }}
-            placeholder="Search by tx hash…"
-            className="pl-8"
-          />
+        <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="relative max-w-xs flex-1">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={searchInput}
+              onChange={(e) => {
+                setSearchInput(e.target.value);
+                setPage(0);
+              }}
+              placeholder="Search by tx hash…"
+              className="pl-8"
+            />
+          </div>
+          {storeList.length > 0 && (
+            <Select
+              value={storeFilter}
+              onValueChange={(v) => {
+                setStoreFilter(v);
+                setPage(0);
+              }}
+            >
+              <SelectTrigger className="h-9 w-[200px]">
+                <Store className="mr-1 h-3.5 w-3.5 text-muted-foreground" />
+                <SelectValue placeholder="All stores" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All stores</SelectItem>
+                {storeList.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>Rows per page</span>
