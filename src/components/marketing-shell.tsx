@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -9,7 +9,15 @@ import {
   SheetTitle,
   SheetClose,
 } from "@/components/ui/sheet";
-import { Menu } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { LayoutDashboard, LogOut, Menu, UserRound } from "lucide-react";
 import hiveMark from "@/assets/nectar-hive-mark.png.asset.json";
 
 /**
