@@ -226,6 +226,9 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
                           </Link>
                         ) : "—"}
                       </td>
+                      <td className="px-4 py-2.5 font-mono text-xs whitespace-nowrap">
+                        {inv?.external_order_id ?? "—"}
+                      </td>
                       <td className="px-4 py-2.5 font-mono text-xs">
                         <span title={r.tx_hash}>{r.tx_hash.slice(0, 10)}…{r.tx_hash.slice(-6)}</span>
                       </td>
