@@ -177,9 +177,30 @@ export function MarketingNav() {
                   <ThemeToggle />
                 </div>
                 {loading ? null : user ? (
-                  <Button asChild size="sm">
-                    <Link to="/dashboard">Dashboard</Link>
-                  </Button>
+                  <>
+                    <div className="truncate text-xs text-muted-foreground">
+                      Signed in as <span className="text-foreground">{user.email}</span>
+                    </div>
+                    <SheetClose asChild>
+                      <Button asChild size="sm">
+                        <Link to="/dashboard">
+                          <LayoutDashboard className="mr-2 h-4 w-4" /> Dashboard
+                        </Link>
+                      </Button>
+                    </SheetClose>
+                    <SheetClose asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          await signOut();
+                          navigate({ to: "/" });
+                        }}
+                      >
+                        <LogOut className="mr-2 h-4 w-4" /> Sign out
+                      </Button>
+                    </SheetClose>
+                  </>
                 ) : (
                   <>
                     <Button asChild variant="outline" size="sm">
