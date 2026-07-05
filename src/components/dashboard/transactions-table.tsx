@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { ArrowUpDown, ArrowUp, ArrowDown, Search, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, Search, ChevronLeft, ChevronRight, ExternalLink, Store } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,11 @@ import { Badge } from "@/components/ui/badge";
 type SortKey = "first_seen_at" | "amount" | "confirmations";
 type SortDir = "asc" | "desc";
 
+interface StoreItem {
+  id: string;
+  name: string;
+}
+
 const PAGE_SIZES = [10, 25, 50, 100];
 
 function useDebounced<T>(value: T, delay = 300) {
@@ -29,7 +34,7 @@ function useDebounced<T>(value: T, delay = 300) {
   return v;
 }
 
-export function TransactionsTable({ userId }: { userId: string | undefined }) {
+export function TransactionsTable({ userId, stores }: { userId: string | undefined; stores?: StoreItem[] }) {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(25);
   const [sortKey, setSortKey] = useState<SortKey>("first_seen_at");
