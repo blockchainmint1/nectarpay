@@ -259,7 +259,7 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
                     {isOpen && (
                       <tr className="border-b border-border/60 bg-muted/10">
                         <td></td>
-                        <td colSpan={7} className="px-4 py-4">
+                        <td colSpan={8} className="px-4 py-4">
                           <TransactionDetails row={r} invoice={inv} store={store} symbol={symbol} />
                         </td>
                       </tr>
