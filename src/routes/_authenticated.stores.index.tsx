@@ -19,6 +19,7 @@ function StoresIndex() {
       const { data, error } = await supabase
         .from("stores")
         .select("id, name, website, fiat_currency, created_at")
+        .eq("owner_id", user!.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
