@@ -15,7 +15,7 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
-import org.json.JSONArray;
+import com.getcapacitor.JSArray;
 import org.json.JSONObject;
 
 import recieptservice.com.recieptservice.PrinterInterface;
