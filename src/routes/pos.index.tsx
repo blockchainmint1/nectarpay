@@ -4,12 +4,13 @@
 
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Settings, History, Lock, X, PenLine, Mail } from "lucide-react";
+import { Settings, History, Lock, X, PenLine, Mail, Printer } from "lucide-react";
 import { loadCreds, signedJson, type TerminalCreds } from "@/lib/pos-client";
 import { loadSettings, sha256, type PosSettings } from "@/lib/pos-settings";
 import { EVM_CHAIN_LABEL, evmChainsForStable } from "@/lib/chains/networks";
 import { qrToDataURL } from "@/lib/qr";
 import { buildPaymentUri } from "@/lib/payment-uri";
+import { NectarPrinter, type ReceiptPayload, type ReceiptLine } from "@/lib/pos-native";
 
 function joinNets(names: string[]): string {
   if (names.length <= 1) return names.join("");
