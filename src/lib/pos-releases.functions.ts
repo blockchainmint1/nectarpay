@@ -1,21 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
-
 /**
- * Public lookup for the latest signed POS APK. Reads from the
- * `pos_releases` table (populated by the CI workflow) with a narrow public
- * SELECT policy — no PII, no service key needed.
+ * Public lookup for the latest signed POS APK metadata. Reads via the
+ * admin client because the bucket is private — the response only exposes
+ * safe fields (version, download link, checksum).
  */
 export const getLatestPosRelease = createServerFn({ method: "GET" }).handler(async () => {
-  const supabase = createClient<Database>(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_PUBLISHABLE_KEY!,
-    { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
-  );
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("pos_releases")
     .select("version, apk_path, sha256, published_at, notes")
     .order("published_at", { ascending: false })
@@ -27,10 +20,10 @@ export const getLatestPosRelease = createServerFn({ method: "GET" }).handler(asy
     return { version: null, url: null, sha256: null, publishedAt: null, notes: null };
   }
 
-  const url = `${process.env.SUPABASE_URL}/storage/v1/object/public/${data.apk_path}`;
+  // Use the short public redirect route — it signs on demand.
   return {
     version: data.version,
-    url,
+    url: "/pos-apk",
     sha256: data.sha256,
     publishedAt: data.published_at,
     notes: data.notes ?? null,

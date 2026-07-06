@@ -4,45 +4,67 @@ import type { Database } from "@/integrations/supabase/types";
 
 /**
  * Short, memorable URL for sideloading the POS APK onto a terminal.
- *   nectar-pay.com/pos-apk  → 302 → https://<cloud>/storage/v1/object/public/pos-releases/nectar-pos-<v>.apk
+ *   nectar-pay.com/pos-apk  → streams the latest signed APK
  *
- * Terminals type this into their browser; keeping it short means the whole
- * install flow fits on one printed onboarding card.
+ * We keep the storage bucket private and mint a fresh signed URL on every
+ * request, then 302 the client to it. That way the bucket policy stays
+ * strict and we don't leak the storage path in caching layers.
  */
 export const Route = createFileRoute("/pos-apk")({
   server: {
     handlers: {
       GET: async () => {
         const url = process.env.SUPABASE_URL;
-        const key = process.env.SUPABASE_PUBLISHABLE_KEY;
-        if (!url || !key) return new Response("Not configured", { status: 503 });
+        if (!url) return new Response("Not configured", { status: 503 });
 
-        const supabase = createClient<Database>(url, key, {
-          auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
-        });
+        // Signed URLs require the admin client (bucket is private).
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-        const { data, error } = await supabase
+        const { data: rel, error: relErr } = await supabaseAdmin
           .from("pos_releases")
-          .select("apk_path")
+          .select("apk_path, version")
           .order("published_at", { ascending: false })
           .limit(1)
           .maybeSingle();
 
-        if (error || !data) {
+        if (relErr || !rel) {
           return new Response(
-            "No POS build published yet. Check https://github.com/… for the latest artifact.",
+            "No POS build published yet — trigger a build from the pos-app branch or push a pos-v* tag.",
             { status: 404 },
           );
+        }
+
+        // apk_path is stored as `pos-releases/nectar-pos-<v>.apk` — strip the
+        // bucket prefix for the storage signer.
+        const [bucket, ...rest] = rel.apk_path.split("/");
+        const objectPath = rest.join("/");
+
+        const { data: signed, error: signErr } = await supabaseAdmin
+          .storage
+          .from(bucket)
+          .createSignedUrl(objectPath, 300, {
+            download: `nectar-pos-${rel.version}.apk`,
+          });
+
+        if (signErr || !signed?.signedUrl) {
+          return new Response(`Failed to sign URL: ${signErr?.message ?? "unknown"}`, {
+            status: 500,
+          });
         }
 
         return new Response(null, {
           status: 302,
           headers: {
-            Location: `${url}/storage/v1/object/public/${data.apk_path}`,
-            "Cache-Control": "public, max-age=60",
+            Location: signed.signedUrl,
+            "Cache-Control": "no-store",
           },
         });
       },
     },
   },
 });
+
+// Unused-import guard — keeps createClient reachable if we later switch back
+// to the publishable client. Remove once behavior is stable.
+void createClient;
+void ({} as Database);
