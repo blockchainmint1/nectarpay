@@ -176,6 +176,15 @@ interface Experience {
 }
 const DEFAULT_EXPERIENCE: Experience = { tip_enabled: true, signature_enabled: false, email_receipt_enabled: false };
 
+interface ReceiptConfig {
+  business_name: string | null;
+  address: string | null;
+  logo_url: string | null;
+  footer: string | null;
+  tax_id: string | null;
+}
+const DEFAULT_RECEIPT: ReceiptConfig = { business_name: null, address: null, logo_url: null, footer: null, tax_id: null };
+
 function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: PosSettings; onLock: () => void }) {
   const [screen, setScreen] = useState<Screen>("amount");
   const [subtotalCents, setSubtotalCents] = useState(0);
