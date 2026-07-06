@@ -62,6 +62,13 @@ jobs:
           echo "version=$V" >> $GITHUB_OUTPUT
           echo "version_code=$(date +%y%m%d%H)" >> $GITHUB_OUTPUT
 
+      - name: Install Gradle
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-8.11.1-bin.zip
+          unzip -q gradle-8.11.1-bin.zip
+          sudo mv gradle-8.11.1 /opt/gradle
+          sudo ln -sf /opt/gradle/bin/gradle /usr/local/bin/gradle
+
       - name: Build APK
         working-directory: android
         env:
