@@ -3,10 +3,18 @@ package money.honest.nectarpos;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.net.http.SslError;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
+import android.webkit.SslErrorHandler;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import com.getcapacitor.BridgeActivity;
 
@@ -29,6 +37,12 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(NectarPrinterPlugin.class);
         registerPlugin(NectarNfcPlugin.class);
         super.onCreate(savedInstanceState);
+
+        installDebugWebViewClient();
+        DebugOverlay.show(this,
+            "Boot: loading " + getBridge().getServerUrl()
+                + "\nAndroid " + Build.VERSION.RELEASE
+                + " · SDK " + Build.VERSION.SDK_INT);
 
         nfcAdapter = NfcAdapter.getDefaultAdapter(this);
         if (nfcAdapter != null) {
