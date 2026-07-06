@@ -1,0 +1,27 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+android {
+    namespace "money.honest.nectarpay.tangem"
+    compileSdk 34
+    defaultConfig {
+        minSdk 24
+        targetSdk 34
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions { jvmTarget = "17" }
+}
+
+dependencies {
+    implementation "androidx.appcompat:appcompat:1.6.1"
+    implementation project(':capacitor-android')
+
+    // Tangem's official Android SDK
+    implementation "com.tangem:tangem-sdk-android:5.5.0"
+
+    // web3j for Ethereum address derivation from a secp256k1 public key
+    implementation "org.web3j:core:4.10.3"
+}
