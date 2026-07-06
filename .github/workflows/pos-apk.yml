@@ -73,6 +73,9 @@ jobs:
           else
             V="0.1.$(date +%Y%m%d%H%M)"
           fi
+          if [[ "${{ github.event.inputs.test_url }}" == "true" ]]; then
+            V="${V}-httpbin"
+          fi
           echo "version=$V" >> $GITHUB_OUTPUT
           echo "version_code=$(date +%y%m%d%H)" >> $GITHUB_OUTPUT
 
