@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
 android {
     namespace "money.honest.nectarpos"
@@ -63,6 +64,15 @@ dependencies {
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
     implementation project(':capacitor-android')
+
+    // Kotlin — required by the Tangem SDK
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    // Tangem card SDK (NFC APDU + secure-element signing) and web3j
+    // (ETH address derivation from an uncompressed secp256k1 public key).
+    implementation "com.tangem:tangem-sdk-android:5.5.0"
+    implementation "org.web3j:core:4.10.3"
+
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
