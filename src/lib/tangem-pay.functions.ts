@@ -40,10 +40,16 @@ export const startTangemPayment = createServerFn({ method: "POST" })
 
     const cardAddress = ethAddressFromPublicKey(data.cardPublicKey);
 
-    // 1) Load invoice + store payout address
+    // 1) Load invoice. We send USDC to invoice.address — the same
+    // per-invoice, xpub-derived address the existing EVM watcher listens
+    // on. That means no separate merchant payout config is required, and
+    // the watcher promotes the invoice to `confirmed` automatically once
+    // the ERC-20 Transfer event lands. Fallback: store-level static
+    // payout address, only used if the invoice has no derived address
+    // (e.g. non-EVM invoices being paid via Tangem override).
     const { data: inv, error: invErr } = await supabaseAdmin
       .from("invoices")
-      .select("id, store_id, status, fiat_amount, fiat_currency, crypto_amount, token_symbol, chain, expires_at")
+      .select("id, store_id, status, address, fiat_amount, fiat_currency, crypto_amount, token_symbol, chain, expires_at")
       .eq("id", data.invoiceId)
       .maybeSingle();
     if (invErr) throw new Error(invErr.message);
@@ -51,14 +57,22 @@ export const startTangemPayment = createServerFn({ method: "POST" })
     if (inv.status !== "pending") throw new Error(`Invoice is ${inv.status}`);
     if (new Date(inv.expires_at).getTime() < Date.now()) throw new Error("Invoice expired");
 
-    const { data: store, error: storeErr } = await supabaseAdmin
-      .from("stores")
-      .select("id, usdc_payout_address_eth")
-      .eq("id", inv.store_id)
-      .maybeSingle();
-    if (storeErr) throw new Error(storeErr.message);
-    if (!store?.usdc_payout_address_eth) {
-      throw new Error("Merchant has not configured a USDC (Ethereum) payout address");
+    let destination: string | null = null;
+    if (inv.chain === "eth" && inv.address) {
+      destination = inv.address;
+    } else {
+      const { data: store, error: storeErr } = await supabaseAdmin
+        .from("stores")
+        .select("id, usdc_payout_address_eth")
+        .eq("id", inv.store_id)
+        .maybeSingle();
+      if (storeErr) throw new Error(storeErr.message);
+      destination = store?.usdc_payout_address_eth ?? null;
+    }
+    if (!destination) {
+      throw new Error(
+        "No Ethereum destination available for this invoice — configure an ETH xpub for the store or set a static USDC payout address",
+      );
     }
 
     // 2) Determine USDC amount. Prefer crypto_amount when the invoice is
@@ -71,7 +85,7 @@ export const startTangemPayment = createServerFn({ method: "POST" })
     const amountUnits = usdcToUnits(usdcAmount);
 
     // 3) Build tx + digest, sanity-check balances
-    const merchantAddress = getAddress(store.usdc_payout_address_eth) as Address;
+    const merchantAddress = getAddress(destination) as Address;
     const built = await buildUsdcTransferTx({
       fromAddress: cardAddress,
       toAddress: merchantAddress,
