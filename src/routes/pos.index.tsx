@@ -371,7 +371,14 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
           />
         )}
         {screen === "paid" && status && (
-          <PaidScreen status={status} onDone={reset} />
+          <PaidScreen
+            status={status}
+            onDone={reset}
+            receiptCfg={receiptCfg}
+            subtotalCents={subtotalCents}
+            taxCents={taxCents}
+            tipCents={finalTipCents}
+          />
         )}
         {screen === "cancelled" && <DoneScreen label="PAYMENT CANCELLED" onDone={reset} />}
         {screen === "expired" && <DoneScreen label="INVOICE EXPIRED" onDone={reset} />}
