@@ -68,9 +68,11 @@ dependencies {
     // Kotlin — required by the Tangem SDK
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
-    // Tangem card SDK (NFC APDU + secure-element signing) and web3j
-    // (ETH address derivation from an uncompressed secp256k1 public key).
-    implementation "com.tangem:tangem-sdk-android:5.5.0"
+    // Tangem card SDK (NFC APDU + secure-element signing) — GitHub Packages
+    // coordinates. The `android` artifact transitively pulls `core`.
+    implementation "com.tangem.tangem-sdk-kotlin:android:releases-5.35-596"
+
+    // web3j for ETH address derivation from a secp256k1 public key.
     implementation "org.web3j:core:4.10.3"
 
     testImplementation "junit:junit:$junitVersion"
