@@ -118,7 +118,15 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  const location = useLocation();
+
   useEffect(() => {
+    const isPos = location.pathname.startsWith("/pos");
+    if (isPos) {
+      const existing = document.getElementById("honest-help-widget");
+      if (existing) existing.remove();
+      return;
+    }
     if (document.getElementById("honest-help-widget")) return;
     const s = document.createElement("script");
     s.id = "honest-help-widget";
@@ -130,7 +138,7 @@ function RootComponent() {
     s.dataset.folder = "nectarpay";
     s.dataset.theme = "auto";
     document.body.appendChild(s);
-  }, []);
+  }, [location.pathname]);
 
   return (
     <QueryClientProvider client={queryClient}>
