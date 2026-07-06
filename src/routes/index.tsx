@@ -136,6 +136,97 @@ function HomePage() {
         </div>
       </section>
 
+      {/* Merchant Terminal Start-up Kit */}
+      <section className="relative overflow-hidden border-b border-border/60 py-20">
+        <div className="pointer-events-none absolute inset-0 comb-bg opacity-40" />
+        <div className="pointer-events-none absolute -right-32 top-1/2 h-[420px] w-[420px] -translate-y-1/2 rounded-full bg-primary/15 blur-3xl" />
+        <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-4 md:grid-cols-[1.1fr_1fr]">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">
+              <Hexagon className="h-3.5 w-3.5" />
+              Merchant Start-up Kit · Ships from Blockchain Mint
+            </div>
+            <h2 className="mt-5 text-4xl font-semibold tracking-tight md:text-5xl">
+              Open the box. <span className="honey-text">Start taking crypto.</span>
+            </h2>
+            <p className="mt-4 max-w-xl text-lg leading-relaxed text-foreground/80">
+              Everything a shop needs to go non-custodial in an afternoon —
+              the countertop terminal, a cold-storage coin that <em className="not-italic text-primary">is</em> your
+              wallet, and a QR receipt printer that turns every sale into a paper trail your customer walks out with.
+            </p>
+
+            <ul className="mt-6 space-y-3">
+              <KitItem
+                icon={<Printer className="h-4 w-4" />}
+                title="NectarPay Mobile POS Terminal"
+                body="Android-based, 4G + Wi-Fi, built-in thermal QR printer. Boots straight into the NectarPay POS."
+              />
+              <KitItem
+                icon={<Snowflake className="h-4 w-4" />}
+                title="BeeKeeper Cold Storage Coin"
+                body="A physically-minted coin holding the xpub seed for the terminal. Air-gapped, tamper-evident, yours forever."
+              />
+              <KitItem
+                icon={<Zap className="h-4 w-4" />}
+                title="Pre-provisioned & pre-paired"
+                body="Arrives linked to your Nectar-Pay account. Paste nothing, configure nothing — plug in, take your first payment."
+              />
+            </ul>
+
+            <div className="mt-8 flex flex-wrap items-end gap-6">
+              <div>
+                <div className="font-mono text-5xl font-semibold tabular-nums honey-text">
+                  $495
+                </div>
+                <div className="mt-1 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  One-time · No monthly · No per-tx fees, ever
+                </div>
+              </div>
+              <Button
+                asChild
+                size="lg"
+                className="shadow-lg shadow-primary/30"
+              >
+                <a
+                  href="https://blockchainmint.com/product/nectar-pay-mobile-pos-terminal?add-to-cart=nectar-pay-mobile-pos-terminal"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Claim your kit <ArrowRight className="ml-1 h-4 w-4" />
+                </a>
+              </Button>
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Checkout on <span className="text-foreground">blockchainmint.com</span> · ships worldwide · 30-day merchant guarantee
+            </p>
+          </div>
+
+          {/* Product hero */}
+          <a
+            href="https://blockchainmint.com/product/nectar-pay-mobile-pos-terminal?add-to-cart=nectar-pay-mobile-pos-terminal"
+            target="_blank"
+            rel="noreferrer"
+            className="group relative block"
+          >
+            <div className="absolute -inset-6 rounded-3xl bg-primary/10 blur-2xl transition group-hover:bg-primary/20" />
+            <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-card/70 p-3 shadow-2xl shadow-primary/20 backdrop-blur transition group-hover:-translate-y-1">
+              <img
+                src={posTerminal.url}
+                alt="NectarPay mobile POS terminal printing a QR receipt"
+                className="aspect-[4/3] w-full rounded-xl object-cover"
+                loading="lazy"
+              />
+              <div className="flex items-center justify-between px-2 py-3 text-xs">
+                <span className="text-muted-foreground">NectarPay POS · BeeKeeper Coin · QR receipts</span>
+                <span className="font-mono text-primary">$495 →</span>
+              </div>
+            </div>
+          </a>
+        </div>
+      </section>
+
+
+
       {/* Features */}
       <section className="border-b border-border/60 py-20">
         <div className="mx-auto max-w-6xl px-4">
