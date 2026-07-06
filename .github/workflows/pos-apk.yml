@@ -96,6 +96,10 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           VERSION_NAME: ${{ steps.ver.outputs.version }}
           VERSION_CODE: ${{ steps.ver.outputs.version_code }}
+          # Tangem SDK lives on GitHub Packages — needs an auth token
+          # (any valid GitHub token can read public packages).
+          GPR_USER: ${{ github.actor }}
+          GPR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           chmod +x gradlew || true
           if [ ! -f gradlew ]; then
