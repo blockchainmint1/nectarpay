@@ -13,7 +13,7 @@ const config: CapacitorConfig = {
   webDir: "dist",
   server: {
     // Live-loaded UI. The terminal needs internet on boot.
-    url: "https://nectar-pay.com/pos",
+    url: "https://nectarpay.lovable.app/pos",
     androidScheme: "https",
     cleartext: false,
   },
