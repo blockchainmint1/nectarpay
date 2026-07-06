@@ -97,4 +97,44 @@ public class MainActivity extends BridgeActivity {
             NectarNfcPlugin.handleTagIntent(intent);
         }
     }
+
+    /**
+     * Attach a WebViewClient that surfaces load failures on-screen via
+     * {@link DebugOverlay} so we can diagnose ERR_CONNECTION_REFUSED,
+     * SSL rejections, and 4xx/5xx responses without adb access.
+     */
+    private void installDebugWebViewClient() {
+        final WebView webView = getBridge().getWebView();
+        if (webView == null) return;
+        webView.setWebViewClient(new WebViewClient() {
+            @Override public void onPageStarted(WebView v, String url, Bitmap favicon) {
+                DebugOverlay.show(MainActivity.this, "onPageStarted → " + url);
+            }
+            @Override public void onPageFinished(WebView v, String url) {
+                DebugOverlay.show(MainActivity.this, "onPageFinished ✓ " + url);
+            }
+            @Override
+            public void onReceivedError(WebView v, WebResourceRequest req, WebResourceError err) {
+                if (req == null || !req.isForMainFrame()) return;
+                DebugOverlay.show(MainActivity.this,
+                    "onReceivedError\ncode=" + err.getErrorCode()
+                        + "\ndesc=" + err.getDescription()
+                        + "\nurl=" + req.getUrl());
+            }
+            @Override
+            public void onReceivedHttpError(WebView v, WebResourceRequest req, WebResourceResponse res) {
+                if (req == null || !req.isForMainFrame()) return;
+                DebugOverlay.show(MainActivity.this,
+                    "HTTP " + res.getStatusCode() + " " + res.getReasonPhrase()
+                        + "\nurl=" + req.getUrl());
+            }
+            @Override
+            public void onReceivedSslError(WebView v, SslErrorHandler handler, SslError err) {
+                DebugOverlay.show(MainActivity.this,
+                    "SSL error\nprimary=" + err.getPrimaryError()
+                        + "\nurl=" + err.getUrl());
+                handler.cancel();
+            }
+        });
+    }
 }
