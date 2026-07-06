@@ -159,3 +159,19 @@ export const NectarNfc = {
     return await p.transceive({ apduHex });
   },
 };
+
+export const Tangem = {
+  isAvailable(): boolean {
+    return !!cap()?.Plugins.Tangem;
+  },
+  async scan(): Promise<TangemScanResult> {
+    const p = cap()?.Plugins.Tangem;
+    if (!p) throw new Error("Tangem NFC is only available in the NectarPOS Android app");
+    return await p.scan();
+  },
+  async signHash(input: { cardId: string; publicKey: string; hash: string }): Promise<TangemSignResult> {
+    const p = cap()?.Plugins.Tangem;
+    if (!p) throw new Error("Tangem NFC is only available in the NectarPOS Android app");
+    return await p.signHash(input);
+  },
+};
