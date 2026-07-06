@@ -865,7 +865,71 @@ function UnderpaidScreen({
 }
 
 
-function PaidScreen({ status, onDone }: { status: InvoiceStatus; onDone: () => void }) {
+function buildReceiptPayload(
+  status: InvoiceStatus,
+  cfg: ReceiptConfig,
+  subtotalCents: number,
+  taxCents: number,
+  tipCents: number,
+): ReceiptPayload {
+  const cur = status.currency || "USD";
+  const totalCents = Math.round(status.fiat_amount * 100);
+  const lines: ReceiptLine[] = [];
+  if (cfg.business_name) lines.push({ text: cfg.business_name, bold: true, size: 1 });
+  if (cfg.address) lines.push({ text: cfg.address });
+  if (cfg.tax_id) lines.push({ text: `Tax ID: ${cfg.tax_id}` });
+  lines.push({ text: new Date(status.paid_at ?? Date.now()).toLocaleString() });
+  lines.push({ divider: true });
+  if (subtotalCents > 0 && (taxCents > 0 || tipCents > 0)) {
+    lines.push({ text: "Subtotal", right: fmt(subtotalCents, cur) });
+    if (taxCents > 0) lines.push({ text: "Tax", right: fmt(taxCents, cur) });
+    if (tipCents > 0) lines.push({ text: "Tip", right: fmt(tipCents, cur) });
+    lines.push({ divider: true });
+  }
+  lines.push({ text: "TOTAL", right: fmt(totalCents, cur), bold: true });
+  lines.push({ divider: true });
+  if (status.chain) lines.push({ text: `Paid via ${status.chain.toUpperCase()}` });
+  if (status.tx_hash) lines.push({ text: "Tx", right: status.tx_hash.slice(0, 10) + "…" });
+  lines.push({ text: `Invoice ${status.id.slice(0, 8)}` });
+  return {
+    header: cfg.business_name ?? undefined,
+    lines,
+    footer: cfg.footer ?? "Thank you!",
+  };
+}
+
+function PaidScreen({
+  status, onDone, receiptCfg, subtotalCents, taxCents, tipCents,
+}: {
+  status: InvoiceStatus;
+  onDone: () => void;
+  receiptCfg: ReceiptConfig;
+  subtotalCents: number;
+  taxCents: number;
+  tipCents: number;
+}) {
+  const [printerAvailable, setPrinterAvailable] = useState(false);
+  const [printState, setPrintState] = useState<"idle" | "printing" | "done" | "error">("idle");
+  const [printErr, setPrintErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void NectarPrinter.isAvailable().then((ok) => { if (!cancelled) setPrinterAvailable(ok); });
+    return () => { cancelled = true; };
+  }, []);
+
+  const onPrint = async () => {
+    setPrintState("printing"); setPrintErr(null);
+    try {
+      await NectarPrinter.printReceipt(buildReceiptPayload(status, receiptCfg, subtotalCents, taxCents, tipCents));
+      await NectarPrinter.feed(3);
+      setPrintState("done");
+    } catch (e) {
+      setPrintErr((e as Error).message);
+      setPrintState("error");
+    }
+  };
+
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 py-4 text-center">
       <div className="flex size-20 items-center justify-center rounded-full border-2 border-amber-400/40 bg-amber-400/15">
@@ -884,7 +948,18 @@ function PaidScreen({ status, onDone }: { status: InvoiceStatus; onDone: () => v
           <p className="mt-0.5 break-all font-mono text-[10px] leading-snug text-white/80">{status.tx_hash}</p>
         </div>
       )}
-      <button onClick={onDone} className="mt-6 h-12 rounded-lg bg-amber-500 px-10 text-sm font-bold tracking-widest text-black hover:bg-amber-400">
+      {printerAvailable && (
+        <button
+          onClick={onPrint}
+          disabled={printState === "printing"}
+          className="mt-6 flex h-12 items-center gap-2 rounded-lg border border-amber-400/40 bg-amber-400/10 px-6 text-xs font-bold tracking-widest text-amber-200 hover:bg-amber-400/20 disabled:opacity-50"
+        >
+          <Printer className="size-4" />
+          {printState === "printing" ? "PRINTING…" : printState === "done" ? "PRINT AGAIN" : "PRINT RECEIPT"}
+        </button>
+      )}
+      {printErr && <p className="mt-2 text-[10px] text-red-400">{printErr}</p>}
+      <button onClick={onDone} className="mt-4 h-12 rounded-lg bg-amber-500 px-10 text-sm font-bold tracking-widest text-black hover:bg-amber-400">
         NEW SALE
       </button>
     </div>
