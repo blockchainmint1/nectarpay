@@ -17,19 +17,9 @@ allprojects {
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
-        // Tangem publishes the card SDK to GitHub Packages only. The reads
-        // require any valid GitHub token — the CI workflow forwards the
-        // runner's GITHUB_TOKEN via env vars.
-        maven {
-            url 'https://maven.pkg.github.com/tangem/tangem-sdk-android'
-            credentials {
-                username = System.getenv('GPR_USER') ?: System.getenv('GITHUB_ACTOR') ?: ''
-                password = System.getenv('GPR_TOKEN') ?: System.getenv('GITHUB_TOKEN') ?: ''
-            }
-            content { includeGroupByRegex('com\\.tangem.*') }
-        }
     }
 }
+
 
 task clean(type: Delete) {
     delete rootProject.buildDir
