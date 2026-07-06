@@ -22,6 +22,11 @@ on:
     branches: [pos-app]
     tags: ['pos-v*']
   workflow_dispatch:
+    inputs:
+      test_url:
+        description: 'Diagnostic build: load https://httpbin.org/get instead of nectar-pay.com/pos'
+        type: boolean
+        default: false
 
 jobs:
   build:
