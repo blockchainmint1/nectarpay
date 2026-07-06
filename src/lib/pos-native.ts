@@ -74,6 +74,7 @@ interface CapacitorGlobal {
     NectarNfc?: {
       startReader: () => Promise<{ started: boolean }>;
       stopReader: () => Promise<void>;
+      transceive: (o: { apduHex: string }) => Promise<ApduResponse>;
       addListener: (
         eventName: "tagScanned" | "tagError",
         cb: (data: TagEvent | { error: string }) => void,
