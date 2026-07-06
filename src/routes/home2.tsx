@@ -12,6 +12,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowRight, Zap, Shield, Wallet, Infinity as InfinityIcon, Check, X, Sparkles } from "lucide-react";
+import buzzyMascot from "@/assets/buzzy-mascot.png";
 
 export const Route = createFileRoute("/home2")({
   head: () => ({
