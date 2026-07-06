@@ -866,6 +866,7 @@ export type Database = {
           tax_bps: number
           tax_mode: string
           updated_at: string
+          usdc_payout_address_eth: string | null
           webhook_secret: string | null
           webhook_secret_hash: string | null
           webhook_url: string | null
@@ -933,6 +934,7 @@ export type Database = {
           tax_bps?: number
           tax_mode?: string
           updated_at?: string
+          usdc_payout_address_eth?: string | null
           webhook_secret?: string | null
           webhook_secret_hash?: string | null
           webhook_url?: string | null
@@ -1000,6 +1002,7 @@ export type Database = {
           tax_bps?: number
           tax_mode?: string
           updated_at?: string
+          usdc_payout_address_eth?: string | null
           webhook_secret?: string | null
           webhook_secret_hash?: string | null
           webhook_url?: string | null
@@ -1086,6 +1089,93 @@ export type Database = {
           reason?: string
         }
         Relationships: []
+      }
+      tangem_pay_intents: {
+        Row: {
+          amount_usdc_units: number
+          broadcast_tx_hash: string | null
+          card_address: string
+          card_id: string | null
+          card_public_key: string
+          chain_id: number
+          created_at: string
+          error_message: string | null
+          expires_at: string
+          id: string
+          invoice_id: string
+          merchant_payout_address: string
+          onchain_nonce: number
+          signature_hex: string | null
+          signed_raw_tx: string | null
+          status: Database["public"]["Enums"]["tangem_pay_intent_status"]
+          store_id: string
+          tx_hash_to_sign: string
+          unsigned_tx_json: Json
+          updated_at: string
+          usdc_contract: string
+        }
+        Insert: {
+          amount_usdc_units: number
+          broadcast_tx_hash?: string | null
+          card_address: string
+          card_id?: string | null
+          card_public_key: string
+          chain_id?: number
+          created_at?: string
+          error_message?: string | null
+          expires_at?: string
+          id?: string
+          invoice_id: string
+          merchant_payout_address: string
+          onchain_nonce: number
+          signature_hex?: string | null
+          signed_raw_tx?: string | null
+          status?: Database["public"]["Enums"]["tangem_pay_intent_status"]
+          store_id: string
+          tx_hash_to_sign: string
+          unsigned_tx_json: Json
+          updated_at?: string
+          usdc_contract: string
+        }
+        Update: {
+          amount_usdc_units?: number
+          broadcast_tx_hash?: string | null
+          card_address?: string
+          card_id?: string | null
+          card_public_key?: string
+          chain_id?: number
+          created_at?: string
+          error_message?: string | null
+          expires_at?: string
+          id?: string
+          invoice_id?: string
+          merchant_payout_address?: string
+          onchain_nonce?: number
+          signature_hex?: string | null
+          signed_raw_tx?: string | null
+          status?: Database["public"]["Enums"]["tangem_pay_intent_status"]
+          store_id?: string
+          tx_hash_to_sign?: string
+          unsigned_tx_json?: Json
+          updated_at?: string
+          usdc_contract?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tangem_pay_intents_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tangem_pay_intents_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       telegram_bind_codes: {
         Row: {
@@ -1648,6 +1738,13 @@ export type Database = {
       kyc_level: "none" | "basic" | "advanced"
       kyc_provider: "none" | "sumsub" | "persona" | "didit" | "veriff"
       kyc_status: "not_required" | "pending" | "passed" | "failed"
+      tangem_pay_intent_status:
+        | "pending"
+        | "signed"
+        | "broadcast"
+        | "confirmed"
+        | "failed"
+        | "expired"
       wallet_challenge_status: "pending" | "signed" | "consumed" | "expired"
     }
     CompositeTypes: {
@@ -1804,6 +1901,14 @@ export const Constants = {
       kyc_level: ["none", "basic", "advanced"],
       kyc_provider: ["none", "sumsub", "persona", "didit", "veriff"],
       kyc_status: ["not_required", "pending", "passed", "failed"],
+      tangem_pay_intent_status: [
+        "pending",
+        "signed",
+        "broadcast",
+        "confirmed",
+        "failed",
+        "expired",
+      ],
       wallet_challenge_status: ["pending", "signed", "consumed", "expired"],
     },
   },
