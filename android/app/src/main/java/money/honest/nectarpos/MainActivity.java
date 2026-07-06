@@ -3,10 +3,18 @@ package money.honest.nectarpos;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.net.http.SslError;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
+import android.webkit.SslErrorHandler;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import com.getcapacitor.BridgeActivity;
 
@@ -29,6 +37,12 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(NectarPrinterPlugin.class);
         registerPlugin(NectarNfcPlugin.class);
         super.onCreate(savedInstanceState);
+
+        installDebugWebViewClient();
+        DebugOverlay.show(this,
+            "Boot: loading " + getBridge().getServerUrl()
+                + "\nAndroid " + Build.VERSION.RELEASE
+                + " · SDK " + Build.VERSION.SDK_INT);
 
         nfcAdapter = NfcAdapter.getDefaultAdapter(this);
         if (nfcAdapter != null) {
@@ -82,5 +96,45 @@ public class MainActivity extends BridgeActivity {
             action.equals(NfcAdapter.ACTION_TAG_DISCOVERED))) {
             NectarNfcPlugin.handleTagIntent(intent);
         }
+    }
+
+    /**
+     * Attach a WebViewClient that surfaces load failures on-screen via
+     * {@link DebugOverlay} so we can diagnose ERR_CONNECTION_REFUSED,
+     * SSL rejections, and 4xx/5xx responses without adb access.
+     */
+    private void installDebugWebViewClient() {
+        final WebView webView = getBridge().getWebView();
+        if (webView == null) return;
+        webView.setWebViewClient(new WebViewClient() {
+            @Override public void onPageStarted(WebView v, String url, Bitmap favicon) {
+                DebugOverlay.show(MainActivity.this, "onPageStarted → " + url);
+            }
+            @Override public void onPageFinished(WebView v, String url) {
+                DebugOverlay.show(MainActivity.this, "onPageFinished ✓ " + url);
+            }
+            @Override
+            public void onReceivedError(WebView v, WebResourceRequest req, WebResourceError err) {
+                if (req == null || !req.isForMainFrame()) return;
+                DebugOverlay.show(MainActivity.this,
+                    "onReceivedError\ncode=" + err.getErrorCode()
+                        + "\ndesc=" + err.getDescription()
+                        + "\nurl=" + req.getUrl());
+            }
+            @Override
+            public void onReceivedHttpError(WebView v, WebResourceRequest req, WebResourceResponse res) {
+                if (req == null || !req.isForMainFrame()) return;
+                DebugOverlay.show(MainActivity.this,
+                    "HTTP " + res.getStatusCode() + " " + res.getReasonPhrase()
+                        + "\nurl=" + req.getUrl());
+            }
+            @Override
+            public void onReceivedSslError(WebView v, SslErrorHandler handler, SslError err) {
+                DebugOverlay.show(MainActivity.this,
+                    "SSL error\nprimary=" + err.getPrimaryError()
+                        + "\nurl=" + err.getUrl());
+                handler.cancel();
+            }
+        });
     }
 }

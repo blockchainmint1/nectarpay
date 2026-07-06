@@ -22,6 +22,11 @@ on:
     branches: [pos-app]
     tags: ['pos-v*']
   workflow_dispatch:
+    inputs:
+      test_url:
+        description: 'Diagnostic build: load https://httpbin.org/get instead of nectar-pay.com/pos'
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -44,10 +49,19 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Build web app
+        env:
+          NECTAR_TEST_URL: ${{ github.event.inputs.test_url == 'true' && '1' || '' }}
         run: bun run build
+
+      - name: Sync Capacitor (picks up NECTAR_TEST_URL)
+        env:
+          NECTAR_TEST_URL: ${{ github.event.inputs.test_url == 'true' && '1' || '' }}
+        run: bunx cap sync android
 
       - name: Decode keystore
         run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > $RUNNER_TEMP/keystore.jks
+          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/keystore.jks" >> $GITHUB_ENV
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > $RUNNER_TEMP/keystore.jks
           echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/keystore.jks" >> $GITHUB_ENV
 
@@ -58,6 +72,9 @@ jobs:
             V="${GITHUB_REF#refs/tags/pos-v}"
           else
             V="0.1.$(date +%Y%m%d%H%M)"
+          fi
+          if [[ "${{ github.event.inputs.test_url }}" == "true" ]]; then
+            V="${V}-httpbin"
           fi
           echo "version=$V" >> $GITHUB_OUTPUT
           echo "version_code=$(date +%y%m%d%H)" >> $GITHUB_OUTPUT
