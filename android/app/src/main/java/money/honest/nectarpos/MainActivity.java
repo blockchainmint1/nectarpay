@@ -55,7 +55,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
         if (nfcAdapter != null) {
             nfcAdapter.enableForegroundDispatch(this, nfcPendingIntent,
@@ -64,7 +64,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
-    protected void onPause() {
+    public void onPause() {
         super.onPause();
         if (nfcAdapter != null) {
             nfcAdapter.disableForegroundDispatch(this);
