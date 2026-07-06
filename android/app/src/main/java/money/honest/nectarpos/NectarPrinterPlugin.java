@@ -93,7 +93,7 @@ public class NectarPrinterPlugin extends Plugin {
             p.nextLine(3);
             call.resolve();
         } catch (Throwable t) {
-            call.reject("print failed: " + t.getMessage(), t);
+            call.reject("print failed: " + t.getMessage());
         }
     }
 
@@ -105,7 +105,7 @@ public class NectarPrinterPlugin extends Plugin {
             String header = call.getString("header");
             String footer = call.getString("footer");
             String qr = call.getString("qr");
-            JSONArray lines = call.getArray("lines", new JSONArray());
+            JSArray lines = call.getArray("lines", new JSArray());
 
             if (header != null) {
                 p.setAlignment(1);
@@ -158,7 +158,7 @@ public class NectarPrinterPlugin extends Plugin {
             p.nextLine(4);
             call.resolve();
         } catch (Throwable t) {
-            call.reject("printReceipt failed: " + t.getMessage(), t);
+            call.reject("printReceipt failed: " + t.getMessage());
         }
     }
 
@@ -173,7 +173,7 @@ public class NectarPrinterPlugin extends Plugin {
             p.nextLine(3);
             call.resolve();
         } catch (Throwable t) {
-            call.reject("printBitmap failed: " + t.getMessage(), t);
+            call.reject("printBitmap failed: " + t.getMessage());
         }
     }
 
@@ -184,7 +184,7 @@ public class NectarPrinterPlugin extends Plugin {
             require().nextLine(lines);
             call.resolve();
         } catch (Throwable t) {
-            call.reject("feed failed: " + t.getMessage(), t);
+            call.reject("feed failed: " + t.getMessage());
         }
     }
 
