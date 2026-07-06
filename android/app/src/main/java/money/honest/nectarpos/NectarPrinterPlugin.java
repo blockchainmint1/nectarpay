@@ -1,7 +1,12 @@
 package money.honest.nectarpos;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.IBinder;
 import android.util.Base64;
 
 import com.getcapacitor.JSObject;
@@ -9,18 +14,21 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
-import com.sr.SrPrinter;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import recieptservice.com.recieptservice.PrinterInterface;
+
 /**
  * Native bridge over the Senraise printer.
  *
- * The Senraise firmware exposes a system service that `SrPrinter` (in
- * printer.jar) wraps. We accept a structured payload from the web app so
- * the receipt layout stays declarative:
+ * The Senraise firmware exposes an AIDL service
+ * (`recieptservice.com.recieptservice/.service.PrinterService`) that
+ * implements {@link PrinterInterface}. We bind to it lazily on the first
+ * call and reuse the connection for the life of the process.
  *
+ * Receipt payload from the web app:
  *   NectarPrinter.printReceipt({
  *     header: "Joe's Coffee",
  *     lines: [
@@ -36,17 +44,43 @@ import org.json.JSONObject;
 @CapacitorPlugin(name = "NectarPrinter")
 public class NectarPrinterPlugin extends Plugin {
 
+    private static final String PKG = "recieptservice.com.recieptservice";
+    private static final String CLS = "recieptservice.com.recieptservice.service.PrinterService";
+
+    private PrinterInterface printer;
+
+    private final ServiceConnection conn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            printer = PrinterInterface.Stub.asInterface(service);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            printer = null;
+        }
+    };
+
+    private synchronized PrinterInterface bind() {
+        if (printer != null) return printer;
+        Context ctx = getContext();
+        Intent intent = new Intent();
+        intent.setClassName(PKG, CLS);
+        try { ctx.startService(intent); } catch (Throwable ignored) {}
+        ctx.bindService(intent, conn, Context.BIND_AUTO_CREATE);
+        // Give the bind a brief moment. Real Senraise firmware binds
+        // essentially instantly; a short spin avoids a false negative on
+        // the very first call after boot.
+        for (int i = 0; i < 40 && printer == null; i++) {
+            try { Thread.sleep(50); } catch (InterruptedException ignored) {}
+        }
+        return printer;
+    }
+
     @PluginMethod
     public void isAvailable(PluginCall call) {
-        boolean ok = false;
-        try {
-            SrPrinter.getInstance(getContext());
-            ok = true;
-        } catch (Throwable t) {
-            ok = false;
-        }
         JSObject ret = new JSObject();
-        ret.put("available", ok);
+        ret.put("available", bind() != null);
         call.resolve(ret);
     }
 
@@ -54,7 +88,7 @@ public class NectarPrinterPlugin extends Plugin {
     public void printText(PluginCall call) {
         String text = call.getString("text", "");
         try {
-            SrPrinter p = SrPrinter.getInstance(getContext());
+            PrinterInterface p = require();
             p.printText(text);
             p.nextLine(3);
             call.resolve();
@@ -66,7 +100,7 @@ public class NectarPrinterPlugin extends Plugin {
     @PluginMethod
     public void printReceipt(PluginCall call) {
         try {
-            SrPrinter p = SrPrinter.getInstance(getContext());
+            PrinterInterface p = require();
 
             String header = call.getString("header");
             String footer = call.getString("footer");
@@ -75,12 +109,12 @@ public class NectarPrinterPlugin extends Plugin {
 
             if (header != null) {
                 p.setAlignment(1);
-                p.setTextSize(30);
+                p.setTextSize(30f);
                 p.setTextBold(true);
                 p.printText(header);
                 p.nextLine(1);
                 p.setTextBold(false);
-                p.setTextSize(24);
+                p.setTextSize(24f);
             }
 
             p.setAlignment(0);
@@ -105,7 +139,7 @@ public class NectarPrinterPlugin extends Plugin {
                     p.printText(left);
                 }
                 p.setTextBold(false);
-                p.setTextSize(24);
+                p.setTextSize(24f);
             }
 
             if (qr != null && qr.length() > 0) {
@@ -117,7 +151,7 @@ public class NectarPrinterPlugin extends Plugin {
 
             if (footer != null && footer.length() > 0) {
                 p.setAlignment(1);
-                p.setTextSize(22);
+                p.setTextSize(22f);
                 p.printText(footer);
             }
 
@@ -134,7 +168,7 @@ public class NectarPrinterPlugin extends Plugin {
         try {
             byte[] bytes = Base64.decode(base64, Base64.DEFAULT);
             Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-            SrPrinter p = SrPrinter.getInstance(getContext());
+            PrinterInterface p = require();
             p.printBitmap(bmp);
             p.nextLine(3);
             call.resolve();
@@ -147,10 +181,19 @@ public class NectarPrinterPlugin extends Plugin {
     public void feed(PluginCall call) {
         int lines = call.getInt("lines", 3);
         try {
-            SrPrinter.getInstance(getContext()).nextLine(lines);
+            require().nextLine(lines);
             call.resolve();
         } catch (Throwable t) {
             call.reject("feed failed: " + t.getMessage(), t);
         }
+    }
+
+    private PrinterInterface require() {
+        PrinterInterface p = bind();
+        if (p == null) {
+            throw new IllegalStateException(
+                "Senraise printer service not available on this device");
+        }
+        return p;
     }
 }
