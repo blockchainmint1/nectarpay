@@ -197,7 +197,7 @@ function HomePage() {
               </Button>
             </div>
             <p className="mt-3 text-xs text-muted-foreground">
-              Checkout on <span className="text-foreground">blockchainmint.com</span> · ships worldwide · 30-day merchant guarantee
+              Checkout on <span className="text-foreground">blockchainmint.com</span> · ships worldwide
             </p>
           </div>
 
