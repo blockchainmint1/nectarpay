@@ -145,4 +145,46 @@ public class MainActivity extends BridgeActivity {
             }
         });
     }
+
+    /**
+     * Auto-grant camera (and mic) to the trusted web origin. Without this,
+     * WebView denies getUserMedia() by default and the browser surfaces
+     * "Permission denied" even though Android itself has camera permission.
+     */
+    private void installCameraPermissionBridge() {
+        final WebView webView = getBridge().getWebView();
+        if (webView == null) return;
+        webView.setWebChromeClient(new com.getcapacitor.BridgeWebChromeClient(getBridge()) {
+            @Override
+            public void onPermissionRequest(final PermissionRequest request) {
+                runOnUiThread(() -> {
+                    String origin = request.getOrigin() != null ? request.getOrigin().toString() : "";
+                    // Only grant to our own origins.
+                    if (origin.startsWith("https://nectar-pay.com")
+                        || origin.startsWith("https://nectarpay.lovable.app")
+                        || origin.startsWith("https://nectarpay.honest.money")
+                        || origin.startsWith("https://nector-pay.com")) {
+                        request.grant(request.getResources());
+                    } else {
+                        DebugOverlay.show(MainActivity.this,
+                            "Blocked permission request from " + origin);
+                        request.deny();
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Request Android runtime camera permission at boot. WebView's
+     * onPermissionRequest.grant() only works if the app itself already
+     * holds CAMERA — otherwise the underlying getUserMedia still fails.
+     */
+    private void ensureCameraPermission() {
+        if (Build.VERSION.SDK_INT < 23) return;
+        if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                new String[] { Manifest.permission.CAMERA }, 0xC0DE);
+        }
+    }
 }
