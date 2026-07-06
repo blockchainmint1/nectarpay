@@ -716,6 +716,36 @@ export type Database = {
         }
         Relationships: []
       }
+      pos_releases: {
+        Row: {
+          apk_path: string
+          created_at: string
+          id: string
+          notes: string | null
+          published_at: string
+          sha256: string
+          version: string
+        }
+        Insert: {
+          apk_path: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          published_at?: string
+          sha256: string
+          version: string
+        }
+        Update: {
+          apk_path?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          published_at?: string
+          sha256?: string
+          version?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
