@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">NectarPay POS</string>
+    <string name="title_activity_main">NectarPay POS</string>
+    <string name="package_name">money.honest.nectarpos</string>
+    <string name="custom_url_scheme">nectarpay</string>
+</resources>

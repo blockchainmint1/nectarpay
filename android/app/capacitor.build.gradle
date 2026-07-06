@@ -1,0 +1,15 @@
+// Auto-generated shape from `cap sync`. No Capacitor community plugins added.
+android {
+  compileOptions {
+      sourceCompatibility JavaVersion.VERSION_17
+      targetCompatibility JavaVersion.VERSION_17
+  }
+}
+
+dependencies {
+    // No extra Capacitor plugins yet — printer/NFC live in-app.
+}
+
+if (hasProperty('postBuildExtras')) {
+  postBuildExtras()
+}
