@@ -336,3 +336,17 @@ function Stat({ big, label, sub }: { big: string; label: string; sub: string }) 
     </div>
   );
 }
+
+function KitItem({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
+  return (
+    <li className="flex gap-3">
+      <span className="mt-0.5 inline-flex h-7 w-7 flex-none items-center justify-center rounded-md bg-primary/15 text-primary">
+        {icon}
+      </span>
+      <div>
+        <div className="text-sm font-semibold text-foreground">{title}</div>
+        <div className="text-sm text-muted-foreground">{body}</div>
+      </div>
+    </li>
+  );
+}
