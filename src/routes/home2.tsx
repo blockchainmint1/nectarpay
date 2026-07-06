@@ -122,6 +122,12 @@ const BRAND_STYLE = `
     border: 2px solid var(--np-honey-400); animation: np-pulse 1.8s var(--np-ease-out) infinite;
   }
   .np-pulse::after { animation-delay: 0.9s; }
+  @keyframes np-buzzy-float {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50%      { transform: translateY(-14px) rotate(2deg); }
+  }
+  .np-buzzy-float { animation: np-buzzy-float 5.5s var(--np-ease-out) infinite; will-change: transform; }
+  @media (prefers-reduced-motion: reduce) { .np-buzzy-float { animation: none; } }
 `;
 
 /* ------------------------------------------------------------------ */
