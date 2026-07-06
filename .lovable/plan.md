@@ -1,75 +1,173 @@
 
-# NFC Tap-to-Pay: Terminal → Customer Wallet
+# NectarPay POS — Android app scaffold + CI build
 
-Yes, this is doable — and it's basically how Apple Pay / Google Pay work under the hood, just with our own wallet and crypto rails instead of EMV. Here's the realistic shape.
+Turn the existing web POS (`/pos/*` routes) into a signed APK that runs on Senraise terminals, drives the printer + NFC reader via native bridges, is built automatically by GitHub Actions, and is installed as the final step of `/start` onboarding.
 
-## The honest constraints first
+---
 
-Android phones can read NFC freely. **iPhones cannot read arbitrary NFC tags from third-party apps in the background** — only Apple's Wallet auto-launches on tap, and only for EMV/transit. So:
+## What gets built
 
-- **Android**: full magic flow works (tap → HME Wallet auto-opens with invoice loaded).
-- **iOS**: tap shows a system notification banner with a URL; user taps the banner to open HME Wallet. One extra tap, but still smooth.
+### 1. Capacitor scaffold (`android/`)
 
-The Senraise terminal acts as an **NFC tag emitter (HCE-style)**, not a reader. The customer's phone reads it.
-
-## The flow
+New folder in repo:
 
 ```text
-1. Merchant POS:  builds invoice → "choose payment method" screen
-                  POS asks Nectar API for invoice ID + short-lived nonce
-                  POS pushes an NDEF payload to the Senraise NFC chip:
-                    hme://pay?inv=<id>&t=<nonce>
-                    (or https://pay.hme.app/i/<id>?t=<nonce> for iOS fallback)
-
-2. Customer taps phone to terminal
-                  Android: OS sees the URI scheme → auto-launches HME Wallet
-                  iOS:     OS shows banner with the https URL → user taps it
-
-3. HME Wallet opens, fetches invoice from Nectar:
-                    GET /api/public/v1/invoices/<id>?t=<nonce>
-                  Wallet sees: $9 USD, merchant "Joe's Coffee"
-                  Wallet scans local balances → picks best option
-                    (priority: stable on cheap chain, then native)
-                  Wallet shows: "Pay $9 with USDC on Base • [Approve]"
-
-4. Customer taps Approve
-                  Wallet signs + broadcasts the tx
-                  Wallet POSTs tx hash to Nectar:
-                    POST /api/public/v1/invoices/<id>/claim
-                      { txHash, chain, token, payerAddress, sig(nonce) }
-
-5. Nectar watcher confirms on-chain (already built — hot-scan in pos polling)
-   POS terminal flips to "PAID" within seconds
+android/
+  app/
+    build.gradle
+    src/main/
+      AndroidManifest.xml         (NFC + INTERNET perms, single-task launcher)
+      java/money/honest/nectarpos/
+        MainActivity.java         (Capacitor bridge + NFC foreground dispatch)
+        NectarPrinterPlugin.java  (binds Senraise AIDL, exposes printReceipt/cut/qr)
+        NectarNfcPlugin.java      (reads NDEF, emits event to JS)
+        NdefRouter.java           (parses tag: nectar:// URI, EIP-681, Solana Pay,
+                                   BIP-21 bitcoin:, TXC address, plain URL)
+      aidl/com/recieptservice/    (copied verbatim from your SDK)
+        PrinterInterface.aidl
+        PSAMCallback.aidl
+        PSAMData.aidl
+      assets/public/              (built web app copied here by Capacitor)
+    libs/
+      printer.jar                 (from java_2025.zip)
+      guavalib.jar                (from NFC SDK)
+  build.gradle
+  settings.gradle
+  gradle/wrapper/*
+capacitor.config.ts               (webDir points at Vite build; server.url points
+                                   at published site so terminals get live updates
+                                   without reinstalling the APK)
 ```
 
-## What we'd need to build
+Two Capacitor plugins the web app can call:
 
-**Nectar.Pay side** (this project):
-- New endpoint `GET /api/public/v1/invoices/:id` (public, nonce-gated, returns invoice + merchant name + accepted chains/tokens — no PII).
-- New endpoint `POST /api/public/v1/invoices/:id/claim` — wallet declares its choice; we derive the right receiving address for that chain/token on demand (we already do this in `selectInvoiceChain`) and return it so the wallet knows where to send.
-- POS UI: a "Tap to Pay" button on the payment-method screen that emits the NDEF push to the Senraise terminal (this is the Senraise SDK integration — needs their NFC write API).
-- Nonce is a short-lived single-use token bound to the invoice (5 min, revoked on first claim).
+```ts
+// src/lib/pos-native.ts (already-safe wrappers, no-op on desktop)
+NectarPrinter.printReceipt({ header, lines, qr, footer })
+NectarNfc.startReader()   // returns { format, raw, parsed: { address?, chain?, amount? } }
+NectarNfc.stopReader()
+```
 
-**HME Wallet side** (separate project):
-- Register URL scheme `hme://` (Android intent filter) + universal link for `https://pay.hme.app/i/*` (iOS associated domain).
-- "Pay flow" screen: fetch invoice, pick best asset, show approve button.
-- Asset-selection logic: prefer stable > native, prefer cheap chain (Base/BSC) > expensive (ETH mainnet), prefer chains the merchant accepts.
+The web app detects Capacitor at runtime (`window.Capacitor?.isNativePlatform`) and swaps the "Print" button + "Tap card" flow to the native calls; browser POS keeps working unchanged.
 
-**Senraise terminal**:
-- We need their SDK / docs to confirm they expose NFC write (HCE or tag emulation). If their NFC is read-only (card reader mode), the flow inverts: customer phone would emit an NDEF tag and terminal reads it — that works too but is less elegant because customer has to enter the amount in the wallet first. Worth checking before committing to a direction.
+### 2. NDEF card format (what we recommend printing on the cards)
 
-## Open questions for you
+Two-record NDEF, both wallets and our own cards satisfy it:
 
-1. Do we have Senraise SDK docs confirming NFC write/HCE mode is available, or do we need to ask them?
-2. iOS universal-link domain — do we own `pay.hme.app` (or similar) for the associated-domain file? Or piggyback on `nectar-pay.com`?
-3. Wallet asset-priority rules — do you want merchants to influence this (e.g., "I prefer USDC on Base, take that first if available"), or is it 100% customer-side preference?
-4. For the "best asset" pick, do we surface a chooser if the customer has multiple eligible balances, or just auto-pick and let them swap before approving?
+- Record 1: `application/vnd.nectar.pay+json` with `{"v":1,"addr":"...","chain":"txc","label":"..."}`
+- Record 2: `bitcoin:...` / `ethereum:...` / `solana:...` / plain URL (fallback the terminal understands anyway)
 
-## Why this is genuinely magical
+Router accepts, in order:
+1. Our JSON record → highest trust, use as-is.
+2. `nectar://` URI (for pre-signed pay intents when we get there).
+3. BIP-21 `bitcoin:` / EIP-681 `ethereum:` / Solana Pay `solana:` / `tron:`.
+4. Any plaintext hex/base58 that decodes as a supported chain address.
+5. Bare URL → open in in-app browser (probably the customer's hosted-wallet link).
 
-- No QR scanning, no typing addresses, no app-switching dance.
-- Customer's wallet picks the cheapest rail automatically — settles in seconds on Base/BSC for cents.
-- Merchant terminal flow is identical whether the customer taps or scans a QR — NFC is just a faster handoff.
-- It's the first crypto checkout that actually feels like Apple Pay.
+Card recommendation lives in a new doc `.lovable/CARDS.md` (specs to hand a printer: NTAG213 for cheap 144-byte tags, NTAG216 if we want ~888 bytes for signed intents, ISO 14443A, print-in-quantity vendors).
 
-Sleep on it. When you're back, answer the four questions above (or just say "you decide") and I'll write the build plan.
+### 3. GitHub Actions signed release (`.github/workflows/pos-apk.yml`)
+
+Triggers: push to `pos-app` branch, manual `workflow_dispatch`, and git tag `pos-v*`.
+
+Steps:
+
+```text
+1. Checkout
+2. Setup JDK 17, Android SDK, Bun
+3. bun install && bun run build            (builds the Vite web app)
+4. npx cap sync android
+5. Decode ${{ secrets.ANDROID_KEYSTORE_BASE64 }} → keystore.jks
+6. gradlew assembleRelease -PkeyAlias=... -PkeyPassword=... -PstorePassword=...
+7. Upload nectar-pos-<version>.apk as workflow artifact
+8. On tag: also create GitHub Release + upload APK
+9. Post APK URL back to Lovable Cloud storage bucket 'pos-releases'
+   so the /start page can serve the latest download
+```
+
+Required GitHub repo secrets (I'll write the exact instructions in the workflow file's header comment):
+- `ANDROID_KEYSTORE_BASE64` — base64 of `keystore.jks`
+- `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`, `ANDROID_STORE_PASSWORD`
+- `LOVABLE_UPLOAD_TOKEN` — service-role key so the workflow can PUT the APK into the storage bucket
+
+First-run helper: `scripts/generate-keystore.sh` runs `keytool` locally to produce the keystore + prints the base64 to paste into GitHub. One command, no Android Studio.
+
+### 4. `/start` onboarding — new final step
+
+Insert after the existing terminal-pairing step:
+
+```text
+Step N: Install POS app on your terminal
+  - Latest version badge:  v1.0.3   (fetched from pos-releases bucket)
+  - [ Download APK ]  →  direct link to signed APK
+  - [ Copy install URL ]  →  short URL like nectar-pay.com/pos-apk (302 to latest)
+  - Terminal instructions (3 lines, big text)
+  - Pairing code auto-loaded — first launch of the APK auto-pairs with this merchant
+```
+
+Wire-up:
+
+- New `pos_releases` table (version, apk_url, sha256, published_at, notes) — populated by the CI workflow.
+- New server fn `getLatestPosRelease()` — public, cached.
+- New public route `/pos-apk` → 302 to `apk_url` of the latest release.
+- Update `src/routes/start.tsx` to add the install step.
+
+### 5. Kiosk / launcher polish (deferred, documented)
+
+Not built in this pass — but `.lovable/POS-DEPLOYMENT.md` documents:
+
+- `adb shell cmd package set-home-activity money.honest.nectarpos/.MainActivity` to make the POS app the default launcher.
+- Task-lock via `startLockTask()` gated by a merchant PIN in POS Settings.
+- In-app "Check for update" that hits `getLatestPosRelease()` and downloads/installs the new APK if the terminal permits it. If Senraise blocks self-install we fall back to ADB re-push instructions.
+
+---
+
+## What you have to do (once)
+
+1. Run `scripts/generate-keystore.sh` on your machine → get 4 values.
+2. Paste those 4 values into GitHub repo Secrets.
+3. Push to trigger first build. Download the APK. Sideload once to confirm it runs on a Senraise unit.
+4. Tell me which card vendor you're leaning toward and I'll finalize the NDEF write template + a small "encode card" utility page in the admin panel.
+
+---
+
+## Roadblocks I expect (I'll flag as we hit them)
+
+- **Senraise's printer AIDL package name** — I'm using `com.recieptservice` from the AIDL you sent; if their actual service is `com.iboxpay.print` or similar we'll see `ServiceConnection` returning null on first boot and fix in ~5 min.
+- **NFC intent filter vs. foreground dispatch** — some Senraise firmwares consume NFC intents before the app sees them. Fallback is `NfcAdapter.enableReaderMode()` which we register in `MainActivity.onResume`. Both approaches wired.
+- **APK self-install** — Android requires `REQUEST_INSTALL_PACKAGES` + user tap. On locked-down terminal firmware even that may be blocked; the doc covers ADB fallback.
+- **Capacitor `server.url` pointing at the live web app means updates ship instantly** — but the terminal needs internet. If you want fully-offline POS, we swap to bundled webDir and rely on APK updates for every change. Recommend live-URL mode for v1.
+
+---
+
+## Files to be created/modified
+
+New:
+- `android/**` (full Capacitor project, ~40 files)
+- `capacitor.config.ts`
+- `.github/workflows/pos-apk.yml`
+- `scripts/generate-keystore.sh`
+- `src/lib/pos-native.ts`
+- `src/lib/pos-releases.functions.ts`
+- `src/routes/pos-apk.ts` (302 redirect)
+- `supabase/migrations/*_pos_releases.sql`
+- `.lovable/CARDS.md`
+- `.lovable/POS-DEPLOYMENT.md`
+
+Modified:
+- `src/routes/pos.index.tsx` (call native printer / NFC when available)
+- `src/routes/start.tsx` (new install step)
+- `package.json` (add `@capacitor/core`, `@capacitor/android`, `@capacitor/cli`)
+
+---
+
+## Order of operations
+
+1. Capacitor scaffold + copy SDK jars + AIDL.
+2. Native plugins (printer + NFC reader).
+3. Web-side wrappers + swap POS UI to use them when native.
+4. GitHub Actions workflow + keystore script.
+5. Releases table + `/pos-apk` redirect + `/start` install step.
+6. Docs (CARDS.md, POS-DEPLOYMENT.md).
+
+Approve and I'll rip through all six in one pass.
