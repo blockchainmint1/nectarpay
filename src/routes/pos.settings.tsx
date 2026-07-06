@@ -136,6 +136,25 @@ function SettingsPage() {
         </button>
 
         <div className="mt-10 border-t border-white/10 pt-6">
+          <p className="text-[10px] font-bold tracking-widest text-white/40">DIAGNOSTICS</p>
+          <p className="mt-1 text-[11px] text-white/50">Hardware self-tests. Safe to run — no charges, no invoices.</p>
+          <div className="mt-3 grid gap-2">
+            <button
+              onClick={() => navigate({ to: "/pos/nfc-inspect" })}
+              className="h-11 w-full rounded-lg border border-white/15 bg-white/5 text-xs font-bold tracking-widest text-white/80 hover:bg-white/10"
+            >
+              NFC INSPECTOR →
+            </button>
+            <button
+              onClick={() => navigate({ to: "/pos/printer-test" })}
+              className="h-11 w-full rounded-lg border border-white/15 bg-white/5 text-xs font-bold tracking-widest text-white/80 hover:bg-white/10"
+            >
+              PRINTER TEST →
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-8 border-t border-white/10 pt-6">
           <p className="text-[10px] font-bold tracking-widest text-white/40">DANGER ZONE</p>
           <button
             onClick={unpair}

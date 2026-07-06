@@ -5,6 +5,7 @@ import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
+import android.nfc.tech.IsoDep;
 import android.nfc.tech.Ndef;
 import android.os.Parcelable;
 
@@ -27,11 +28,16 @@ import java.nio.charset.StandardCharsets;
  * MainActivity's foreground dispatch receives a tag it calls
  * `handleTagIntent(...)` which parses the NDEF and emits a `tagScanned`
  * event with the routed payload.
+ *
+ * The last-seen Tag is cached so JS can call `transceive({ apduHex })` to
+ * probe secure-element cards (Tangem, EMV, etc). Cached Tag handles are
+ * only valid until the next tap or until Android reaps them (~seconds).
  */
 @CapacitorPlugin(name = "NectarNfc")
 public class NectarNfcPlugin extends Plugin {
 
     private static NectarNfcPlugin active;
+    private static Tag lastTag;
 
     @Override
     public void load() {
@@ -48,9 +54,46 @@ public class NectarNfcPlugin extends Plugin {
 
     @PluginMethod
     public void stopReader(PluginCall call) {
-        // Foreground dispatch stays wired in MainActivity — we just stop
-        // forwarding events to JS.
         call.resolve();
+    }
+
+    /**
+     * Send a raw APDU (hex) to the last-scanned tag's IsoDep channel.
+     * Returns { responseHex, sw1, sw2 } on success.
+     */
+    @PluginMethod
+    public void transceive(PluginCall call) {
+        String apduHex = call.getString("apduHex");
+        if (apduHex == null || apduHex.isEmpty()) {
+            call.reject("apduHex required");
+            return;
+        }
+        Tag tag = lastTag;
+        if (tag == null) {
+            call.reject("no tag in scope — tap card first");
+            return;
+        }
+        IsoDep iso = IsoDep.get(tag);
+        if (iso == null) {
+            call.reject("tag does not support IsoDep");
+            return;
+        }
+        try {
+            iso.connect();
+            iso.setTimeout(3000);
+            byte[] resp = iso.transceive(hexToBytes(apduHex));
+            JSObject out = new JSObject();
+            out.put("responseHex", bytesToHex(resp));
+            if (resp.length >= 2) {
+                out.put("sw1", String.format("%02x", resp[resp.length - 2] & 0xff));
+                out.put("sw2", String.format("%02x", resp[resp.length - 1] & 0xff));
+            }
+            call.resolve(out);
+        } catch (Throwable t) {
+            call.reject("transceive failed: " + t.getMessage());
+        } finally {
+            try { iso.close(); } catch (Throwable ignored) {}
+        }
     }
 
     /** Called by MainActivity when a tag intent arrives while foregrounded. */
@@ -60,10 +103,25 @@ public class NectarNfcPlugin extends Plugin {
             String action = intent.getAction();
             Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
             Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+            lastTag = tag;
 
             String uid = null;
-            if (tag != null && tag.getId() != null) {
-                uid = bytesToHex(tag.getId());
+            JSONArray techList = new JSONArray();
+            JSONObject isoInfo = null;
+
+            if (tag != null) {
+                if (tag.getId() != null) uid = bytesToHex(tag.getId());
+                for (String t : tag.getTechList()) techList.put(t);
+
+                IsoDep iso = IsoDep.get(tag);
+                if (iso != null) {
+                    isoInfo = new JSONObject();
+                    byte[] ats = iso.getHistoricalBytes(); // Type A
+                    byte[] hib = iso.getHiLayerResponse(); // Type B
+                    isoInfo.put("historicalBytesHex", ats == null ? "" : bytesToHex(ats));
+                    isoInfo.put("hiLayerResponseHex", hib == null ? "" : bytesToHex(hib));
+                    isoInfo.put("maxTransceiveLength", iso.getMaxTransceiveLength());
+                }
             }
 
             JSONArray records = new JSONArray();
@@ -75,8 +133,6 @@ public class NectarNfcPlugin extends Plugin {
                     }
                 }
             } else if (tag != null) {
-                // Empty / non-NDEF tag; still surface UID so we can look it
-                // up in a merchant-owned card registry if desired.
                 Ndef ndef = Ndef.get(tag);
                 if (ndef != null) {
                     NdefMessage cached = ndef.getCachedNdefMessage();
@@ -92,6 +148,8 @@ public class NectarNfcPlugin extends Plugin {
             JSObject event = new JSObject();
             event.put("action", action);
             event.put("uid", uid);
+            event.put("techList", techList);
+            if (isoInfo != null) event.put("isoDep", JSObject.fromJSONObject(isoInfo));
             event.put("records", records);
             event.put("parsed", JSObject.fromJSONObject(parsed));
             active.notifyListeners("tagScanned", event);
@@ -111,7 +169,6 @@ public class NectarNfcPlugin extends Plugin {
         o.put("tnf", (int) tnf);
         o.put("type", type == null ? "" : new String(type, StandardCharsets.UTF_8));
 
-        // Try URI record decode first.
         try {
             android.net.Uri uri = r.toUri();
             if (uri != null) {
@@ -119,7 +176,6 @@ public class NectarNfcPlugin extends Plugin {
             }
         } catch (Throwable ignored) { }
 
-        // Text record: [status][lang][text]
         if (tnf == NdefRecord.TNF_WELL_KNOWN
             && type != null && type.length == 1 && type[0] == 'T'
             && payload != null && payload.length > 0) {
@@ -132,7 +188,6 @@ public class NectarNfcPlugin extends Plugin {
             }
         }
 
-        // Mime record (e.g. application/vnd.nectar.pay+json).
         if (tnf == NdefRecord.TNF_MIME_MEDIA && payload != null) {
             o.put("mime", new String(payload, StandardCharsets.UTF_8));
         }
@@ -150,5 +205,15 @@ public class NectarNfcPlugin extends Plugin {
             sb.append(h);
         }
         return sb.toString();
+    }
+
+    private static byte[] hexToBytes(String hex) {
+        String clean = hex.replaceAll("[^0-9a-fA-F]", "");
+        int len = clean.length() / 2;
+        byte[] out = new byte[len];
+        for (int i = 0; i < len; i++) {
+            out[i] = (byte) Integer.parseInt(clean.substring(i * 2, i * 2 + 2), 16);
+        }
+        return out;
     }
 }
