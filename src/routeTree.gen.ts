@@ -41,6 +41,7 @@ import { Route as IntegrationsWoocommerceRouteImport } from './routes/integratio
 import { Route as IInvoiceIdRouteImport } from './routes/i.$invoiceId'
 import { Route as DocsWalletSetupRouteImport } from './routes/docs.wallet-setup'
 import { Route as DocsTapToPayTangemRouteImport } from './routes/docs.tap-to-pay-tangem'
+import { Route as DevTangemTestRouteImport } from './routes/dev.tangem-test'
 import { Route as AuthenticatedTerminalsRouteImport } from './routes/_authenticated.terminals'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated.notifications'
 import { Route as AuthenticatedExportsRouteImport } from './routes/_authenticated.exports'
@@ -260,6 +261,11 @@ const DocsTapToPayTangemRoute = DocsTapToPayTangemRouteImport.update({
   id: '/tap-to-pay-tangem',
   path: '/tap-to-pay-tangem',
   getParentRoute: () => DocsRoute,
+} as any)
+const DevTangemTestRoute = DevTangemTestRouteImport.update({
+  id: '/dev/tangem-test',
+  path: '/dev/tangem-test',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedTerminalsRoute = AuthenticatedTerminalsRouteImport.update({
   id: '/terminals',
@@ -629,6 +635,7 @@ export interface FileRoutesByFullPath {
   '/exports': typeof AuthenticatedExportsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/terminals': typeof AuthenticatedTerminalsRoute
+  '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
@@ -720,6 +727,7 @@ export interface FileRoutesByTo {
   '/exports': typeof AuthenticatedExportsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/terminals': typeof AuthenticatedTerminalsRoute
+  '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
@@ -813,6 +821,7 @@ export interface FileRoutesById {
   '/_authenticated/exports': typeof AuthenticatedExportsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/terminals': typeof AuthenticatedTerminalsRoute
+  '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
@@ -908,6 +917,7 @@ export interface FileRouteTypes {
     | '/exports'
     | '/notifications'
     | '/terminals'
+    | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
     | '/i/$invoiceId'
@@ -999,6 +1009,7 @@ export interface FileRouteTypes {
     | '/exports'
     | '/notifications'
     | '/terminals'
+    | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
     | '/i/$invoiceId'
@@ -1091,6 +1102,7 @@ export interface FileRouteTypes {
     | '/_authenticated/exports'
     | '/_authenticated/notifications'
     | '/_authenticated/terminals'
+    | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
     | '/i/$invoiceId'
@@ -1180,6 +1192,7 @@ export interface RootRouteChildren {
   StartRoute: typeof StartRoute
   TermsRoute: typeof TermsRoute
   WhereRoute: typeof WhereRoute
+  DevTangemTestRoute: typeof DevTangemTestRoute
   IInvoiceIdRoute: typeof IInvoiceIdRoute
   IntegrationsWoocommerceRoute: typeof IntegrationsWoocommerceRoute
   PayInvoiceIdRoute: typeof PayInvoiceIdRoute
@@ -1433,6 +1446,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/docs/tap-to-pay-tangem'
       preLoaderRoute: typeof DocsTapToPayTangemRouteImport
       parentRoute: typeof DocsRoute
+    }
+    '/dev/tangem-test': {
+      id: '/dev/tangem-test'
+      path: '/dev/tangem-test'
+      fullPath: '/dev/tangem-test'
+      preLoaderRoute: typeof DevTangemTestRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/terminals': {
       id: '/_authenticated/terminals'
@@ -2085,6 +2105,7 @@ const rootRouteChildren: RootRouteChildren = {
   StartRoute: StartRoute,
   TermsRoute: TermsRoute,
   WhereRoute: WhereRoute,
+  DevTangemTestRoute: DevTangemTestRoute,
   IInvoiceIdRoute: IInvoiceIdRoute,
   IntegrationsWoocommerceRoute: IntegrationsWoocommerceRoute,
   PayInvoiceIdRoute: PayInvoiceIdRoute,
