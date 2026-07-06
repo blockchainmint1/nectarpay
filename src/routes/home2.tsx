@@ -191,38 +191,57 @@ function Home2() {
       {/* ============ HERO ============ */}
       <section className="np-hex relative overflow-hidden">
         <div className="mx-auto max-w-7xl px-6 pb-24 pt-20 md:pt-28">
-          <div className="mb-8 flex items-center gap-3">
-            <span className="np-eyebrow-chip">
-              <Sparkles className="h-3 w-3" /> Non-custodial · Zero fees · v1.0
-            </span>
-          </div>
+          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:gap-16">
+            <div>
+              <div className="mb-8 flex items-center gap-3">
+                <span className="np-eyebrow-chip">
+                  <Sparkles className="h-3 w-3" /> Non-custodial · Zero fees · v1.0
+                </span>
+              </div>
 
-          <h1 className="np-display max-w-4xl text-[64px] leading-[0.98] md:text-[96px]">
-            Accept crypto.<br />
-            Keep <span style={{ color: "var(--np-honey-400)" }}>every cent.</span>
-          </h1>
+              <h1 className="np-display max-w-4xl text-[64px] leading-[0.98] md:text-[96px]">
+                Accept crypto.<br />
+                Keep <span style={{ color: "var(--np-honey-400)" }}>every cent.</span>
+              </h1>
 
-          <p className="mt-8 max-w-2xl text-lg md:text-xl" style={{ color: "rgba(255,255,255,0.75)" }}>
-            Zero fees. Non-custodial. Instant. Set up in two minutes.
-            Bitcoin, TEXITcoin, stablecoins, and every digital currency still to come — settled straight into wallets you fully control.
-          </p>
+              <p className="mt-8 max-w-2xl text-lg md:text-xl" style={{ color: "rgba(255,255,255,0.75)" }}>
+                Zero fees. Non-custodial. Instant. Set up in two minutes.
+                Bitcoin, TEXITcoin, stablecoins, and every digital currency still to come — settled straight into wallets you fully control.
+              </p>
 
-          <div className="mt-10 flex flex-wrap items-center gap-3">
-            <a href="#start" className="np-btn np-btn-honey">
-              Create your account <ArrowRight className="h-4 w-4" />
-            </a>
-            <a href="#demo" className="np-btn np-btn-ghost">See a demo</a>
-          </div>
+              <div className="mt-10 flex flex-wrap items-center gap-3">
+                <a href="#start" className="np-btn np-btn-honey">
+                  Create your account <ArrowRight className="h-4 w-4" />
+                </a>
+                <a href="#demo" className="np-btn np-btn-ghost">See a demo</a>
+              </div>
 
-          {/* Mono live ticker */}
-          <div className="mt-14 flex flex-wrap items-center gap-x-8 gap-y-3 np-mono text-xs" style={{ color: "var(--np-slate)" }}>
-            <span>$0.00 FEES</span>
-            <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
-            <span>SETTLED <span style={{ color: "var(--np-honey-300)" }}>{t.toFixed(2)}s</span></span>
-            <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
-            <span>WALLET SELF-CUSTODY</span>
-            <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
-            <span>WCAG AA</span>
+              {/* Mono live ticker */}
+              <div className="mt-14 flex flex-wrap items-center gap-x-8 gap-y-3 np-mono text-xs" style={{ color: "var(--np-slate)" }}>
+                <span>$0.00 FEES</span>
+                <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
+                <span>SETTLED <span style={{ color: "var(--np-honey-300)" }}>{t.toFixed(2)}s</span></span>
+                <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
+                <span>WALLET SELF-CUSTODY</span>
+                <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
+                <span>WCAG AA</span>
+              </div>
+            </div>
+
+            {/* Buzzy — the NectarPay mascot */}
+            <div className="relative hidden lg:block">
+              <div
+                className="pointer-events-none absolute inset-0 -z-10 mx-auto h-[420px] w-[420px] translate-y-6 rounded-full"
+                style={{ background: "radial-gradient(circle, rgba(246,162,30,0.35), transparent 65%)" }}
+              />
+              <img
+                src={buzzyMascot}
+                alt="Buzzy, the NectarPay mascot bee, waving and holding a honey-gold coin"
+                width={1024}
+                height={1024}
+                className="np-buzzy-float relative mx-auto h-auto w-full max-w-[440px] drop-shadow-[0_30px_60px_rgba(0,0,0,0.45)]"
+              />
+            </div>
           </div>
 
           {/* Stat strip */}
