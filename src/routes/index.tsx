@@ -188,7 +188,7 @@ function HomePage() {
                 className="shadow-lg shadow-primary/30"
               >
                 <a
-                  href="https://blockchainmint.com/product/nectar-pay-mobile-pos-terminal?add-to-cart=nectar-pay-mobile-pos-terminal"
+                  href="https://blockchainmint.com/buy/nectar-pay-mobile-pos-terminal?clear=1"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -203,7 +203,7 @@ function HomePage() {
 
           {/* Product hero */}
           <a
-            href="https://blockchainmint.com/product/nectar-pay-mobile-pos-terminal?add-to-cart=nectar-pay-mobile-pos-terminal"
+            href="https://blockchainmint.com/buy/nectar-pay-mobile-pos-terminal?clear=1"
             target="_blank"
             rel="noreferrer"
             className="group relative block"
