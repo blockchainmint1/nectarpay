@@ -117,6 +117,20 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  useEffect(() => {
+    if (document.getElementById("honest-help-widget")) return;
+    const s = document.createElement("script");
+    s.id = "honest-help-widget";
+    s.src = "https://help.honest.money/api/public/widget.js";
+    s.async = true;
+    s.dataset.brandName = "Nectar.Pay";
+    s.dataset.context = "Nectar.Pay";
+    s.dataset.ecosystem = "Nectar.Pay";
+    s.dataset.folder = "nectarpay";
+    s.dataset.theme = "auto";
+    document.body.appendChild(s);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -129,3 +143,4 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+
