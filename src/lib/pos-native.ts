@@ -138,4 +138,9 @@ export const NectarNfc = {
       },
     };
   },
+  async transceive(apduHex: string): Promise<ApduResponse> {
+    const p = cap()?.Plugins.NectarNfc;
+    if (!p) throw new Error("NFC not available on this device");
+    return await p.transceive({ apduHex });
+  },
 };
