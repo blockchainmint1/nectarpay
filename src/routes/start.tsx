@@ -1108,3 +1108,93 @@ function NextCard({
     </Link>
   );
 }
+
+/* ---------------- Install POS APK card ---------------- */
+
+function InstallPosCard() {
+  const load = useServerFn(getLatestPosRelease);
+  const [rel, setRel] = useState<{
+    version: string | null;
+    url: string | null;
+    sha256: string | null;
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const r = await load();
+        setRel({ version: r.version, url: r.url, sha256: r.sha256 });
+      } catch {
+        setRel({ version: null, url: null, sha256: null });
+      }
+    })();
+  }, [load]);
+
+  const installUrl =
+    typeof window === "undefined" ? "" : `${window.location.origin}/pos-apk`;
+
+  const hasBuild = Boolean(rel?.version && rel?.url);
+
+  return (
+    <div className="block rounded-lg border border-amber-500/40 bg-amber-500/5 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <Smartphone className="h-4 w-4 text-amber-500" />
+            <div className="text-sm font-semibold text-foreground">
+              Install POS app on your terminal
+            </div>
+            {rel?.version && (
+              <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-mono text-amber-600 dark:text-amber-400">
+                v{rel.version}
+              </span>
+            )}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            For Senraise terminals. Drives the printer and NFC reader natively —
+            taps a customer&apos;s card and prints the receipt in one flow.
+          </p>
+
+          <div className="mt-3 space-y-2">
+            {hasBuild ? (
+              <a
+                href={rel!.url!}
+                className="inline-flex h-10 items-center justify-center rounded-md bg-amber-500 px-4 text-sm font-semibold text-black transition hover:bg-amber-400"
+              >
+                Download APK
+              </a>
+            ) : (
+              <div className="rounded border border-dashed border-border p-3 text-xs text-muted-foreground">
+                No build published yet. Push to the{" "}
+                <code className="rounded bg-muted px-1 py-0.5">pos-app</code> branch
+                or tag <code className="rounded bg-muted px-1 py-0.5">pos-v0.1.0</code>{" "}
+                to trigger the CI build.
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => {
+                void navigator.clipboard.writeText(installUrl);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 1500);
+              }}
+              className="flex w-full items-center justify-between rounded border border-border bg-background/50 px-3 py-2 text-left text-xs"
+            >
+              <span className="font-mono text-muted-foreground">{installUrl}</span>
+              <span className="text-primary">{copied ? "Copied" : "Copy"}</span>
+            </button>
+          </div>
+
+          <ol className="mt-3 list-decimal space-y-1 pl-4 text-xs text-muted-foreground">
+            <li>On the terminal: Settings → Security → allow install from unknown sources.</li>
+            <li>Open a browser and type the URL above, or scan the QR on your onboarding card.</li>
+            <li>Tap the downloaded APK → Install → open. The app auto-loads your pairing code.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  );
+}
+
