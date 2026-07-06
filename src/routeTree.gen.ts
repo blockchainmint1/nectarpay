@@ -32,6 +32,7 @@ import { Route as IntegrationsIndexRouteImport } from './routes/integrations.ind
 import { Route as SdkPayhmeDotjsRouteImport } from './routes/sdk.payhme[.]js'
 import { Route as PosSettingsRouteImport } from './routes/pos.settings'
 import { Route as PosPairRouteImport } from './routes/pos.pair'
+import { Route as PosNfcInspectRouteImport } from './routes/pos.nfc-inspect'
 import { Route as PosHistoryRouteImport } from './routes/pos.history'
 import { Route as PayInvoiceIdRouteImport } from './routes/pay.$invoiceId'
 import { Route as IntegrationsWoocommerceRouteImport } from './routes/integrations.woocommerce'
@@ -209,6 +210,11 @@ const PosSettingsRoute = PosSettingsRouteImport.update({
 const PosPairRoute = PosPairRouteImport.update({
   id: '/pair',
   path: '/pair',
+  getParentRoute: () => PosRoute,
+} as any)
+const PosNfcInspectRoute = PosNfcInspectRouteImport.update({
+  id: '/nfc-inspect',
+  path: '/nfc-inspect',
   getParentRoute: () => PosRoute,
 } as any)
 const PosHistoryRoute = PosHistoryRouteImport.update({
@@ -602,6 +608,7 @@ export interface FileRoutesByFullPath {
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
   '/pos/history': typeof PosHistoryRoute
+  '/pos/nfc-inspect': typeof PosNfcInspectRoute
   '/pos/pair': typeof PosPairRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
@@ -688,6 +695,7 @@ export interface FileRoutesByTo {
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
   '/pos/history': typeof PosHistoryRoute
+  '/pos/nfc-inspect': typeof PosNfcInspectRoute
   '/pos/pair': typeof PosPairRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
@@ -776,6 +784,7 @@ export interface FileRoutesById {
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
   '/pos/history': typeof PosHistoryRoute
+  '/pos/nfc-inspect': typeof PosNfcInspectRoute
   '/pos/pair': typeof PosPairRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
@@ -866,6 +875,7 @@ export interface FileRouteTypes {
     | '/integrations/woocommerce'
     | '/pay/$invoiceId'
     | '/pos/history'
+    | '/pos/nfc-inspect'
     | '/pos/pair'
     | '/pos/settings'
     | '/sdk/payhme.js'
@@ -952,6 +962,7 @@ export interface FileRouteTypes {
     | '/integrations/woocommerce'
     | '/pay/$invoiceId'
     | '/pos/history'
+    | '/pos/nfc-inspect'
     | '/pos/pair'
     | '/pos/settings'
     | '/sdk/payhme.js'
@@ -1039,6 +1050,7 @@ export interface FileRouteTypes {
     | '/integrations/woocommerce'
     | '/pay/$invoiceId'
     | '/pos/history'
+    | '/pos/nfc-inspect'
     | '/pos/pair'
     | '/pos/settings'
     | '/sdk/payhme.js'
@@ -1307,6 +1319,13 @@ declare module '@tanstack/react-router' {
       path: '/pair'
       fullPath: '/pos/pair'
       preLoaderRoute: typeof PosPairRouteImport
+      parentRoute: typeof PosRoute
+    }
+    '/pos/nfc-inspect': {
+      id: '/pos/nfc-inspect'
+      path: '/nfc-inspect'
+      fullPath: '/pos/nfc-inspect'
+      preLoaderRoute: typeof PosNfcInspectRouteImport
       parentRoute: typeof PosRoute
     }
     '/pos/history': {
@@ -1901,6 +1920,7 @@ const DocsRouteWithChildren = DocsRoute._addFileChildren(DocsRouteChildren)
 
 interface PosRouteChildren {
   PosHistoryRoute: typeof PosHistoryRoute
+  PosNfcInspectRoute: typeof PosNfcInspectRoute
   PosPairRoute: typeof PosPairRoute
   PosSettingsRoute: typeof PosSettingsRoute
   PosIndexRoute: typeof PosIndexRoute
@@ -1908,6 +1928,7 @@ interface PosRouteChildren {
 
 const PosRouteChildren: PosRouteChildren = {
   PosHistoryRoute: PosHistoryRoute,
+  PosNfcInspectRoute: PosNfcInspectRoute,
   PosPairRoute: PosPairRoute,
   PosSettingsRoute: PosSettingsRoute,
   PosIndexRoute: PosIndexRoute,

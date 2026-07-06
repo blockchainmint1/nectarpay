@@ -25,11 +25,25 @@ export type TagParsed =
   | { format: "unknown" }
   | { format: "error"; error: string };
 
+export interface TagIsoDep {
+  historicalBytesHex: string;
+  hiLayerResponseHex: string;
+  maxTransceiveLength: number;
+}
+
 export interface TagEvent {
   action: string;
   uid: string | null;
+  techList?: string[];
+  isoDep?: TagIsoDep;
   records: TagRecord[];
   parsed: TagParsed;
+}
+
+export interface ApduResponse {
+  responseHex: string;
+  sw1?: string;
+  sw2?: string;
 }
 
 export interface ReceiptLine {
@@ -60,6 +74,7 @@ interface CapacitorGlobal {
     NectarNfc?: {
       startReader: () => Promise<{ started: boolean }>;
       stopReader: () => Promise<void>;
+      transceive: (o: { apduHex: string }) => Promise<ApduResponse>;
       addListener: (
         eventName: "tagScanned" | "tagError",
         cb: (data: TagEvent | { error: string }) => void,
@@ -122,5 +137,10 @@ export const NectarNfc = {
         try { await p.stopReader(); } catch { /* ignore */ }
       },
     };
+  },
+  async transceive(apduHex: string): Promise<ApduResponse> {
+    const p = cap()?.Plugins.NectarNfc;
+    if (!p) throw new Error("NFC not available on this device");
+    return await p.transceive({ apduHex });
   },
 };
