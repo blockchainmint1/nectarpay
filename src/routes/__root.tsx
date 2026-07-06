@@ -91,19 +91,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", type: "image/png", href: "/__l5e/assets-v1/9a1a15be-5b2c-4cc1-ad77-3fd244828324/nectar-hive-mark.png" },
       { rel: "apple-touch-icon", href: "/__l5e/assets-v1/9a1a15be-5b2c-4cc1-ad77-3fd244828324/nectar-hive-mark.png" },
     ],
-
-    scripts: [
-      {
-        src: "https://help.honest.money/api/public/widget.js",
-        async: true,
-        "data-brand-name": "Nectar.Pay",
-        "data-context": "Nectar.Pay",
-        "data-ecosystem": "Nectar.Pay",
-        "data-folder": "nectarpay",
-        "data-theme": "auto",
-      },
-    ],
   }),
+
 
   shellComponent: RootShell,
   component: RootComponent,
