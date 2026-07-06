@@ -152,7 +152,7 @@ function HomePage() {
             <p className="mt-4 max-w-xl text-lg leading-relaxed text-foreground/80">
               Everything a shop needs to go non-custodial in an afternoon —
               the countertop terminal, a cold-storage coin that <em className="not-italic text-primary">is</em> your
-              wallet, and a QR receipt printer that turns every sale into a paper trail your customer walks out with.
+              wallet, and a receipt printer that turns every sale into a paper trail your customer walks out with.
             </p>
 
             <ul className="mt-6 space-y-3">
