@@ -56,7 +56,9 @@ jobs:
       - name: Sync Capacitor (picks up NECTAR_TEST_URL)
         env:
           NECTAR_TEST_URL: ${{ github.event.inputs.test_url == 'true' && '1' || '' }}
-        run: bunx cap sync android
+        run: |
+          mkdir -p android/app/src/main/assets
+          bunx cap sync android
 
       - name: Decode keystore
         run: |
