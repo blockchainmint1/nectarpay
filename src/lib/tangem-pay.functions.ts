@@ -202,7 +202,7 @@ export const submitTangemPayment = createServerFn({ method: "POST" })
     // 'confirmed' once the tx has a receipt.
     await supabaseAdmin
       .from("invoices")
-      .update({ status: "processing" })
+      .update({ status: "detected" })
       .eq("id", intent.invoice_id);
 
     return {
