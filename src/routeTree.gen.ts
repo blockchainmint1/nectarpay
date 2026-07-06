@@ -20,6 +20,7 @@ import { Route as PosApkRouteImport } from './routes/pos-apk'
 import { Route as PosRouteImport } from './routes/pos'
 import { Route as ManifestoRouteImport } from './routes/manifesto'
 import { Route as InvestorsRouteImport } from './routes/investors'
+import { Route as Home2RouteImport } from './routes/home2'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CompareRouteImport } from './routes/compare'
@@ -39,6 +40,8 @@ import { Route as PayInvoiceIdRouteImport } from './routes/pay.$invoiceId'
 import { Route as IntegrationsWoocommerceRouteImport } from './routes/integrations.woocommerce'
 import { Route as IInvoiceIdRouteImport } from './routes/i.$invoiceId'
 import { Route as DocsWalletSetupRouteImport } from './routes/docs.wallet-setup'
+import { Route as DocsTapToPayTangemRouteImport } from './routes/docs.tap-to-pay-tangem'
+import { Route as DevTangemTestRouteImport } from './routes/dev.tangem-test'
 import { Route as AuthenticatedTerminalsRouteImport } from './routes/_authenticated.terminals'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated.notifications'
 import { Route as AuthenticatedExportsRouteImport } from './routes/_authenticated.exports'
@@ -72,6 +75,7 @@ import { Route as ApiPublicAuthWalletExchangeRouteImport } from './routes/api/pu
 import { Route as ApiPublicAuthWalletChallengeRouteImport } from './routes/api/public/auth/wallet-challenge'
 import { Route as ApiPublicAuthWalletCallbackRouteImport } from './routes/api/public/auth/wallet-callback'
 import { Route as AuthenticatedStoresStoreIdTerminalsRouteImport } from './routes/_authenticated.stores.$storeId.terminals'
+import { Route as AuthenticatedStoresStoreIdTangemRouteImport } from './routes/_authenticated.stores.$storeId.tangem'
 import { Route as AuthenticatedStoresStoreIdPosSettingsRouteImport } from './routes/_authenticated.stores.$storeId.pos-settings'
 import { Route as AuthenticatedStoresStoreIdListingRouteImport } from './routes/_authenticated.stores.$storeId.listing'
 import { Route as AuthenticatedStoresStoreIdKycRouteImport } from './routes/_authenticated.stores.$storeId.kyc'
@@ -152,6 +156,11 @@ const ManifestoRoute = ManifestoRouteImport.update({
 const InvestorsRoute = InvestorsRouteImport.update({
   id: '/investors',
   path: '/investors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Home2Route = Home2RouteImport.update({
+  id: '/home2',
+  path: '/home2',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsRoute = DocsRouteImport.update({
@@ -247,6 +256,16 @@ const DocsWalletSetupRoute = DocsWalletSetupRouteImport.update({
   id: '/wallet-setup',
   path: '/wallet-setup',
   getParentRoute: () => DocsRoute,
+} as any)
+const DocsTapToPayTangemRoute = DocsTapToPayTangemRouteImport.update({
+  id: '/tap-to-pay-tangem',
+  path: '/tap-to-pay-tangem',
+  getParentRoute: () => DocsRoute,
+} as any)
+const DevTangemTestRoute = DevTangemTestRouteImport.update({
+  id: '/dev/tangem-test',
+  path: '/dev/tangem-test',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedTerminalsRoute = AuthenticatedTerminalsRouteImport.update({
   id: '/terminals',
@@ -430,6 +449,12 @@ const AuthenticatedStoresStoreIdTerminalsRoute =
     path: '/terminals',
     getParentRoute: () => AuthenticatedStoresStoreIdRoute,
   } as any)
+const AuthenticatedStoresStoreIdTangemRoute =
+  AuthenticatedStoresStoreIdTangemRouteImport.update({
+    id: '/tangem',
+    path: '/tangem',
+    getParentRoute: () => AuthenticatedStoresStoreIdRoute,
+  } as any)
 const AuthenticatedStoresStoreIdPosSettingsRoute =
   AuthenticatedStoresStoreIdPosSettingsRouteImport.update({
     id: '/pos-settings',
@@ -592,6 +617,7 @@ export interface FileRoutesByFullPath {
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
+  '/home2': typeof Home2Route
   '/investors': typeof InvestorsRoute
   '/manifesto': typeof ManifestoRoute
   '/pos': typeof PosRouteWithChildren
@@ -609,6 +635,8 @@ export interface FileRoutesByFullPath {
   '/exports': typeof AuthenticatedExportsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/terminals': typeof AuthenticatedTerminalsRoute
+  '/dev/tangem-test': typeof DevTangemTestRoute
+  '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
@@ -640,6 +668,7 @@ export interface FileRoutesByFullPath {
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/stores/$storeId/listing': typeof AuthenticatedStoresStoreIdListingRoute
   '/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
+  '/stores/$storeId/tangem': typeof AuthenticatedStoresStoreIdTangemRoute
   '/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
@@ -682,6 +711,7 @@ export interface FileRoutesByTo {
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
+  '/home2': typeof Home2Route
   '/investors': typeof InvestorsRoute
   '/manifesto': typeof ManifestoRoute
   '/pos-apk': typeof PosApkRoute
@@ -697,6 +727,8 @@ export interface FileRoutesByTo {
   '/exports': typeof AuthenticatedExportsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/terminals': typeof AuthenticatedTerminalsRoute
+  '/dev/tangem-test': typeof DevTangemTestRoute
+  '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
@@ -726,6 +758,7 @@ export interface FileRoutesByTo {
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/stores/$storeId/listing': typeof AuthenticatedStoresStoreIdListingRoute
   '/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
+  '/stores/$storeId/tangem': typeof AuthenticatedStoresStoreIdTangemRoute
   '/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
@@ -770,6 +803,7 @@ export interface FileRoutesById {
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
+  '/home2': typeof Home2Route
   '/investors': typeof InvestorsRoute
   '/manifesto': typeof ManifestoRoute
   '/pos': typeof PosRouteWithChildren
@@ -787,6 +821,8 @@ export interface FileRoutesById {
   '/_authenticated/exports': typeof AuthenticatedExportsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/terminals': typeof AuthenticatedTerminalsRoute
+  '/dev/tangem-test': typeof DevTangemTestRoute
+  '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
@@ -818,6 +854,7 @@ export interface FileRoutesById {
   '/_authenticated/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/_authenticated/stores/$storeId/listing': typeof AuthenticatedStoresStoreIdListingRoute
   '/_authenticated/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
+  '/_authenticated/stores/$storeId/tangem': typeof AuthenticatedStoresStoreIdTangemRoute
   '/_authenticated/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
@@ -862,6 +899,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/contact'
     | '/docs'
+    | '/home2'
     | '/investors'
     | '/manifesto'
     | '/pos'
@@ -879,6 +917,8 @@ export interface FileRouteTypes {
     | '/exports'
     | '/notifications'
     | '/terminals'
+    | '/dev/tangem-test'
+    | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
     | '/i/$invoiceId'
     | '/integrations/woocommerce'
@@ -910,6 +950,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId/kyc'
     | '/stores/$storeId/listing'
     | '/stores/$storeId/pos-settings'
+    | '/stores/$storeId/tangem'
     | '/stores/$storeId/terminals'
     | '/api/public/auth/wallet-callback'
     | '/api/public/auth/wallet-challenge'
@@ -952,6 +993,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/contact'
     | '/docs'
+    | '/home2'
     | '/investors'
     | '/manifesto'
     | '/pos-apk'
@@ -967,6 +1009,8 @@ export interface FileRouteTypes {
     | '/exports'
     | '/notifications'
     | '/terminals'
+    | '/dev/tangem-test'
+    | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
     | '/i/$invoiceId'
     | '/integrations/woocommerce'
@@ -996,6 +1040,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId/kyc'
     | '/stores/$storeId/listing'
     | '/stores/$storeId/pos-settings'
+    | '/stores/$storeId/tangem'
     | '/stores/$storeId/terminals'
     | '/api/public/auth/wallet-callback'
     | '/api/public/auth/wallet-challenge'
@@ -1039,6 +1084,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/contact'
     | '/docs'
+    | '/home2'
     | '/investors'
     | '/manifesto'
     | '/pos'
@@ -1056,6 +1102,8 @@ export interface FileRouteTypes {
     | '/_authenticated/exports'
     | '/_authenticated/notifications'
     | '/_authenticated/terminals'
+    | '/dev/tangem-test'
+    | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
     | '/i/$invoiceId'
     | '/integrations/woocommerce'
@@ -1087,6 +1135,7 @@ export interface FileRouteTypes {
     | '/_authenticated/stores/$storeId/kyc'
     | '/_authenticated/stores/$storeId/listing'
     | '/_authenticated/stores/$storeId/pos-settings'
+    | '/_authenticated/stores/$storeId/tangem'
     | '/_authenticated/stores/$storeId/terminals'
     | '/api/public/auth/wallet-callback'
     | '/api/public/auth/wallet-challenge'
@@ -1131,6 +1180,7 @@ export interface RootRouteChildren {
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
   DocsRoute: typeof DocsRouteWithChildren
+  Home2Route: typeof Home2Route
   InvestorsRoute: typeof InvestorsRoute
   ManifestoRoute: typeof ManifestoRoute
   PosRoute: typeof PosRouteWithChildren
@@ -1142,6 +1192,7 @@ export interface RootRouteChildren {
   StartRoute: typeof StartRoute
   TermsRoute: typeof TermsRoute
   WhereRoute: typeof WhereRoute
+  DevTangemTestRoute: typeof DevTangemTestRoute
   IInvoiceIdRoute: typeof IInvoiceIdRoute
   IntegrationsWoocommerceRoute: typeof IntegrationsWoocommerceRoute
   PayInvoiceIdRoute: typeof PayInvoiceIdRoute
@@ -1247,6 +1298,13 @@ declare module '@tanstack/react-router' {
       path: '/investors'
       fullPath: '/investors'
       preLoaderRoute: typeof InvestorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/home2': {
+      id: '/home2'
+      path: '/home2'
+      fullPath: '/home2'
+      preLoaderRoute: typeof Home2RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs': {
@@ -1381,6 +1439,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/docs/wallet-setup'
       preLoaderRoute: typeof DocsWalletSetupRouteImport
       parentRoute: typeof DocsRoute
+    }
+    '/docs/tap-to-pay-tangem': {
+      id: '/docs/tap-to-pay-tangem'
+      path: '/tap-to-pay-tangem'
+      fullPath: '/docs/tap-to-pay-tangem'
+      preLoaderRoute: typeof DocsTapToPayTangemRouteImport
+      parentRoute: typeof DocsRoute
+    }
+    '/dev/tangem-test': {
+      id: '/dev/tangem-test'
+      path: '/dev/tangem-test'
+      fullPath: '/dev/tangem-test'
+      preLoaderRoute: typeof DevTangemTestRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/terminals': {
       id: '/_authenticated/terminals'
@@ -1611,6 +1683,13 @@ declare module '@tanstack/react-router' {
       path: '/terminals'
       fullPath: '/stores/$storeId/terminals'
       preLoaderRoute: typeof AuthenticatedStoresStoreIdTerminalsRouteImport
+      parentRoute: typeof AuthenticatedStoresStoreIdRoute
+    }
+    '/_authenticated/stores/$storeId/tangem': {
+      id: '/_authenticated/stores/$storeId/tangem'
+      path: '/tangem'
+      fullPath: '/stores/$storeId/tangem'
+      preLoaderRoute: typeof AuthenticatedStoresStoreIdTangemRouteImport
       parentRoute: typeof AuthenticatedStoresStoreIdRoute
     }
     '/_authenticated/stores/$storeId/pos-settings': {
@@ -1875,6 +1954,7 @@ interface AuthenticatedStoresStoreIdRouteChildren {
   AuthenticatedStoresStoreIdKycRoute: typeof AuthenticatedStoresStoreIdKycRoute
   AuthenticatedStoresStoreIdListingRoute: typeof AuthenticatedStoresStoreIdListingRoute
   AuthenticatedStoresStoreIdPosSettingsRoute: typeof AuthenticatedStoresStoreIdPosSettingsRoute
+  AuthenticatedStoresStoreIdTangemRoute: typeof AuthenticatedStoresStoreIdTangemRoute
   AuthenticatedStoresStoreIdTerminalsRoute: typeof AuthenticatedStoresStoreIdTerminalsRoute
   AuthenticatedStoresStoreIdIndexRoute: typeof AuthenticatedStoresStoreIdIndexRoute
 }
@@ -1889,6 +1969,8 @@ const AuthenticatedStoresStoreIdRouteChildren: AuthenticatedStoresStoreIdRouteCh
       AuthenticatedStoresStoreIdListingRoute,
     AuthenticatedStoresStoreIdPosSettingsRoute:
       AuthenticatedStoresStoreIdPosSettingsRoute,
+    AuthenticatedStoresStoreIdTangemRoute:
+      AuthenticatedStoresStoreIdTangemRoute,
     AuthenticatedStoresStoreIdTerminalsRoute:
       AuthenticatedStoresStoreIdTerminalsRoute,
     AuthenticatedStoresStoreIdIndexRoute: AuthenticatedStoresStoreIdIndexRoute,
@@ -1928,10 +2010,12 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 )
 
 interface DocsRouteChildren {
+  DocsTapToPayTangemRoute: typeof DocsTapToPayTangemRoute
   DocsWalletSetupRoute: typeof DocsWalletSetupRoute
 }
 
 const DocsRouteChildren: DocsRouteChildren = {
+  DocsTapToPayTangemRoute: DocsTapToPayTangemRoute,
   DocsWalletSetupRoute: DocsWalletSetupRoute,
 }
 
@@ -2009,6 +2093,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
   DocsRoute: DocsRouteWithChildren,
+  Home2Route: Home2Route,
   InvestorsRoute: InvestorsRoute,
   ManifestoRoute: ManifestoRoute,
   PosRoute: PosRouteWithChildren,
@@ -2020,6 +2105,7 @@ const rootRouteChildren: RootRouteChildren = {
   StartRoute: StartRoute,
   TermsRoute: TermsRoute,
   WhereRoute: WhereRoute,
+  DevTangemTestRoute: DevTangemTestRoute,
   IInvoiceIdRoute: IInvoiceIdRoute,
   IntegrationsWoocommerceRoute: IntegrationsWoocommerceRoute,
   PayInvoiceIdRoute: PayInvoiceIdRoute,

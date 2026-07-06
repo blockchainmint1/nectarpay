@@ -1,0 +1,18 @@
+{
+  "name": "@nectarpay/capacitor-tangem",
+  "version": "0.1.0",
+  "description": "Capacitor plugin wrapping the Tangem Android SDK for NectarPOS tap-to-pay.",
+  "main": "dist/plugin.cjs.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/esm/index.d.ts",
+  "files": [
+    "android/",
+    "dist/",
+    "src/",
+    "NectarPayTangem.podspec",
+    "README.md"
+  ],
+  "peerDependencies": {
+    "@capacitor/core": "^7.0.0"
+  }
+}

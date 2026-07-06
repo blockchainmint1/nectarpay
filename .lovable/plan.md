@@ -1,173 +1,123 @@
+# Tangem Tap-to-Pay — USDC on Ethereum
 
-# NectarPay POS — Android app scaffold + CI build
-
-Turn the existing web POS (`/pos/*` routes) into a signed APK that runs on Senraise terminals, drives the printer + NFC reader via native bridges, is built automatically by GitHub Actions, and is installed as the final step of `/start` onboarding.
+Customer walks up to a NectarPOS terminal, taps their **existing Tangem card**, and USDC on Ethereum moves from their card's address to the merchant's payout address. Card = signer. POS APK = orchestrator. Our backend = invoice/nonce authority + broadcaster.
 
 ---
 
-## What gets built
-
-### 1. Capacitor scaffold (`android/`)
-
-New folder in repo:
+## Flow (happy path)
 
 ```text
-android/
-  app/
-    build.gradle
-    src/main/
-      AndroidManifest.xml         (NFC + INTERNET perms, single-task launcher)
-      java/money/honest/nectarpos/
-        MainActivity.java         (Capacitor bridge + NFC foreground dispatch)
-        NectarPrinterPlugin.java  (binds Senraise AIDL, exposes printReceipt/cut/qr)
-        NectarNfcPlugin.java      (reads NDEF, emits event to JS)
-        NdefRouter.java           (parses tag: nectar:// URI, EIP-681, Solana Pay,
-                                   BIP-21 bitcoin:, TXC address, plain URL)
-      aidl/com/recieptservice/    (copied verbatim from your SDK)
-        PrinterInterface.aidl
-        PSAMCallback.aidl
-        PSAMData.aidl
-      assets/public/              (built web app copied here by Capacitor)
-    libs/
-      printer.jar                 (from java_2025.zip)
-      guavalib.jar                (from NFC SDK)
-  build.gradle
-  settings.gradle
-  gradle/wrapper/*
-capacitor.config.ts               (webDir points at Vite build; server.url points
-                                   at published site so terminals get live updates
-                                   without reinstalling the APK)
+Merchant enters amount ($42.00 USDC)
+        │
+        ▼
+POS calls backend → creates invoice + tap_nonce (server-side, single-use)
+        │
+        ▼
+POS shows "Tap card"  ──── customer taps Tangem card ────►  APK reads card pubkey
+        │
+        ▼
+APK asks backend: "build EIP-1559 USDC transfer tx for THIS pubkey → merchant, amount X, nonce = on-chain nonce for that address, chainId 1"
+        │
+        ▼
+Backend returns unsigned tx + EIP-712 / raw tx hash to sign
+        │
+        ▼
+APK sends SIGN_HASH APDU to Tangem card  →  card returns secp256k1 signature
+        │
+        ▼
+APK posts { signedTx } back to backend  →  backend broadcasts via Alchemy
+        │
+        ▼
+Backend watches mempool + receipt → marks invoice PAID → POS shows check
 ```
 
-Two Capacitor plugins the web app can call:
-
-```ts
-// src/lib/pos-native.ts (already-safe wrappers, no-op on desktop)
-NectarPrinter.printReceipt({ header, lines, qr, footer })
-NectarNfc.startReader()   // returns { format, raw, parsed: { address?, chain?, amount? } }
-NectarNfc.stopReader()
-```
-
-The web app detects Capacitor at runtime (`window.Capacitor?.isNativePlatform`) and swaps the "Print" button + "Tap card" flow to the native calls; browser POS keeps working unchanged.
-
-### 2. NDEF card format (what we recommend printing on the cards)
-
-Two-record NDEF, both wallets and our own cards satisfy it:
-
-- Record 1: `application/vnd.nectar.pay+json` with `{"v":1,"addr":"...","chain":"txc","label":"..."}`
-- Record 2: `bitcoin:...` / `ethereum:...` / `solana:...` / plain URL (fallback the terminal understands anyway)
-
-Router accepts, in order:
-1. Our JSON record → highest trust, use as-is.
-2. `nectar://` URI (for pre-signed pay intents when we get there).
-3. BIP-21 `bitcoin:` / EIP-681 `ethereum:` / Solana Pay `solana:` / `tron:`.
-4. Any plaintext hex/base58 that decodes as a supported chain address.
-5. Bare URL → open in in-app browser (probably the customer's hosted-wallet link).
-
-Card recommendation lives in a new doc `.lovable/CARDS.md` (specs to hand a printer: NTAG213 for cheap 144-byte tags, NTAG216 if we want ~888 bytes for signed intents, ISO 14443A, print-in-quantity vendors).
-
-### 3. GitHub Actions signed release (`.github/workflows/pos-apk.yml`)
-
-Triggers: push to `pos-app` branch, manual `workflow_dispatch`, and git tag `pos-v*`.
-
-Steps:
-
-```text
-1. Checkout
-2. Setup JDK 17, Android SDK, Bun
-3. bun install && bun run build            (builds the Vite web app)
-4. npx cap sync android
-5. Decode ${{ secrets.ANDROID_KEYSTORE_BASE64 }} → keystore.jks
-6. gradlew assembleRelease -PkeyAlias=... -PkeyPassword=... -PstorePassword=...
-7. Upload nectar-pos-<version>.apk as workflow artifact
-8. On tag: also create GitHub Release + upload APK
-9. Post APK URL back to Lovable Cloud storage bucket 'pos-releases'
-   so the /start page can serve the latest download
-```
-
-Required GitHub repo secrets (I'll write the exact instructions in the workflow file's header comment):
-- `ANDROID_KEYSTORE_BASE64` — base64 of `keystore.jks`
-- `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`, `ANDROID_STORE_PASSWORD`
-- `LOVABLE_UPLOAD_TOKEN` — service-role key so the workflow can PUT the APK into the storage bucket
-
-First-run helper: `scripts/generate-keystore.sh` runs `keytool` locally to produce the keystore + prints the base64 to paste into GitHub. One command, no Android Studio.
-
-### 4. `/start` onboarding — new final step
-
-Insert after the existing terminal-pairing step:
-
-```text
-Step N: Install POS app on your terminal
-  - Latest version badge:  v1.0.3   (fetched from pos-releases bucket)
-  - [ Download APK ]  →  direct link to signed APK
-  - [ Copy install URL ]  →  short URL like nectar-pay.com/pos-apk (302 to latest)
-  - Terminal instructions (3 lines, big text)
-  - Pairing code auto-loaded — first launch of the APK auto-pairs with this merchant
-```
-
-Wire-up:
-
-- New `pos_releases` table (version, apk_url, sha256, published_at, notes) — populated by the CI workflow.
-- New server fn `getLatestPosRelease()` — public, cached.
-- New public route `/pos-apk` → 302 to `apk_url` of the latest release.
-- Update `src/routes/start.tsx` to add the install step.
-
-### 5. Kiosk / launcher polish (deferred, documented)
-
-Not built in this pass — but `.lovable/POS-DEPLOYMENT.md` documents:
-
-- `adb shell cmd package set-home-activity money.honest.nectarpos/.MainActivity` to make the POS app the default launcher.
-- Task-lock via `startLockTask()` gated by a merchant PIN in POS Settings.
-- In-app "Check for update" that hits `getLatestPosRelease()` and downloads/installs the new APK if the terminal permits it. If Senraise blocks self-install we fall back to ADB re-push instructions.
+Total customer interaction: **one tap, ~3 seconds**. No app on their phone.
 
 ---
 
-## What you have to do (once)
+## What we build
 
-1. Run `scripts/generate-keystore.sh` on your machine → get 4 values.
-2. Paste those 4 values into GitHub repo Secrets.
-3. Push to trigger first build. Download the APK. Sideload once to confirm it runs on a Senraise unit.
-4. Tell me which card vendor you're leaning toward and I'll finalize the NDEF write template + a small "encode card" utility page in the admin panel.
+### 1. Capacitor Tangem plugin (native Android)
+- New Capacitor plugin wrapping Tangem's official Android SDK (`com.tangem:tangem-sdk-android`, Kotlin, MIT-licensed).
+- JS-side API surface for the POS:
+  - `Tangem.scan()` → returns `{ cardId, walletPublicKey, ethAddress, curve }`
+  - `Tangem.signHash({ cardId, walletPublicKey, hash })` → returns `{ signature }`
+- Sits in `android/app/src/main/java/money/honest/nectarpay/tangem/` inside the POS Capacitor project (separate repo — not this webapp). We'll produce the Kotlin + TS wrapper files here and hand them over for the APK build.
+
+### 2. Backend server functions (this repo)
+- `src/lib/tangem-pay.functions.ts`
+  - `startTangemPayment({ invoiceId, cardPublicKey, cardAddress })`
+    - Verifies invoice is OPEN, verifies address has USDC balance ≥ amount + gas headroom
+    - Fetches on-chain nonce for `cardAddress` via Alchemy
+    - Builds unsigned EIP-1559 tx: `to=USDC contract`, `data=transfer(merchantPayoutAddress, amount)`, correct gas
+    - Stores `{ invoiceId, cardAddress, unsignedTx, txHash }` in a new `tangem_pay_intents` table (single-use nonce)
+    - Returns `{ intentId, txHashToSign, unsignedTx }`
+  - `submitTangemPayment({ intentId, signature })`
+    - Loads intent, verifies signature recovers to `cardAddress` (ecrecover)
+    - Assembles signed raw tx, broadcasts via Alchemy `eth_sendRawTransaction`
+    - Marks invoice as `AWAITING_CONFIRMATION`, stores tx hash
+    - Existing watcher promotes to PAID on first confirmation
+
+### 3. Database
+New table `tangem_pay_intents`: `invoice_id`, `card_address`, `card_public_key`, `unsigned_tx_json`, `tx_hash_to_sign`, `signature`, `broadcast_tx_hash`, `status` (`pending`|`signed`|`broadcast`|`confirmed`|`failed`|`expired`), `expires_at` (60s TTL). RLS: merchant reads own via `stores.owner_id`; service_role writes.
+
+Merchant payout USDC address stored on `stores` (new column `usdc_payout_address_eth` + validation).
+
+### 4. Merchant setup UI (`/store/settings/crypto`)
+- Field: "USDC (Ethereum) payout address"
+- Toggle: "Accept USDC via Tangem tap-to-pay"
+- Explains fees (customer pays gas from their Tangem address in ETH — they need ~$2 ETH on the card)
+
+### 5. Docs page `/docs/tap-to-pay-tangem`
+- How the flow works, what customers need (Tangem card + ETH for gas), fee model.
 
 ---
 
-## Roadblocks I expect (I'll flag as we hit them)
+## Out of scope this pass
 
-- **Senraise's printer AIDL package name** — I'm using `com.recieptservice` from the AIDL you sent; if their actual service is `com.iboxpay.print` or similar we'll see `ServiceConnection` returning null on first boot and fix in ~5 min.
-- **NFC intent filter vs. foreground dispatch** — some Senraise firmwares consume NFC intents before the app sees them. Fallback is `NfcAdapter.enableReaderMode()` which we register in `MainActivity.onResume`. Both approaches wired.
-- **APK self-install** — Android requires `REQUEST_INSTALL_PACKAGES` + user tap. On locked-down terminal firmware even that may be blocked; the doc covers ADB fallback.
-- **Capacitor `server.url` pointing at the live web app means updates ship instantly** — but the terminal needs internet. If you want fully-offline POS, we swap to bundled webDir and rely on APK updates for every change. Recommend live-URL mode for v1.
-
----
-
-## Files to be created/modified
-
-New:
-- `android/**` (full Capacitor project, ~40 files)
-- `capacitor.config.ts`
-- `.github/workflows/pos-apk.yml`
-- `scripts/generate-keystore.sh`
-- `src/lib/pos-native.ts`
-- `src/lib/pos-releases.functions.ts`
-- `src/routes/pos-apk.ts` (302 redirect)
-- `supabase/migrations/*_pos_releases.sql`
-- `.lovable/CARDS.md`
-- `.lovable/POS-DEPLOYMENT.md`
-
-Modified:
-- `src/routes/pos.index.tsx` (call native printer / NFC when available)
-- `src/routes/start.tsx` (new install step)
-- `package.json` (add `@capacitor/core`, `@capacitor/android`, `@capacitor/cli`)
+- Layer-2 USDC (Base, Arbitrum) — trivial follow-up once L1 works; same code path, different chainId + contract
+- Tangem's multi-card backup / access code flow — v1 assumes cards without access codes; we'll show a clear error and add PIN entry in v2
+- Refunds via Tangem (merchant side) — separate flow
+- iOS support — Tangem SDK supports it, but our POS is Android-only today
 
 ---
 
-## Order of operations
+## Technical detail (nerd section)
 
-1. Capacitor scaffold + copy SDK jars + AIDL.
-2. Native plugins (printer + NFC reader).
-3. Web-side wrappers + swap POS UI to use them when native.
-4. GitHub Actions workflow + keystore script.
-5. Releases table + `/pos-apk` redirect + `/start` install step.
-6. Docs (CARDS.md, POS-DEPLOYMENT.md).
+**Tangem APDU we care about**: `SIGN_HASH` (INS `0xA2`). Input: cardId + walletPublicKey + 32-byte hash. Output: 64-byte secp256k1 signature (r||s, no v). We recover `v` on the backend by trying both and matching `cardAddress`.
 
-Approve and I'll rip through all six in one pass.
+**Why hash-signing, not raw-tx-signing**: Tangem cards sign arbitrary 32-byte digests; they don't parse Ethereum txs. So backend builds tx → computes `keccak256(rlp(unsigned))` → card signs the digest → backend assembles `{r, s, v}` into the signed RLP envelope. This is the same pattern Tangem's own wallet app uses.
+
+**Nonce/replay protection**: intent has 60s TTL and single-use `signature IS NULL` check; on-chain nonce prevents double-broadcast even if the intent leaks.
+
+**Gas**: EIP-1559 `maxFeePerGas` = 2× current base fee, `maxPriorityFeePerGas` = 1.5 gwei, gasLimit = 65000 (USDC transfer). Backend simulates via `eth_estimateGas` first and aborts if the card's ETH balance can't cover it — POS shows "Not enough ETH for gas".
+
+**USDC contract**: `0xA0b86991c6218b3c1b6c1c1c1c1c1c1c1c1c1c1c` (mainnet). Store in `chain_configs` for env parity.
+
+**Secrets needed**: `ALCHEMY_ETH_MAINNET_URL` (probably already set — I'll check `fetch_secrets` before asking).
+
+**Files to create/edit in this repo**:
+- migration: `tangem_pay_intents` table + `stores.usdc_payout_address_eth` column
+- `src/lib/tangem-pay.functions.ts` (server fns)
+- `src/lib/tangem-pay.server.ts` (Alchemy client, tx builder, signature recovery — uses `viem`)
+- `src/routes/_authenticated/store.settings.crypto.tsx` (merchant UI)
+- `src/routes/docs.tap-to-pay-tangem.tsx` (public docs)
+- `bun add viem` (tx building + ecrecover)
+
+**Files delivered for the separate POS APK repo** (not built here, but I'll write them):
+- `TangemPlugin.kt` (Capacitor plugin, ~80 lines wrapping Tangem SDK)
+- `tangem.ts` (TS wrapper + types)
+- README snippet for wiring into the APK's `build.gradle` + `AndroidManifest.xml`
+
+---
+
+## Order of build
+
+1. Migration (`tangem_pay_intents` + `stores.usdc_payout_address_eth`)
+2. `bun add viem`, server functions, signature recovery + broadcast
+3. Merchant crypto settings page
+4. Docs route
+5. Capacitor plugin files (delivered as a folder in this repo under `pos-plugin-tangem/` for you to drop into the APK repo)
+6. Wire an end-to-end test path — I'll add a `/dev/tangem-test` route that fakes a card scan so we can validate the backend without hardware
+
+I'll flag Alchemy secret status before starting step 2.
