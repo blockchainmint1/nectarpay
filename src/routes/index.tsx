@@ -169,7 +169,7 @@ function HomePage() {
               <KitItem
                 icon={<Zap className="h-4 w-4" />}
                 title="Ready to provision & pair"
-                body="Arrives ready to link to your Nectar-Pay account. No mess config required — scan, link, take your first payment."
+                body="Arrives ready to link to your Nectar-Pay account. No messy config required — scan, link, take your first payment."
               />
             </ul>
 
