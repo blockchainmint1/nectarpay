@@ -47,6 +47,16 @@ repositories {
     flatDir { dirs 'libs' }
 }
 
+configurations.all {
+    // The Senraise printer SDK (libs/guavalib.jar, libs/printer.jar) already
+    // bundles Guava's ListenableFuture and a full Kotlin stdlib. Exclude the
+    // transitive copies pulled in by AGP/Capacitor to avoid duplicate-class
+    // failures during dexing.
+    exclude group: 'com.google.guava', module: 'listenablefuture'
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+}
+
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
