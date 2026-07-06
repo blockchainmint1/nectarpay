@@ -10,7 +10,9 @@ import { loadSettings, sha256, type PosSettings } from "@/lib/pos-settings";
 import { EVM_CHAIN_LABEL, evmChainsForStable } from "@/lib/chains/networks";
 import { qrToDataURL } from "@/lib/qr";
 import { buildPaymentUri } from "@/lib/payment-uri";
-import { NectarPrinter, type ReceiptPayload, type ReceiptLine } from "@/lib/pos-native";
+import { NectarPrinter, Tangem, type ReceiptPayload, type ReceiptLine } from "@/lib/pos-native";
+import { useServerFn } from "@tanstack/react-start";
+import { startTangemPayment, submitTangemPayment } from "@/lib/tangem-pay.functions";
 
 function joinNets(names: string[]): string {
   if (names.length <= 1) return names.join("");
@@ -766,9 +768,73 @@ function WaitingScreen({
         </p>
       )}
 
+      {hasWallet && invoice.chain === "eth" && (invoice.token_symbol ?? "").toUpperCase() === "USDC" && (
+        <TangemTapButton invoiceId={invoice.id} />
+      )}
+
       <button onClick={onCancel} className="mt-3 h-11 rounded-lg border border-white/15 px-8 text-xs font-bold tracking-widest text-white/70 hover:bg-white/5">
         CANCEL
       </button>
+    </div>
+  );
+}
+
+// Tap-to-pay via a Tangem card. Only rendered for USDC-on-ETH invoices so the
+// card's ETH balance funds the ERC-20 Transfer. The existing invoice poller in
+// Sale() flips to `detected` → `confirmed` once the tx lands on-chain.
+function TangemTapButton({ invoiceId }: { invoiceId: string }) {
+  const start = useServerFn(startTangemPayment);
+  const submit = useServerFn(submitTangemPayment);
+  const [phase, setPhase] = useState<"idle" | "scanning" | "starting" | "signing" | "submitting" | "sent">("idle");
+  const [err, setErr] = useState<string | null>(null);
+
+  if (!Tangem.isAvailable()) return null;
+
+  const run = async () => {
+    setErr(null);
+    setPhase("scanning");
+    try {
+      const card = await Tangem.scan();
+      setPhase("starting");
+      const intent = await start({
+        data: { invoiceId, cardPublicKey: card.publicKey, cardId: card.cardId },
+      });
+      setPhase("signing");
+      const sig = await Tangem.signHash({
+        cardId: card.cardId,
+        publicKey: card.publicKey,
+        hash: intent.hashToSign,
+      });
+      setPhase("submitting");
+      await submit({ data: { intentId: intent.intentId, signatureHex: sig.signature } });
+      setPhase("sent");
+    } catch (e) {
+      setErr((e as Error).message || "Tap failed");
+      setPhase("idle");
+    }
+  };
+
+  const label =
+    phase === "scanning" ? "TAP CARD TO PHONE…" :
+    phase === "starting" ? "PREPARING TX…" :
+    phase === "signing" ? "TAP CARD AGAIN TO SIGN…" :
+    phase === "submitting" ? "BROADCASTING…" :
+    phase === "sent" ? "✓ SENT — WAITING FOR CONFIRMATION" :
+    "TAP USDC CARD TO PAY";
+
+  const busy = phase !== "idle" && phase !== "sent";
+
+  return (
+    <div className="mt-3 w-full max-w-sm">
+      <button
+        type="button"
+        onClick={() => { void run(); }}
+        disabled={busy || phase === "sent"}
+        className="h-12 w-full rounded-lg bg-amber-400 px-4 text-xs font-bold tracking-widest text-black shadow-[0_0_18px_rgba(251,191,36,0.35)] hover:bg-amber-300 disabled:opacity-70"
+      >
+        {label}
+      </button>
+      {err && <p className="mt-2 text-center text-[11px] text-red-400">{err}</p>}
     </div>
   );
 }
