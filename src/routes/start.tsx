@@ -1048,11 +1048,13 @@ function Done({ storeId, onDashboard }: { storeId: string; onDashboard: () => vo
               <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-primary" />
             </div>
           </button>
+          <InstallPosCard />
           <NextCard
             title="Take a test payment"
             desc="Open the POS on any phone or tablet. No app needed."
             to="/pos"
           />
+
           <NextCard
             title="Pair another terminal"
             desc="Generate a 6-char code for a CryptoPOP or extra device."
