@@ -199,6 +199,7 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
   const [finalTipCents, setFinalTipCents] = useState(0);
   const [experience, setExperience] = useState<Experience>(DEFAULT_EXPERIENCE);
   const [storeName, setStoreName] = useState<string | null>(null);
+  const [receiptCfg, setReceiptCfg] = useState<ReceiptConfig>(DEFAULT_RECEIPT);
 
   const taxCents = Math.round((subtotalCents * settings.taxBps) / 10_000);
   const tipCents = customTipCents !== null ? customTipCents : Math.round((subtotalCents * tipBps) / 10_000);
@@ -211,13 +212,14 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
     let cancelled = false;
     (async () => {
       try {
-        const res = await signedJson<{ options: PaymentOption[]; experience?: Experience; store_name?: string | null }>(
+        const res = await signedJson<{ options: PaymentOption[]; experience?: Experience; store_name?: string | null; receipt?: Partial<ReceiptConfig> }>(
           creds, "/api/public/v1/terminals/options",
         );
         if (cancelled) return;
         setOptions(res.options ?? []);
         if (res.store_name) setStoreName(res.store_name);
         if (res.experience) setExperience({ ...DEFAULT_EXPERIENCE, ...res.experience });
+        if (res.receipt) setReceiptCfg({ ...DEFAULT_RECEIPT, ...res.receipt });
       } catch (e) {
         if (!cancelled) setOptionsErr((e as Error).message);
       }
