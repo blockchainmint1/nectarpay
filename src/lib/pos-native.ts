@@ -61,6 +61,17 @@ export interface ReceiptPayload {
   footer?: string;
 }
 
+export interface TangemScanResult {
+  cardId: string;
+  publicKey: string;
+  ethAddress: string;
+  curve: "secp256k1";
+}
+
+export interface TangemSignResult {
+  signature: string;
+}
+
 interface CapacitorGlobal {
   isNativePlatform: () => boolean;
   Plugins: {
@@ -79,6 +90,10 @@ interface CapacitorGlobal {
         eventName: "tagScanned" | "tagError",
         cb: (data: TagEvent | { error: string }) => void,
       ) => Promise<{ remove: () => Promise<void> }>;
+    };
+    Tangem?: {
+      scan: () => Promise<TangemScanResult>;
+      signHash: (o: { cardId: string; publicKey: string; hash: string }) => Promise<TangemSignResult>;
     };
   };
 }
@@ -142,5 +157,21 @@ export const NectarNfc = {
     const p = cap()?.Plugins.NectarNfc;
     if (!p) throw new Error("NFC not available on this device");
     return await p.transceive({ apduHex });
+  },
+};
+
+export const Tangem = {
+  isAvailable(): boolean {
+    return !!cap()?.Plugins.Tangem;
+  },
+  async scan(): Promise<TangemScanResult> {
+    const p = cap()?.Plugins.Tangem;
+    if (!p) throw new Error("Tangem NFC is only available in the NectarPOS Android app");
+    return await p.scan();
+  },
+  async signHash(input: { cardId: string; publicKey: string; hash: string }): Promise<TangemSignResult> {
+    const p = cap()?.Plugins.Tangem;
+    if (!p) throw new Error("Tangem NFC is only available in the NectarPOS Android app");
+    return await p.signHash(input);
   },
 };

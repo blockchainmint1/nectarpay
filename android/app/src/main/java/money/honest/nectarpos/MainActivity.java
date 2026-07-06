@@ -37,6 +37,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(NectarPrinterPlugin.class);
         registerPlugin(NectarNfcPlugin.class);
+        registerPlugin(TangemPaymentPlugin.class);
         super.onCreate(savedInstanceState);
 
         installCameraPermissionBridge();
