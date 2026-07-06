@@ -45,6 +45,8 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
 
         installDebugWebViewClient();
+        installCameraPermissionBridge();
+        ensureCameraPermission();
         DebugOverlay.show(this,
             "Boot: loading " + getBridge().getServerUrl()
                 + "\nAndroid " + Build.VERSION.RELEASE
