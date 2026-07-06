@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { KeyRound, Webhook, ShieldCheck, Zap, Code2, Hexagon } from "lucide-react";
+import { KeyRound, Webhook, ShieldCheck, Zap, Code2, Hexagon, Printer, Snowflake, ArrowRight } from "lucide-react";
+import posTerminal from "@/assets/nectar-pos-terminal.jpg.asset.json";
 
 import { MarketingNav, MarketingFooter, NectarMark } from "@/components/marketing-shell";
 import { Button } from "@/components/ui/button";
