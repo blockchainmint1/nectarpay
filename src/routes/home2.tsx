@@ -12,7 +12,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowRight, Zap, Shield, Wallet, Infinity as InfinityIcon, Check, X, Sparkles } from "lucide-react";
-import buzzyMascot from "@/assets/buzzy-mascot.png";
+import buzzyAsset from "@/assets/buzzy-mascot.asset.json";
 
 export const Route = createFileRoute("/home2")({
   head: () => ({
@@ -241,7 +241,7 @@ function Home2() {
                 style={{ background: "radial-gradient(circle, rgba(246,162,30,0.35), transparent 65%)" }}
               />
               <img
-                src={buzzyMascot}
+                src={buzzyAsset.url}
                 alt="Buzzy, the NectarPay mascot bee, waving and holding a honey-gold coin"
                 width={1024}
                 height={1024}
