@@ -25,11 +25,25 @@ export type TagParsed =
   | { format: "unknown" }
   | { format: "error"; error: string };
 
+export interface TagIsoDep {
+  historicalBytesHex: string;
+  hiLayerResponseHex: string;
+  maxTransceiveLength: number;
+}
+
 export interface TagEvent {
   action: string;
   uid: string | null;
+  techList?: string[];
+  isoDep?: TagIsoDep;
   records: TagRecord[];
   parsed: TagParsed;
+}
+
+export interface ApduResponse {
+  responseHex: string;
+  sw1?: string;
+  sw2?: string;
 }
 
 export interface ReceiptLine {
