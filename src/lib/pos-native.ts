@@ -61,6 +61,17 @@ export interface ReceiptPayload {
   footer?: string;
 }
 
+export interface TangemScanResult {
+  cardId: string;
+  publicKey: string;
+  ethAddress: string;
+  curve: "secp256k1";
+}
+
+export interface TangemSignResult {
+  signature: string;
+}
+
 interface CapacitorGlobal {
   isNativePlatform: () => boolean;
   Plugins: {
@@ -79,6 +90,10 @@ interface CapacitorGlobal {
         eventName: "tagScanned" | "tagError",
         cb: (data: TagEvent | { error: string }) => void,
       ) => Promise<{ remove: () => Promise<void> }>;
+    };
+    Tangem?: {
+      scan: () => Promise<TangemScanResult>;
+      signHash: (o: { cardId: string; publicKey: string; hash: string }) => Promise<TangemSignResult>;
     };
   };
 }
