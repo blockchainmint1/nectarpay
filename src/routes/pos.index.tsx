@@ -10,7 +10,9 @@ import { loadSettings, sha256, type PosSettings } from "@/lib/pos-settings";
 import { EVM_CHAIN_LABEL, evmChainsForStable } from "@/lib/chains/networks";
 import { qrToDataURL } from "@/lib/qr";
 import { buildPaymentUri } from "@/lib/payment-uri";
-import { NectarPrinter, type ReceiptPayload, type ReceiptLine } from "@/lib/pos-native";
+import { NectarPrinter, Tangem, type ReceiptPayload, type ReceiptLine } from "@/lib/pos-native";
+import { useServerFn } from "@tanstack/react-start";
+import { startTangemPayment, submitTangemPayment } from "@/lib/tangem-pay.functions";
 
 function joinNets(names: string[]): string {
   if (names.length <= 1) return names.join("");
