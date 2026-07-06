@@ -101,9 +101,10 @@ export const startTangemPayment = createServerFn({ method: "POST" })
         chain_id: 1,
         usdc_contract: USDC_MAINNET,
         merchant_payout_address: merchantAddress,
-        amount_usdc_units: amountUnits.toString(),
+        // numeric(78,0) — store as string to preserve full precision
+        amount_usdc_units: amountUnits.toString() as unknown as number,
         onchain_nonce: built.onchainNonce,
-        unsigned_tx_json: txToJson(built.unsigned),
+        unsigned_tx_json: txToJson(built.unsigned) as unknown as never,
         tx_hash_to_sign: built.digest,
         status: "pending",
       })
