@@ -168,8 +168,8 @@ function HomePage() {
               />
               <KitItem
                 icon={<Zap className="h-4 w-4" />}
-                title="Pre-provisioned & pre-paired"
-                body="Arrives linked to your Nectar-Pay account. Paste nothing, configure nothing — plug in, take your first payment."
+                title="Ready to provision & pair"
+                body="Arrives ready to link to your Nectar-Pay account. No mess config required — scan, link, take your first payment."
               />
             </ul>
 
@@ -179,7 +179,7 @@ function HomePage() {
                   $495
                 </div>
                 <div className="mt-1 text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                  One-time · No monthly · No per-tx fees, ever
+                  ONE-TIME · NO PER-TX FEES, EVER
                 </div>
               </div>
               <Button
