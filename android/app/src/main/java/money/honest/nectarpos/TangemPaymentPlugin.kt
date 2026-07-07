@@ -66,7 +66,7 @@ class TangemPaymentPlugin : Plugin() {
                 }
             }
         } catch (t: Throwable) {
-            call.reject("SCAN_EXCEPTION", t.message ?: t.javaClass.simpleName, t)
+            call.reject("SCAN_EXCEPTION", t.message ?: t.javaClass.simpleName, t as? Exception ?: Exception(t))
         }
     }
 
@@ -100,7 +100,7 @@ class TangemPaymentPlugin : Plugin() {
                 }
             }
         } catch (t: Throwable) {
-            call.reject("SIGN_EXCEPTION", t.message ?: t.javaClass.simpleName, t)
+            call.reject("SIGN_EXCEPTION", t.message ?: t.javaClass.simpleName, t as? Exception ?: Exception(t))
         }
     }
 
