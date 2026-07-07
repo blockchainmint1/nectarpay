@@ -28,14 +28,29 @@ class TangemPaymentPlugin : Plugin() {
 
     private var sdk: TangemSdk? = null
 
+    /**
+     * Capacitor calls load() during BridgeActivity.onCreate, BEFORE the
+     * activity reaches STARTED. That is the only safe window in which
+     * TangemSdk.init() can call registerForActivityResult() — attempting
+     * it later (e.g. lazily on first scan) throws IllegalStateException
+     * ("LifecycleOwners must call register before they are STARTED"),
+     * which surfaces in the webview as SCAN_EXCEPTION.
+     */
+    override fun load() {
+        try {
+            val act = activity as? ComponentActivity
+                ?: throw IllegalStateException("Tangem plugin requires a ComponentActivity host")
+            sdk = TangemSdk.init(act, Config())
+        } catch (t: Throwable) {
+            android.util.Log.e("TangemPaymentPlugin", "SDK init failed", t)
+        }
+    }
+
     private fun getSdk(): TangemSdk {
-        val existing = sdk
-        if (existing != null) return existing
-        val act = activity as? ComponentActivity
-            ?: throw IllegalStateException("Tangem plugin requires a ComponentActivity host")
-        val created = TangemSdk.init(act, Config())
-        sdk = created
-        return created
+        return sdk ?: throw IllegalStateException(
+            "Tangem SDK failed to initialize during activity onCreate. " +
+            "Restart the app; if this persists, the host activity may not be a ComponentActivity."
+        )
     }
 
     @PluginMethod
