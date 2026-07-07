@@ -25,6 +25,30 @@ function SettingsPage() {
   const [newPin, setNewPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
   const [saved, setSaved] = useState(false);
+  const [update, setUpdate] = useState<UpdateStatus | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+
+  // Auto-check once on mount so the button shows "Update available" without
+  // requiring a manual tap first.
+  useEffect(() => {
+    let cancelled = false;
+    checkForUpdate().then((s) => { if (!cancelled) setUpdate(s); });
+    return () => { cancelled = true; };
+  }, []);
+
+  const runCheck = async () => {
+    setChecking(true);
+    try { setUpdate(await checkForUpdate()); }
+    finally { setChecking(false); }
+  };
+
+  const runDownload = async () => {
+    if (!update?.downloadUrl) return;
+    setDownloading(true);
+    try { await downloadUpdate(update.downloadUrl); }
+    finally { setDownloading(false); }
+  };
 
   const submit = async () => {
     const next = { ...draft };
