@@ -41,7 +41,15 @@ class TangemPaymentPlugin : Plugin() {
         try {
             val act = activity as? ComponentActivity
                 ?: throw IllegalStateException("Tangem plugin requires a ComponentActivity host")
-            sdk = TangemSdk.init(act, Config())
+            // attestationMode = Offline: the default (Normal) makes the SDK
+            // call Tangem's backend after the second tap to verify the card
+            // against their online registry. On terminals with flaky egress
+            // that request hangs and the session spins forever on the second
+            // "Ready to scan" screen. Offline mode still verifies the card's
+            // internal attestation signature — enough for our payment flow,
+            // which re-verifies the signed hash server-side anyway.
+            val cfg = Config().apply { attestationMode = AttestationTask.Mode.Offline }
+            sdk = TangemSdk.init(act, cfg)
         } catch (t: Throwable) {
             android.util.Log.e("TangemPaymentPlugin", "SDK init failed", t)
         }
