@@ -788,27 +788,36 @@ function TangemTapButton({ invoiceId }: { invoiceId: string }) {
   const [phase, setPhase] = useState<"idle" | "scanning" | "starting" | "signing" | "submitting" | "sent">("idle");
   const [err, setErr] = useState<string | null>(null);
 
-  if (!Tangem.isAvailable()) return null;
+  if (!Tangem.isAvailable()) {
+    console.warn("[tangem] plugin not available on this device — button hidden");
+    return null;
+  }
 
   const run = async () => {
     setErr(null);
     setPhase("scanning");
+    console.info("[tangem] scan start · invoice", invoiceId);
     try {
       const card = await Tangem.scan();
+      console.info("[tangem] scan OK", { cardId: card.cardId, ethAddress: card.ethAddress });
       setPhase("starting");
       const intent = await start({
         data: { invoiceId, cardPublicKey: card.publicKey, cardId: card.cardId },
       });
+      console.info("[tangem] intent ready", { intentId: intent.intentId, hashLen: intent.hashToSign?.length });
       setPhase("signing");
       const sig = await Tangem.signHash({
         cardId: card.cardId,
         publicKey: card.publicKey,
         hash: intent.hashToSign,
       });
+      console.info("[tangem] sign OK", { sigLen: sig.signature?.length });
       setPhase("submitting");
-      await submit({ data: { intentId: intent.intentId, signatureHex: sig.signature } });
+      const res = await submit({ data: { intentId: intent.intentId, signatureHex: sig.signature } });
+      console.info("[tangem] submitted", res);
       setPhase("sent");
     } catch (e) {
+      console.error("[tangem] flow failed:", e);
       setErr((e as Error).message || "Tap failed");
       setPhase("idle");
     }
