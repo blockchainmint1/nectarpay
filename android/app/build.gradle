@@ -65,15 +65,20 @@ dependencies {
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
     implementation project(':capacitor-android')
 
-    // Kotlin — required by the Tangem SDK
+    // Kotlin stdlib — required because TangemPaymentPlugin.kt is Kotlin.
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
-    // Tangem card SDK (NFC APDU + secure-element signing) — GitHub Packages
-    // coordinates. The `android` artifact transitively pulls `core`.
-    implementation "com.tangem.tangem-sdk-kotlin:android:releases-5.35-596"
+    // Tangem Android SDK — built + published to Maven Local by the CI workflow.
+    // Version is passed in via TANGEM_ARTIFACT_VERSION env var; falls back to
+    // a sensible default so local IDE syncs don't hard-fail.
+    def tangemVersion = System.getenv("TANGEM_ARTIFACT_VERSION") ?: "3.9.2-nectar"
+    implementation "com.tangem.tangem-sdk-kotlin:android:${tangemVersion}"
+    implementation "com.tangem.tangem-sdk-kotlin:core:${tangemVersion}"
 
-    // web3j for ETH address derivation from a secp256k1 public key.
-    implementation "org.web3j:core:4.10.3"
+    // BouncyCastle for Keccak-256 (Ethereum address derivation from secp256k1 pubkey).
+    implementation "org.bouncycastle:bcprov-jdk15on:1.70"
+
+
 
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
