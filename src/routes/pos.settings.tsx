@@ -2,6 +2,7 @@
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { loadSettings, saveSettings, sha256, type PosSettings } from "@/lib/pos-settings";
 import { clearCreds } from "@/lib/pos-client";
 import { checkForUpdate, downloadUpdate, type UpdateStatus } from "@/lib/pos-updater";
@@ -39,8 +40,19 @@ function SettingsPage() {
 
   const runCheck = async () => {
     setChecking(true);
-    try { setUpdate(await checkForUpdate()); }
-    finally { setChecking(false); }
+    try {
+      const s = await checkForUpdate();
+      setUpdate(s);
+      if (s.error) {
+        toast.error(`Update check failed: ${s.error}`);
+      } else if (!s.supported) {
+        toast.info("Update checks only run inside the installed app.");
+      } else if (s.updateAvailable) {
+        toast.success(`Update available: v${s.latestVersion} (installed v${s.currentVersion ?? "?"})`);
+      } else {
+        toast.success(`Up to date — v${s.currentVersion ?? s.latestVersion ?? "?"} is the latest.`);
+      }
+    } finally { setChecking(false); }
   };
 
   const runDownload = async () => {
@@ -212,13 +224,13 @@ function SettingsPage() {
             </button>
             <button
               onClick={runDownload}
-              disabled={!update?.downloadUrl || downloading || (update?.supported && !update?.updateAvailable)}
+              disabled={!update?.downloadUrl || downloading}
               className="h-11 rounded-lg bg-amber-500 text-xs font-bold tracking-widest text-black hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/40"
             >
               {downloading
                 ? "OPENING…"
                 : update?.supported
-                  ? update?.updateAvailable ? `UPDATE TO ${update.latestVersion}` : "UP TO DATE"
+                  ? update?.updateAvailable ? `UPDATE TO ${update.latestVersion}` : `REINSTALL v${update?.latestVersion ?? ""}`
                   : "DOWNLOAD APK"}
             </button>
           </div>
