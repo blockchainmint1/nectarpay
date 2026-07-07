@@ -190,6 +190,35 @@ function SettingsPage() {
             >
               PRINTER TEST →
             </button>
+            <button
+              onClick={async () => {
+                console.info("[tangem-diag] isNative:", isNative(), "isAvailable:", Tangem.isAvailable());
+                if (!Tangem.isAvailable()) {
+                  toast.error("Tangem plugin NOT registered on this build.");
+                  openPosDebugLog();
+                  return;
+                }
+                try {
+                  toast.info("Tap Tangem card to phone…");
+                  const card = await Tangem.scan();
+                  console.info("[tangem-diag] scan OK:", card);
+                  toast.success(`Card OK · ${card.ethAddress.slice(0, 10)}…`);
+                } catch (e) {
+                  console.error("[tangem-diag] scan failed:", e);
+                  toast.error(`Scan failed: ${(e as Error).message}`);
+                  openPosDebugLog();
+                }
+              }}
+              className="h-11 w-full rounded-lg border border-white/15 bg-white/5 text-xs font-bold tracking-widest text-white/80 hover:bg-white/10"
+            >
+              TANGEM SCAN TEST →
+            </button>
+            <button
+              onClick={() => openPosDebugLog()}
+              className="h-11 w-full rounded-lg border border-amber-400/40 bg-amber-400/10 text-xs font-bold tracking-widest text-amber-300 hover:bg-amber-400/20"
+            >
+              SHOW DEBUG LOG →
+            </button>
           </div>
         </div>
 
