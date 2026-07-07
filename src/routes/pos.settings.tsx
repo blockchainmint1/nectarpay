@@ -40,8 +40,19 @@ function SettingsPage() {
 
   const runCheck = async () => {
     setChecking(true);
-    try { setUpdate(await checkForUpdate()); }
-    finally { setChecking(false); }
+    try {
+      const s = await checkForUpdate();
+      setUpdate(s);
+      if (s.error) {
+        toast.error(`Update check failed: ${s.error}`);
+      } else if (!s.supported) {
+        toast.info("Update checks only run inside the installed app.");
+      } else if (s.updateAvailable) {
+        toast.success(`Update available: v${s.latestVersion} (installed v${s.currentVersion ?? "?"})`);
+      } else {
+        toast.success(`Up to date — v${s.currentVersion ?? s.latestVersion ?? "?"} is the latest.`);
+      }
+    } finally { setChecking(false); }
   };
 
   const runDownload = async () => {
