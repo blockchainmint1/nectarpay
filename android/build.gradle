@@ -1,5 +1,7 @@
 buildscript {
-    ext.kotlin_version = '2.0.21'
+    // Kotlin 2.1.10 matches the Tangem SDK's own build, so the .kotlin_metadata
+    // in the AAR is readable by our compiler without version-skew warnings.
+    ext.kotlin_version = '2.1.10'
     repositories {
         google()
         mavenCentral()
@@ -14,6 +16,8 @@ apply from: "variables.gradle"
 
 allprojects {
     repositories {
+        // Tangem SDK is built + published locally in CI (see .github/workflows/pos-apk.yml).
+        mavenLocal()
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
@@ -24,4 +28,3 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
-

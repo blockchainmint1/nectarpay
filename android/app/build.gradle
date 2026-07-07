@@ -68,8 +68,16 @@ dependencies {
     // Kotlin stdlib — required because TangemPaymentPlugin.kt is Kotlin.
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
-    // NOTE: Tangem SDK + web3j intentionally not included yet. The native
-    // plugin is a stub; see TangemPaymentPlugin.kt.
+    // Tangem Android SDK — built + published to Maven Local by the CI workflow.
+    // Version is passed in via TANGEM_ARTIFACT_VERSION env var; falls back to
+    // a sensible default so local IDE syncs don't hard-fail.
+    def tangemVersion = System.getenv("TANGEM_ARTIFACT_VERSION") ?: "3.9.2-nectar"
+    implementation "com.tangem.tangem-sdk-kotlin:android:${tangemVersion}"
+    implementation "com.tangem.tangem-sdk-kotlin:core:${tangemVersion}"
+
+    // BouncyCastle for Keccak-256 (Ethereum address derivation from secp256k1 pubkey).
+    implementation "org.bouncycastle:bcprov-jdk15on:1.70"
+
 
 
     testImplementation "junit:junit:$junitVersion"

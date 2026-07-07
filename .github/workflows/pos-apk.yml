@@ -88,6 +88,25 @@ jobs:
           sudo mv gradle-8.11.1 /opt/gradle
           sudo ln -sf /opt/gradle/bin/gradle /usr/local/bin/gradle
 
+      # The Tangem Android SDK is published only to GitHub Packages (auth-gated)
+      # and JitPack lists builds as "ok" but never uploads artifacts. So we
+      # clone the SDK repo and publish it into ~/.m2 ourselves. The main app
+      # then consumes it via mavenLocal(). One-off cost per CI run: ~60-90s.
+      - name: Build & publish Tangem SDK to Maven Local
+        env:
+          TANGEM_REF: master
+          TANGEM_ARTIFACT_VERSION: 3.9.2-nectar
+        run: |
+          set -e
+          git clone --depth 1 --branch "$TANGEM_REF" https://github.com/tangem/tangem-sdk-android.git "$RUNNER_TEMP/tangem-sdk"
+          cd "$RUNNER_TEMP/tangem-sdk"
+          # Publish core first (android module depends on it).
+          ./gradlew --no-daemon -PartifactVersion="$TANGEM_ARTIFACT_VERSION" \
+            :tangem-sdk-core:publishToMavenLocal :tangem-sdk-android:publishToMavenLocal \
+            -x lint -x test
+          ls -la ~/.m2/repository/com/tangem/tangem-sdk-kotlin/ || true
+          echo "TANGEM_ARTIFACT_VERSION=$TANGEM_ARTIFACT_VERSION" >> $GITHUB_ENV
+
       - name: Build APK
         working-directory: android
         env:
@@ -96,10 +115,7 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           VERSION_NAME: ${{ steps.ver.outputs.version }}
           VERSION_CODE: ${{ steps.ver.outputs.version_code }}
-          # Tangem SDK lives on GitHub Packages — needs an auth token
-          # (any valid GitHub token can read public packages).
-          GPR_USER: ${{ github.actor }}
-          GPR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TANGEM_ARTIFACT_VERSION: ${{ env.TANGEM_ARTIFACT_VERSION }}
         run: |
           chmod +x gradlew || true
           if [ ! -f gradlew ]; then
@@ -108,6 +124,7 @@ jobs:
             chmod +x gradlew
           fi
           ./gradlew assembleRelease --no-daemon --stacktrace
+
 
       - name: Rename APK
         run: |
