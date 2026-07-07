@@ -86,12 +86,12 @@ export function PosDebugLog() {
 
   return (
     <>
-      {/* Invisible corner tap-target: top-left 48x48 */}
+      {/* Corner tap-target: bottom-right, faint dot. Tap 3× within 2s. */}
       <button
         onClick={onCorner}
         aria-label="Debug log"
-        className="fixed left-0 top-0 z-[9998] size-12 opacity-0"
-      />
+        className="fixed bottom-1 right-1 z-[9998] size-8 rounded-full bg-white/5 text-[10px] text-white/30 hover:bg-white/10"
+      >···</button>
       {open && (
         <div className="fixed inset-0 z-[9999] flex flex-col bg-black text-white">
           <div className="flex items-center justify-between border-b border-white/10 px-3 py-2">
