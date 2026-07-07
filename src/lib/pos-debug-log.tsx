@@ -49,12 +49,25 @@ function install() {
   push("info", [`debug log installed @ ${new Date().toISOString()} · ${navigator.userAgent}`]);
 }
 
+export function openPosDebugLog() {
+  if (typeof window !== "undefined") {
+    (window as unknown as { __posDebugOpen?: () => void }).__posDebugOpen?.();
+  }
+}
+
 export function PosDebugLog() {
   const [open, setOpen] = useState(false);
   const [, force] = useState(0);
   const taps = useRef<number[]>([]);
 
   useEffect(() => { install(); }, []);
+
+  useEffect(() => {
+    (window as unknown as { __posDebugOpen?: () => void }).__posDebugOpen = () => setOpen(true);
+    return () => {
+      delete (window as unknown as { __posDebugOpen?: () => void }).__posDebugOpen;
+    };
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -64,8 +77,8 @@ export function PosDebugLog() {
 
   const onCorner = () => {
     const now = Date.now();
-    taps.current = [...taps.current.filter((t) => now - t < 3000), now];
-    if (taps.current.length >= 5) {
+    taps.current = [...taps.current.filter((t) => now - t < 2000), now];
+    if (taps.current.length >= 3) {
       taps.current = [];
       setOpen(true);
     }
