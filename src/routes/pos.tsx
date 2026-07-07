@@ -1,6 +1,7 @@
 // /pos — layout shell for /pos and /pos/* leaves.
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { PosUpdateWatcher } from "@/lib/pos-update-watcher";
+import { PosDebugLog } from "@/lib/pos-debug-log";
 
 export const Route = createFileRoute("/pos")({
   head: () => ({
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/pos")({
   component: () => (
     <>
       <PosUpdateWatcher />
+      <PosDebugLog />
       <Outlet />
     </>
   ),
