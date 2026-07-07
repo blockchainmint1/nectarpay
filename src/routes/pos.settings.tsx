@@ -1,9 +1,10 @@
 // /pos/settings — tax %, tip presets, PIN, idle auto-lock.
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { loadSettings, saveSettings, sha256, type PosSettings } from "@/lib/pos-settings";
 import { clearCreds } from "@/lib/pos-client";
+import { checkForUpdate, downloadUpdate, type UpdateStatus } from "@/lib/pos-updater";
 
 export const Route = createFileRoute("/pos/settings")({
   head: () => ({
