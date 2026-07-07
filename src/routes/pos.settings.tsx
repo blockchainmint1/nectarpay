@@ -180,6 +180,58 @@ function SettingsPage() {
         </div>
 
         <div className="mt-8 border-t border-white/10 pt-6">
+          <p className="text-[10px] font-bold tracking-widest text-white/40">APP VERSION</p>
+          <div className="mt-2 flex items-center justify-between text-xs">
+            <span className="text-white/60">Installed</span>
+            <span className="font-mono text-white/90">{update?.currentVersion ?? (update?.supported ? "…" : "web preview")}</span>
+          </div>
+          <div className="mt-1 flex items-center justify-between text-xs">
+            <span className="text-white/60">Latest</span>
+            <span className="font-mono text-white/90">{update?.latestVersion ?? "…"}</span>
+          </div>
+          {update?.publishedAt && (
+            <p className="mt-1 text-[10px] text-white/40">
+              Published {new Date(update.publishedAt).toLocaleDateString()}
+            </p>
+          )}
+          {update?.notes && (
+            <p className="mt-2 whitespace-pre-wrap rounded-md bg-white/5 p-2 text-[11px] text-white/70">
+              {update.notes}
+            </p>
+          )}
+          {update?.error && (
+            <p className="mt-2 text-[11px] text-red-400">Couldn't check: {update.error}</p>
+          )}
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              onClick={runCheck}
+              disabled={checking}
+              className="h-11 rounded-lg border border-white/15 bg-white/5 text-xs font-bold tracking-widest text-white/80 hover:bg-white/10 disabled:opacity-50"
+            >
+              {checking ? "CHECKING…" : "CHECK FOR UPDATES"}
+            </button>
+            <button
+              onClick={runDownload}
+              disabled={!update?.downloadUrl || downloading || (update?.supported && !update?.updateAvailable)}
+              className="h-11 rounded-lg bg-amber-500 text-xs font-bold tracking-widest text-black hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/40"
+            >
+              {downloading
+                ? "OPENING…"
+                : update?.supported
+                  ? update?.updateAvailable ? `UPDATE TO ${update.latestVersion}` : "UP TO DATE"
+                  : "DOWNLOAD APK"}
+            </button>
+          </div>
+          {update?.supported && (
+            <p className="mt-2 text-[10px] text-white/40">
+              Tapping update opens Chrome to download the APK — Android will prompt you to install.
+              You may need to allow "Install unknown apps" for Chrome the first time.
+            </p>
+          )}
+        </div>
+
+
+        <div className="mt-8 border-t border-white/10 pt-6">
           <p className="text-[10px] font-bold tracking-widest text-white/40">DANGER ZONE</p>
           <button
             onClick={unpair}
