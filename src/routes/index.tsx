@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Zap, Shield, Wallet, Infinity as InfinityIcon, Check, X, Sparkles } from "lucide-react";
 import buzzyAsset from "@/assets/buzzy-mascot.asset.json";
 
-export const Route = createFileRoute("/home2")({
+export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "NectarPay — Accept crypto. Keep every cent." },

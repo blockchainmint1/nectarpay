@@ -5,7 +5,7 @@ import posTerminal from "@/assets/nectar-pos-terminal.jpg.asset.json";
 import { MarketingNav, MarketingFooter, NectarMark } from "@/components/marketing-shell";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/home-old")({
   head: () => ({
     meta: [
       { title: "Nectar.Pay — No keys. No fees." },
