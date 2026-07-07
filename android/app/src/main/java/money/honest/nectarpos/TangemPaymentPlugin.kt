@@ -9,6 +9,7 @@ import com.tangem.TangemSdk
 import com.tangem.common.CompletionResult
 import com.tangem.common.card.EllipticCurve
 import com.tangem.common.core.Config
+import com.tangem.operations.attestation.AttestationTask
 import com.tangem.sdk.extensions.init
 import org.bouncycastle.jcajce.provider.digest.Keccak
 import androidx.activity.ComponentActivity
