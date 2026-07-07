@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <!--
+      Parent MUST be a MaterialComponents theme. Tangem's Android SDK inflates
+      its access-code / PIN prompt as a BottomSheetDialogFragment that requires
+      Material attributes (bottomSheetDialogTheme, colorSurface, etc). Under a
+      plain AppCompat theme the sheet fails to inflate silently and the SDK
+      just loops back to "ready to scan" — the exact symptom users see when
+      an access code is set on the card.
+    -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">#0F172A</item>
         <item name="colorPrimaryDark">#0B1120</item>
         <item name="colorAccent">#F59E0B</item>
