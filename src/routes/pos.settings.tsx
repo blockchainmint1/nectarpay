@@ -224,13 +224,13 @@ function SettingsPage() {
             </button>
             <button
               onClick={runDownload}
-              disabled={!update?.downloadUrl || downloading || (update?.supported && !update?.updateAvailable)}
+              disabled={!update?.downloadUrl || downloading}
               className="h-11 rounded-lg bg-amber-500 text-xs font-bold tracking-widest text-black hover:bg-amber-400 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/40"
             >
               {downloading
                 ? "OPENING…"
                 : update?.supported
-                  ? update?.updateAvailable ? `UPDATE TO ${update.latestVersion}` : "UP TO DATE"
+                  ? update?.updateAvailable ? `UPDATE TO ${update.latestVersion}` : `REINSTALL v${update?.latestVersion ?? ""}`
                   : "DOWNLOAD APK"}
             </button>
           </div>
