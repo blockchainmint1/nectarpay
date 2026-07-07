@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { loadSettings, saveSettings, sha256, type PosSettings } from "@/lib/pos-settings";
 import { clearCreds } from "@/lib/pos-client";
 import { checkForUpdate, downloadUpdate, type UpdateStatus } from "@/lib/pos-updater";
+import { openPosDebugLog } from "@/lib/pos-debug-log";
+import { Tangem, isNative } from "@/lib/pos-native";
 
 export const Route = createFileRoute("/pos/settings")({
   head: () => ({
