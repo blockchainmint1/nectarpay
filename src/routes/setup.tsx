@@ -16,8 +16,8 @@ import { qrToDataURL } from "@/lib/qr";
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 
 const FALLBACK_APK_URL =
-  "https://txc.mypinata.cloud/ipfs/bafybeic5vez6jlctcrp2wtw3n4kk5dxg3iibp2vkotxw4np6wxj4wr23rm";
-const FALLBACK_APK_VERSION = "nectar-pos-1.0.0";
+  "https://txc.mypinata.cloud/ipfs/bafybeif2wk2yybdyaqh7654devwzyhhdhd6v2ddhjemcrgpdwmgcmm6rue";
+const FALLBACK_APK_VERSION = "0.1.202607080352";
 const GITHUB_RELEASES_API =
   "https://api.github.com/repos/blockchainmint1/nectarpay/releases/latest";
 
