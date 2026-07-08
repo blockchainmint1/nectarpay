@@ -22,7 +22,7 @@ const config: CapacitorConfig = {
   webDir: "dist",
   server: {
     // Live-loaded UI. The terminal needs internet on boot.
-    url: isTestBuild ? "https://httpbin.org/get" : "https://nectar-pay.com/pos",
+    url: isTestBuild ? "https://httpbin.org/get" : "https://nectar-pay.com/start",
     androidScheme: "https",
     cleartext: false,
   },
