@@ -15,6 +15,8 @@ import { createPairingCode } from "@/lib/terminals.functions";
 import { getLatestPosRelease } from "@/lib/pos-releases.functions";
 import { saveCreds } from "@/lib/pos-client";
 import { qrToDataURL } from "@/lib/qr";
+import { PosLaunchChooser } from "@/components/pos-launch-chooser";
+
 
 
 export const Route = createFileRoute("/start")({
@@ -43,17 +45,8 @@ function StartPage() {
   const [step, setStep] = useState<Step>("welcome");
   const [storeId, setStoreId] = useState<string | null>(null);
 
-  // Native APK auto-resume: if this terminal is already paired, skip the
-  // whole onboarding flow and jump straight to /pos on launch.
-  useEffect(() => {
-    void (async () => {
-      const { isNative } = await import("@/lib/pos-native");
-      const { loadCreds } = await import("@/lib/pos-client");
-      if (isNative() && loadCreds()) {
-        navigate({ to: "/pos", replace: true });
-      }
-    })();
-  }, [navigate]);
+
+
 
 
 
@@ -85,7 +78,10 @@ function StartPage() {
   const progress = Math.round(((stepIdx + 1) / STEPS.length) * 100);
 
   return (
+    <>
+    <PosLaunchChooser />
     <div className="min-h-[100dvh] bg-background flex flex-col">
+
       <header className="flex items-center justify-between px-5 pt-5">
         <Link to="/" className="flex items-center gap-2">
           <NectarMark className="h-7 w-7" />
@@ -131,8 +127,10 @@ function StartPage() {
         )}
       </main>
     </div>
+    </>
   );
 }
+
 
 /* ---------------- Welcome ---------------- */
 

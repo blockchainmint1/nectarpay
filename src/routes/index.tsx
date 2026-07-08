@@ -13,6 +13,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowRight, Zap, Shield, Wallet, Infinity as InfinityIcon, Check, X, Sparkles } from "lucide-react";
 import buzzyAsset from "@/assets/buzzy-mascot.asset.json";
+import { PosLaunchChooser } from "@/components/pos-launch-chooser";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -170,21 +172,11 @@ function Home2() {
     return () => clearInterval(id);
   }, []);
 
-  // Native APK auto-resume: paired terminals skip straight to /pos.
-  useEffect(() => {
-    void (async () => {
-      const { isNative } = await import("@/lib/pos-native");
-      const { loadCreds } = await import("@/lib/pos-client");
-      if (isNative() && loadCreds()) {
-        window.location.replace("/pos");
-      }
-    })();
-  }, []);
-
-
-
   return (
+    <>
+    <PosLaunchChooser />
     <div className="np min-h-screen">
+
       <style dangerouslySetInnerHTML={{ __html: BRAND_STYLE }} />
 
       {/* ============ NAV ============ */}
@@ -520,8 +512,10 @@ function Home2() {
         </div>
       </footer>
     </div>
+    </>
   );
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Little pieces                                                        */
