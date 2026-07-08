@@ -13,7 +13,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { qrToDataURL } from "@/lib/qr";
-import { MarketingShell } from "@/components/marketing-shell";
+import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 
 const APK_URL =
   "https://txc.mypinata.cloud/ipfs/bafybeic5vez6jlctcrp2wtw3n4kk5dxg3iibp2vkotxw4np6wxj4wr23rm";
