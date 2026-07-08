@@ -8,6 +8,8 @@ import { clearCreds } from "@/lib/pos-client";
 import { checkForUpdate, downloadUpdate, type UpdateStatus } from "@/lib/pos-updater";
 import { openPosDebugLog } from "@/lib/pos-debug-log";
 import { Tangem, isNative } from "@/lib/pos-native";
+import { LOCAL_BUILD_ID, fetchServerBuildId, hardRefreshPos } from "@/lib/pos-build-id";
+
 
 export const Route = createFileRoute("/pos/settings")({
   head: () => ({
