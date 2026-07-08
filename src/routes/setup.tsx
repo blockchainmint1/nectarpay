@@ -135,6 +135,10 @@ function ApkQrDialog({
             )}
           </div>
 
+          <p className="text-center text-sm font-medium text-muted-foreground">
+            Version ID: <span className="font-mono">nectar-pos-1.0.0</span>
+          </p>
+
           <div className="w-full break-all rounded-md bg-muted p-3 text-center font-mono text-xs">
             {APK_URL}
           </div>
