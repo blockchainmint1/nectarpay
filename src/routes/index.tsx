@@ -12,7 +12,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowRight, Zap, Shield, Wallet, Infinity as InfinityIcon, Check, X, Sparkles } from "lucide-react";
-import buzzyAsset from "@/assets/buzzy-mascot.asset.json";
+import buzzyMascot from "@/assets/buzzy-mascot.asset.json";
+import buzzy1 from "@/assets/buzzy-33a0881b.png.asset.json";
+import buzzy2 from "@/assets/buzzy-5ec6f7f6.png.asset.json";
+import buzzy3 from "@/assets/buzzy-548d6215.png.asset.json";
+import buzzy4 from "@/assets/buzzy-862e12f5.png.asset.json";
+import buzzy5 from "@/assets/buzzy-1f8130a6.png.asset.json";
+import buzzy6 from "@/assets/buzzy-ed8f8613.png.asset.json";
+import buzzy7 from "@/assets/buzzy-f5f116d1.png.asset.json";
+import buzzy8 from "@/assets/buzzy-a93ed7e6.png.asset.json";
+const BUZZY_VARIANTS = [buzzyMascot, buzzy1, buzzy2, buzzy3, buzzy4, buzzy5, buzzy6, buzzy7, buzzy8];
 import { PosLaunchChooser } from "@/components/pos-launch-chooser";
 
 
