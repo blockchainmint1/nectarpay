@@ -15,6 +15,8 @@ import { createPairingCode } from "@/lib/terminals.functions";
 import { getLatestPosRelease } from "@/lib/pos-releases.functions";
 import { saveCreds } from "@/lib/pos-client";
 import { qrToDataURL } from "@/lib/qr";
+import { PosLaunchChooser } from "@/components/pos-launch-chooser";
+
 
 
 export const Route = createFileRoute("/start")({
