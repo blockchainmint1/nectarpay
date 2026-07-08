@@ -14,6 +14,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as StartRouteImport } from './routes/start'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SetupRouteImport } from './routes/setup'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PosBuildIdRouteImport } from './routes/pos-build-id'
@@ -127,6 +128,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetupRoute = SetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -631,6 +637,7 @@ export interface FileRoutesByFullPath {
   '/pos-build-id': typeof PosBuildIdRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/setup': typeof SetupRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/start': typeof StartRoute
@@ -725,6 +732,7 @@ export interface FileRoutesByTo {
   '/pos-build-id': typeof PosBuildIdRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/setup': typeof SetupRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/start': typeof StartRoute
@@ -819,6 +827,7 @@ export interface FileRoutesById {
   '/pos-build-id': typeof PosBuildIdRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/setup': typeof SetupRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/start': typeof StartRoute
@@ -916,6 +925,7 @@ export interface FileRouteTypes {
     | '/pos-build-id'
     | '/pricing'
     | '/privacy'
+    | '/setup'
     | '/signup'
     | '/sitemap.xml'
     | '/start'
@@ -1010,6 +1020,7 @@ export interface FileRouteTypes {
     | '/pos-build-id'
     | '/pricing'
     | '/privacy'
+    | '/setup'
     | '/signup'
     | '/sitemap.xml'
     | '/start'
@@ -1103,6 +1114,7 @@ export interface FileRouteTypes {
     | '/pos-build-id'
     | '/pricing'
     | '/privacy'
+    | '/setup'
     | '/signup'
     | '/sitemap.xml'
     | '/start'
@@ -1200,6 +1212,7 @@ export interface RootRouteChildren {
   PosBuildIdRoute: typeof PosBuildIdRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
+  SetupRoute: typeof SetupRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StartRoute: typeof StartRoute
@@ -1269,6 +1282,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -2121,6 +2141,7 @@ const rootRouteChildren: RootRouteChildren = {
   PosBuildIdRoute: PosBuildIdRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
+  SetupRoute: SetupRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StartRoute: StartRoute,
