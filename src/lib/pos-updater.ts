@@ -64,11 +64,21 @@ export async function checkForUpdate(): Promise<UpdateStatus> {
 }
 
 /**
- * Open the APK download in the system browser (Chrome) so Android's
- * package installer picks it up. In-webview navigation would just render
- * the redirect target and never trigger install.
+ * Download the APK and launch Android's installer.
+ *
+ * - Preferred (APK 0.1.6+): native NectarUpdater plugin downloads inside
+ *   the app and hands off to the package installer via FileProvider.
+ *   Two taps end-to-end: "Update" here → "Install" in Android's dialog.
+ * - Fallback (older APKs without the plugin): open the URL in Chrome so
+ *   Android's downloader picks it up. Users then tap the notification.
+ * - Web preview: plain navigation.
  */
 export async function downloadUpdate(url: string): Promise<void> {
+  const { NectarUpdater } = await import("@/lib/pos-native");
+  if (NectarUpdater.isAvailable()) {
+    await NectarUpdater.downloadAndInstall(url);
+    return;
+  }
   if (isNative()) {
     const { Browser } = await import("@capacitor/browser");
     await Browser.open({ url });

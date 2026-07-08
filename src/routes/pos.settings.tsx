@@ -316,8 +316,9 @@ function SettingsPage() {
           </div>
           {update?.supported && (
             <p className="mt-2 text-[10px] text-white/40">
-              Tapping update opens Chrome to download the APK — Android will prompt you to install.
-              You may need to allow "Install unknown apps" for Chrome the first time.
+              Tapping update downloads the new APK inside the app, then Android
+              shows an Install prompt. First time only, you'll be asked to allow
+              NectarPay to install updates.
             </p>
           )}
         </div>
