@@ -166,17 +166,18 @@ function SettingsPage() {
             {pinMode === "set" && (
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <input
-                  type="password" inputMode="numeric" pattern="\d{4}" maxLength={4}
+                  type="tel" inputMode="numeric" autoComplete="off" pattern="[0-9]*" maxLength={4}
                   value={newPin} onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ""))}
                   placeholder="4-digit PIN"
                   className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 font-mono text-sm"
                 />
                 <input
-                  type="password" inputMode="numeric" pattern="\d{4}" maxLength={4}
+                  type="tel" inputMode="numeric" autoComplete="off" pattern="[0-9]*" maxLength={4}
                   value={confirmPin} onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ""))}
                   placeholder="Confirm"
                   className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 font-mono text-sm"
                 />
+
               </div>
             )}
           </Field>
