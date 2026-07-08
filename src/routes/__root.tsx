@@ -123,8 +123,8 @@ function RootComponent() {
   const location = useLocation();
 
   useEffect(() => {
-    const isPos = location.pathname.startsWith("/pos");
-    if (isPos) {
+    const inPosShell = location.pathname.startsWith("/pos") || isNative();
+    if (inPosShell) {
       const existing = document.getElementById("honest-help-widget");
       if (existing) existing.remove();
       return;
