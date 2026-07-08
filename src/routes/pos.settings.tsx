@@ -42,8 +42,18 @@ function SettingsPage() {
   useEffect(() => {
     let cancelled = false;
     checkForUpdate().then((s) => { if (!cancelled) setUpdate(s); });
+    fetchServerBuildId().then((b) => { if (!cancelled) setServerBuild(b); });
     return () => { cancelled = true; };
   }, []);
+
+  const webStale = !!serverBuild && serverBuild !== LOCAL_BUILD_ID;
+
+  const runForceRefresh = async () => {
+    setRefreshing(true);
+    toast.info("Clearing cache and reloading…");
+    await hardRefreshPos();
+  };
+
 
   const runCheck = async () => {
     setChecking(true);
