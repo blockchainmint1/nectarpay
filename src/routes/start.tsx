@@ -78,7 +78,10 @@ function StartPage() {
   const progress = Math.round(((stepIdx + 1) / STEPS.length) * 100);
 
   return (
+    <>
+    <PosLaunchChooser />
     <div className="min-h-[100dvh] bg-background flex flex-col">
+
       <header className="flex items-center justify-between px-5 pt-5">
         <Link to="/" className="flex items-center gap-2">
           <NectarMark className="h-7 w-7" />
