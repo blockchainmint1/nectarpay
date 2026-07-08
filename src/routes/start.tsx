@@ -43,6 +43,20 @@ function StartPage() {
   const [step, setStep] = useState<Step>("welcome");
   const [storeId, setStoreId] = useState<string | null>(null);
 
+  // Native APK auto-resume: if this terminal is already paired, skip the
+  // whole onboarding flow and jump straight to /pos on launch.
+  useEffect(() => {
+    void (async () => {
+      const { isNative } = await import("@/lib/pos-native");
+      const { loadCreds } = await import("@/lib/pos-client");
+      if (isNative() && loadCreds()) {
+        navigate({ to: "/pos", replace: true });
+      }
+    })();
+  }, [navigate]);
+
+
+
   // Once signed in, find their first store (or stay ready to create one).
   useEffect(() => {
     if (loading) return;

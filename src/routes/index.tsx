@@ -170,6 +170,19 @@ function Home2() {
     return () => clearInterval(id);
   }, []);
 
+  // Native APK auto-resume: paired terminals skip straight to /pos.
+  useEffect(() => {
+    void (async () => {
+      const { isNative } = await import("@/lib/pos-native");
+      const { loadCreds } = await import("@/lib/pos-client");
+      if (isNative() && loadCreds()) {
+        window.location.replace("/pos");
+      }
+    })();
+  }, []);
+
+
+
   return (
     <div className="np min-h-screen">
       <style dangerouslySetInnerHTML={{ __html: BRAND_STYLE }} />
