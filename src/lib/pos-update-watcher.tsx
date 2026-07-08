@@ -17,9 +17,13 @@ import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { checkForUpdate, downloadUpdate } from "@/lib/pos-updater";
 import { isNative } from "@/lib/pos-native";
+import { LOCAL_BUILD_ID, fetchServerBuildId, hardRefreshPos } from "@/lib/pos-build-id";
 
-const CHECK_INTERVAL_MS = 4 * 60 * 60 * 1000; // 4 hours
+const CHECK_INTERVAL_MS = 4 * 60 * 60 * 1000; // 4 hours (APK)
+const WEB_CHECK_INTERVAL_MS = 3 * 60 * 1000;  // 3 minutes (web bundle)
 const DISMISS_KEY = "pos-update-dismissed-version";
+const WEB_DISMISS_KEY = "pos-web-refresh-dismissed-build";
+
 
 export function PosUpdateWatcher() {
   const shownForVersion = useRef<string | null>(null);

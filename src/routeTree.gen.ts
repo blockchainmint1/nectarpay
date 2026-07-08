@@ -16,6 +16,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PosBuildIdRouteImport } from './routes/pos-build-id'
 import { Route as PosApkRouteImport } from './routes/pos-apk'
 import { Route as PosRouteImport } from './routes/pos'
 import { Route as ManifestoRouteImport } from './routes/manifesto'
@@ -136,6 +137,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PosBuildIdRoute = PosBuildIdRouteImport.update({
+  id: '/pos-build-id',
+  path: '/pos-build-id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PosApkRoute = PosApkRouteImport.update({
@@ -622,6 +628,7 @@ export interface FileRoutesByFullPath {
   '/manifesto': typeof ManifestoRoute
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
+  '/pos-build-id': typeof PosBuildIdRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
@@ -715,6 +722,7 @@ export interface FileRoutesByTo {
   '/investors': typeof InvestorsRoute
   '/manifesto': typeof ManifestoRoute
   '/pos-apk': typeof PosApkRoute
+  '/pos-build-id': typeof PosBuildIdRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
@@ -808,6 +816,7 @@ export interface FileRoutesById {
   '/manifesto': typeof ManifestoRoute
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
+  '/pos-build-id': typeof PosBuildIdRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
@@ -904,6 +913,7 @@ export interface FileRouteTypes {
     | '/manifesto'
     | '/pos'
     | '/pos-apk'
+    | '/pos-build-id'
     | '/pricing'
     | '/privacy'
     | '/signup'
@@ -997,6 +1007,7 @@ export interface FileRouteTypes {
     | '/investors'
     | '/manifesto'
     | '/pos-apk'
+    | '/pos-build-id'
     | '/pricing'
     | '/privacy'
     | '/signup'
@@ -1089,6 +1100,7 @@ export interface FileRouteTypes {
     | '/manifesto'
     | '/pos'
     | '/pos-apk'
+    | '/pos-build-id'
     | '/pricing'
     | '/privacy'
     | '/signup'
@@ -1185,6 +1197,7 @@ export interface RootRouteChildren {
   ManifestoRoute: typeof ManifestoRoute
   PosRoute: typeof PosRouteWithChildren
   PosApkRoute: typeof PosApkRoute
+  PosBuildIdRoute: typeof PosBuildIdRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   SignupRoute: typeof SignupRoute
@@ -1270,6 +1283,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pos-build-id': {
+      id: '/pos-build-id'
+      path: '/pos-build-id'
+      fullPath: '/pos-build-id'
+      preLoaderRoute: typeof PosBuildIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pos-apk': {
@@ -2098,6 +2118,7 @@ const rootRouteChildren: RootRouteChildren = {
   ManifestoRoute: ManifestoRoute,
   PosRoute: PosRouteWithChildren,
   PosApkRoute: PosApkRoute,
+  PosBuildIdRoute: PosBuildIdRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   SignupRoute: SignupRoute,
