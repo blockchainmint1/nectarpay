@@ -75,7 +75,9 @@ function SetupPage() {
       </div>
 
       <ApkQrDialog open={apkOpen} onOpenChange={setApkOpen} />
-    </MarketingShell>
+      <MarketingFooter />
+    </>
+
   );
 }
 
