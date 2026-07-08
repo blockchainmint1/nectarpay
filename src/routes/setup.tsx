@@ -65,8 +65,29 @@ export const Route = createFileRoute("/setup")({
   component: SetupPage,
 });
 
+function useLatestApkRelease() {
+  const [release, setRelease] = useState<ApkRelease>({
+    url: FALLBACK_APK_URL,
+    version: FALLBACK_APK_VERSION,
+  });
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const latest = await fetchLatestApkRelease();
+      if (!cancelled) setRelease(latest);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return release;
+}
+
 function SetupPage() {
   const [apkOpen, setApkOpen] = useState(false);
+  const release = useLatestApkRelease();
 
   return (
     <>
@@ -97,15 +118,17 @@ function SetupPage() {
               <div className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary">
                 Get the APK <Download className="h-4 w-4" />
               </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Latest version: <span className="font-mono font-medium">{release.version}</span>
+              </p>
             </Card>
           </button>
         </div>
       </div>
 
-      <ApkQrDialog open={apkOpen} onOpenChange={setApkOpen} />
+      <ApkQrDialog open={apkOpen} onOpenChange={setApkOpen} release={release} />
       <MarketingFooter />
     </>
-
   );
 }
 
