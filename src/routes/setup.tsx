@@ -135,26 +135,21 @@ function SetupPage() {
 function ApkQrDialog({
   open,
   onOpenChange,
+  release,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
+  release: ApkRelease;
 }) {
   const [dataUrl, setDataUrl] = useState<string | null>(null);
-  const [release, setRelease] = useState<ApkRelease>({
-    url: FALLBACK_APK_URL,
-    version: FALLBACK_APK_VERSION,
-  });
 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
     setDataUrl(null);
     (async () => {
-      const latest = await fetchLatestApkRelease();
-      if (cancelled) return;
-      setRelease(latest);
       try {
-        const url = await qrToDataURL(latest.url, {
+        const url = await qrToDataURL(release.url, {
           width: 512,
           margin: 1,
           color: { dark: "#0a0a0a", light: "#ffffff" },
@@ -167,7 +162,7 @@ function ApkQrDialog({
     return () => {
       cancelled = true;
     };
-  }, [open]);
+  }, [open, release.url]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
