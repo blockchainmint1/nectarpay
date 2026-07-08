@@ -15,8 +15,36 @@ import {
 import { qrToDataURL } from "@/lib/qr";
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 
-const APK_URL =
+const FALLBACK_APK_URL =
   "https://txc.mypinata.cloud/ipfs/bafybeic5vez6jlctcrp2wtw3n4kk5dxg3iibp2vkotxw4np6wxj4wr23rm";
+const FALLBACK_APK_VERSION = "nectar-pos-1.0.0";
+const GITHUB_RELEASES_API =
+  "https://api.github.com/repos/blockchainmint1/nectarpay/releases/latest";
+
+type ApkRelease = { url: string; version: string };
+
+async function fetchLatestApkRelease(): Promise<ApkRelease> {
+  try {
+    const res = await fetch(GITHUB_RELEASES_API, {
+      headers: { Accept: "application/vnd.github+json" },
+    });
+    if (!res.ok) throw new Error(`GitHub ${res.status}`);
+    const data = (await res.json()) as {
+      tag_name?: string;
+      name?: string;
+      body?: string;
+      assets?: { name: string; browser_download_url: string }[];
+    };
+    const version = data.tag_name || data.name || FALLBACK_APK_VERSION;
+    const apkAsset = data.assets?.find((a) => a.name.toLowerCase().endsWith(".apk"));
+    if (apkAsset) return { url: apkAsset.browser_download_url, version };
+    const urlMatch = data.body?.match(/https?:\/\/\S+/);
+    if (urlMatch) return { url: urlMatch[0].replace(/[),.]+$/, ""), version };
+    return { url: FALLBACK_APK_URL, version };
+  } catch {
+    return { url: FALLBACK_APK_URL, version: FALLBACK_APK_VERSION };
+  }
+}
 
 export const Route = createFileRoute("/setup")({
   head: () => ({
@@ -89,21 +117,30 @@ function ApkQrDialog({
   onOpenChange: (v: boolean) => void;
 }) {
   const [dataUrl, setDataUrl] = useState<string | null>(null);
+  const [release, setRelease] = useState<ApkRelease>({
+    url: FALLBACK_APK_URL,
+    version: FALLBACK_APK_VERSION,
+  });
 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    qrToDataURL(APK_URL, {
-      width: 512,
-      margin: 1,
-      color: { dark: "#0a0a0a", light: "#ffffff" },
-    })
-      .then((url) => {
+    setDataUrl(null);
+    (async () => {
+      const latest = await fetchLatestApkRelease();
+      if (cancelled) return;
+      setRelease(latest);
+      try {
+        const url = await qrToDataURL(latest.url, {
+          width: 512,
+          margin: 1,
+          color: { dark: "#0a0a0a", light: "#ffffff" },
+        });
         if (!cancelled) setDataUrl(url);
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) setDataUrl(null);
-      });
+      }
+    })();
     return () => {
       cancelled = true;
     };
@@ -136,18 +173,19 @@ function ApkQrDialog({
           </div>
 
           <p className="text-center text-sm font-medium text-muted-foreground">
-            Version ID: <span className="font-mono">nectar-pos-1.0.0</span>
+            Version ID: <span className="font-mono">{release.version}</span>
           </p>
 
           <div className="w-full break-all rounded-md bg-muted p-3 text-center font-mono text-xs">
-            {APK_URL}
+            {release.url}
           </div>
 
           <Button asChild className="w-full">
-            <a href={APK_URL} target="_blank" rel="noreferrer">
+            <a href={release.url} target="_blank" rel="noreferrer">
               Open link <ExternalLink className="ml-2 h-4 w-4" />
             </a>
           </Button>
+
 
           <p className="text-center text-xs text-muted-foreground">
             After download, tap the APK and allow installation from this source.
