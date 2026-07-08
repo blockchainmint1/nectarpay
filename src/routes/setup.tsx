@@ -41,7 +41,8 @@ function SetupPage() {
   const [apkOpen, setApkOpen] = useState(false);
 
   return (
-    <MarketingShell>
+    <>
+      <MarketingNav />
       <div className="mx-auto max-w-5xl px-4 py-12">
         <header className="mb-10">
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Setup</h1>
