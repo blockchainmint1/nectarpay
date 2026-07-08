@@ -260,7 +260,7 @@ function Home2() {
                 style={{ background: "radial-gradient(circle, rgba(246,162,30,0.35), transparent 65%)" }}
               />
               <img
-                src={buzzyAsset.url}
+                src={buzzy.url}
                 alt="Buzzy, the NectarPay mascot bee, waving and holding a honey-gold coin"
                 width={1024}
                 height={1024}
