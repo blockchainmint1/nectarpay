@@ -16,6 +16,7 @@ import { AuthProvider } from "../lib/auth-context";
 import { ThemeProvider } from "../lib/theme";
 import { Toaster } from "../components/ui/sonner";
 import { PosReturnBar } from "../components/pos-return-bar";
+import { isNative } from "../lib/pos-native";
 
 function NotFoundComponent() {
   return (
@@ -122,8 +123,8 @@ function RootComponent() {
   const location = useLocation();
 
   useEffect(() => {
-    const isPos = location.pathname.startsWith("/pos");
-    if (isPos) {
+    const inPosShell = location.pathname.startsWith("/pos") || isNative();
+    if (inPosShell) {
       const existing = document.getElementById("honest-help-widget");
       if (existing) existing.remove();
       return;
