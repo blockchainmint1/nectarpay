@@ -184,6 +184,22 @@ function PairPage() {
         {scanError && <p className="text-center text-xs text-red-400">{scanError}</p>}
       </form>
 
+      <div className="mt-8 w-full max-w-xs">
+        <div className="flex items-center gap-3 text-[10px] font-bold tracking-[0.3em] text-white/30">
+          <div className="h-px flex-1 bg-white/10" /> OR <div className="h-px flex-1 bg-white/10" />
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate({ to: "/pos/pair-signin" })}
+          className="mt-4 w-full rounded-lg border border-amber-400/40 bg-amber-500/10 py-3 text-sm font-semibold tracking-wide text-amber-200 hover:bg-amber-500/20"
+        >
+          SIGN IN TO PAIR
+        </button>
+        <p className="mt-2 text-center text-[11px] text-white/40">
+          Replacing or resetting a terminal? Sign in with your NectarPay account instead.
+        </p>
+      </div>
+
       {scanOpen && (
         <QrScanner
           onClose={() => setScanOpen(false)}

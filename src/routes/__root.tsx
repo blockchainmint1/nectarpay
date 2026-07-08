@@ -15,6 +15,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "../lib/auth-context";
 import { ThemeProvider } from "../lib/theme";
 import { Toaster } from "../components/ui/sonner";
+import { PosReturnBar } from "../components/pos-return-bar";
 
 function NotFoundComponent() {
   return (
@@ -146,6 +147,7 @@ function RootComponent() {
         <AuthProvider>
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
+          <PosReturnBar />
           <Toaster richColors position="top-right" />
         </AuthProvider>
       </ThemeProvider>
