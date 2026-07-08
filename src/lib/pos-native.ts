@@ -95,6 +95,9 @@ interface CapacitorGlobal {
       scan: () => Promise<TangemScanResult>;
       signHash: (o: { cardId: string; publicKey: string; hash: string }) => Promise<TangemSignResult>;
     };
+    NectarUpdater?: {
+      downloadAndInstall: (o: { url: string }) => Promise<{ launched: boolean; bytes: number }>;
+    };
   };
 }
 
@@ -173,5 +176,22 @@ export const Tangem = {
     const p = cap()?.Plugins.Tangem;
     if (!p) throw new Error("Tangem NFC is only available in the NectarPOS Android app");
     return await p.signHash(input);
+  },
+};
+
+/**
+ * Native in-app APK updater. Downloads the APK inside the app and hands
+ * it to Android's package installer via FileProvider. Only present in
+ * builds that ship NectarUpdaterPlugin — older APKs (pre-0.1.6) fall
+ * back to opening the URL in Chrome.
+ */
+export const NectarUpdater = {
+  isAvailable(): boolean {
+    return !!cap()?.Plugins.NectarUpdater;
+  },
+  async downloadAndInstall(url: string): Promise<{ launched: boolean; bytes: number }> {
+    const p = cap()?.Plugins.NectarUpdater;
+    if (!p) throw new Error("In-app updater not available in this build");
+    return await p.downloadAndInstall({ url });
   },
 };
