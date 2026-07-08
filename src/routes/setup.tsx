@@ -117,21 +117,30 @@ function ApkQrDialog({
   onOpenChange: (v: boolean) => void;
 }) {
   const [dataUrl, setDataUrl] = useState<string | null>(null);
+  const [release, setRelease] = useState<ApkRelease>({
+    url: FALLBACK_APK_URL,
+    version: FALLBACK_APK_VERSION,
+  });
 
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    qrToDataURL(APK_URL, {
-      width: 512,
-      margin: 1,
-      color: { dark: "#0a0a0a", light: "#ffffff" },
-    })
-      .then((url) => {
+    setDataUrl(null);
+    (async () => {
+      const latest = await fetchLatestApkRelease();
+      if (cancelled) return;
+      setRelease(latest);
+      try {
+        const url = await qrToDataURL(latest.url, {
+          width: 512,
+          margin: 1,
+          color: { dark: "#0a0a0a", light: "#ffffff" },
+        });
         if (!cancelled) setDataUrl(url);
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) setDataUrl(null);
-      });
+      }
+    })();
     return () => {
       cancelled = true;
     };
@@ -164,18 +173,19 @@ function ApkQrDialog({
           </div>
 
           <p className="text-center text-sm font-medium text-muted-foreground">
-            Version ID: <span className="font-mono">nectar-pos-1.0.0</span>
+            Version ID: <span className="font-mono">{release.version}</span>
           </p>
 
           <div className="w-full break-all rounded-md bg-muted p-3 text-center font-mono text-xs">
-            {APK_URL}
+            {release.url}
           </div>
 
           <Button asChild className="w-full">
-            <a href={APK_URL} target="_blank" rel="noreferrer">
+            <a href={release.url} target="_blank" rel="noreferrer">
               Open link <ExternalLink className="ml-2 h-4 w-4" />
             </a>
           </Button>
+
 
           <p className="text-center text-xs text-muted-foreground">
             After download, tap the APK and allow installation from this source.
