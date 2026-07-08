@@ -27,7 +27,9 @@ const WEB_DISMISS_KEY = "pos-web-refresh-dismissed-build";
 
 export function PosUpdateWatcher() {
   const shownForVersion = useRef<string | null>(null);
+  const shownForBuild = useRef<string | null>(null);
 
+  // ---- Native APK freshness (existing) ----------------------------------
   useEffect(() => {
     if (!isNative()) return;
 
@@ -83,7 +85,6 @@ export function PosUpdateWatcher() {
       document.addEventListener("visibilitychange", onVisible);
     }
 
-    // Native resume event
     let removeResume: (() => void) | null = null;
     (async () => {
       try {
@@ -109,5 +110,76 @@ export function PosUpdateWatcher() {
     };
   }, []);
 
+  // ---- Web bundle freshness (new) ---------------------------------------
+  // Runs on native AND in the browser — the terminal WebView is the primary
+  // beneficiary, but stale desktop tabs get the same nudge.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setInterval> | null = null;
+
+    const check = async () => {
+      const serverBuild = await fetchServerBuildId();
+      if (cancelled || !serverBuild) return;
+      if (serverBuild === LOCAL_BUILD_ID) return;
+
+      const dismissed =
+        typeof localStorage !== "undefined"
+          ? localStorage.getItem(WEB_DISMISS_KEY)
+          : null;
+      if (dismissed === serverBuild) return;
+      if (shownForBuild.current === serverBuild) return;
+
+      shownForBuild.current = serverBuild;
+      toast("New version available", {
+        description: "The app has been updated. Reload to get the latest.",
+        duration: Infinity,
+        action: {
+          label: "Reload",
+          onClick: () => {
+            void hardRefreshPos();
+          },
+        },
+        onDismiss: () => {
+          try {
+            localStorage.setItem(WEB_DISMISS_KEY, serverBuild);
+          } catch {
+            // ignore
+          }
+        },
+        id: `pos-web-refresh-${serverBuild}`,
+      });
+    };
+
+    void check();
+    timer = setInterval(check, WEB_CHECK_INTERVAL_MS);
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void check();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    let removeResume: (() => void) | null = null;
+    if (isNative()) {
+      (async () => {
+        try {
+          const { App } = await import("@capacitor/app");
+          const handle = await App.addListener("resume", () => { void check(); });
+          removeResume = () => { void handle.remove(); };
+        } catch {
+          // capacitor not available
+        }
+      })();
+    }
+
+    return () => {
+      cancelled = true;
+      if (timer) clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+      if (removeResume) removeResume();
+    };
+  }, []);
+
   return null;
 }
+
