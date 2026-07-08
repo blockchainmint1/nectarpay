@@ -33,6 +33,9 @@ function SettingsPage() {
   const [update, setUpdate] = useState<UpdateStatus | null>(null);
   const [checking, setChecking] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [serverBuild, setServerBuild] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
 
   // Auto-check once on mount so the button shows "Update available" without
   // requiring a manual tap first.
