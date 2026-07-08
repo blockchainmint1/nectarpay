@@ -16,6 +16,7 @@ import { AuthProvider } from "../lib/auth-context";
 import { ThemeProvider } from "../lib/theme";
 import { Toaster } from "../components/ui/sonner";
 import { PosReturnBar } from "../components/pos-return-bar";
+import { isNative } from "../lib/pos-native";
 
 function NotFoundComponent() {
   return (
