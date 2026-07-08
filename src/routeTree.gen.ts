@@ -35,6 +35,7 @@ import { Route as IntegrationsIndexRouteImport } from './routes/integrations.ind
 import { Route as SdkPayhmeDotjsRouteImport } from './routes/sdk.payhme[.]js'
 import { Route as PosSettingsRouteImport } from './routes/pos.settings'
 import { Route as PosPrinterTestRouteImport } from './routes/pos.printer-test'
+import { Route as PosPairSigninRouteImport } from './routes/pos.pair-signin'
 import { Route as PosPairRouteImport } from './routes/pos.pair'
 import { Route as PosNfcInspectRouteImport } from './routes/pos.nfc-inspect'
 import { Route as PosHistoryRouteImport } from './routes/pos.history'
@@ -232,6 +233,11 @@ const PosSettingsRoute = PosSettingsRouteImport.update({
 const PosPrinterTestRoute = PosPrinterTestRouteImport.update({
   id: '/printer-test',
   path: '/printer-test',
+  getParentRoute: () => PosRoute,
+} as any)
+const PosPairSigninRoute = PosPairSigninRouteImport.update({
+  id: '/pair-signin',
+  path: '/pair-signin',
   getParentRoute: () => PosRoute,
 } as any)
 const PosPairRoute = PosPairRouteImport.update({
@@ -658,6 +664,7 @@ export interface FileRoutesByFullPath {
   '/pos/history': typeof PosHistoryRoute
   '/pos/nfc-inspect': typeof PosNfcInspectRoute
   '/pos/pair': typeof PosPairRoute
+  '/pos/pair-signin': typeof PosPairSigninRoute
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
@@ -752,6 +759,7 @@ export interface FileRoutesByTo {
   '/pos/history': typeof PosHistoryRoute
   '/pos/nfc-inspect': typeof PosNfcInspectRoute
   '/pos/pair': typeof PosPairRoute
+  '/pos/pair-signin': typeof PosPairSigninRoute
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
@@ -848,6 +856,7 @@ export interface FileRoutesById {
   '/pos/history': typeof PosHistoryRoute
   '/pos/nfc-inspect': typeof PosNfcInspectRoute
   '/pos/pair': typeof PosPairRoute
+  '/pos/pair-signin': typeof PosPairSigninRoute
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
@@ -946,6 +955,7 @@ export interface FileRouteTypes {
     | '/pos/history'
     | '/pos/nfc-inspect'
     | '/pos/pair'
+    | '/pos/pair-signin'
     | '/pos/printer-test'
     | '/pos/settings'
     | '/sdk/payhme.js'
@@ -1040,6 +1050,7 @@ export interface FileRouteTypes {
     | '/pos/history'
     | '/pos/nfc-inspect'
     | '/pos/pair'
+    | '/pos/pair-signin'
     | '/pos/printer-test'
     | '/pos/settings'
     | '/sdk/payhme.js'
@@ -1135,6 +1146,7 @@ export interface FileRouteTypes {
     | '/pos/history'
     | '/pos/nfc-inspect'
     | '/pos/pair'
+    | '/pos/pair-signin'
     | '/pos/printer-test'
     | '/pos/settings'
     | '/sdk/payhme.js'
@@ -1429,6 +1441,13 @@ declare module '@tanstack/react-router' {
       path: '/printer-test'
       fullPath: '/pos/printer-test'
       preLoaderRoute: typeof PosPrinterTestRouteImport
+      parentRoute: typeof PosRoute
+    }
+    '/pos/pair-signin': {
+      id: '/pos/pair-signin'
+      path: '/pair-signin'
+      fullPath: '/pos/pair-signin'
+      preLoaderRoute: typeof PosPairSigninRouteImport
       parentRoute: typeof PosRoute
     }
     '/pos/pair': {
@@ -2065,6 +2084,7 @@ interface PosRouteChildren {
   PosHistoryRoute: typeof PosHistoryRoute
   PosNfcInspectRoute: typeof PosNfcInspectRoute
   PosPairRoute: typeof PosPairRoute
+  PosPairSigninRoute: typeof PosPairSigninRoute
   PosPrinterTestRoute: typeof PosPrinterTestRoute
   PosSettingsRoute: typeof PosSettingsRoute
   PosIndexRoute: typeof PosIndexRoute
@@ -2074,6 +2094,7 @@ const PosRouteChildren: PosRouteChildren = {
   PosHistoryRoute: PosHistoryRoute,
   PosNfcInspectRoute: PosNfcInspectRoute,
   PosPairRoute: PosPairRoute,
+  PosPairSigninRoute: PosPairSigninRoute,
   PosPrinterTestRoute: PosPrinterTestRoute,
   PosSettingsRoute: PosSettingsRoute,
   PosIndexRoute: PosIndexRoute,
