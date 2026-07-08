@@ -15,8 +15,36 @@ import {
 import { qrToDataURL } from "@/lib/qr";
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 
-const APK_URL =
+const FALLBACK_APK_URL =
   "https://txc.mypinata.cloud/ipfs/bafybeic5vez6jlctcrp2wtw3n4kk5dxg3iibp2vkotxw4np6wxj4wr23rm";
+const FALLBACK_APK_VERSION = "nectar-pos-1.0.0";
+const GITHUB_RELEASES_API =
+  "https://api.github.com/repos/blockchainmint1/nectarpay/releases/latest";
+
+type ApkRelease = { url: string; version: string };
+
+async function fetchLatestApkRelease(): Promise<ApkRelease> {
+  try {
+    const res = await fetch(GITHUB_RELEASES_API, {
+      headers: { Accept: "application/vnd.github+json" },
+    });
+    if (!res.ok) throw new Error(`GitHub ${res.status}`);
+    const data = (await res.json()) as {
+      tag_name?: string;
+      name?: string;
+      body?: string;
+      assets?: { name: string; browser_download_url: string }[];
+    };
+    const version = data.tag_name || data.name || FALLBACK_APK_VERSION;
+    const apkAsset = data.assets?.find((a) => a.name.toLowerCase().endsWith(".apk"));
+    if (apkAsset) return { url: apkAsset.browser_download_url, version };
+    const urlMatch = data.body?.match(/https?:\/\/\S+/);
+    if (urlMatch) return { url: urlMatch[0].replace(/[),.]+$/, ""), version };
+    return { url: FALLBACK_APK_URL, version };
+  } catch {
+    return { url: FALLBACK_APK_URL, version: FALLBACK_APK_VERSION };
+  }
+}
 
 export const Route = createFileRoute("/setup")({
   head: () => ({
