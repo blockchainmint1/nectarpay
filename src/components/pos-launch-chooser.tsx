@@ -37,8 +37,16 @@ export function PosLaunchChooser({ onFallthrough }: { onFallthrough?: () => void
       onFallthrough?.();
       return;
     }
+    // Once the merchant picks a tile in this session, don't nag them again
+    // when they navigate back to `/` or `/start`.
+    if (sessionStorage.getItem("pos.launch.chosen") === "1") {
+      setState({ kind: "web" });
+      onFallthrough?.();
+      return;
+    }
     setState({ kind: "native", creds: loadCreds() });
   }, [onFallthrough]);
+
 
   if (state.kind === "loading") {
     // Brief blank while we decide — prevents a flash of the web landing
