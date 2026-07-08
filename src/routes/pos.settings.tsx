@@ -238,6 +238,40 @@ function SettingsPage() {
         </div>
 
         <div className="mt-8 border-t border-white/10 pt-6">
+          <p className="text-[10px] font-bold tracking-widest text-white/40">WEB BUILD</p>
+          <p className="mt-1 text-[11px] text-white/50">
+            Live UI served by the terminal WebView. If it drifts from what's deployed, force a refresh to clear the cache.
+          </p>
+          <div className="mt-3 flex items-center justify-between text-xs">
+            <span className="text-white/60">Running</span>
+            <span className="font-mono text-white/90">{LOCAL_BUILD_ID.slice(-10)}</span>
+          </div>
+          <div className="mt-1 flex items-center justify-between text-xs">
+            <span className="text-white/60">Server</span>
+            <span className={`font-mono ${webStale ? "text-amber-300" : "text-white/90"}`}>
+              {serverBuild ? serverBuild.slice(-10) : "…"}
+            </span>
+          </div>
+          {webStale && (
+            <p className="mt-2 text-[11px] text-amber-300">
+              A newer web build is available. Reload to pick it up.
+            </p>
+          )}
+          <button
+            onClick={runForceRefresh}
+            disabled={refreshing}
+            className={`mt-3 h-11 w-full rounded-lg text-xs font-bold tracking-widest disabled:opacity-50 ${
+              webStale
+                ? "bg-amber-500 text-black hover:bg-amber-400"
+                : "border border-white/15 bg-white/5 text-white/80 hover:bg-white/10"
+            }`}
+          >
+            {refreshing ? "RELOADING…" : webStale ? "RELOAD TO LATEST" : "FORCE REFRESH"}
+          </button>
+        </div>
+
+
+        <div className="mt-8 border-t border-white/10 pt-6">
           <p className="text-[10px] font-bold tracking-widest text-white/40">APP VERSION</p>
           <div className="mt-2 flex items-center justify-between text-xs">
             <span className="text-white/60">Installed</span>
