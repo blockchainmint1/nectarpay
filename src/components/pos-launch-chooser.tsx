@@ -81,22 +81,32 @@ export function PosLaunchChooser({ onFallthrough }: { onFallthrough?: () => void
                 icon={<Store className="h-6 w-6" />}
                 title="Return to POS"
                 subtitle="Resume this paired terminal"
-                onClick={() => navigate({ to: "/pos", replace: true })}
+                onClick={() => {
+                  sessionStorage.setItem("pos.launch.chosen", "1");
+                  navigate({ to: "/pos", replace: true });
+                }}
               />
             )}
             <Tile
               icon={<Smartphone className="h-6 w-6" />}
               title="New terminal"
               subtitle="Existing merchant · sign in to re-pair this device"
-              onClick={() => navigate({ to: "/pos/pair-signin", replace: true })}
+              onClick={() => {
+                sessionStorage.setItem("pos.launch.chosen", "1");
+                navigate({ to: "/pos/pair-signin", replace: true });
+              }}
             />
             <Tile
               icon={<UserPlus className="h-6 w-6" />}
               title="New merchant"
               subtitle="Set up a brand-new store from scratch"
-              onClick={() => navigate({ to: "/start", replace: true, search: { launch: "1" } as never })}
+              onClick={() => {
+                sessionStorage.setItem("pos.launch.chosen", "1");
+                navigate({ to: "/start", replace: true });
+              }}
             />
           </div>
+
         </div>
       </div>
       <div className="border-t border-white/10 px-6 py-4 text-center text-[10px] tracking-widest text-white/40">
