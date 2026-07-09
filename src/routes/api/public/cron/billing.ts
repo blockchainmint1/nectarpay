@@ -44,7 +44,7 @@ async function rolloverBilling(): Promise<{
   // 2) Renew subscriptions whose period has ended
   const { data: dueRenewal } = await supabaseAdmin
     .from("subscriptions")
-    .select("user_id, plan_id, plans!inner(monthly_price_usd, name)")
+    .select("user_id, plan_id, plans!subscriptions_plan_id_fkey!inner(monthly_price_usd, name)")
     .lte("current_period_end", now.toISOString())
     .eq("status", "active")
     .neq("plan_id", "free");
