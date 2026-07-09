@@ -351,7 +351,19 @@ function LiveContent({ data }: { data: LiveStats }) {
                     {t.token ?? t.chain?.toUpperCase() ?? "—"}
                   </td>
                   <td className="px-4 py-3" style={{ color: "var(--np-slate)" }}>
-                    {t.country ?? "—"}
+                    <div>{t.country ?? "—"}</div>
+                    {t.tx_hash && (
+                      <a
+                        href={explorerUrl(t.chain, t.tx_hash)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="np-mono text-[10px] hover:underline"
+                        style={{ color: "var(--np-honey-400)" }}
+                        title={t.tx_hash}
+                      >
+                        {shortHash(t.tx_hash)}
+                      </a>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right">
                     {money(t.fiat_amount)}{" "}
