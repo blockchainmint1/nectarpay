@@ -1,9 +1,24 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Check, Hexagon, Printer, Snowflake, Zap } from "lucide-react";
 import posTerminalAsset from "@/assets/nectar-pos-terminal.jpg.asset.json";
 
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth-context";
+import { recordPlanIntent } from "@/lib/plan-intent.functions";
+
+const PENDING_PLAN_KEY = "nectar.pending_plan";
+
+function stashPendingPlan(plan: "free" | "cheap" | "unlimited", source: string, terminalKit = false) {
+  try {
+    localStorage.setItem(
+      PENDING_PLAN_KEY,
+      JSON.stringify({ plan_id: plan, source, terminal_kit: terminalKit, at: Date.now() }),
+    );
+  } catch {
+    /* ignore */
+  }
+}
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
