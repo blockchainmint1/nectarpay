@@ -7,7 +7,7 @@ import { ArrowRight, Mail, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth-context";
-import { MarketingNav } from "@/components/marketing-shell";
+import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 import { Button } from "@/components/ui/button";
 import { WALLET_POLL_INTERVAL_MS } from "@/lib/wallet-auth-shared";
 import { qrToString } from "@/lib/qr";
