@@ -252,6 +252,7 @@ function KitItem({
 }
 
 function PlanCard({
+  planId,
   name,
   price,
   priceSuffix,
@@ -261,6 +262,7 @@ function PlanCard({
   highlight,
   footnote,
 }: {
+  planId: "free" | "cheap" | "unlimited";
   name: string;
   price: string;
   priceSuffix: string;
@@ -270,6 +272,21 @@ function PlanCard({
   highlight?: boolean;
   footnote?: string;
 }) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  async function handleChoose() {
+    stashPendingPlan(planId, "pricing");
+    if (user) {
+      try {
+        await recordPlanIntent({ data: { plan_id: planId, source: "pricing" } });
+      } catch {
+        /* non-blocking */
+      }
+    }
+    navigate({ to: "/signup", search: { plan: planId } as never });
+  }
+
   return (
     <div
       className={`flex flex-col rounded-xl border p-6 ${
@@ -296,8 +313,12 @@ function PlanCard({
         ))}
       </ul>
       <div className="mt-6 flex-1" />
-      <Button asChild className="mt-2 w-full" variant={highlight ? "default" : "outline"}>
-        <Link to="/signup">{cta}</Link>
+      <Button
+        onClick={handleChoose}
+        className="mt-2 w-full"
+        variant={highlight ? "default" : "outline"}
+      >
+        {cta}
       </Button>
       {footnote ? (
         <p className="mt-3 text-xs text-muted-foreground">{footnote}</p>
