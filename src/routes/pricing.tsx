@@ -1,9 +1,24 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Check, Hexagon, Printer, Snowflake, Zap } from "lucide-react";
 import posTerminalAsset from "@/assets/nectar-pos-terminal.jpg.asset.json";
 
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth-context";
+import { recordPlanIntent } from "@/lib/plan-intent.functions";
+
+const PENDING_PLAN_KEY = "nectar.pending_plan";
+
+function stashPendingPlan(plan: "free" | "cheap" | "unlimited", source: string, terminalKit = false) {
+  try {
+    localStorage.setItem(
+      PENDING_PLAN_KEY,
+      JSON.stringify({ plan_id: plan, source, terminal_kit: terminalKit, at: Date.now() }),
+    );
+  } catch {
+    /* ignore */
+  }
+}
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -40,6 +55,7 @@ function PricingPage() {
 
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             <PlanCard
+              planId="free"
               name="Free"
               price="$0"
               priceSuffix=""
@@ -57,6 +73,7 @@ function PricingPage() {
               footnote="Monthly transaction limit set by us — designed for hobby stores and pilots."
             />
             <PlanCard
+              planId="cheap"
               name="Cheap"
               price="$19"
               priceSuffix="/mo"
@@ -76,6 +93,7 @@ function PricingPage() {
               footnote="Billed monthly in TEXITcoin. Pay from any TXC wallet."
             />
             <PlanCard
+              planId="unlimited"
               name="Unlimited"
               price="$99"
               priceSuffix="/mo"
@@ -113,6 +131,21 @@ function PricingPage() {
 function TerminalKitSection() {
   const kitUrl =
     "https://blockchainmint.com/buy/nectar-pay-mobile-pos-terminal?clear=1";
+  const { user } = useAuth();
+
+  async function handleClaim() {
+    stashPendingPlan("cheap", "terminal_kit", true);
+    if (user) {
+      try {
+        await recordPlanIntent({
+          data: { plan_id: "cheap", source: "terminal_kit", terminal_kit: true },
+        });
+      } catch {
+        /* non-blocking */
+      }
+    }
+  }
+
   return (
     <section className="relative overflow-hidden border-b border-border/60 bg-[#0b1425] py-20 text-white">
       <div
@@ -168,7 +201,7 @@ function TerminalKitSection() {
               size="lg"
               className="bg-amber-500 text-black hover:bg-amber-400"
             >
-              <a href={kitUrl} target="_blank" rel="noreferrer">
+              <a href={kitUrl} target="_blank" rel="noreferrer" onClick={handleClaim}>
                 Claim your kit <ArrowRight className="ml-2 h-4 w-4" />
               </a>
             </Button>
@@ -191,6 +224,7 @@ function TerminalKitSection() {
           href={kitUrl}
           target="_blank"
           rel="noreferrer"
+          onClick={handleClaim}
           className="group relative block rounded-2xl border border-white/10 bg-black/40 p-3 shadow-2xl shadow-amber-500/10 transition hover:-translate-y-1 hover:border-amber-400/40"
         >
           <img
@@ -234,6 +268,7 @@ function KitItem({
 }
 
 function PlanCard({
+  planId,
   name,
   price,
   priceSuffix,
@@ -243,6 +278,7 @@ function PlanCard({
   highlight,
   footnote,
 }: {
+  planId: "free" | "cheap" | "unlimited";
   name: string;
   price: string;
   priceSuffix: string;
@@ -252,6 +288,21 @@ function PlanCard({
   highlight?: boolean;
   footnote?: string;
 }) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  async function handleChoose() {
+    stashPendingPlan(planId, "pricing");
+    if (user) {
+      try {
+        await recordPlanIntent({ data: { plan_id: planId, source: "pricing" } });
+      } catch {
+        /* non-blocking */
+      }
+    }
+    navigate({ to: "/signup", search: { plan: planId } as never });
+  }
+
   return (
     <div
       className={`flex flex-col rounded-xl border p-6 ${
@@ -278,8 +329,12 @@ function PlanCard({
         ))}
       </ul>
       <div className="mt-6 flex-1" />
-      <Button asChild className="mt-2 w-full" variant={highlight ? "default" : "outline"}>
-        <Link to="/signup">{cta}</Link>
+      <Button
+        onClick={handleChoose}
+        className="mt-2 w-full"
+        variant={highlight ? "default" : "outline"}
+      >
+        {cta}
       </Button>
       {footnote ? (
         <p className="mt-3 text-xs text-muted-foreground">{footnote}</p>
