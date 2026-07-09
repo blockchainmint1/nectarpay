@@ -235,9 +235,9 @@ function Home2() {
               </p>
 
               <div className="mt-10 flex flex-wrap items-center gap-3">
-                <a href="#start" className="np-btn np-btn-honey">
+                <Link to="/signup" className="np-btn np-btn-honey">
                   Create your account <ArrowRight className="h-4 w-4" />
-                </a>
+                </Link>
                 <a href="#demo" className="np-btn np-btn-ghost">See a demo</a>
               </div>
 
