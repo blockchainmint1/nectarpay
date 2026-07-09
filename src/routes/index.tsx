@@ -12,16 +12,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowRight, Zap, Shield, Wallet, Infinity as InfinityIcon, Check, X, Sparkles } from "lucide-react";
-import buzzyMascot from "@/assets/buzzy-mascot.asset.json";
-import buzzy1 from "@/assets/buzzy-33a0881b.png.asset.json";
-import buzzy2 from "@/assets/buzzy-5ec6f7f6.png.asset.json";
-import buzzy3 from "@/assets/buzzy-548d6215.png.asset.json";
-import buzzy4 from "@/assets/buzzy-862e12f5.png.asset.json";
-import buzzy5 from "@/assets/buzzy-1f8130a6.png.asset.json";
-import buzzy6 from "@/assets/buzzy-ed8f8613.png.asset.json";
-import buzzy7 from "@/assets/buzzy-f5f116d1.png.asset.json";
-import buzzy8 from "@/assets/buzzy-a93ed7e6.png.asset.json";
-const BUZZY_VARIANTS = [buzzyMascot, buzzy1, buzzy2, buzzy3, buzzy4, buzzy5, buzzy6, buzzy7, buzzy8];
 import { PosLaunchChooser } from "@/components/pos-launch-chooser";
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 
@@ -177,15 +167,11 @@ function Wordmark({ size = 24 }: { size?: number }) {
 function Home2() {
   // Live ticker for the hero mono strip
   const [t, setT] = useState(0.4);
-  // Random Buzzy variant per page load (client-only to avoid SSR/hydration mismatch)
-  const [buzzy, setBuzzy] = useState(BUZZY_VARIANTS[0]);
-  useEffect(() => {
-    setBuzzy(BUZZY_VARIANTS[Math.floor(Math.random() * BUZZY_VARIANTS.length)]);
-  }, []);
   useEffect(() => {
     const id = setInterval(() => setT(0.3 + Math.random() * 0.3), 1400);
     return () => clearInterval(id);
   }, []);
+
 
   return (
     <>
@@ -201,58 +187,42 @@ function Home2() {
       {/* ============ HERO ============ */}
       <section className="np-hex relative overflow-hidden">
         <div className="mx-auto max-w-7xl px-6 pb-24 pt-20 md:pt-28">
-          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:gap-16">
-            <div>
-              <div className="mb-8 flex items-center gap-3">
-                <span className="np-eyebrow-chip">
-                  <Sparkles className="h-3 w-3" /> Non-custodial · Zero fees · v1.0
-                </span>
-              </div>
-
-              <h1 className="np-display max-w-4xl text-[64px] leading-[0.98] md:text-[96px]">
-                Accept crypto.<br />
-                Keep <span style={{ color: "var(--np-honey-400)" }}>every cent.</span>
-              </h1>
-
-              <p className="mt-8 max-w-2xl text-lg md:text-xl" style={{ color: "rgba(255,255,255,0.75)" }}>
-                Zero fees. Non-custodial. Instant. Set up in two minutes.
-                Bitcoin, TEXITcoin, stablecoins, and every digital currency still to come — settled straight into wallets you fully control.
-              </p>
-
-              <div className="mt-10 flex flex-wrap items-center gap-3">
-                <Link to="/signup" className="np-btn np-btn-honey">
-                  Create your account <ArrowRight className="h-4 w-4" />
-                </Link>
-                <a href="#demo" className="np-btn np-btn-ghost">See a demo</a>
-              </div>
-
-              {/* Mono live ticker */}
-              <div className="mt-14 flex flex-wrap items-center gap-x-8 gap-y-3 np-mono text-xs" style={{ color: "var(--np-slate)" }}>
-                <span>$0.00 FEES</span>
-                <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
-                <span>SETTLED <span style={{ color: "var(--np-honey-300)" }}>{t.toFixed(2)}s</span></span>
-                <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
-                <span>WALLET SELF-CUSTODY</span>
-                <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
-                <span>WCAG AA</span>
-              </div>
+          <div className="max-w-4xl">
+            <div className="mb-8 flex items-center gap-3">
+              <span className="np-eyebrow-chip">
+                <Sparkles className="h-3 w-3" /> Non-custodial · Zero fees · v1.0
+              </span>
             </div>
 
-            {/* Buzzy — the NectarPay mascot */}
-            <div className="relative hidden lg:block">
-              <div
-                className="pointer-events-none absolute inset-0 -z-10 mx-auto h-[420px] w-[420px] translate-y-6 rounded-full"
-                style={{ background: "radial-gradient(circle, rgba(246,162,30,0.35), transparent 65%)" }}
-              />
-              <img
-                src={buzzy.url}
-                alt="Buzzy, the NectarPay mascot bee, waving and holding a honey-gold coin"
-                width={1024}
-                height={1024}
-                className="np-buzzy-float relative mx-auto h-auto w-full max-w-[440px] drop-shadow-[0_30px_60px_rgba(0,0,0,0.45)]"
-              />
+            <h1 className="np-display max-w-4xl text-[64px] leading-[0.98] md:text-[96px]">
+              Accept crypto.<br />
+              Keep <span style={{ color: "var(--np-honey-400)" }}>every cent.</span>
+            </h1>
+
+            <p className="mt-8 max-w-2xl text-lg md:text-xl" style={{ color: "rgba(255,255,255,0.75)" }}>
+              Zero fees. Non-custodial. Instant. Set up in two minutes.
+              Bitcoin, TEXITcoin, stablecoins, and every digital currency still to come — settled straight into wallets you fully control.
+            </p>
+
+            <div className="mt-10 flex flex-wrap items-center gap-3">
+              <Link to="/signup" className="np-btn np-btn-honey">
+                Create your account <ArrowRight className="h-4 w-4" />
+              </Link>
+              <a href="#demo" className="np-btn np-btn-ghost">See a demo</a>
+            </div>
+
+            {/* Mono live ticker */}
+            <div className="mt-14 flex flex-wrap items-center gap-x-8 gap-y-3 np-mono text-xs" style={{ color: "var(--np-slate)" }}>
+              <span>$0.00 FEES</span>
+              <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
+              <span>SETTLED <span style={{ color: "var(--np-honey-300)" }}>{t.toFixed(2)}s</span></span>
+              <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
+              <span>WALLET SELF-CUSTODY</span>
+              <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
+              <span>WCAG AA</span>
             </div>
           </div>
+
 
           {/* Stat strip */}
           <div className="mt-16 grid grid-cols-2 gap-8 border-t pt-10 md:grid-cols-4" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
