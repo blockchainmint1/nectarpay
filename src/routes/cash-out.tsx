@@ -337,6 +337,8 @@ function CashOutPage() {
           </Link>
         </div>
       </div>
-    </article>
+      </article>
+      <MarketingFooter />
+    </div>
   );
 }
