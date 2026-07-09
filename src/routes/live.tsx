@@ -141,6 +141,29 @@ function timeAgo(iso: string): string {
   if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
   return `${Math.floor(s / 86400)}d ago`;
 }
+function shortHash(h: string): string {
+  return h.length > 14 ? `${h.slice(0, 8)}…${h.slice(-6)}` : h;
+}
+
+function explorerUrl(chain: string | null, hash: string): string {
+  switch ((chain ?? "").toLowerCase()) {
+    case "btc":
+      return `https://mempool.space/tx/${hash}`;
+    case "eth":
+    case "base":
+      return `https://etherscan.io/tx/${hash}`;
+    case "txc":
+      return `https://mempool.texitcoin.org/tx/${hash}`;
+    case "tron":
+      return `https://tronscan.org/#/transaction/${hash}`;
+    case "sol":
+      return `https://solscan.io/tx/${hash}`;
+    case "doge":
+      return `https://blockchair.com/dogecoin/transaction/${hash}`;
+    default:
+      return `https://www.google.com/search?q=${hash}`;
+  }
+}
 
 const FUN_THINGS = [
   { usd: 15, thing: "a family pizza" },
