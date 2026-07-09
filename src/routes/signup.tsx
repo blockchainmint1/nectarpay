@@ -51,8 +51,53 @@ const ORDER: Step[] = ["welcome", "business", "listing", "wallet", "terminal", "
 function SignupPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { plan: planFromQuery } = Route.useSearch();
   const [step, setStep] = useState<Step>("welcome");
   const [storeId, setStoreId] = useState<string | null>(null);
+
+  // Stash ?plan= into localStorage so it survives the OAuth/magic-link roundtrip.
+  useEffect(() => {
+    if (!planFromQuery) return;
+    try {
+      const existing = localStorage.getItem(PENDING_PLAN_KEY);
+      if (!existing) {
+        localStorage.setItem(
+          PENDING_PLAN_KEY,
+          JSON.stringify({ plan_id: planFromQuery, source: "pricing", at: Date.now() }),
+        );
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [planFromQuery]);
+
+  // After sign-in, apply any pending plan choice to the user's subscription.
+  useEffect(() => {
+    if (loading || !user) return;
+    let pending: PendingPlan | null = null;
+    try {
+      const raw = localStorage.getItem(PENDING_PLAN_KEY);
+      if (raw) pending = JSON.parse(raw) as PendingPlan;
+    } catch {
+      /* ignore */
+    }
+    if (!pending && planFromQuery) pending = { plan_id: planFromQuery, source: "pricing" };
+    if (!pending || !VALID_PLANS.has(pending.plan_id)) return;
+    void (async () => {
+      try {
+        await recordPlanIntent({
+          data: {
+            plan_id: pending!.plan_id,
+            source: pending!.source ?? "pricing",
+            terminal_kit: !!pending!.terminal_kit,
+          },
+        });
+        localStorage.removeItem(PENDING_PLAN_KEY);
+      } catch {
+        /* non-blocking */
+      }
+    })();
+  }, [loading, user, planFromQuery]);
 
   // When signed in, find or create their first store and skip to business step.
   useEffect(() => {
