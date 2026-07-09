@@ -224,6 +224,7 @@ function TerminalKitSection() {
           href={kitUrl}
           target="_blank"
           rel="noreferrer"
+          onClick={handleClaim}
           className="group relative block rounded-2xl border border-white/10 bg-black/40 p-3 shadow-2xl shadow-amber-500/10 transition hover:-translate-y-1 hover:border-amber-400/40"
         >
           <img
