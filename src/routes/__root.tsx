@@ -17,6 +17,7 @@ import { ThemeProvider } from "../lib/theme";
 import { Toaster } from "../components/ui/sonner";
 import { PosReturnBar } from "../components/pos-return-bar";
 import { isNative } from "../lib/pos-native";
+import { captureAffiliateFromUrl } from "../lib/affiliate";
 
 function NotFoundComponent() {
   return (
@@ -142,6 +143,12 @@ function RootComponent() {
       }
     } catch { /* ignore */ }
   }, []);
+
+  // First-touch affiliate capture: reads ?r=<affiliateId> on every navigation
+  // and stashes it in a 90-day cookie + localStorage. No-op if already set.
+  useEffect(() => {
+    captureAffiliateFromUrl();
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     const inPosShell =

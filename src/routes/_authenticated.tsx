@@ -5,6 +5,8 @@ import { LayoutDashboard, Store, BookOpen, LogOut, CreditCard, Bell, Download, S
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { readAffiliateSnapshot, clearAffiliateSnapshot } from "@/lib/affiliate";
+import { recordAffiliateAttribution } from "@/lib/affiliate.functions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +33,18 @@ function AuthenticatedLayout() {
       });
     }
   }, [user, loading, navigate, router]);
+
+  // Attribute a signup to a mineTXC affiliate (first-touch). Runs once per
+  // signed-in session if we have a stashed ?r=<id>; the server enforces
+  // first-touch, so re-runs are safe. We clear the cookie either way.
+  useEffect(() => {
+    if (loading || !user) return;
+    const snap = readAffiliateSnapshot();
+    if (!snap) return;
+    recordAffiliateAttribution({ data: snap })
+      .catch(() => { /* non-blocking */ })
+      .finally(() => { clearAffiliateSnapshot(); });
+  }, [loading, user]);
 
   if (loading || !user) {
     return (
