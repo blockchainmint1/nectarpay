@@ -2,12 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { MapPin as PinIcon, Globe, ExternalLink } from "lucide-react";
+import { MapPin as PinIcon, Globe, ExternalLink, BellRing, Loader2, CheckCircle2 } from "lucide-react";
 
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import { getMerchantMapPins, type MapPin } from "@/lib/merchant-map.functions";
+import { subscribeMerchantAlert } from "@/lib/merchant-alerts.functions";
 
 export const Route = createFileRoute("/where")({
   head: () => ({
@@ -121,11 +125,29 @@ function WherePage() {
           <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
             Where
           </h1>
-          <p className="mt-3 max-w-2xl text-foreground/70">
-            Six launch metros, six live maps. Every pin is a real merchant
-            accepting Bitcoin, TEXITcoin and stablecoins through Nectar.Pay.
-            1,200 terminals are shipping now — check back as more pins light up.
-          </p>
+          <div className="mt-4 max-w-3xl space-y-4 text-foreground/75">
+            <p>
+              We're building Nectar.Pay to become the largest crypto payment
+              network in the world — and, alongside it, the definitive index
+              of merchants who accept crypto. Every pin on the maps below is a
+              real business taking Bitcoin, TEXITcoin, and stablecoins through
+              Nectar.Pay. We're just getting started: 10,000 POS terminals
+              shipping by October 2026.
+            </p>
+            <p>
+              We're concentrating our first push on six metros. Crypto adoption
+              isn't just about merchants saying "yes" — it's about consumers
+              actively preferring the shops that do. Density in a handful of
+              markets creates that habit faster than a scattered map ever could.
+            </p>
+            <p>
+              Outside these six regions? Don't feel left out — join us from
+              anywhere. New markets open constantly, and every new merchant,
+              rep, and champion moves the map. Check back often, or drop your
+              details below and we'll ping you the moment a merchant lights up
+              near you.
+            </p>
+          </div>
           <nav className="mt-6 flex flex-wrap gap-2">
             {MARKETS.map((m) => (
               <a
@@ -137,8 +159,19 @@ function WherePage() {
               </a>
             ))}
           </nav>
+          <div className="mt-6">
+            <a
+              href="#notify"
+              className="inline-flex items-center gap-2 rounded-md border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20"
+            >
+              <BellRing className="h-3.5 w-3.5" />
+              Get notified when a merchant opens near you
+            </a>
+          </div>
         </div>
       </section>
+
+      <NotifySection />
 
       <section className="mx-auto max-w-6xl px-4 py-10">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
