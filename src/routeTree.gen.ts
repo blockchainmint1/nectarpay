@@ -21,6 +21,7 @@ import { Route as PosBuildIdRouteImport } from './routes/pos-build-id'
 import { Route as PosApkRouteImport } from './routes/pos-apk'
 import { Route as PosRouteImport } from './routes/pos'
 import { Route as ManifestoRouteImport } from './routes/manifesto'
+import { Route as MRouteImport } from './routes/m'
 import { Route as LiveRouteImport } from './routes/live'
 import { Route as InvestorsRouteImport } from './routes/investors'
 import { Route as DocsRouteImport } from './routes/docs'
@@ -56,6 +57,8 @@ import { Route as AuthenticatedStoresIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated.admin.index'
 import { Route as AuthenticatedStoresNewRouteImport } from './routes/_authenticated.stores.new'
 import { Route as AuthenticatedStoresStoreIdRouteImport } from './routes/_authenticated.stores.$storeId'
+import { Route as AuthenticatedMVirtualTerminalRouteImport } from './routes/_authenticated.m.virtual-terminal'
+import { Route as AuthenticatedMHomeRouteImport } from './routes/_authenticated.m.home'
 import { Route as AuthenticatedAdminMerchantsRouteImport } from './routes/_authenticated.admin.merchants'
 import { Route as AuthenticatedAdminLeadsRouteImport } from './routes/_authenticated.admin.leads'
 import { Route as AuthenticatedAdminKnowledgeRouteImport } from './routes/_authenticated.admin.knowledge'
@@ -165,6 +168,11 @@ const PosRoute = PosRouteImport.update({
 const ManifestoRoute = ManifestoRouteImport.update({
   id: '/manifesto',
   path: '/manifesto',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MRoute = MRouteImport.update({
+  id: '/m',
+  path: '/m',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LiveRoute = LiveRouteImport.update({
@@ -344,6 +352,17 @@ const AuthenticatedStoresStoreIdRoute =
     path: '/stores/$storeId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedMVirtualTerminalRoute =
+  AuthenticatedMVirtualTerminalRouteImport.update({
+    id: '/m/virtual-terminal',
+    path: '/m/virtual-terminal',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMHomeRoute = AuthenticatedMHomeRouteImport.update({
+  id: '/m/home',
+  path: '/m/home',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAdminMerchantsRoute =
   AuthenticatedAdminMerchantsRouteImport.update({
     id: '/merchants',
@@ -644,6 +663,7 @@ export interface FileRoutesByFullPath {
   '/docs': typeof DocsRouteWithChildren
   '/investors': typeof InvestorsRoute
   '/live': typeof LiveRoute
+  '/m': typeof MRoute
   '/manifesto': typeof ManifestoRoute
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
@@ -681,6 +701,8 @@ export interface FileRoutesByFullPath {
   '/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
   '/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
+  '/m/home': typeof AuthenticatedMHomeRoute
+  '/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -742,6 +764,7 @@ export interface FileRoutesByTo {
   '/docs': typeof DocsRouteWithChildren
   '/investors': typeof InvestorsRoute
   '/live': typeof LiveRoute
+  '/m': typeof MRoute
   '/manifesto': typeof ManifestoRoute
   '/pos-apk': typeof PosApkRoute
   '/pos-build-id': typeof PosBuildIdRoute
@@ -776,6 +799,8 @@ export interface FileRoutesByTo {
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
+  '/m/home': typeof AuthenticatedMHomeRoute
+  '/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/stores': typeof AuthenticatedStoresIndexRoute
@@ -838,6 +863,7 @@ export interface FileRoutesById {
   '/docs': typeof DocsRouteWithChildren
   '/investors': typeof InvestorsRoute
   '/live': typeof LiveRoute
+  '/m': typeof MRoute
   '/manifesto': typeof ManifestoRoute
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
@@ -875,6 +901,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
   '/_authenticated/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/_authenticated/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
+  '/_authenticated/m/home': typeof AuthenticatedMHomeRoute
+  '/_authenticated/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
   '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/_authenticated/stores/new': typeof AuthenticatedStoresNewRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -938,6 +966,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/investors'
     | '/live'
+    | '/m'
     | '/manifesto'
     | '/pos'
     | '/pos-apk'
@@ -975,6 +1004,8 @@ export interface FileRouteTypes {
     | '/admin/knowledge'
     | '/admin/leads'
     | '/admin/merchants'
+    | '/m/home'
+    | '/m/virtual-terminal'
     | '/stores/$storeId'
     | '/stores/new'
     | '/admin/'
@@ -1036,6 +1067,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/investors'
     | '/live'
+    | '/m'
     | '/manifesto'
     | '/pos-apk'
     | '/pos-build-id'
@@ -1070,6 +1102,8 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/leads'
     | '/admin/merchants'
+    | '/m/home'
+    | '/m/virtual-terminal'
     | '/stores/new'
     | '/admin'
     | '/stores'
@@ -1131,6 +1165,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/investors'
     | '/live'
+    | '/m'
     | '/manifesto'
     | '/pos'
     | '/pos-apk'
@@ -1168,6 +1203,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/knowledge'
     | '/_authenticated/admin/leads'
     | '/_authenticated/admin/merchants'
+    | '/_authenticated/m/home'
+    | '/_authenticated/m/virtual-terminal'
     | '/_authenticated/stores/$storeId'
     | '/_authenticated/stores/new'
     | '/_authenticated/admin/'
@@ -1231,6 +1268,7 @@ export interface RootRouteChildren {
   DocsRoute: typeof DocsRouteWithChildren
   InvestorsRoute: typeof InvestorsRoute
   LiveRoute: typeof LiveRoute
+  MRoute: typeof MRoute
   ManifestoRoute: typeof ManifestoRoute
   PosRoute: typeof PosRouteWithChildren
   PosApkRoute: typeof PosApkRoute
@@ -1356,6 +1394,13 @@ declare module '@tanstack/react-router' {
       path: '/manifesto'
       fullPath: '/manifesto'
       preLoaderRoute: typeof ManifestoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/m': {
+      id: '/m'
+      path: '/m'
+      fullPath: '/m'
+      preLoaderRoute: typeof MRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/live': {
@@ -1601,6 +1646,20 @@ declare module '@tanstack/react-router' {
       path: '/stores/$storeId'
       fullPath: '/stores/$storeId'
       preLoaderRoute: typeof AuthenticatedStoresStoreIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/m/virtual-terminal': {
+      id: '/_authenticated/m/virtual-terminal'
+      path: '/m/virtual-terminal'
+      fullPath: '/m/virtual-terminal'
+      preLoaderRoute: typeof AuthenticatedMVirtualTerminalRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/m/home': {
+      id: '/_authenticated/m/home'
+      path: '/m/home'
+      fullPath: '/m/home'
+      preLoaderRoute: typeof AuthenticatedMHomeRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/admin/merchants': {
@@ -2067,6 +2126,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedExportsRoute: typeof AuthenticatedExportsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedTerminalsRoute: typeof AuthenticatedTerminalsRoute
+  AuthenticatedMHomeRoute: typeof AuthenticatedMHomeRoute
+  AuthenticatedMVirtualTerminalRoute: typeof AuthenticatedMVirtualTerminalRoute
   AuthenticatedStoresStoreIdRoute: typeof AuthenticatedStoresStoreIdRouteWithChildren
   AuthenticatedStoresNewRoute: typeof AuthenticatedStoresNewRoute
   AuthenticatedStoresIndexRoute: typeof AuthenticatedStoresIndexRoute
@@ -2079,6 +2140,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedExportsRoute: AuthenticatedExportsRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedTerminalsRoute: AuthenticatedTerminalsRoute,
+  AuthenticatedMHomeRoute: AuthenticatedMHomeRoute,
+  AuthenticatedMVirtualTerminalRoute: AuthenticatedMVirtualTerminalRoute,
   AuthenticatedStoresStoreIdRoute: AuthenticatedStoresStoreIdRouteWithChildren,
   AuthenticatedStoresNewRoute: AuthenticatedStoresNewRoute,
   AuthenticatedStoresIndexRoute: AuthenticatedStoresIndexRoute,
@@ -2177,6 +2240,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocsRoute: DocsRouteWithChildren,
   InvestorsRoute: InvestorsRoute,
   LiveRoute: LiveRoute,
+  MRoute: MRoute,
   ManifestoRoute: ManifestoRoute,
   PosRoute: PosRouteWithChildren,
   PosApkRoute: PosApkRoute,

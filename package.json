@@ -9,9 +9,16 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "sync:terminal": "cap sync --config capacitor.config.ts",
+    "sync:merchant": "cap sync --config capacitor.merchant.config.ts",
+    "ios:merchant:add": "cap add ios --config capacitor.merchant.config.ts",
+    "ios:merchant": "cap open ios --config capacitor.merchant.config.ts",
+    "android:merchant:add": "cap add android --config capacitor.merchant.config.ts",
+    "android:merchant": "cap open android --config capacitor.merchant.config.ts"
   },
   "dependencies": {
+    "@aparajita/capacitor-biometric-auth": "^10.0.0",
     "@capacitor/android": "^8.4.1",
     "@capacitor/app": "^8.1.0",
     "@capacitor/browser": "^8.0.3",
