@@ -124,8 +124,31 @@ function RootComponent() {
 
   const location = useLocation();
 
+  // Detect merchant native shell via ?mode=merchant on first load and
+  // persist so subsequent client-side navigations keep the flag. See
+  // src/lib/app-mode.ts — this drives which UI variants are shown.
   useEffect(() => {
-    const inPosShell = location.pathname.startsWith("/pos") || isNative();
+    try {
+      const url = new URL(window.location.href);
+      const q = url.searchParams.get("mode");
+      if (q === "merchant" || q === "terminal") {
+        window.__NECTAR_APP_MODE__ = q;
+        localStorage.setItem("nectar.app-mode", q);
+      } else {
+        const saved = localStorage.getItem("nectar.app-mode");
+        if (saved === "merchant" || saved === "terminal") {
+          window.__NECTAR_APP_MODE__ = saved;
+        }
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    const inPosShell =
+      location.pathname.startsWith("/pos") ||
+      location.pathname === "/m" ||
+      location.pathname.startsWith("/m/") ||
+      isNative();
     if (inPosShell) {
       const existing = document.getElementById("honest-help-widget");
       if (existing) existing.remove();
