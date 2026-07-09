@@ -112,7 +112,7 @@ function PricingPage() {
 
 function TerminalKitSection() {
   const kitUrl =
-    "https://blockchainmint.com/product/nectar-pay-mobile-pos-terminal?add-to-cart=nectar-pay-mobile-pos-terminal";
+    "https://blockchainmint.com/buy/nectar-pay-mobile-pos-terminal?clear=1";
   return (
     <section className="relative overflow-hidden border-b border-border/60 bg-[#0b1425] py-20 text-white">
       <div
