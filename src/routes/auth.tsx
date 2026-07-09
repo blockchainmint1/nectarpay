@@ -343,6 +343,7 @@ function AuthPage() {
           )}
         </div>
       </div>
+      <MarketingFooter />
     </div>
   );
 }
