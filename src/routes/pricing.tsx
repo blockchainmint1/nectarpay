@@ -201,7 +201,7 @@ function TerminalKitSection() {
               size="lg"
               className="bg-amber-500 text-black hover:bg-amber-400"
             >
-              <a href={kitUrl} target="_blank" rel="noreferrer">
+              <a href={kitUrl} target="_blank" rel="noreferrer" onClick={handleClaim}>
                 Claim your kit <ArrowRight className="ml-2 h-4 w-4" />
               </a>
             </Button>
