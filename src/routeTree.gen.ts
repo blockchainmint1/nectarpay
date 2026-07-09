@@ -22,7 +22,6 @@ import { Route as PosApkRouteImport } from './routes/pos-apk'
 import { Route as PosRouteImport } from './routes/pos'
 import { Route as ManifestoRouteImport } from './routes/manifesto'
 import { Route as InvestorsRouteImport } from './routes/investors'
-import { Route as HomeOldRouteImport } from './routes/home-old'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CompareRouteImport } from './routes/compare'
@@ -170,11 +169,6 @@ const ManifestoRoute = ManifestoRouteImport.update({
 const InvestorsRoute = InvestorsRouteImport.update({
   id: '/investors',
   path: '/investors',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HomeOldRoute = HomeOldRouteImport.update({
-  id: '/home-old',
-  path: '/home-old',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsRoute = DocsRouteImport.update({
@@ -642,7 +636,6 @@ export interface FileRoutesByFullPath {
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
-  '/home-old': typeof HomeOldRoute
   '/investors': typeof InvestorsRoute
   '/manifesto': typeof ManifestoRoute
   '/pos': typeof PosRouteWithChildren
@@ -740,7 +733,6 @@ export interface FileRoutesByTo {
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
-  '/home-old': typeof HomeOldRoute
   '/investors': typeof InvestorsRoute
   '/manifesto': typeof ManifestoRoute
   '/pos-apk': typeof PosApkRoute
@@ -836,7 +828,6 @@ export interface FileRoutesById {
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
-  '/home-old': typeof HomeOldRoute
   '/investors': typeof InvestorsRoute
   '/manifesto': typeof ManifestoRoute
   '/pos': typeof PosRouteWithChildren
@@ -936,7 +927,6 @@ export interface FileRouteTypes {
     | '/compare'
     | '/contact'
     | '/docs'
-    | '/home-old'
     | '/investors'
     | '/manifesto'
     | '/pos'
@@ -1034,7 +1024,6 @@ export interface FileRouteTypes {
     | '/compare'
     | '/contact'
     | '/docs'
-    | '/home-old'
     | '/investors'
     | '/manifesto'
     | '/pos-apk'
@@ -1129,7 +1118,6 @@ export interface FileRouteTypes {
     | '/compare'
     | '/contact'
     | '/docs'
-    | '/home-old'
     | '/investors'
     | '/manifesto'
     | '/pos'
@@ -1229,7 +1217,6 @@ export interface RootRouteChildren {
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
   DocsRoute: typeof DocsRouteWithChildren
-  HomeOldRoute: typeof HomeOldRoute
   InvestorsRoute: typeof InvestorsRoute
   ManifestoRoute: typeof ManifestoRoute
   PosRoute: typeof PosRouteWithChildren
@@ -1363,13 +1350,6 @@ declare module '@tanstack/react-router' {
       path: '/investors'
       fullPath: '/investors'
       preLoaderRoute: typeof InvestorsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/home-old': {
-      id: '/home-old'
-      path: '/home-old'
-      fullPath: '/home-old'
-      preLoaderRoute: typeof HomeOldRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs': {
@@ -2175,7 +2155,6 @@ const rootRouteChildren: RootRouteChildren = {
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
   DocsRoute: DocsRouteWithChildren,
-  HomeOldRoute: HomeOldRoute,
   InvestorsRoute: InvestorsRoute,
   ManifestoRoute: ManifestoRoute,
   PosRoute: PosRouteWithChildren,
