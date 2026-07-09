@@ -196,7 +196,7 @@ function Home2() {
       {/* ============ NAV ============ */}
       <nav className="sticky top-0 z-40 backdrop-blur-md" style={{ background: "rgba(13,27,51,0.75)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link to="/home2" className="flex items-center gap-3">
+          <Link to="/" className="flex items-center gap-3">
             <HiveMark size={36} />
             <Wordmark size={22} />
           </Link>
