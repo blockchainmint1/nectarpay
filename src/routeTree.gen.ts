@@ -27,6 +27,7 @@ import { Route as DocsRouteImport } from './routes/docs'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CashOutRouteImport } from './routes/cash-out'
+import { Route as BrandRouteImport } from './routes/brand'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
@@ -194,6 +195,11 @@ const CompareRoute = CompareRouteImport.update({
 const CashOutRoute = CashOutRouteImport.update({
   id: '/cash-out',
   path: '/cash-out',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrandRoute = BrandRouteImport.update({
+  id: '/brand',
+  path: '/brand',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -631,6 +637,7 @@ const ApiPublicV1TerminalsInvoiceIdCancelRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
@@ -728,6 +735,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
@@ -823,6 +831,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
+  '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
@@ -922,6 +931,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/brand'
     | '/cash-out'
     | '/compare'
     | '/contact'
@@ -1019,6 +1029,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/brand'
     | '/cash-out'
     | '/compare'
     | '/contact'
@@ -1113,6 +1124,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/brand'
     | '/cash-out'
     | '/compare'
     | '/contact'
@@ -1212,6 +1224,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
+  BrandRoute: typeof BrandRoute
   CashOutRoute: typeof CashOutRoute
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
@@ -1385,6 +1398,13 @@ declare module '@tanstack/react-router' {
       path: '/cash-out'
       fullPath: '/cash-out'
       preLoaderRoute: typeof CashOutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/brand': {
+      id: '/brand'
+      path: '/brand'
+      fullPath: '/brand'
+      preLoaderRoute: typeof BrandRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -2150,6 +2170,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
+  BrandRoute: BrandRoute,
   CashOutRoute: CashOutRoute,
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,

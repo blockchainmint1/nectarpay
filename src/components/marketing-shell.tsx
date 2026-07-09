@@ -248,6 +248,8 @@ export function MarketingFooter() {
           <Link to="/contact" className="hover:text-foreground">Contact</Link>
           <Link to="/terms" className="hover:text-foreground">Terms</Link>
           <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
+          <Link to="/brand" className="hover:text-foreground">Brand</Link>
+
 
         </nav>
       </div>
