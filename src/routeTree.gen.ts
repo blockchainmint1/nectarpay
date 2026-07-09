@@ -21,6 +21,7 @@ import { Route as PosBuildIdRouteImport } from './routes/pos-build-id'
 import { Route as PosApkRouteImport } from './routes/pos-apk'
 import { Route as PosRouteImport } from './routes/pos'
 import { Route as ManifestoRouteImport } from './routes/manifesto'
+import { Route as MRouteImport } from './routes/m'
 import { Route as LiveRouteImport } from './routes/live'
 import { Route as InvestorsRouteImport } from './routes/investors'
 import { Route as DocsRouteImport } from './routes/docs'
@@ -165,6 +166,11 @@ const PosRoute = PosRouteImport.update({
 const ManifestoRoute = ManifestoRouteImport.update({
   id: '/manifesto',
   path: '/manifesto',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MRoute = MRouteImport.update({
+  id: '/m',
+  path: '/m',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LiveRoute = LiveRouteImport.update({
@@ -644,6 +650,7 @@ export interface FileRoutesByFullPath {
   '/docs': typeof DocsRouteWithChildren
   '/investors': typeof InvestorsRoute
   '/live': typeof LiveRoute
+  '/m': typeof MRoute
   '/manifesto': typeof ManifestoRoute
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
@@ -742,6 +749,7 @@ export interface FileRoutesByTo {
   '/docs': typeof DocsRouteWithChildren
   '/investors': typeof InvestorsRoute
   '/live': typeof LiveRoute
+  '/m': typeof MRoute
   '/manifesto': typeof ManifestoRoute
   '/pos-apk': typeof PosApkRoute
   '/pos-build-id': typeof PosBuildIdRoute
@@ -838,6 +846,7 @@ export interface FileRoutesById {
   '/docs': typeof DocsRouteWithChildren
   '/investors': typeof InvestorsRoute
   '/live': typeof LiveRoute
+  '/m': typeof MRoute
   '/manifesto': typeof ManifestoRoute
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
@@ -938,6 +947,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/investors'
     | '/live'
+    | '/m'
     | '/manifesto'
     | '/pos'
     | '/pos-apk'
@@ -1036,6 +1046,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/investors'
     | '/live'
+    | '/m'
     | '/manifesto'
     | '/pos-apk'
     | '/pos-build-id'
@@ -1131,6 +1142,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/investors'
     | '/live'
+    | '/m'
     | '/manifesto'
     | '/pos'
     | '/pos-apk'
@@ -1231,6 +1243,7 @@ export interface RootRouteChildren {
   DocsRoute: typeof DocsRouteWithChildren
   InvestorsRoute: typeof InvestorsRoute
   LiveRoute: typeof LiveRoute
+  MRoute: typeof MRoute
   ManifestoRoute: typeof ManifestoRoute
   PosRoute: typeof PosRouteWithChildren
   PosApkRoute: typeof PosApkRoute
@@ -1356,6 +1369,13 @@ declare module '@tanstack/react-router' {
       path: '/manifesto'
       fullPath: '/manifesto'
       preLoaderRoute: typeof ManifestoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/m': {
+      id: '/m'
+      path: '/m'
+      fullPath: '/m'
+      preLoaderRoute: typeof MRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/live': {
@@ -2177,6 +2197,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocsRoute: DocsRouteWithChildren,
   InvestorsRoute: InvestorsRoute,
   LiveRoute: LiveRoute,
+  MRoute: MRoute,
   ManifestoRoute: ManifestoRoute,
   PosRoute: PosRouteWithChildren,
   PosApkRoute: PosApkRoute,
