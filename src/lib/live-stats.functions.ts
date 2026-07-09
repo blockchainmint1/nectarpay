@@ -78,7 +78,7 @@ export const getLiveStats = createServerFn({ method: "GET" }).handler(
         .eq("status", "confirmed"),
       supabaseAdmin
         .from("invoices")
-        .select("id, store_id, chain, token_symbol, crypto_amount, fiat_amount, fiat_currency, created_at")
+        .select("id, store_id, chain, token_symbol, crypto_amount, fiat_amount, fiat_currency, created_at, transactions(tx_hash, first_seen_at)")
         .eq("status", "confirmed")
         .order("created_at", { ascending: false })
         .limit(10),
@@ -160,19 +160,23 @@ export const getLiveStats = createServerFn({ method: "GET" }).handler(
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
-    // Recent transactions — enrich with country from store
-    const recent = (invoicesRecent.data ?? []).map((i) => ({
-      id: i.id,
-      created_at: i.created_at,
-      chain: i.chain,
-      token: i.token_symbol,
-      crypto_amount: i.crypto_amount === null ? null : Number(i.crypto_amount),
-      fiat_amount: Number(i.fiat_amount ?? 0),
-      fiat_currency: i.fiat_currency,
-      country: storeCountry.get(i.store_id) ?? null,
-      city: null,
-      tx_hash: null,
-    }));
+    // Recent transactions — enrich with country from store + on-chain tx hash
+    const recent = (invoicesRecent.data ?? []).map((i) => {
+      const txs = (i as unknown as { transactions?: Array<{ tx_hash: string; first_seen_at: string }> }).transactions ?? [];
+      const firstTx = txs[0] ?? null;
+      return {
+        id: i.id,
+        created_at: i.created_at,
+        chain: i.chain,
+        token: i.token_symbol,
+        crypto_amount: i.crypto_amount === null ? null : Number(i.crypto_amount),
+        fiat_amount: Number(i.fiat_amount ?? 0),
+        fiat_currency: i.fiat_currency,
+        country: storeCountry.get(i.store_id) ?? null,
+        city: null,
+        tx_hash: firstTx?.tx_hash ?? null,
+      };
+    });
 
     // Countries count from terminals
     const countrySet = new Set(
