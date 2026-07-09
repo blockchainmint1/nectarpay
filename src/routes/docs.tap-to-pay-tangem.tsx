@@ -138,6 +138,7 @@ function TangemDocsPage() {
           </Link>
         </div>
       </article>
+      <MarketingFooter />
     </div>
   );
 }
