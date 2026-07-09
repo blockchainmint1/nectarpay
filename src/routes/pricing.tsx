@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Check, Hexagon, Printer, Snowflake, Zap } from "lucide-react";
 import posTerminalAsset from "@/assets/nectar-pos-terminal.jpg.asset.json";
 
