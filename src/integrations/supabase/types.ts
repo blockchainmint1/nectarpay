@@ -602,6 +602,45 @@ export type Database = {
         }
         Relationships: []
       }
+      merchant_alerts: {
+        Row: {
+          country: string
+          created_at: string
+          email: string | null
+          id: string
+          lat: number | null
+          lng: number | null
+          postal_code: string
+          radius_miles: number
+          status: string
+          telegram: string | null
+        }
+        Insert: {
+          country?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          postal_code: string
+          radius_miles?: number
+          status?: string
+          telegram?: string | null
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          postal_code?: string
+          radius_miles?: number
+          status?: string
+          telegram?: string | null
+        }
+        Relationships: []
+      }
       notification_log: {
         Row: {
           body: string | null
