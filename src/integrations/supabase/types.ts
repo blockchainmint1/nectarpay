@@ -1052,6 +1052,9 @@ export type Database = {
       subscriptions: {
         Row: {
           canceled_at: string | null
+          chosen_plan_at: string | null
+          chosen_plan_id: string | null
+          chosen_plan_source: string | null
           created_at: string
           current_period_end: string | null
           current_period_start: string | null
@@ -1062,11 +1065,15 @@ export type Database = {
           last_charged_at: string | null
           plan_id: string
           status: string
+          terminal_kit_ordered_at: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           canceled_at?: string | null
+          chosen_plan_at?: string | null
+          chosen_plan_id?: string | null
+          chosen_plan_source?: string | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
@@ -1077,11 +1084,15 @@ export type Database = {
           last_charged_at?: string | null
           plan_id?: string
           status?: string
+          terminal_kit_ordered_at?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           canceled_at?: string | null
+          chosen_plan_at?: string | null
+          chosen_plan_id?: string | null
+          chosen_plan_source?: string | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
@@ -1092,10 +1103,18 @@ export type Database = {
           last_charged_at?: string | null
           plan_id?: string
           status?: string
+          terminal_kit_ordered_at?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "subscriptions_chosen_plan_id_fkey"
+            columns: ["chosen_plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "subscriptions_plan_id_fkey"
             columns: ["plan_id"]
