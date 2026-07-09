@@ -46,7 +46,7 @@ const chapters = [
   ["08", "Graphic Language", "graphic"],
   ["09", "Photography", "photography"],
   ["10", "Illustration", "illustration"],
-  ["11", "Buzzy the Mascot", "mascot"],
+  
   ["12", "Motion", "motion"],
   ["13", "UI Language", "ui"],
   ["14", "Marketing", "marketing"],
@@ -77,7 +77,7 @@ function BrandPage() {
           <GraphicSection />
           <PhotographySection />
           <IllustrationSection />
-          <MascotSection />
+          
           <MotionSection />
           <UISection />
           <MarketingSection />
@@ -1317,150 +1317,8 @@ function IllustrationSection() {
   );
 }
 
-/* ============================ 11 MASCOT ============================ */
+/* ============================ 11 (reserved) ============================ */
 
-function MascotSection() {
-  const buzzy = [
-    buzzy1, buzzy2, buzzy3, buzzy4, buzzy5, buzzy6, buzzy7, buzzy8, buzzyMascot,
-  ];
-  const expressions = ["Happy", "Cheering", "Waving", "Focused", "Thinking", "Working", "Celebrating", "Chill", "Hero"];
-  return (
-    <Section id="mascot">
-      <ChapterHeader num="11" kicker="MASCOT GUIDELINES" />
-      <H2>Meet Buzzy.</H2>
-      <Lede>
-        Buzzy is NectarPay's friendly guide — a busy little bee who makes crypto
-        feel warm and easy. Optimistic, clever and endlessly helpful, Buzzy
-        celebrates your wins and never, ever hypes.
-      </Lede>
-
-      <div className="mt-8 flex flex-wrap gap-2">
-        {["Optimistic", "Helpful", "Clever", "Warm", "Never hype"].map((t) => (
-          <span
-            key={t}
-            className="rounded-full px-3 py-1 text-xs font-semibold"
-            style={{ background: "#FEF6E1", color: HONEY_DEEP }}
-          >
-            {t}
-          </span>
-        ))}
-      </div>
-
-      {/* Hero portrait */}
-      <div
-        className="mt-10 grid gap-6 overflow-hidden rounded-2xl md:grid-cols-[1fr_1.2fr]"
-        style={{ background: `linear-gradient(135deg, ${HONEY}, ${HONEY_DEEP})` }}
-      >
-        <div className="flex items-center justify-center p-8">
-          <img
-            src={buzzyMascot.url}
-            alt="Buzzy the mascot"
-            className="max-h-80 w-auto drop-shadow-[0_20px_40px_rgba(13,27,51,0.25)]"
-          />
-        </div>
-        <div className="flex flex-col justify-center p-8" style={{ color: NAVY }}>
-          <div className="font-mono text-[11px] tracking-widest">HERO PORTRAIT</div>
-          <div className="mt-2 text-4xl font-black">Buzzy</div>
-          <p className="mt-3 text-sm leading-relaxed">
-            The friendly face of NectarPay. Bright, warm, and endlessly
-            encouraging. Use Buzzy to onboard, celebrate wins and turn empty
-            states into little moments of delight.
-          </p>
-        </div>
-      </div>
-
-      {/* Expression sheet */}
-      <h3 className="mt-14 font-mono text-xs tracking-[0.25em]" style={{ color: SLATE }}>
-        EXPRESSION SHEET
-      </h3>
-      <div className="mt-4 grid grid-cols-3 gap-3 md:grid-cols-5 lg:grid-cols-9">
-        {buzzy.map((b, i) => (
-          <div
-            key={i}
-            className="flex flex-col items-center rounded-xl p-3"
-            style={{ background: "#FEF6E1" }}
-          >
-            <img src={b.url} alt={expressions[i]} className="h-20 w-auto object-contain" />
-            <div className="mt-2 text-[10px] font-semibold" style={{ color: HONEY_DEEP }}>
-              {expressions[i]}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Model turnaround */}
-      <h3 className="mt-14 font-mono text-xs tracking-[0.25em]" style={{ color: SLATE }}>
-        MODEL TURNAROUND
-      </h3>
-      <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
-        {[buzzy1, buzzy3, buzzy5, buzzy7].map((b, i) => (
-          <div
-            key={i}
-            className="flex h-48 items-center justify-center rounded-2xl"
-            style={{ background: NAVY }}
-          >
-            <img src={b.url} alt="" className="max-h-36" />
-          </div>
-        ))}
-      </div>
-
-      {/* Personality quotes */}
-      <div className="mt-14 grid gap-4 md:grid-cols-3">
-        {[
-          "Nice work — that's another zero-fee sale.",
-          "You're all set. I'll buzz off and let you get to it.",
-          "First payment landed. Sweet, right?",
-        ].map((q) => (
-          <div
-            key={q}
-            className="relative rounded-2xl p-5"
-            style={{ background: "#FEF6E1", color: NAVY }}
-          >
-            <div
-              className="absolute -left-2 top-4 h-4 w-4 rotate-45"
-              style={{ background: "#FEF6E1" }}
-            />
-            <div className="text-sm">"{q}"</div>
-            <div className="mt-3 flex items-center gap-2">
-              <img src={buzzyMascot.url} alt="" className="h-8 w-8" />
-              <span className="text-[11px] font-semibold" style={{ color: HONEY_DEEP }}>
-                Buzzy
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-10 grid gap-6 md:grid-cols-2">
-        <div className="rounded-2xl p-6" style={{ background: "#DCFCE7", color: "#065F46" }}>
-          <div className="mb-3 font-mono text-xs tracking-widest">✓ DO</div>
-          <ul className="space-y-2 text-sm">
-            <li>✓ Use Buzzy to guide, reassure and celebrate</li>
-            <li>✓ Keep motion gentle — a soft float or wing buzz</li>
-            <li>✓ Give Buzzy room; respect clear space</li>
-            <li>✓ Great for onboarding, empty states, education, swag</li>
-          </ul>
-        </div>
-        <div className="rounded-2xl p-6" style={{ background: "#FEE2E2", color: "#991B1B" }}>
-          <div className="mb-3 font-mono text-xs tracking-widest">✕ DON'T</div>
-          <ul className="space-y-2 text-sm">
-            <li>✕ Don't put Buzzy near serious security or legal copy</li>
-            <li>✕ Don't restretch, recolor or add sunglasses/props</li>
-            <li>✕ Don't over-animate or make Buzzy the whole screen</li>
-            <li>✕ Don't use in dense financial dashboards</li>
-          </ul>
-        </div>
-      </div>
-
-      <p className="mt-8 text-sm" style={{ color: SLATE }}>
-        Professionalism balance — Buzzy is a delight, not a clown. Child-friendly
-        and approachable, yet always tasteful enough to sit beside a Fortune-500
-        logo. When trust is the message, let the brand lead and keep Buzzy in a
-        supporting role.
-      </p>
-    </Section>
-  );
-}
 
 
 /* ============================ 12 MOTION ============================ */
@@ -1917,10 +1775,10 @@ function TaglinesSection() {
         <div className="mt-4 text-4xl font-black md:text-5xl">No fees. Trust the bees.</div>
         <div className="mt-2 text-3xl font-black md:text-4xl">Your wallet. Your money.</div>
         <p className="mt-4 max-w-2xl text-sm">
-          A dual lockup that does two jobs at once: a warm, rhyming hook that
-          leans on Buzzy — paired with a plain-spoken trust anchor. Lead with
-          the hook in ads and social; let the anchor carry product, onboarding
-          and anywhere trust matters most.
+          A dual lockup that does two jobs at once: a warm, rhyming hook
+          paired with a plain-spoken trust anchor. Lead with the hook in ads
+          and social; let the anchor carry product, onboarding and anywhere
+          trust matters most.
         </p>
       </div>
 
