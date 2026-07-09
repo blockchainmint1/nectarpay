@@ -71,6 +71,7 @@ const chapters = [
 function BrandPage() {
   return (
     <div className="min-h-screen font-sans" style={{ background: NAVY, color: COMB }}>
+      <MarketingNav />
       <div className="mx-auto flex max-w-[1400px]">
         <Sidebar />
         <main className="min-w-0 flex-1">
