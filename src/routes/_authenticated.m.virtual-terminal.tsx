@@ -111,7 +111,7 @@ function VirtualTerminal() {
     const t = setInterval(async () => {
       try {
         const s = await status({ data: { invoice_id: invoice.id } });
-        if (s.status === "paid" || s.status === "confirmed") {
+        if (s.status === "confirmed" || s.status === "detected") {
           setPaid(true);
           clearInterval(t);
         }
