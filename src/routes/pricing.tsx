@@ -90,7 +90,7 @@ function PricingPage() {
                 "API keys & webhooks",
                 "Email support",
               ]}
-              footnote="Billed monthly in TEXITcoin. Pay from any TXC wallet."
+              footnote="Billed annually in TEXITcoin. Pay from any TXC wallet."
             />
             <PlanCard
               planId="unlimited"
