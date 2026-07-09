@@ -24,9 +24,9 @@
  */
 
 @theme inline {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "General Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  --font-display: "Fraunces", Georgia, serif;
+  --font-display: "Satoshi", "Fraunces", Georgia, serif;
 
   --color-honey: var(--honey);
   --color-honey-deep: var(--honey-deep);
