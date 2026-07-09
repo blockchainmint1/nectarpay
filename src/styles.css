@@ -301,3 +301,95 @@ html {
 @utility honey-gradient {
   background: linear-gradient(135deg, oklch(0.82 0.16 82) 0%, oklch(0.70 0.18 60) 100%);
 }
+
+/* ================================================================== */
+/* NectarPay branded shell — scoped to `.np` wrapper.                 */
+/* Used by MarketingNav / MarketingFooter and the homepage.           */
+/* ================================================================== */
+.np {
+  --np-honey-50:  #FEF6E1;
+  --np-honey-100: #FDECC0;
+  --np-honey-200: #FBD87E;
+  --np-honey-300: #F9C33E;
+  --np-honey-400: #F6A21E;
+  --np-honey-500: #E8880C;
+  --np-honey-600: #C56E08;
+
+  --np-navy:  #0D1B33;
+  --np-ink:   #2B3242;
+  --np-slate: #6A7182;
+
+  --np-white: #FFFFFF;
+  --np-comb:  #FAF8F3;
+  --np-mist:  #F3EEE2;
+  --np-sand:  #EBE6DA;
+
+  --np-success: #1E9E6A;
+  --np-danger:  #E5484D;
+
+  --np-display: "Satoshi", ui-sans-serif, system-ui, sans-serif;
+  --np-body:    "General Sans", ui-sans-serif, system-ui, sans-serif;
+  --np-mono:    "JetBrains Mono", ui-monospace, monospace;
+
+  --np-ease-out: cubic-bezier(.2,.8,.2,1);
+  --np-spring:   cubic-bezier(.34,1.56,.64,1);
+
+  background: var(--np-navy);
+  color: var(--np-white);
+  font-family: var(--np-body);
+  -webkit-font-smoothing: antialiased;
+}
+.np-display { font-family: var(--np-display); font-weight: 900; letter-spacing: -0.02em; }
+.np-h { font-family: var(--np-display); font-weight: 700; letter-spacing: -0.015em; }
+.np-mono { font-family: var(--np-mono); }
+.np-eyebrow {
+  font-family: var(--np-mono);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--np-honey-400);
+}
+.np-eyebrow-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px; border-radius: 6px;
+  border: 1px solid rgba(246,162,30,0.35);
+  background: rgba(246,162,30,0.08);
+  font-family: var(--np-mono);
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--np-honey-300);
+}
+.np-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 22px; border-radius: 10px;
+  font-family: var(--np-body); font-weight: 600; font-size: 15px;
+  transition: transform 200ms var(--np-spring), background 200ms var(--np-ease-out), box-shadow 200ms var(--np-ease-out);
+}
+.np-btn-honey { background: var(--np-honey-400); color: var(--np-navy); box-shadow: 0 10px 30px -12px rgba(246,162,30,0.55); }
+.np-btn-honey:hover { background: var(--np-honey-300); transform: translateY(-1px); }
+.np-btn-ghost { color: var(--np-white); border: 1px solid rgba(255,255,255,0.18); }
+.np-btn-ghost:hover { background: rgba(255,255,255,0.06); }
+
+.np-hex {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='64' viewBox='0 0 56 64'><path d='M28 1L54 16v32L28 63 2 48V16z' fill='none' stroke='%23F6A21E' stroke-width='1' stroke-opacity='0.09'/></svg>");
+  background-repeat: repeat;
+}
+
+.np-card-cream { background: var(--np-white); border: 1px solid var(--np-sand); border-radius: 20px; }
+.np-card-navy  { background: var(--np-ink); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; }
+
+@keyframes np-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+.np-float { animation: np-float 3.6s ease-in-out infinite; }
+
+@keyframes np-pulse { 0% { opacity: 0.9; transform: scale(1); } 100% { opacity: 0; transform: scale(1.8); } }
+.np-pulse::before, .np-pulse::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  border: 2px solid var(--np-honey-400); animation: np-pulse 1.8s var(--np-ease-out) infinite;
+}
+.np-pulse::after { animation-delay: 0.9s; }
+@keyframes np-buzzy-float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-14px) rotate(2deg); }
+}
+.np-buzzy-float { animation: np-buzzy-float 5.5s var(--np-ease-out) infinite; will-change: transform; }
+@media (prefers-reduced-motion: reduce) { .np-buzzy-float { animation: none; } }
+

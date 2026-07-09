@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { MarketingFooter } from "@/components/marketing-shell";
+import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 import hiveMark from "@/assets/nectar-hive-mark.png.asset.json";
 import buzzyMascot from "@/assets/buzzy-mascot.asset.json";
 import buzzy1 from "@/assets/buzzy-1f8130a6.png.asset.json";
@@ -71,6 +71,7 @@ const chapters = [
 function BrandPage() {
   return (
     <div className="min-h-screen font-sans" style={{ background: NAVY, color: COMB }}>
+      <MarketingNav />
       <div className="mx-auto flex max-w-[1400px]">
         <Sidebar />
         <main className="min-w-0 flex-1">

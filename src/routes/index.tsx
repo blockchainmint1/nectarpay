@@ -23,6 +23,7 @@ import buzzy7 from "@/assets/buzzy-f5f116d1.png.asset.json";
 import buzzy8 from "@/assets/buzzy-a93ed7e6.png.asset.json";
 const BUZZY_VARIANTS = [buzzyMascot, buzzy1, buzzy2, buzzy3, buzzy4, buzzy5, buzzy6, buzzy7, buzzy8];
 import { PosLaunchChooser } from "@/components/pos-launch-chooser";
+import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 
 
 export const Route = createFileRoute("/")({
@@ -193,25 +194,9 @@ function Home2() {
 
       <style dangerouslySetInnerHTML={{ __html: BRAND_STYLE }} />
 
-      {/* ============ NAV ============ */}
-      <nav className="sticky top-0 z-40 backdrop-blur-md" style={{ background: "rgba(13,27,51,0.75)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link to="/" className="flex items-center gap-3">
-            <HiveMark size={36} />
-            <Wordmark size={22} />
-          </Link>
-          <div className="hidden items-center gap-8 text-sm md:flex" style={{ color: "rgba(255,255,255,0.75)" }}>
-            <a href="#product" className="hover:text-white">Product</a>
-            <a href="#how" className="hover:text-white">How it works</a>
-            <a href="#compare" className="hover:text-white">Compare</a>
-            <a href="#developers" className="hover:text-white">Docs</a>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link to="/auth" className="np-btn np-btn-ghost text-sm" style={{ padding: "10px 16px" }}>Sign in</Link>
-            <a href="#start" className="np-btn np-btn-honey text-sm" style={{ padding: "10px 18px" }}>Start free</a>
-          </div>
-        </div>
-      </nav>
+      <MarketingNav />
+
+
 
       {/* ============ HERO ============ */}
       <section className="np-hex relative overflow-hidden">
@@ -479,52 +464,8 @@ function Home2() {
         </div>
       </section>
 
-      {/* ============ FOOTER (honest.money ecosystem — per workspace rule) ============ */}
-      <footer style={{ background: "var(--np-navy)", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="mx-auto max-w-7xl px-6 py-16">
-          <div className="grid gap-12 md:grid-cols-4">
-            <div>
-              <div className="flex items-center gap-3">
-                <HiveMark size={36} />
-                <Wordmark size={20} />
-              </div>
-              <p className="mt-4 text-sm" style={{ color: "var(--np-slate)" }}>
-                The easiest, safest and smartest way to accept crypto payments.
-              </p>
-            </div>
-            <FooterCol title="Product" items={[
-              { label: "Overview", href: "#product" },
-              { label: "POS terminal", to: "/pos" },
-              { label: "Compare", href: "#compare" },
-              { label: "Pricing", to: "/pricing" },
-            ]} />
-            <FooterCol title="Developers" items={[
-              { label: "Docs", to: "/docs" },
-              { label: "Integrations", to: "/integrations" },
-              { label: "TEXITcoin blockchain", ext: "https://texitcoin.org/build" },
-            ]} />
-            <FooterCol title="Company" items={[
-              { label: "Manifesto", to: "/manifesto" },
-              { label: "Terms", to: "/terms" },
-              { label: "Privacy", to: "/privacy" },
-              { label: "Contact", to: "/contact" },
-            ]} />
-          </div>
+      <MarketingFooter />
 
-          <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t pt-8 md:flex-row md:items-center" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-            <p className="np-mono text-xs" style={{ color: "var(--np-slate)" }}>
-              PART OF THE{" "}
-              <a href="https://honest.money" target="_blank" rel="noreferrer" style={{ color: "var(--np-honey-400)" }}>
-                HONEST.MONEY
-              </a>{" "}
-              ECOSYSTEM
-            </p>
-            <p className="np-mono text-xs" style={{ color: "var(--np-slate)" }}>
-              © {new Date().getFullYear()} NECTARPAY · V1.0
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
     </>
   );
