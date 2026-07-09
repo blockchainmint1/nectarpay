@@ -228,6 +228,169 @@ function WherePage() {
   );
 }
 
+function NotifySection() {
+  const subscribe = useServerFn(subscribeMerchantAlert);
+  const [email, setEmail] = useState("");
+  const [telegram, setTelegram] = useState("");
+  const [postal, setPostal] = useState("");
+  const [country, setCountry] = useState("US");
+  const [radius, setRadius] = useState(10);
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email && !telegram) {
+      toast.error("Give us an email or Telegram handle so we can reach you.");
+      return;
+    }
+    if (!postal.trim()) {
+      toast.error("A postal code helps us know where 'near you' is.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await subscribe({
+        data: {
+          email: email.trim(),
+          telegram: telegram.trim(),
+          postal_code: postal.trim(),
+          country: country.trim() || "US",
+          radius_miles: Number(radius) || 10,
+        },
+      });
+      setDone(true);
+      toast.success("You're on the list. We'll ping you when a merchant lights up nearby.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong. Try again?");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <section id="notify" className="border-b border-border/60 bg-card/40 scroll-mt-20">
+      <div className="mx-auto max-w-4xl px-4 py-12 md:py-16">
+        <div className="flex items-center gap-2 text-primary">
+          <BellRing className="h-4 w-4" />
+          <span className="text-xs uppercase tracking-wider">Get notified</span>
+        </div>
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">
+          Tell us when a merchant opens near you
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm text-foreground/70">
+          Drop your postal code and a radius. The moment a new Nectar.Pay
+          merchant lights up inside that circle, we'll ping you by email or
+          Telegram.
+        </p>
+
+        {done ? (
+          <div className="mt-6 flex items-start gap-3 rounded-xl border border-primary/40 bg-primary/10 p-4 text-sm">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 text-primary" />
+            <div>
+              <div className="font-medium text-foreground">You're on the list.</div>
+              <div className="text-foreground/70">
+                We'll reach out the moment a merchant opens within {radius} mi of {postal}.
+              </div>
+            </div>
+          </div>
+        ) : (
+          <form
+            onSubmit={onSubmit}
+            className="mt-6 grid grid-cols-1 gap-4 rounded-xl border border-border bg-background/60 p-4 md:grid-cols-2 md:p-6"
+          >
+            <div className="md:col-span-2">
+              <Label className="text-xs">How should we reach you?</Label>
+              <p className="text-xs text-muted-foreground">Email or Telegram — either works, both is fine too.</p>
+            </div>
+            <div>
+              <Label htmlFor="notify-email" className="text-xs">Email</Label>
+              <Input
+                id="notify-email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+              />
+            </div>
+            <div>
+              <Label htmlFor="notify-tg" className="text-xs">Telegram handle</Label>
+              <Input
+                id="notify-tg"
+                placeholder="@yourhandle"
+                value={telegram}
+                onChange={(e) => setTelegram(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="notify-postal" className="text-xs">Postal / ZIP code</Label>
+              <Input
+                id="notify-postal"
+                required
+                placeholder="75201"
+                value={postal}
+                onChange={(e) => setPostal(e.target.value)}
+                autoComplete="postal-code"
+              />
+            </div>
+            <div>
+              <Label htmlFor="notify-country" className="text-xs">Country</Label>
+              <Input
+                id="notify-country"
+                placeholder="US"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                autoComplete="country-name"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <Label htmlFor="notify-radius" className="text-xs">
+                Notify me within{" "}
+                <span className="font-semibold text-primary">{radius} mi</span>
+              </Label>
+              <input
+                id="notify-radius"
+                type="range"
+                min={1}
+                max={100}
+                step={1}
+                value={radius}
+                onChange={(e) => setRadius(Number(e.target.value))}
+                className="mt-2 w-full accent-primary"
+              />
+              <div className="flex justify-between text-[10px] text-muted-foreground">
+                <span>1 mi</span>
+                <span>25 mi</span>
+                <span>50 mi</span>
+                <span>100 mi</span>
+              </div>
+            </div>
+            <div className="md:col-span-2 flex flex-col-reverse items-start justify-between gap-3 md:flex-row md:items-center">
+              <p className="text-xs text-muted-foreground">
+                We only email you about new merchants nearby. Unsubscribe any time.
+              </p>
+              <Button type="submit" disabled={submitting} size="lg">
+                {submitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Adding you…
+                  </>
+                ) : (
+                  <>
+                    <BellRing className="mr-2 h-4 w-4" />
+                    Notify me
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        )}
+      </div>
+    </section>
+  );
+}
+
 /**
  * Renders Leaflet only in the browser — Leaflet touches `window` at import.
  */
