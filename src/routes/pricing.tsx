@@ -131,6 +131,21 @@ function PricingPage() {
 function TerminalKitSection() {
   const kitUrl =
     "https://blockchainmint.com/buy/nectar-pay-mobile-pos-terminal?clear=1";
+  const { user } = useAuth();
+
+  async function handleClaim() {
+    stashPendingPlan("cheap", "terminal_kit", true);
+    if (user) {
+      try {
+        await recordPlanIntent({
+          data: { plan_id: "cheap", source: "terminal_kit", terminal_kit: true },
+        });
+      } catch {
+        /* non-blocking */
+      }
+    }
+  }
+
   return (
     <section className="relative overflow-hidden border-b border-border/60 bg-[#0b1425] py-20 text-white">
       <div
