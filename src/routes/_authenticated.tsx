@@ -59,6 +59,10 @@ function AuthenticatedLayout() {
   if (pathname === "/m" || pathname.startsWith("/m/")) {
     return <Outlet />;
   }
+  // Admin owns its own chrome (left nav with admin-only routes).
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+    return <Outlet />;
+  }
 
 
   return (
