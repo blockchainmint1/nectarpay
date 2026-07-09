@@ -39,6 +39,13 @@ function AuthenticatedLayout() {
       </div>
     );
   }
+  // The /m/* merchant mobile shell owns its own chrome (sticky mobile
+  // header + bottom nav). Render it bare, without the desktop sidebar.
+  const pathname = router.state.location.pathname;
+  if (pathname === "/m" || pathname.startsWith("/m/")) {
+    return <Outlet />;
+  }
+
 
   return (
     <div className="flex min-h-screen bg-background">
