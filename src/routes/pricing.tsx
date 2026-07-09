@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check } from "lucide-react";
+import { ArrowRight, Check, Hexagon, Printer, Snowflake, Zap } from "lucide-react";
+import posTerminalAsset from "@/assets/nectar-pos-terminal.jpg.asset.json";
 
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 import { Button } from "@/components/ui/button";
