@@ -78,7 +78,7 @@ export const getLiveStats = createServerFn({ method: "GET" }).handler(
         .eq("status", "confirmed"),
       supabaseAdmin
         .from("invoices")
-        .select("id, store_id, chain, token_symbol, crypto_amount, fiat_amount, fiat_currency, created_at")
+        .select("id, store_id, chain, token_symbol, crypto_amount, fiat_amount, fiat_currency, created_at, transactions(tx_hash, first_seen_at)")
         .eq("status", "confirmed")
         .order("created_at", { ascending: false })
         .limit(10),
