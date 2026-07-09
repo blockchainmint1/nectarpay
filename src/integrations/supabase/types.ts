@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliate_attributions: {
+        Row: {
+          affiliate_id: string
+          created_at: string
+          first_seen_at: string | null
+          landing_path: string | null
+          referrer: string | null
+          signup_at: string
+          updated_at: string
+          user_id: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          affiliate_id: string
+          created_at?: string
+          first_seen_at?: string | null
+          landing_path?: string | null
+          referrer?: string | null
+          signup_at?: string
+          updated_at?: string
+          user_id: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          affiliate_id?: string
+          created_at?: string
+          first_seen_at?: string | null
+          landing_path?: string | null
+          referrer?: string | null
+          signup_at?: string
+          updated_at?: string
+          user_id?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
       alchemy_webhooks: {
         Row: {
           callback_url: string
@@ -787,6 +829,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          affiliate_id: string | null
           avatar_url: string | null
           created_at: string
           email: string | null
@@ -798,6 +841,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          affiliate_id?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string | null
@@ -809,6 +853,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          affiliate_id?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string | null
