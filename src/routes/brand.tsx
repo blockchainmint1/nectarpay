@@ -2,6 +2,15 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { MarketingFooter } from "@/components/marketing-shell";
 import hiveMark from "@/assets/nectar-hive-mark.png.asset.json";
+import buzzyMascot from "@/assets/buzzy-mascot.asset.json";
+import buzzy1 from "@/assets/buzzy-1f8130a6.png.asset.json";
+import buzzy2 from "@/assets/buzzy-33a0881b.png.asset.json";
+import buzzy3 from "@/assets/buzzy-548d6215.png.asset.json";
+import buzzy4 from "@/assets/buzzy-5ec6f7f6.png.asset.json";
+import buzzy5 from "@/assets/buzzy-862e12f5.png.asset.json";
+import buzzy6 from "@/assets/buzzy-a93ed7e6.png.asset.json";
+import buzzy7 from "@/assets/buzzy-ed8f8613.png.asset.json";
+import buzzy8 from "@/assets/buzzy-f5f116d1.png.asset.json";
 
 export const Route = createFileRoute("/brand")({
   head: () => ({
@@ -1319,6 +1328,10 @@ function IllustrationSection() {
 /* ============================ 11 MASCOT ============================ */
 
 function MascotSection() {
+  const buzzy = [
+    buzzy1, buzzy2, buzzy3, buzzy4, buzzy5, buzzy6, buzzy7, buzzy8, buzzyMascot,
+  ];
+  const expressions = ["Happy", "Cheering", "Waving", "Focused", "Thinking", "Working", "Celebrating", "Chill", "Hero"];
   return (
     <Section id="mascot">
       <ChapterHeader num="11" kicker="MASCOT GUIDELINES" />
@@ -1338,6 +1351,91 @@ function MascotSection() {
           >
             {t}
           </span>
+        ))}
+      </div>
+
+      {/* Hero portrait */}
+      <div
+        className="mt-10 grid gap-6 overflow-hidden rounded-2xl md:grid-cols-[1fr_1.2fr]"
+        style={{ background: `linear-gradient(135deg, ${HONEY}, ${HONEY_DEEP})` }}
+      >
+        <div className="flex items-center justify-center p-8">
+          <img
+            src={buzzyMascot.url}
+            alt="Buzzy the mascot"
+            className="max-h-80 w-auto drop-shadow-[0_20px_40px_rgba(13,27,51,0.25)]"
+          />
+        </div>
+        <div className="flex flex-col justify-center p-8" style={{ color: NAVY }}>
+          <div className="font-mono text-[11px] tracking-widest">HERO PORTRAIT</div>
+          <div className="mt-2 text-4xl font-black">Buzzy</div>
+          <p className="mt-3 text-sm leading-relaxed">
+            The friendly face of NectarPay. Bright, warm, and endlessly
+            encouraging. Use Buzzy to onboard, celebrate wins and turn empty
+            states into little moments of delight.
+          </p>
+        </div>
+      </div>
+
+      {/* Expression sheet */}
+      <h3 className="mt-14 font-mono text-xs tracking-[0.25em]" style={{ color: SLATE }}>
+        EXPRESSION SHEET
+      </h3>
+      <div className="mt-4 grid grid-cols-3 gap-3 md:grid-cols-5 lg:grid-cols-9">
+        {buzzy.map((b, i) => (
+          <div
+            key={i}
+            className="flex flex-col items-center rounded-xl p-3"
+            style={{ background: "#FEF6E1" }}
+          >
+            <img src={b.url} alt={expressions[i]} className="h-20 w-auto object-contain" />
+            <div className="mt-2 text-[10px] font-semibold" style={{ color: HONEY_DEEP }}>
+              {expressions[i]}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Model turnaround */}
+      <h3 className="mt-14 font-mono text-xs tracking-[0.25em]" style={{ color: SLATE }}>
+        MODEL TURNAROUND
+      </h3>
+      <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
+        {[buzzy1, buzzy3, buzzy5, buzzy7].map((b, i) => (
+          <div
+            key={i}
+            className="flex h-48 items-center justify-center rounded-2xl"
+            style={{ background: NAVY }}
+          >
+            <img src={b.url} alt="" className="max-h-36" />
+          </div>
+        ))}
+      </div>
+
+      {/* Personality quotes */}
+      <div className="mt-14 grid gap-4 md:grid-cols-3">
+        {[
+          "Nice work — that's another zero-fee sale.",
+          "You're all set. I'll buzz off and let you get to it.",
+          "First payment landed. Sweet, right?",
+        ].map((q) => (
+          <div
+            key={q}
+            className="relative rounded-2xl p-5"
+            style={{ background: "#FEF6E1", color: NAVY }}
+          >
+            <div
+              className="absolute -left-2 top-4 h-4 w-4 rotate-45"
+              style={{ background: "#FEF6E1" }}
+            />
+            <div className="text-sm">"{q}"</div>
+            <div className="mt-3 flex items-center gap-2">
+              <img src={buzzyMascot.url} alt="" className="h-8 w-8" />
+              <span className="text-[11px] font-semibold" style={{ color: HONEY_DEEP }}>
+                Buzzy
+              </span>
+            </div>
+          </div>
         ))}
       </div>
 
@@ -1371,6 +1469,7 @@ function MascotSection() {
     </Section>
   );
 }
+
 
 /* ============================ 12 MOTION ============================ */
 
