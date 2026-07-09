@@ -464,52 +464,8 @@ function Home2() {
         </div>
       </section>
 
-      {/* ============ FOOTER (honest.money ecosystem — per workspace rule) ============ */}
-      <footer style={{ background: "var(--np-navy)", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="mx-auto max-w-7xl px-6 py-16">
-          <div className="grid gap-12 md:grid-cols-4">
-            <div>
-              <div className="flex items-center gap-3">
-                <HiveMark size={36} />
-                <Wordmark size={20} />
-              </div>
-              <p className="mt-4 text-sm" style={{ color: "var(--np-slate)" }}>
-                The easiest, safest and smartest way to accept crypto payments.
-              </p>
-            </div>
-            <FooterCol title="Product" items={[
-              { label: "Overview", href: "#product" },
-              { label: "POS terminal", to: "/pos" },
-              { label: "Compare", href: "#compare" },
-              { label: "Pricing", to: "/pricing" },
-            ]} />
-            <FooterCol title="Developers" items={[
-              { label: "Docs", to: "/docs" },
-              { label: "Integrations", to: "/integrations" },
-              { label: "TEXITcoin blockchain", ext: "https://texitcoin.org/build" },
-            ]} />
-            <FooterCol title="Company" items={[
-              { label: "Manifesto", to: "/manifesto" },
-              { label: "Terms", to: "/terms" },
-              { label: "Privacy", to: "/privacy" },
-              { label: "Contact", to: "/contact" },
-            ]} />
-          </div>
+      <MarketingFooter />
 
-          <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t pt-8 md:flex-row md:items-center" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-            <p className="np-mono text-xs" style={{ color: "var(--np-slate)" }}>
-              PART OF THE{" "}
-              <a href="https://honest.money" target="_blank" rel="noreferrer" style={{ color: "var(--np-honey-400)" }}>
-                HONEST.MONEY
-              </a>{" "}
-              ECOSYSTEM
-            </p>
-            <p className="np-mono text-xs" style={{ color: "var(--np-slate)" }}>
-              © {new Date().getFullYear()} NECTARPAY · V1.0
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
     </>
   );
