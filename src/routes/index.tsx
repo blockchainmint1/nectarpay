@@ -23,6 +23,7 @@ import buzzy7 from "@/assets/buzzy-f5f116d1.png.asset.json";
 import buzzy8 from "@/assets/buzzy-a93ed7e6.png.asset.json";
 const BUZZY_VARIANTS = [buzzyMascot, buzzy1, buzzy2, buzzy3, buzzy4, buzzy5, buzzy6, buzzy7, buzzy8];
 import { PosLaunchChooser } from "@/components/pos-launch-chooser";
+import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 
 
 export const Route = createFileRoute("/")({
