@@ -167,15 +167,11 @@ function Wordmark({ size = 24 }: { size?: number }) {
 function Home2() {
   // Live ticker for the hero mono strip
   const [t, setT] = useState(0.4);
-  // Random Buzzy variant per page load (client-only to avoid SSR/hydration mismatch)
-  const [buzzy, setBuzzy] = useState(BUZZY_VARIANTS[0]);
-  useEffect(() => {
-    setBuzzy(BUZZY_VARIANTS[Math.floor(Math.random() * BUZZY_VARIANTS.length)]);
-  }, []);
   useEffect(() => {
     const id = setInterval(() => setT(0.3 + Math.random() * 0.3), 1400);
     return () => clearInterval(id);
   }, []);
+
 
   return (
     <>
