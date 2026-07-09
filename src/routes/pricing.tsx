@@ -65,6 +65,7 @@ function PricingPage() {
               features={[
                 "Everything in Free",
                 "Unlimited transactions",
+                "Point of Sale terminal support",
                 "CSV export (invoices, payouts)",
                 "Reports & analytics",
                 "Multiple stores",
