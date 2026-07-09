@@ -15,7 +15,12 @@ export const recordPlanIntent = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const now = new Date().toISOString();
 
-    const update: Record<string, unknown> = {
+    const update: {
+      chosen_plan_id: string;
+      chosen_plan_at: string;
+      chosen_plan_source: string;
+      terminal_kit_ordered_at?: string;
+    } = {
       chosen_plan_id: data.plan_id,
       chosen_plan_at: now,
       chosen_plan_source: data.source ?? "pricing",
