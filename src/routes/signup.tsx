@@ -307,22 +307,23 @@ function WelcomeStep({ onNext, signedIn }: { onNext: () => void; signedIn: boole
                 type="text"
                 inputMode="numeric"
                 autoComplete="one-time-code"
-                pattern="[0-9]*"
-                maxLength={20}
-                value={code}
+                pattern="[0-9 ]*"
+                maxLength={9}
+                value={code.length > 4 ? `${code.slice(0, 4)} ${code.slice(4)}` : code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                placeholder="••••••"
+                placeholder="•••• ••••"
                 className="mt-1 h-14 w-full rounded-lg border border-input bg-background px-4 text-center font-mono text-2xl tracking-[0.5em]"
               />
             </label>
             <Button
               size="lg"
               onClick={verifyCode}
-              disabled={verifying || code.length < 6}
+              disabled={verifying || code.length < 8}
               className="mt-3 h-12 w-full text-base"
             >
               {verifying ? "Verifying…" : "Sign in with code"}
             </Button>
+
           </div>
 
           <button
