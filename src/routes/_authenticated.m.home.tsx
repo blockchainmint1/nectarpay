@@ -154,7 +154,7 @@ function MerchantHome() {
                   <span
                     className={
                       "rounded-full px-2 py-0.5 text-xs " +
-                      (inv.status === "paid"
+                      (inv.status === "confirmed" || inv.status === "detected"
                         ? "bg-emerald-500/15 text-emerald-500"
                         : inv.status === "pending"
                           ? "bg-amber-500/15 text-amber-500"

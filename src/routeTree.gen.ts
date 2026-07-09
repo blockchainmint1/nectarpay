@@ -57,6 +57,8 @@ import { Route as AuthenticatedStoresIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated.admin.index'
 import { Route as AuthenticatedStoresNewRouteImport } from './routes/_authenticated.stores.new'
 import { Route as AuthenticatedStoresStoreIdRouteImport } from './routes/_authenticated.stores.$storeId'
+import { Route as AuthenticatedMVirtualTerminalRouteImport } from './routes/_authenticated.m.virtual-terminal'
+import { Route as AuthenticatedMHomeRouteImport } from './routes/_authenticated.m.home'
 import { Route as AuthenticatedAdminMerchantsRouteImport } from './routes/_authenticated.admin.merchants'
 import { Route as AuthenticatedAdminLeadsRouteImport } from './routes/_authenticated.admin.leads'
 import { Route as AuthenticatedAdminKnowledgeRouteImport } from './routes/_authenticated.admin.knowledge'
@@ -350,6 +352,17 @@ const AuthenticatedStoresStoreIdRoute =
     path: '/stores/$storeId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedMVirtualTerminalRoute =
+  AuthenticatedMVirtualTerminalRouteImport.update({
+    id: '/m/virtual-terminal',
+    path: '/m/virtual-terminal',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMHomeRoute = AuthenticatedMHomeRouteImport.update({
+  id: '/m/home',
+  path: '/m/home',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAdminMerchantsRoute =
   AuthenticatedAdminMerchantsRouteImport.update({
     id: '/merchants',
@@ -688,6 +701,8 @@ export interface FileRoutesByFullPath {
   '/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
   '/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
+  '/m/home': typeof AuthenticatedMHomeRoute
+  '/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -784,6 +799,8 @@ export interface FileRoutesByTo {
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
+  '/m/home': typeof AuthenticatedMHomeRoute
+  '/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/stores': typeof AuthenticatedStoresIndexRoute
@@ -884,6 +901,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
   '/_authenticated/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/_authenticated/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
+  '/_authenticated/m/home': typeof AuthenticatedMHomeRoute
+  '/_authenticated/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
   '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/_authenticated/stores/new': typeof AuthenticatedStoresNewRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -985,6 +1004,8 @@ export interface FileRouteTypes {
     | '/admin/knowledge'
     | '/admin/leads'
     | '/admin/merchants'
+    | '/m/home'
+    | '/m/virtual-terminal'
     | '/stores/$storeId'
     | '/stores/new'
     | '/admin/'
@@ -1081,6 +1102,8 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/leads'
     | '/admin/merchants'
+    | '/m/home'
+    | '/m/virtual-terminal'
     | '/stores/new'
     | '/admin'
     | '/stores'
@@ -1180,6 +1203,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/knowledge'
     | '/_authenticated/admin/leads'
     | '/_authenticated/admin/merchants'
+    | '/_authenticated/m/home'
+    | '/_authenticated/m/virtual-terminal'
     | '/_authenticated/stores/$storeId'
     | '/_authenticated/stores/new'
     | '/_authenticated/admin/'
@@ -1621,6 +1646,20 @@ declare module '@tanstack/react-router' {
       path: '/stores/$storeId'
       fullPath: '/stores/$storeId'
       preLoaderRoute: typeof AuthenticatedStoresStoreIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/m/virtual-terminal': {
+      id: '/_authenticated/m/virtual-terminal'
+      path: '/m/virtual-terminal'
+      fullPath: '/m/virtual-terminal'
+      preLoaderRoute: typeof AuthenticatedMVirtualTerminalRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/m/home': {
+      id: '/_authenticated/m/home'
+      path: '/m/home'
+      fullPath: '/m/home'
+      preLoaderRoute: typeof AuthenticatedMHomeRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/admin/merchants': {
@@ -2087,6 +2126,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedExportsRoute: typeof AuthenticatedExportsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedTerminalsRoute: typeof AuthenticatedTerminalsRoute
+  AuthenticatedMHomeRoute: typeof AuthenticatedMHomeRoute
+  AuthenticatedMVirtualTerminalRoute: typeof AuthenticatedMVirtualTerminalRoute
   AuthenticatedStoresStoreIdRoute: typeof AuthenticatedStoresStoreIdRouteWithChildren
   AuthenticatedStoresNewRoute: typeof AuthenticatedStoresNewRoute
   AuthenticatedStoresIndexRoute: typeof AuthenticatedStoresIndexRoute
@@ -2099,6 +2140,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedExportsRoute: AuthenticatedExportsRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedTerminalsRoute: AuthenticatedTerminalsRoute,
+  AuthenticatedMHomeRoute: AuthenticatedMHomeRoute,
+  AuthenticatedMVirtualTerminalRoute: AuthenticatedMVirtualTerminalRoute,
   AuthenticatedStoresStoreIdRoute: AuthenticatedStoresStoreIdRouteWithChildren,
   AuthenticatedStoresNewRoute: AuthenticatedStoresNewRoute,
   AuthenticatedStoresIndexRoute: AuthenticatedStoresIndexRoute,
