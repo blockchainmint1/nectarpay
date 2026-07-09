@@ -55,6 +55,7 @@ function PricingPage() {
 
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             <PlanCard
+              planId="free"
               name="Free"
               price="$0"
               priceSuffix=""
@@ -72,6 +73,7 @@ function PricingPage() {
               footnote="Monthly transaction limit set by us — designed for hobby stores and pilots."
             />
             <PlanCard
+              planId="cheap"
               name="Cheap"
               price="$19"
               priceSuffix="/mo"
@@ -91,6 +93,7 @@ function PricingPage() {
               footnote="Billed monthly in TEXITcoin. Pay from any TXC wallet."
             />
             <PlanCard
+              planId="unlimited"
               name="Unlimited"
               price="$99"
               priceSuffix="/mo"
