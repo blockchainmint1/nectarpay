@@ -426,7 +426,7 @@ function Home2() {
                 Copy, paste, ship.
               </h2>
               <p className="mt-6 max-w-lg text-lg" style={{ color: "rgba(255,255,255,0.7)" }}>
-                One drop-in script. WooCommerce & Shopify plugins. Full REST API. Design tokens shared from Figma to production.
+                One drop-in script. WooCommerce & eCommerce plugins. Full REST API. Design tokens shared from Figma to production.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link to="/docs" className="np-btn np-btn-honey">Read the docs</Link>
