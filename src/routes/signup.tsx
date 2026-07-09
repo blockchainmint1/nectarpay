@@ -18,9 +18,17 @@ import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
+import { recordPlanIntent } from "@/lib/plan-intent.functions";
 
+const PENDING_PLAN_KEY = "nectar.pending_plan";
+const VALID_PLANS = new Set(["free", "cheap", "unlimited"]);
+
+type PendingPlan = { plan_id: string; source?: string; terminal_kit?: boolean };
 
 export const Route = createFileRoute("/signup")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    plan: typeof s.plan === "string" && VALID_PLANS.has(s.plan) ? s.plan : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Get started · Nectar.Pay" },
