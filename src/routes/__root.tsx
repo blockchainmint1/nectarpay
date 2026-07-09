@@ -91,6 +91,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "preconnect", href: "https://api.fontshare.com" },
+      { rel: "stylesheet", href: "https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&f[]=general-sans@400,500,600,700&display=swap" },
       { rel: "icon", type: "image/png", href: "/__l5e/assets-v1/9a1a15be-5b2c-4cc1-ad77-3fd244828324/nectar-hive-mark.png" },
       { rel: "apple-touch-icon", href: "/__l5e/assets-v1/9a1a15be-5b2c-4cc1-ad77-3fd244828324/nectar-hive-mark.png" },
     ],
