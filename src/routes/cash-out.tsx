@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 
 export const Route = createFileRoute("/cash-out")({
   head: () => ({
@@ -91,7 +92,9 @@ function Card({ o }: { o: Option }) {
 
 function CashOutPage() {
   return (
-    <article className="mx-auto max-w-5xl px-6 py-20">
+    <div className="min-h-screen bg-background text-foreground">
+      <MarketingNav />
+      <article className="mx-auto max-w-5xl px-6 py-20">
       <Link
         to="/"
         className="mb-12 inline-flex items-center gap-2 text-[0.7rem] uppercase tracking-[0.4em] text-muted-foreground hover:text-foreground"
@@ -334,6 +337,8 @@ function CashOutPage() {
           </Link>
         </div>
       </div>
-    </article>
+      </article>
+      <MarketingFooter />
+    </div>
   );
 }

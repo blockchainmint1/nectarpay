@@ -15,6 +15,8 @@ import { createPairingCode } from "@/lib/terminals.functions";
 import { getLatestPosRelease } from "@/lib/pos-releases.functions";
 import { saveCreds } from "@/lib/pos-client";
 import { qrToDataURL } from "@/lib/qr";
+import { PosLaunchChooser } from "@/components/pos-launch-chooser";
+
 
 
 export const Route = createFileRoute("/start")({
@@ -42,6 +44,11 @@ function StartPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("welcome");
   const [storeId, setStoreId] = useState<string | null>(null);
+
+
+
+
+
 
   // Once signed in, find their first store (or stay ready to create one).
   useEffect(() => {
@@ -71,7 +78,10 @@ function StartPage() {
   const progress = Math.round(((stepIdx + 1) / STEPS.length) * 100);
 
   return (
+    <>
+    <PosLaunchChooser />
     <div className="min-h-[100dvh] bg-background flex flex-col">
+
       <header className="flex items-center justify-between px-5 pt-5">
         <Link to="/" className="flex items-center gap-2">
           <NectarMark className="h-7 w-7" />
@@ -117,8 +127,10 @@ function StartPage() {
         )}
       </main>
     </div>
+    </>
   );
 }
+
 
 /* ---------------- Welcome ---------------- */
 
@@ -269,22 +281,23 @@ function Welcome({ signedIn }: { signedIn: boolean }) {
                   type="text"
                   inputMode="numeric"
                   autoComplete="one-time-code"
-                  pattern="[0-9]*"
-                  maxLength={20}
-                  value={code}
+                  pattern="[0-9 ]*"
+                  maxLength={9}
+                  value={code.length > 4 ? `${code.slice(0, 4)} ${code.slice(4)}` : code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                  placeholder="••••••"
+                  placeholder="•••• ••••"
                   className="mt-1 h-14 w-full rounded-lg border border-input bg-background px-4 text-center font-mono text-2xl tracking-[0.5em]"
                 />
               </label>
               <Button
                 size="lg"
                 onClick={verifyCode}
-                disabled={verifying || code.length < 6}
+                disabled={verifying || code.length < 8}
                 className="mt-3 h-12 w-full text-base"
               >
                 {verifying ? "Verifying…" : "Sign in with code"}
               </Button>
+
             </div>
 
             <button

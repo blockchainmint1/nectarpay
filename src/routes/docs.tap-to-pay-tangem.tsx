@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 
 export const Route = createFileRoute("/docs/tap-to-pay-tangem")({
   head: () => ({
@@ -25,6 +26,7 @@ export const Route = createFileRoute("/docs/tap-to-pay-tangem")({
 function TangemDocsPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <MarketingNav />
       <article className="mx-auto max-w-3xl px-6 py-16">
         <p className="text-sm font-medium text-primary">Nectar.Pay Docs</p>
         <h1 className="mt-2 text-4xl font-bold tracking-tight">
@@ -136,6 +138,7 @@ function TangemDocsPage() {
           </Link>
         </div>
       </article>
+      <MarketingFooter />
     </div>
   );
 }

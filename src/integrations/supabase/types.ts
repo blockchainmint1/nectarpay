@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliate_attributions: {
+        Row: {
+          affiliate_id: string
+          created_at: string
+          first_seen_at: string | null
+          landing_path: string | null
+          referrer: string | null
+          signup_at: string
+          updated_at: string
+          user_id: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          affiliate_id: string
+          created_at?: string
+          first_seen_at?: string | null
+          landing_path?: string | null
+          referrer?: string | null
+          signup_at?: string
+          updated_at?: string
+          user_id: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          affiliate_id?: string
+          created_at?: string
+          first_seen_at?: string | null
+          landing_path?: string | null
+          referrer?: string | null
+          signup_at?: string
+          updated_at?: string
+          user_id?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
       alchemy_webhooks: {
         Row: {
           callback_url: string
@@ -602,6 +644,45 @@ export type Database = {
         }
         Relationships: []
       }
+      merchant_alerts: {
+        Row: {
+          country: string
+          created_at: string
+          email: string | null
+          id: string
+          lat: number | null
+          lng: number | null
+          postal_code: string
+          radius_miles: number
+          status: string
+          telegram: string | null
+        }
+        Insert: {
+          country?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          postal_code: string
+          radius_miles?: number
+          status?: string
+          telegram?: string | null
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          postal_code?: string
+          radius_miles?: number
+          status?: string
+          telegram?: string | null
+        }
+        Relationships: []
+      }
       notification_log: {
         Row: {
           body: string | null
@@ -748,6 +829,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          affiliate_id: string | null
           avatar_url: string | null
           created_at: string
           email: string | null
@@ -759,6 +841,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          affiliate_id?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string | null
@@ -770,6 +853,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          affiliate_id?: string | null
           avatar_url?: string | null
           created_at?: string
           email?: string | null
@@ -1013,6 +1097,9 @@ export type Database = {
       subscriptions: {
         Row: {
           canceled_at: string | null
+          chosen_plan_at: string | null
+          chosen_plan_id: string | null
+          chosen_plan_source: string | null
           created_at: string
           current_period_end: string | null
           current_period_start: string | null
@@ -1023,11 +1110,15 @@ export type Database = {
           last_charged_at: string | null
           plan_id: string
           status: string
+          terminal_kit_ordered_at: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           canceled_at?: string | null
+          chosen_plan_at?: string | null
+          chosen_plan_id?: string | null
+          chosen_plan_source?: string | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
@@ -1038,11 +1129,15 @@ export type Database = {
           last_charged_at?: string | null
           plan_id?: string
           status?: string
+          terminal_kit_ordered_at?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           canceled_at?: string | null
+          chosen_plan_at?: string | null
+          chosen_plan_id?: string | null
+          chosen_plan_source?: string | null
           created_at?: string
           current_period_end?: string | null
           current_period_start?: string | null
@@ -1053,10 +1148,18 @@ export type Database = {
           last_charged_at?: string | null
           plan_id?: string
           status?: string
+          terminal_kit_ordered_at?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "subscriptions_chosen_plan_id_fkey"
+            columns: ["chosen_plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "subscriptions_plan_id_fkey"
             columns: ["plan_id"]

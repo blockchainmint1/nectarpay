@@ -15,6 +15,9 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "../lib/auth-context";
 import { ThemeProvider } from "../lib/theme";
 import { Toaster } from "../components/ui/sonner";
+import { PosReturnBar } from "../components/pos-return-bar";
+import { isNative } from "../lib/pos-native";
+import { captureAffiliateFromUrl } from "../lib/affiliate";
 
 function NotFoundComponent() {
   return (
@@ -89,6 +92,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "preconnect", href: "https://api.fontshare.com" },
+      { rel: "stylesheet", href: "https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&f[]=general-sans@400,500,600,700&display=swap" },
       { rel: "icon", type: "image/png", href: "/__l5e/assets-v1/9a1a15be-5b2c-4cc1-ad77-3fd244828324/nectar-hive-mark.png" },
       { rel: "apple-touch-icon", href: "/__l5e/assets-v1/9a1a15be-5b2c-4cc1-ad77-3fd244828324/nectar-hive-mark.png" },
     ],
@@ -120,9 +125,38 @@ function RootComponent() {
 
   const location = useLocation();
 
+  // Detect merchant native shell via ?mode=merchant on first load and
+  // persist so subsequent client-side navigations keep the flag. See
+  // src/lib/app-mode.ts — this drives which UI variants are shown.
   useEffect(() => {
-    const isPos = location.pathname.startsWith("/pos");
-    if (isPos) {
+    try {
+      const url = new URL(window.location.href);
+      const q = url.searchParams.get("mode");
+      if (q === "merchant" || q === "terminal") {
+        window.__NECTAR_APP_MODE__ = q;
+        localStorage.setItem("nectar.app-mode", q);
+      } else {
+        const saved = localStorage.getItem("nectar.app-mode");
+        if (saved === "merchant" || saved === "terminal") {
+          window.__NECTAR_APP_MODE__ = saved;
+        }
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  // First-touch affiliate capture: reads ?r=<affiliateId> on every navigation
+  // and stashes it in a 90-day cookie + localStorage. No-op if already set.
+  useEffect(() => {
+    captureAffiliateFromUrl();
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    const inPosShell =
+      location.pathname.startsWith("/pos") ||
+      location.pathname === "/m" ||
+      location.pathname.startsWith("/m/") ||
+      isNative();
+    if (inPosShell) {
       const existing = document.getElementById("honest-help-widget");
       if (existing) existing.remove();
       return;
@@ -146,6 +180,7 @@ function RootComponent() {
         <AuthProvider>
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
+          <PosReturnBar />
           <Toaster richColors position="top-right" />
         </AuthProvider>
       </ThemeProvider>

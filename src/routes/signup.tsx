@@ -18,9 +18,17 @@ import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
+import { recordPlanIntent } from "@/lib/plan-intent.functions";
 
+const PENDING_PLAN_KEY = "nectar.pending_plan";
+const VALID_PLANS = new Set(["free", "cheap", "unlimited"]);
+
+type PendingPlan = { plan_id: string; source?: string; terminal_kit?: boolean };
 
 export const Route = createFileRoute("/signup")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    plan: typeof s.plan === "string" && VALID_PLANS.has(s.plan) ? s.plan : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Get started · Nectar.Pay" },
@@ -43,8 +51,53 @@ const ORDER: Step[] = ["welcome", "business", "listing", "wallet", "terminal", "
 function SignupPage() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { plan: planFromQuery } = Route.useSearch();
   const [step, setStep] = useState<Step>("welcome");
   const [storeId, setStoreId] = useState<string | null>(null);
+
+  // Stash ?plan= into localStorage so it survives the OAuth/magic-link roundtrip.
+  useEffect(() => {
+    if (!planFromQuery) return;
+    try {
+      const existing = localStorage.getItem(PENDING_PLAN_KEY);
+      if (!existing) {
+        localStorage.setItem(
+          PENDING_PLAN_KEY,
+          JSON.stringify({ plan_id: planFromQuery, source: "pricing", at: Date.now() }),
+        );
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [planFromQuery]);
+
+  // After sign-in, apply any pending plan choice to the user's subscription.
+  useEffect(() => {
+    if (loading || !user) return;
+    let pending: PendingPlan | null = null;
+    try {
+      const raw = localStorage.getItem(PENDING_PLAN_KEY);
+      if (raw) pending = JSON.parse(raw) as PendingPlan;
+    } catch {
+      /* ignore */
+    }
+    if (!pending && planFromQuery) pending = { plan_id: planFromQuery, source: "pricing" };
+    if (!pending || !VALID_PLANS.has(pending.plan_id)) return;
+    void (async () => {
+      try {
+        await recordPlanIntent({
+          data: {
+            plan_id: pending!.plan_id,
+            source: pending!.source ?? "pricing",
+            terminal_kit: !!pending!.terminal_kit,
+          },
+        });
+        localStorage.removeItem(PENDING_PLAN_KEY);
+      } catch {
+        /* non-blocking */
+      }
+    })();
+  }, [loading, user, planFromQuery]);
 
   // When signed in, find or create their first store and skip to business step.
   useEffect(() => {
@@ -307,22 +360,23 @@ function WelcomeStep({ onNext, signedIn }: { onNext: () => void; signedIn: boole
                 type="text"
                 inputMode="numeric"
                 autoComplete="one-time-code"
-                pattern="[0-9]*"
-                maxLength={20}
-                value={code}
+                pattern="[0-9 ]*"
+                maxLength={9}
+                value={code.length > 4 ? `${code.slice(0, 4)} ${code.slice(4)}` : code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                placeholder="••••••"
+                placeholder="•••• ••••"
                 className="mt-1 h-14 w-full rounded-lg border border-input bg-background px-4 text-center font-mono text-2xl tracking-[0.5em]"
               />
             </label>
             <Button
               size="lg"
               onClick={verifyCode}
-              disabled={verifying || code.length < 6}
+              disabled={verifying || code.length < 8}
               className="mt-3 h-12 w-full text-base"
             >
               {verifying ? "Verifying…" : "Sign in with code"}
             </Button>
+
           </div>
 
           <button

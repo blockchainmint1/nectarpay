@@ -2,12 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { MapPin as PinIcon, Globe, ExternalLink } from "lucide-react";
+import { MapPin as PinIcon, Globe, ExternalLink, BellRing, Loader2, CheckCircle2 } from "lucide-react";
 
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import { getMerchantMapPins, type MapPin } from "@/lib/merchant-map.functions";
+import { subscribeMerchantAlert } from "@/lib/merchant-alerts.functions";
 
 export const Route = createFileRoute("/where")({
   head: () => ({
@@ -121,11 +125,29 @@ function WherePage() {
           <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-5xl">
             Where
           </h1>
-          <p className="mt-3 max-w-2xl text-foreground/70">
-            Six launch metros, six live maps. Every pin is a real merchant
-            accepting Bitcoin, TEXITcoin and stablecoins through Nectar.Pay.
-            1,200 terminals are shipping now — check back as more pins light up.
-          </p>
+          <div className="mt-4 max-w-3xl space-y-4 text-foreground/75">
+            <p>
+              We're building Nectar.Pay to become the largest crypto payment
+              network in the world — and, alongside it, the definitive index
+              of merchants who accept crypto. Every pin on the maps below is a
+              real business taking Bitcoin, TEXITcoin, and stablecoins through
+              Nectar.Pay. We're just getting started: 10,000 POS terminals
+              shipping by October 2026.
+            </p>
+            <p>
+              We're concentrating our first push on six metros. Crypto adoption
+              isn't just about merchants saying "yes" — it's about consumers
+              actively preferring the shops that do. Density in a handful of
+              markets creates that habit faster than a scattered map ever could.
+            </p>
+            <p>
+              Outside these six regions? Don't feel left out — join us from
+              anywhere. New markets open constantly, and every new merchant,
+              rep, and champion moves the map. Check back often, or drop your
+              details below and we'll ping you the moment a merchant lights up
+              near you.
+            </p>
+          </div>
           <nav className="mt-6 flex flex-wrap gap-2">
             {MARKETS.map((m) => (
               <a
@@ -137,8 +159,19 @@ function WherePage() {
               </a>
             ))}
           </nav>
+          <div className="mt-6">
+            <a
+              href="#notify"
+              className="inline-flex items-center gap-2 rounded-md border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/20"
+            >
+              <BellRing className="h-3.5 w-3.5" />
+              Get notified when a merchant opens near you
+            </a>
+          </div>
         </div>
       </section>
+
+      <NotifySection />
 
       <section className="mx-auto max-w-6xl px-4 py-10">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -192,6 +225,169 @@ function WherePage() {
 
       <MarketingFooter />
     </div>
+  );
+}
+
+function NotifySection() {
+  const subscribe = useServerFn(subscribeMerchantAlert);
+  const [email, setEmail] = useState("");
+  const [telegram, setTelegram] = useState("");
+  const [postal, setPostal] = useState("");
+  const [country, setCountry] = useState("US");
+  const [radius, setRadius] = useState(10);
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email && !telegram) {
+      toast.error("Give us an email or Telegram handle so we can reach you.");
+      return;
+    }
+    if (!postal.trim()) {
+      toast.error("A postal code helps us know where 'near you' is.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await subscribe({
+        data: {
+          email: email.trim(),
+          telegram: telegram.trim(),
+          postal_code: postal.trim(),
+          country: country.trim() || "US",
+          radius_miles: Number(radius) || 10,
+        },
+      });
+      setDone(true);
+      toast.success("You're on the list. We'll ping you when a merchant lights up nearby.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong. Try again?");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <section id="notify" className="border-b border-border/60 bg-card/40 scroll-mt-20">
+      <div className="mx-auto max-w-4xl px-4 py-12 md:py-16">
+        <div className="flex items-center gap-2 text-primary">
+          <BellRing className="h-4 w-4" />
+          <span className="text-xs uppercase tracking-wider">Get notified</span>
+        </div>
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight md:text-3xl">
+          Tell us when a merchant opens near you
+        </h2>
+        <p className="mt-2 max-w-2xl text-sm text-foreground/70">
+          Drop your postal code and a radius. The moment a new Nectar.Pay
+          merchant lights up inside that circle, we'll ping you by email or
+          Telegram.
+        </p>
+
+        {done ? (
+          <div className="mt-6 flex items-start gap-3 rounded-xl border border-primary/40 bg-primary/10 p-4 text-sm">
+            <CheckCircle2 className="mt-0.5 h-5 w-5 text-primary" />
+            <div>
+              <div className="font-medium text-foreground">You're on the list.</div>
+              <div className="text-foreground/70">
+                We'll reach out the moment a merchant opens within {radius} mi of {postal}.
+              </div>
+            </div>
+          </div>
+        ) : (
+          <form
+            onSubmit={onSubmit}
+            className="mt-6 grid grid-cols-1 gap-4 rounded-xl border border-border bg-background/60 p-4 md:grid-cols-2 md:p-6"
+          >
+            <div className="md:col-span-2">
+              <Label className="text-xs">How should we reach you?</Label>
+              <p className="text-xs text-muted-foreground">Email or Telegram — either works, both is fine too.</p>
+            </div>
+            <div>
+              <Label htmlFor="notify-email" className="text-xs">Email</Label>
+              <Input
+                id="notify-email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+              />
+            </div>
+            <div>
+              <Label htmlFor="notify-tg" className="text-xs">Telegram handle</Label>
+              <Input
+                id="notify-tg"
+                placeholder="@yourhandle"
+                value={telegram}
+                onChange={(e) => setTelegram(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="notify-postal" className="text-xs">Postal / ZIP code</Label>
+              <Input
+                id="notify-postal"
+                required
+                placeholder="75201"
+                value={postal}
+                onChange={(e) => setPostal(e.target.value)}
+                autoComplete="postal-code"
+              />
+            </div>
+            <div>
+              <Label htmlFor="notify-country" className="text-xs">Country</Label>
+              <Input
+                id="notify-country"
+                placeholder="US"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                autoComplete="country-name"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <Label htmlFor="notify-radius" className="text-xs">
+                Notify me within{" "}
+                <span className="font-semibold text-primary">{radius} mi</span>
+              </Label>
+              <input
+                id="notify-radius"
+                type="range"
+                min={1}
+                max={100}
+                step={1}
+                value={radius}
+                onChange={(e) => setRadius(Number(e.target.value))}
+                className="mt-2 w-full accent-primary"
+              />
+              <div className="flex justify-between text-[10px] text-muted-foreground">
+                <span>1 mi</span>
+                <span>25 mi</span>
+                <span>50 mi</span>
+                <span>100 mi</span>
+              </div>
+            </div>
+            <div className="md:col-span-2 flex flex-col-reverse items-start justify-between gap-3 md:flex-row md:items-center">
+              <p className="text-xs text-muted-foreground">
+                We only email you about new merchants nearby. Unsubscribe any time.
+              </p>
+              <Button type="submit" disabled={submitting} size="lg">
+                {submitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Adding you…
+                  </>
+                ) : (
+                  <>
+                    <BellRing className="mr-2 h-4 w-4" />
+                    Notify me
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        )}
+      </div>
+    </section>
   );
 }
 

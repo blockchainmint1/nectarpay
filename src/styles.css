@@ -24,9 +24,9 @@
  */
 
 @theme inline {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "General Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  --font-display: "Fraunces", Georgia, serif;
+  --font-display: "Satoshi", "Fraunces", Georgia, serif;
 
   --color-honey: var(--honey);
   --color-honey-deep: var(--honey-deep);
@@ -81,107 +81,107 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* Dark first — walnut + honey. */
+/* Dark first — Navy + Honey (brand kit v1.0). */
 :root {
   --radius: 0.625rem;
 
-  /* Deep warm walnut — base of the comb. */
-  --background: oklch(0.16 0.018 60);
-  --foreground: oklch(0.97 0.012 80);
+  /* Deep brand navy — §05 Color */
+  --background: #0D1B33;
+  --foreground: #FAF8F3;
 
-  --card: oklch(0.20 0.022 65);
-  --card-foreground: oklch(0.97 0.012 80);
+  --card: #132446;
+  --card-foreground: #FAF8F3;
 
-  --popover: oklch(0.20 0.022 65);
-  --popover-foreground: oklch(0.97 0.012 80);
+  --popover: #132446;
+  --popover-foreground: #FAF8F3;
 
-  /* HONEY — the accent that runs the brand. Warm amber gold. */
-  --primary: oklch(0.80 0.17 78);
-  --primary-foreground: oklch(0.18 0.04 60);
+  /* HONEY — the accent that runs the brand. */
+  --primary: #F6A21E;
+  --primary-foreground: #0D1B33;
 
-  --secondary: oklch(0.26 0.024 65);
-  --secondary-foreground: oklch(0.97 0.012 80);
+  --secondary: #2B3242;
+  --secondary-foreground: #FAF8F3;
 
-  --muted: oklch(0.24 0.022 65);
-  --muted-foreground: oklch(0.70 0.025 75);
+  --muted: #1a2942;
+  --muted-foreground: #A3ABBD;
 
-  --accent: oklch(0.30 0.040 70);
-  --accent-foreground: oklch(0.97 0.012 80);
+  --accent: #E8880C;
+  --accent-foreground: #0D1B33;
 
-  --destructive: oklch(0.66 0.22 25);
-  --destructive-foreground: oklch(0.98 0.01 25);
+  --destructive: #E5484D;
+  --destructive-foreground: #FAF8F3;
 
-  --success: oklch(0.78 0.16 145);
-  --success-foreground: oklch(0.18 0.02 145);
+  --success: #1E9E6A;
+  --success-foreground: #FAF8F3;
 
-  --warning: oklch(0.82 0.16 80);
-  --warning-foreground: oklch(0.18 0.02 80);
+  --warning: #F6A21E;
+  --warning-foreground: #0D1B33;
 
-  --border: oklch(0.30 0.028 65);
-  --input: oklch(0.26 0.024 65);
-  --ring: oklch(0.80 0.17 78);
+  --border: rgba(255,255,255,0.10);
+  --input: rgba(255,255,255,0.12);
+  --ring: #F6A21E;
 
-  --chart-1: oklch(0.80 0.17 78);
-  --chart-2: oklch(0.68 0.16 50);
-  --chart-3: oklch(0.78 0.16 145);
-  --chart-4: oklch(0.66 0.22 25);
-  --chart-5: oklch(0.55 0.14 35);
+  --chart-1: #F6A21E;
+  --chart-2: #F9C33E;
+  --chart-3: #1E9E6A;
+  --chart-4: #E5484D;
+  --chart-5: #C56E08;
 
-  --sidebar: oklch(0.18 0.020 62);
-  --sidebar-foreground: oklch(0.94 0.015 80);
-  --sidebar-primary: oklch(0.80 0.17 78);
-  --sidebar-primary-foreground: oklch(0.18 0.04 60);
-  --sidebar-accent: oklch(0.24 0.022 65);
-  --sidebar-accent-foreground: oklch(0.97 0.012 80);
-  --sidebar-border: oklch(0.26 0.024 65);
-  --sidebar-ring: oklch(0.80 0.17 78);
+  --sidebar: #0A1628;
+  --sidebar-foreground: #FAF8F3;
+  --sidebar-primary: #F6A21E;
+  --sidebar-primary-foreground: #0D1B33;
+  --sidebar-accent: #132446;
+  --sidebar-accent-foreground: #FAF8F3;
+  --sidebar-border: rgba(255,255,255,0.08);
+  --sidebar-ring: #F6A21E;
 
   /* Brand gradients */
-  --gradient-honey: linear-gradient(135deg, oklch(0.86 0.17 88), oklch(0.72 0.19 65));
-  --gradient-honey-soft: linear-gradient(180deg, oklch(0.80 0.17 78 / 0.15), transparent);
-  --shadow-honey: 0 20px 60px -20px oklch(0.80 0.17 78 / 0.45);
+  --gradient-honey: linear-gradient(135deg, #F9C33E, #E8880C);
+  --gradient-honey-soft: linear-gradient(180deg, rgba(246,162,30,0.15), transparent);
+  --shadow-honey: 0 20px 60px -20px rgba(246,162,30,0.45);
 
-  /* Business Builder Hub honey palette (used inside .knowledge-scope) */
-  --honey: oklch(0.78 0.17 78);
-  --honey-deep: oklch(0.60 0.16 55);
-  --comb: oklch(0.93 0.06 82);
-  --ink: oklch(0.18 0.025 60);
-  --ink-soft: oklch(0.28 0.03 60);
+  /* Legacy honey palette used inside .knowledge-scope */
+  --honey: #F6A21E;
+  --honey-deep: #C56E08;
+  --comb: #FAF8F3;
+  --ink: #2B3242;
+  --ink-soft: #6A7182;
 }
 
-/* A light theme for marketing surfaces — cream + amber. */
+/* Light theme — Comb cream + Navy ink + Honey accent. */
 .light {
-  --background: oklch(0.99 0.012 85);
-  --foreground: oklch(0.20 0.025 60);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.20 0.025 60);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.20 0.025 60);
-  --primary: oklch(0.62 0.17 65);
-  --primary-foreground: oklch(0.99 0.012 85);
-  --secondary: oklch(0.96 0.018 85);
-  --secondary-foreground: oklch(0.22 0.025 60);
-  --muted: oklch(0.96 0.016 85);
-  --muted-foreground: oklch(0.46 0.024 65);
-  --accent: oklch(0.94 0.028 80);
-  --accent-foreground: oklch(0.22 0.025 60);
-  --destructive: oklch(0.55 0.22 25);
-  --destructive-foreground: oklch(0.99 0.01 25);
-  --success: oklch(0.58 0.16 145);
-  --success-foreground: oklch(0.99 0.005 145);
-  --warning: oklch(0.72 0.16 80);
-  --warning-foreground: oklch(0.18 0.02 80);
-  --border: oklch(0.90 0.018 80);
-  --input: oklch(0.92 0.018 80);
-  --ring: oklch(0.62 0.17 65);
-  --sidebar: oklch(0.98 0.015 85);
-  --sidebar-foreground: oklch(0.20 0.025 60);
-  --sidebar-primary: oklch(0.62 0.17 65);
-  --sidebar-primary-foreground: oklch(0.99 0.012 85);
-  --sidebar-accent: oklch(0.94 0.028 80);
-  --sidebar-accent-foreground: oklch(0.22 0.025 60);
-  --sidebar-border: oklch(0.90 0.018 80);
-  --sidebar-ring: oklch(0.62 0.17 65);
+  --background: #FAF8F3;
+  --foreground: #0D1B33;
+  --card: #FFFFFF;
+  --card-foreground: #0D1B33;
+  --popover: #FFFFFF;
+  --popover-foreground: #0D1B33;
+  --primary: #E8880C;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F3EEE2;
+  --secondary-foreground: #0D1B33;
+  --muted: #F3EEE2;
+  --muted-foreground: #6A7182;
+  --accent: #FDECC0;
+  --accent-foreground: #0D1B33;
+  --destructive: #E5484D;
+  --destructive-foreground: #FFFFFF;
+  --success: #1E9E6A;
+  --success-foreground: #FFFFFF;
+  --warning: #F6A21E;
+  --warning-foreground: #0D1B33;
+  --border: #EBE6DA;
+  --input: #EBE6DA;
+  --ring: #E8880C;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #0D1B33;
+  --sidebar-primary: #E8880C;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F3EEE2;
+  --sidebar-accent-foreground: #0D1B33;
+  --sidebar-border: #EBE6DA;
+  --sidebar-ring: #E8880C;
 }
 
 @layer base {
@@ -301,3 +301,95 @@ html {
 @utility honey-gradient {
   background: linear-gradient(135deg, oklch(0.82 0.16 82) 0%, oklch(0.70 0.18 60) 100%);
 }
+
+/* ================================================================== */
+/* NectarPay branded shell — scoped to `.np` wrapper.                 */
+/* Used by MarketingNav / MarketingFooter and the homepage.           */
+/* ================================================================== */
+.np {
+  --np-honey-50:  #FEF6E1;
+  --np-honey-100: #FDECC0;
+  --np-honey-200: #FBD87E;
+  --np-honey-300: #F9C33E;
+  --np-honey-400: #F6A21E;
+  --np-honey-500: #E8880C;
+  --np-honey-600: #C56E08;
+
+  --np-navy:  #0D1B33;
+  --np-ink:   #2B3242;
+  --np-slate: #6A7182;
+
+  --np-white: #FFFFFF;
+  --np-comb:  #FAF8F3;
+  --np-mist:  #F3EEE2;
+  --np-sand:  #EBE6DA;
+
+  --np-success: #1E9E6A;
+  --np-danger:  #E5484D;
+
+  --np-display: "Satoshi", ui-sans-serif, system-ui, sans-serif;
+  --np-body:    "General Sans", ui-sans-serif, system-ui, sans-serif;
+  --np-mono:    "JetBrains Mono", ui-monospace, monospace;
+
+  --np-ease-out: cubic-bezier(.2,.8,.2,1);
+  --np-spring:   cubic-bezier(.34,1.56,.64,1);
+
+  background: var(--np-navy);
+  color: var(--np-white);
+  font-family: var(--np-body);
+  -webkit-font-smoothing: antialiased;
+}
+.np-display { font-family: var(--np-display); font-weight: 900; letter-spacing: -0.02em; }
+.np-h { font-family: var(--np-display); font-weight: 700; letter-spacing: -0.015em; }
+.np-mono { font-family: var(--np-mono); }
+.np-eyebrow {
+  font-family: var(--np-mono);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--np-honey-400);
+}
+.np-eyebrow-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px; border-radius: 6px;
+  border: 1px solid rgba(246,162,30,0.35);
+  background: rgba(246,162,30,0.08);
+  font-family: var(--np-mono);
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--np-honey-300);
+}
+.np-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 22px; border-radius: 10px;
+  font-family: var(--np-body); font-weight: 600; font-size: 15px;
+  transition: transform 200ms var(--np-spring), background 200ms var(--np-ease-out), box-shadow 200ms var(--np-ease-out);
+}
+.np-btn-honey { background: var(--np-honey-400); color: var(--np-navy); box-shadow: 0 10px 30px -12px rgba(246,162,30,0.55); }
+.np-btn-honey:hover { background: var(--np-honey-300); transform: translateY(-1px); }
+.np-btn-ghost { color: var(--np-white); border: 1px solid rgba(255,255,255,0.18); }
+.np-btn-ghost:hover { background: rgba(255,255,255,0.06); }
+
+.np-hex {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='64' viewBox='0 0 56 64'><path d='M28 1L54 16v32L28 63 2 48V16z' fill='none' stroke='%23F6A21E' stroke-width='1' stroke-opacity='0.09'/></svg>");
+  background-repeat: repeat;
+}
+
+.np-card-cream { background: var(--np-white); border: 1px solid var(--np-sand); border-radius: 20px; }
+.np-card-navy  { background: var(--np-ink); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; }
+
+@keyframes np-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+.np-float { animation: np-float 3.6s ease-in-out infinite; }
+
+@keyframes np-pulse { 0% { opacity: 0.9; transform: scale(1); } 100% { opacity: 0; transform: scale(1.8); } }
+.np-pulse::before, .np-pulse::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  border: 2px solid var(--np-honey-400); animation: np-pulse 1.8s var(--np-ease-out) infinite;
+}
+.np-pulse::after { animation-delay: 0.9s; }
+@keyframes np-buzzy-float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-14px) rotate(2deg); }
+}
+.np-buzzy-float { animation: np-buzzy-float 5.5s var(--np-ease-out) infinite; will-change: transform; }
+@media (prefers-reduced-motion: reduce) { .np-buzzy-float { animation: none; } }
+

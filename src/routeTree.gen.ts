@@ -21,12 +21,14 @@ import { Route as PosBuildIdRouteImport } from './routes/pos-build-id'
 import { Route as PosApkRouteImport } from './routes/pos-apk'
 import { Route as PosRouteImport } from './routes/pos'
 import { Route as ManifestoRouteImport } from './routes/manifesto'
+import { Route as MRouteImport } from './routes/m'
+import { Route as LiveRouteImport } from './routes/live'
 import { Route as InvestorsRouteImport } from './routes/investors'
-import { Route as HomeOldRouteImport } from './routes/home-old'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CashOutRouteImport } from './routes/cash-out'
+import { Route as BrandRouteImport } from './routes/brand'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
@@ -35,6 +37,7 @@ import { Route as IntegrationsIndexRouteImport } from './routes/integrations.ind
 import { Route as SdkPayhmeDotjsRouteImport } from './routes/sdk.payhme[.]js'
 import { Route as PosSettingsRouteImport } from './routes/pos.settings'
 import { Route as PosPrinterTestRouteImport } from './routes/pos.printer-test'
+import { Route as PosPairSigninRouteImport } from './routes/pos.pair-signin'
 import { Route as PosPairRouteImport } from './routes/pos.pair'
 import { Route as PosNfcInspectRouteImport } from './routes/pos.nfc-inspect'
 import { Route as PosHistoryRouteImport } from './routes/pos.history'
@@ -54,6 +57,8 @@ import { Route as AuthenticatedStoresIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated.admin.index'
 import { Route as AuthenticatedStoresNewRouteImport } from './routes/_authenticated.stores.new'
 import { Route as AuthenticatedStoresStoreIdRouteImport } from './routes/_authenticated.stores.$storeId'
+import { Route as AuthenticatedMVirtualTerminalRouteImport } from './routes/_authenticated.m.virtual-terminal'
+import { Route as AuthenticatedMHomeRouteImport } from './routes/_authenticated.m.home'
 import { Route as AuthenticatedAdminMerchantsRouteImport } from './routes/_authenticated.admin.merchants'
 import { Route as AuthenticatedAdminLeadsRouteImport } from './routes/_authenticated.admin.leads'
 import { Route as AuthenticatedAdminKnowledgeRouteImport } from './routes/_authenticated.admin.knowledge'
@@ -165,14 +170,19 @@ const ManifestoRoute = ManifestoRouteImport.update({
   path: '/manifesto',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MRoute = MRouteImport.update({
+  id: '/m',
+  path: '/m',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LiveRoute = LiveRouteImport.update({
+  id: '/live',
+  path: '/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InvestorsRoute = InvestorsRouteImport.update({
   id: '/investors',
   path: '/investors',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HomeOldRoute = HomeOldRouteImport.update({
-  id: '/home-old',
-  path: '/home-old',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsRoute = DocsRouteImport.update({
@@ -193,6 +203,11 @@ const CompareRoute = CompareRouteImport.update({
 const CashOutRoute = CashOutRouteImport.update({
   id: '/cash-out',
   path: '/cash-out',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrandRoute = BrandRouteImport.update({
+  id: '/brand',
+  path: '/brand',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -232,6 +247,11 @@ const PosSettingsRoute = PosSettingsRouteImport.update({
 const PosPrinterTestRoute = PosPrinterTestRouteImport.update({
   id: '/printer-test',
   path: '/printer-test',
+  getParentRoute: () => PosRoute,
+} as any)
+const PosPairSigninRoute = PosPairSigninRouteImport.update({
+  id: '/pair-signin',
+  path: '/pair-signin',
   getParentRoute: () => PosRoute,
 } as any)
 const PosPairRoute = PosPairRouteImport.update({
@@ -332,6 +352,17 @@ const AuthenticatedStoresStoreIdRoute =
     path: '/stores/$storeId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedMVirtualTerminalRoute =
+  AuthenticatedMVirtualTerminalRouteImport.update({
+    id: '/m/virtual-terminal',
+    path: '/m/virtual-terminal',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMHomeRoute = AuthenticatedMHomeRouteImport.update({
+  id: '/m/home',
+  path: '/m/home',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAdminMerchantsRoute =
   AuthenticatedAdminMerchantsRouteImport.update({
     id: '/merchants',
@@ -625,12 +656,14 @@ const ApiPublicV1TerminalsInvoiceIdCancelRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
-  '/home-old': typeof HomeOldRoute
   '/investors': typeof InvestorsRoute
+  '/live': typeof LiveRoute
+  '/m': typeof MRoute
   '/manifesto': typeof ManifestoRoute
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
@@ -658,6 +691,7 @@ export interface FileRoutesByFullPath {
   '/pos/history': typeof PosHistoryRoute
   '/pos/nfc-inspect': typeof PosNfcInspectRoute
   '/pos/pair': typeof PosPairRoute
+  '/pos/pair-signin': typeof PosPairSigninRoute
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
@@ -667,6 +701,8 @@ export interface FileRoutesByFullPath {
   '/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
   '/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
+  '/m/home': typeof AuthenticatedMHomeRoute
+  '/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -721,12 +757,14 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
-  '/home-old': typeof HomeOldRoute
   '/investors': typeof InvestorsRoute
+  '/live': typeof LiveRoute
+  '/m': typeof MRoute
   '/manifesto': typeof ManifestoRoute
   '/pos-apk': typeof PosApkRoute
   '/pos-build-id': typeof PosBuildIdRoute
@@ -752,6 +790,7 @@ export interface FileRoutesByTo {
   '/pos/history': typeof PosHistoryRoute
   '/pos/nfc-inspect': typeof PosNfcInspectRoute
   '/pos/pair': typeof PosPairRoute
+  '/pos/pair-signin': typeof PosPairSigninRoute
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
@@ -760,6 +799,8 @@ export interface FileRoutesByTo {
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
+  '/m/home': typeof AuthenticatedMHomeRoute
+  '/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/stores': typeof AuthenticatedStoresIndexRoute
@@ -815,12 +856,14 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
+  '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
-  '/home-old': typeof HomeOldRoute
   '/investors': typeof InvestorsRoute
+  '/live': typeof LiveRoute
+  '/m': typeof MRoute
   '/manifesto': typeof ManifestoRoute
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
@@ -848,6 +891,7 @@ export interface FileRoutesById {
   '/pos/history': typeof PosHistoryRoute
   '/pos/nfc-inspect': typeof PosNfcInspectRoute
   '/pos/pair': typeof PosPairRoute
+  '/pos/pair-signin': typeof PosPairSigninRoute
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
@@ -857,6 +901,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
   '/_authenticated/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/_authenticated/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
+  '/_authenticated/m/home': typeof AuthenticatedMHomeRoute
+  '/_authenticated/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
   '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/_authenticated/stores/new': typeof AuthenticatedStoresNewRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -913,12 +959,14 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/brand'
     | '/cash-out'
     | '/compare'
     | '/contact'
     | '/docs'
-    | '/home-old'
     | '/investors'
+    | '/live'
+    | '/m'
     | '/manifesto'
     | '/pos'
     | '/pos-apk'
@@ -946,6 +994,7 @@ export interface FileRouteTypes {
     | '/pos/history'
     | '/pos/nfc-inspect'
     | '/pos/pair'
+    | '/pos/pair-signin'
     | '/pos/printer-test'
     | '/pos/settings'
     | '/sdk/payhme.js'
@@ -955,6 +1004,8 @@ export interface FileRouteTypes {
     | '/admin/knowledge'
     | '/admin/leads'
     | '/admin/merchants'
+    | '/m/home'
+    | '/m/virtual-terminal'
     | '/stores/$storeId'
     | '/stores/new'
     | '/admin/'
@@ -1009,12 +1060,14 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/brand'
     | '/cash-out'
     | '/compare'
     | '/contact'
     | '/docs'
-    | '/home-old'
     | '/investors'
+    | '/live'
+    | '/m'
     | '/manifesto'
     | '/pos-apk'
     | '/pos-build-id'
@@ -1040,6 +1093,7 @@ export interface FileRouteTypes {
     | '/pos/history'
     | '/pos/nfc-inspect'
     | '/pos/pair'
+    | '/pos/pair-signin'
     | '/pos/printer-test'
     | '/pos/settings'
     | '/sdk/payhme.js'
@@ -1048,6 +1102,8 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/leads'
     | '/admin/merchants'
+    | '/m/home'
+    | '/m/virtual-terminal'
     | '/stores/new'
     | '/admin'
     | '/stores'
@@ -1102,12 +1158,14 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/brand'
     | '/cash-out'
     | '/compare'
     | '/contact'
     | '/docs'
-    | '/home-old'
     | '/investors'
+    | '/live'
+    | '/m'
     | '/manifesto'
     | '/pos'
     | '/pos-apk'
@@ -1135,6 +1193,7 @@ export interface FileRouteTypes {
     | '/pos/history'
     | '/pos/nfc-inspect'
     | '/pos/pair'
+    | '/pos/pair-signin'
     | '/pos/printer-test'
     | '/pos/settings'
     | '/sdk/payhme.js'
@@ -1144,6 +1203,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/knowledge'
     | '/_authenticated/admin/leads'
     | '/_authenticated/admin/merchants'
+    | '/_authenticated/m/home'
+    | '/_authenticated/m/virtual-terminal'
     | '/_authenticated/stores/$storeId'
     | '/_authenticated/stores/new'
     | '/_authenticated/admin/'
@@ -1200,12 +1261,14 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
+  BrandRoute: typeof BrandRoute
   CashOutRoute: typeof CashOutRoute
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
   DocsRoute: typeof DocsRouteWithChildren
-  HomeOldRoute: typeof HomeOldRoute
   InvestorsRoute: typeof InvestorsRoute
+  LiveRoute: typeof LiveRoute
+  MRoute: typeof MRoute
   ManifestoRoute: typeof ManifestoRoute
   PosRoute: typeof PosRouteWithChildren
   PosApkRoute: typeof PosApkRoute
@@ -1333,18 +1396,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManifestoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/m': {
+      id: '/m'
+      path: '/m'
+      fullPath: '/m'
+      preLoaderRoute: typeof MRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/live': {
+      id: '/live'
+      path: '/live'
+      fullPath: '/live'
+      preLoaderRoute: typeof LiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/investors': {
       id: '/investors'
       path: '/investors'
       fullPath: '/investors'
       preLoaderRoute: typeof InvestorsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/home-old': {
-      id: '/home-old'
-      path: '/home-old'
-      fullPath: '/home-old'
-      preLoaderRoute: typeof HomeOldRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs': {
@@ -1373,6 +1443,13 @@ declare module '@tanstack/react-router' {
       path: '/cash-out'
       fullPath: '/cash-out'
       preLoaderRoute: typeof CashOutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/brand': {
+      id: '/brand'
+      path: '/brand'
+      fullPath: '/brand'
+      preLoaderRoute: typeof BrandRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -1429,6 +1506,13 @@ declare module '@tanstack/react-router' {
       path: '/printer-test'
       fullPath: '/pos/printer-test'
       preLoaderRoute: typeof PosPrinterTestRouteImport
+      parentRoute: typeof PosRoute
+    }
+    '/pos/pair-signin': {
+      id: '/pos/pair-signin'
+      path: '/pair-signin'
+      fullPath: '/pos/pair-signin'
+      preLoaderRoute: typeof PosPairSigninRouteImport
       parentRoute: typeof PosRoute
     }
     '/pos/pair': {
@@ -1562,6 +1646,20 @@ declare module '@tanstack/react-router' {
       path: '/stores/$storeId'
       fullPath: '/stores/$storeId'
       preLoaderRoute: typeof AuthenticatedStoresStoreIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/m/virtual-terminal': {
+      id: '/_authenticated/m/virtual-terminal'
+      path: '/m/virtual-terminal'
+      fullPath: '/m/virtual-terminal'
+      preLoaderRoute: typeof AuthenticatedMVirtualTerminalRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/m/home': {
+      id: '/_authenticated/m/home'
+      path: '/m/home'
+      fullPath: '/m/home'
+      preLoaderRoute: typeof AuthenticatedMHomeRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/admin/merchants': {
@@ -2028,6 +2126,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedExportsRoute: typeof AuthenticatedExportsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedTerminalsRoute: typeof AuthenticatedTerminalsRoute
+  AuthenticatedMHomeRoute: typeof AuthenticatedMHomeRoute
+  AuthenticatedMVirtualTerminalRoute: typeof AuthenticatedMVirtualTerminalRoute
   AuthenticatedStoresStoreIdRoute: typeof AuthenticatedStoresStoreIdRouteWithChildren
   AuthenticatedStoresNewRoute: typeof AuthenticatedStoresNewRoute
   AuthenticatedStoresIndexRoute: typeof AuthenticatedStoresIndexRoute
@@ -2040,6 +2140,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedExportsRoute: AuthenticatedExportsRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedTerminalsRoute: AuthenticatedTerminalsRoute,
+  AuthenticatedMHomeRoute: AuthenticatedMHomeRoute,
+  AuthenticatedMVirtualTerminalRoute: AuthenticatedMVirtualTerminalRoute,
   AuthenticatedStoresStoreIdRoute: AuthenticatedStoresStoreIdRouteWithChildren,
   AuthenticatedStoresNewRoute: AuthenticatedStoresNewRoute,
   AuthenticatedStoresIndexRoute: AuthenticatedStoresIndexRoute,
@@ -2065,6 +2167,7 @@ interface PosRouteChildren {
   PosHistoryRoute: typeof PosHistoryRoute
   PosNfcInspectRoute: typeof PosNfcInspectRoute
   PosPairRoute: typeof PosPairRoute
+  PosPairSigninRoute: typeof PosPairSigninRoute
   PosPrinterTestRoute: typeof PosPrinterTestRoute
   PosSettingsRoute: typeof PosSettingsRoute
   PosIndexRoute: typeof PosIndexRoute
@@ -2074,6 +2177,7 @@ const PosRouteChildren: PosRouteChildren = {
   PosHistoryRoute: PosHistoryRoute,
   PosNfcInspectRoute: PosNfcInspectRoute,
   PosPairRoute: PosPairRoute,
+  PosPairSigninRoute: PosPairSigninRoute,
   PosPrinterTestRoute: PosPrinterTestRoute,
   PosSettingsRoute: PosSettingsRoute,
   PosIndexRoute: PosIndexRoute,
@@ -2129,12 +2233,14 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
+  BrandRoute: BrandRoute,
   CashOutRoute: CashOutRoute,
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
   DocsRoute: DocsRouteWithChildren,
-  HomeOldRoute: HomeOldRoute,
   InvestorsRoute: InvestorsRoute,
+  LiveRoute: LiveRoute,
+  MRoute: MRoute,
   ManifestoRoute: ManifestoRoute,
   PosRoute: PosRouteWithChildren,
   PosApkRoute: PosApkRoute,
