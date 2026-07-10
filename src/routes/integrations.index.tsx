@@ -59,8 +59,8 @@ function IntegrationsIndex() {
             <IntegrationCard
               icon={<Zap className="h-5 w-5" />}
               name="Shopify"
-              tagline="Coming soon."
-              description="Native Shopify app in the works. Drop us your email on the WooCommerce page if you want a heads-up."
+              tagline="Probably never."
+              description="Shopify's payment layer is closed, centralized, and tuned to a public-stock incentive structure. If you're waiting for them to open the rails, you're better off watching their stock price."
             />
             <IntegrationCard
               icon={<Zap className="h-5 w-5" />}
