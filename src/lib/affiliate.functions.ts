@@ -53,5 +53,16 @@ export const recordAffiliateAttribution = createServerFn({ method: "POST" })
       .update({ affiliate_id: data.affiliate_id })
       .eq("user_id", userId);
 
+    // Fire-and-forget: tell mineTXC to award hash power to the referring
+    // miner. Never let a mineTXC outage break signup.
+    const { notifyMineTxcSignup } = await import("./minetxc-award.server");
+    void notifyMineTxcSignup({
+      affiliate_id: data.affiliate_id,
+      referred_user_id: userId,
+      event: "signup",
+      occurred_at: new Date().toISOString(),
+    });
+
     return { recorded: true };
   });
+
