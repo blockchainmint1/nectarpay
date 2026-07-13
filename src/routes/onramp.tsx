@@ -113,10 +113,10 @@ function Hero() {
 
           <ul className="mt-10 grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
             {[
-              "Settles in seconds on mainstream",
+              "Settles in seconds on chain",
               "Accepts BTC, TXC, and stables",
               "Ships in days — plug in and sell",
-              "No monthly fee, no per-swipe cut",
+              "No per-swipe cut, keep 100%",
             ].map((line) => (
               <li key={line} className="flex items-start gap-2">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[color:var(--np-honey-400)]" />
@@ -295,13 +295,13 @@ function KitSection() {
         </div>
         <div className="rounded-2xl border border-border bg-card/60 p-8">
           <div className="flex items-baseline justify-between">
-            <span className="text-sm uppercase tracking-wider text-muted-foreground">
-              Total today
-            </span>
+            <div className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+              TERMINAL KIT + FIRST YEAR SERVICE
+            </div>
             <span className="text-4xl font-bold">$727</span>
           </div>
           <div className="mt-3 flex items-baseline justify-between text-sm text-muted-foreground">
-            <span>$499 one-time fee + first-year service fee</span>
+            <span>now</span>
             <span></span>
           </div>
           <div className="mt-6 h-px w-full bg-border" />
