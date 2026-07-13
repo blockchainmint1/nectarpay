@@ -26,11 +26,11 @@ function AdminInvoices() {
             <tr>
               <th className="px-4 py-2">Created</th>
               <th className="px-4 py-2">Merchant</th>
+              <th className="px-4 py-2">Store</th>
               <th className="px-4 py-2">Status</th>
               <th className="px-4 py-2">Chain</th>
               <th className="px-4 py-2 text-right">USD</th>
               <th className="px-4 py-2 font-mono">Invoice</th>
-              <th className="px-4 py-2 font-mono">Store</th>
             </tr>
           </thead>
           <tbody>
@@ -42,6 +42,9 @@ function AdminInvoices() {
                 <td className="px-4 py-2">
                   {inv.merchant_name ?? <span className="text-muted-foreground">—</span>}
                 </td>
+                <td className="px-4 py-2">
+                  {(inv as any).store_name ?? <span className="text-muted-foreground">—</span>}
+                </td>
                 <td className="px-4 py-2">{inv.status}</td>
                 <td className="px-4 py-2 uppercase">{inv.chain}</td>
                 <td className="px-4 py-2 text-right tabular-nums">
@@ -49,9 +52,6 @@ function AdminInvoices() {
                 </td>
                 <td className="px-4 py-2 font-mono text-xs text-muted-foreground">
                   {inv.id.slice(0, 8)}…
-                </td>
-                <td className="px-4 py-2 font-mono text-xs text-muted-foreground">
-                  {inv.store_id?.slice(0, 8)}…
                 </td>
               </tr>
             ))}
