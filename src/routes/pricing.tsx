@@ -45,90 +45,94 @@ function PricingPage() {
   return (
     <div className="min-h-screen bg-background">
       <MarketingNav />
-      <section className="border-b border-border/60 py-20">
-        <div className="mx-auto max-w-6xl px-4">
-          <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">Pricing.</h1>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
-            Three membership plans. All paid in TEXITcoin. Funds always settle straight to your
-            wallet — we never touch them.
-          </p>
-
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            <PlanCard
-              planId="free"
-              name="Free"
-              price="$0"
-              priceSuffix=""
-              tagline="Get started. Limited transactions per month."
-              cta="Start free"
-              features={[
-                "Limited transactions per month",
-                "BTC, TEXITcoin, USDC/USDT (Ethereum + Base)",
-                "Merchant dashboard",
-                "WooCommerce plugin",
-                "Webhook delivery + retry",
-                "KYC-optional checkout",
-                "Community support",
-              ]}
-              footnote="Monthly transaction limit set by us — designed for hobby stores and pilots."
-            />
-            <PlanCard
-              planId="cheap"
-              name="Cheap"
-              price="$19"
-              priceSuffix="/mo"
-              tagline="Unlimited transactions. No caps."
-              cta="Be Cheap"
-              highlight
-              features={[
-                "Everything in Free",
-                "Unlimited transactions",
-                "Point of Sale terminal support",
-                "CSV export (invoices, payouts)",
-                "Reports & analytics",
-                "Multiple stores",
-                "API keys & webhooks",
-                "Email support",
-              ]}
-              footnote="Billed annually in TEXITcoin. Pay from any TXC wallet."
-            />
-            <PlanCard
-              planId="unlimited"
-              name="Unlimited"
-              price="$99"
-              priceSuffix="/mo"
-              tagline="No transaction caps. Built for scale."
-              cta="Go Unlimited"
-              features={[
-                "Everything in Cheap",
-                "Advanced APIs (REST + WebSocket)",
-                "Customized chain support",
-                "Expanded chain coverage",
-                "SLA-backed webhook delivery",
-                "Team seats + audit log",
-                "Custom KYC rules",
-                "Priority support",
-                "Dedicated account manager",
-              ]}
-              footnote="Billed monthly in TEXITcoin. Cancel anytime."
-            />
-          </div>
-
-          <p className="mt-8 text-xs text-muted-foreground">
-            All plans paid in TEXITcoin. Transaction limits on Free are managed by our team and
-            may change as the network grows.
-          </p>
-        </div>
-      </section>
-
+      <PricingPlansBody />
       <TerminalKitSection />
-
       <MarketingFooter />
     </div>
   );
 }
 
-function TerminalKitSection() {
+export function PricingPlansBody() {
+  return (
+    <section className="border-b border-border/60 py-20">
+      <div className="mx-auto max-w-6xl px-4">
+        <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">Pricing.</h1>
+        <p className="mt-3 max-w-2xl text-muted-foreground">
+          Three membership plans. All paid in TEXITcoin. Funds always settle straight to your
+          wallet — we never touch them.
+        </p>
+
+        <div className="mt-10 grid gap-6 md:grid-cols-3">
+          <PlanCard
+            planId="free"
+            name="Free"
+            price="$0"
+            priceSuffix=""
+            tagline="Get started. Limited transactions per month."
+            cta="Start free"
+            features={[
+              "Limited transactions per month",
+              "BTC, TEXITcoin, USDC/USDT (Ethereum + Base)",
+              "Merchant dashboard",
+              "WooCommerce plugin",
+              "Webhook delivery + retry",
+              "KYC-optional checkout",
+              "Community support",
+            ]}
+            footnote="Monthly transaction limit set by us — designed for hobby stores and pilots."
+          />
+          <PlanCard
+            planId="cheap"
+            name="Cheap"
+            price="$19"
+            priceSuffix="/mo"
+            tagline="Unlimited transactions. No caps."
+            cta="Be Cheap"
+            highlight
+            features={[
+              "Everything in Free",
+              "Unlimited transactions",
+              "Point of Sale terminal support",
+              "CSV export (invoices, payouts)",
+              "Reports & analytics",
+              "Multiple stores",
+              "API keys & webhooks",
+              "Email support",
+            ]}
+            footnote="Billed annually in TEXITcoin. Pay from any TXC wallet."
+          />
+          <PlanCard
+            planId="unlimited"
+            name="Unlimited"
+            price="$99"
+            priceSuffix="/mo"
+            tagline="No transaction caps. Built for scale."
+            cta="Go Unlimited"
+            features={[
+              "Everything in Cheap",
+              "Advanced APIs (REST + WebSocket)",
+              "Customized chain support",
+              "Expanded chain coverage",
+              "SLA-backed webhook delivery",
+              "Team seats + audit log",
+              "Custom KYC rules",
+              "Priority support",
+              "Dedicated account manager",
+            ]}
+            footnote="Billed monthly in TEXITcoin. Cancel anytime."
+          />
+        </div>
+
+        <p className="mt-8 text-xs text-muted-foreground">
+          All plans paid in TEXITcoin. Transaction limits on Free are managed by our team and
+          may change as the network grows.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+export function TerminalKitSection() {
   const kitUrl =
     "https://blockchainmint.com/buy/nectar-pay-mobile-pos-terminal?clear=1";
   const { user } = useAuth();
