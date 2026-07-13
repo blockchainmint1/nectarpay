@@ -57,7 +57,7 @@ function OnrampPage() {
       <MarketingNav />
       <main className="flex-1">
         <Hero />
-        <VideoSection />
+
         <PitchSection />
         <KitSection />
         <BookingSection />
