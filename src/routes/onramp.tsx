@@ -19,7 +19,7 @@ import {
   ArrowRight,
   CheckCircle2,
   CalendarClock,
-  PlayCircle,
+  
   ShieldCheck,
   Zap,
   Coins,
@@ -48,7 +48,8 @@ export const Route = createFileRoute("/onramp")({
 });
 
 const VIDEO_SRC =
-  "https://streamtxc.com/v/bafybeibr4yk5dojvbrhx7dlyqbtfnjlfsmihqpnagefjz7g6e7oqu3txau";
+  "https://streamtxc.com/embed/bafybeibr4yk5dojvbrhx7dlyqbtfnjlfsmihqpnagefjz7g6e7oqu3txau?";
+
 
 function OnrampPage() {
   return (
@@ -56,7 +57,7 @@ function OnrampPage() {
       <MarketingNav />
       <main className="flex-1">
         <Hero />
-        <VideoSection />
+
         <PitchSection />
         <KitSection />
         <BookingSection />
@@ -124,80 +125,44 @@ function Hero() {
           </ul>
         </div>
 
-        <aside className="rounded-2xl border border-border bg-card/60 p-6 shadow-xl backdrop-blur">
-          <div className="text-xs uppercase tracking-wider text-muted-foreground">
-            Terminal Kit
+        <aside className="flex flex-col gap-4">
+          <div className="overflow-hidden rounded-2xl border border-border bg-black shadow-2xl">
+            <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
+              <iframe
+                src={VIDEO_SRC}
+                title="Nectar.Pay onramp demo"
+                allow="autoplay; fullscreen"
+                allowFullScreen
+                className="absolute inset-0 h-full w-full"
+                loading="lazy"
+              />
+            </div>
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-4xl font-bold">$499</span>
-            <span className="text-sm text-muted-foreground">one-time</span>
+          <div className="rounded-2xl border border-border bg-card/60 p-5 shadow-xl backdrop-blur">
+            <div className="flex items-baseline justify-between">
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">
+                Terminal Kit
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold">$499</span>
+                <span className="text-xs text-muted-foreground">one-time</span>
+              </div>
+            </div>
+            <Button asChild size="lg" className="mt-4 w-full gap-2">
+              <Link to="/checkout">
+                Buy the kit <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              BTC · TXC · stables · ships in 3–5 days
+            </p>
           </div>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Tangem-based tap terminal, thermal printer, POS app, and merchant wallet.
-            Everything you need to start taking crypto at the counter.
-          </p>
-          <ul className="mt-5 space-y-2 text-sm">
-            {[
-              "Tap-to-pay Tangem terminal",
-              "Bluetooth receipt printer",
-              "Nectar.Pay POS app + dashboard",
-              "First-year merchant fee: $228 (optional)",
-            ].map((f) => (
-              <li key={f} className="flex items-start gap-2">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[color:var(--np-honey-400)]" />
-                <span>{f}</span>
-              </li>
-            ))}
-          </ul>
-          <Button asChild size="lg" className="mt-6 w-full gap-2">
-            <Link to="/checkout">
-              Buy the kit <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-          <p className="mt-3 text-center text-xs text-muted-foreground">
-            Pay in BTC, TXC, or stablecoins · ships in 3–5 days
-          </p>
         </aside>
       </div>
     </section>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Video                                                                */
-/* ------------------------------------------------------------------ */
-
-function VideoSection() {
-  return (
-    <section className="border-b border-border bg-muted/20 py-16 md:py-24">
-      <div className="mx-auto w-full max-w-5xl px-4">
-        <div className="mb-8 flex items-end justify-between gap-4">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-              See it in 90 seconds
-            </h2>
-            <p className="mt-2 text-muted-foreground">
-              A live tap-to-pay checkout, from scan to receipt.
-            </p>
-          </div>
-          <PlayCircle className="hidden h-10 w-10 text-[color:var(--np-honey-400)] md:block" />
-        </div>
-        <div className="overflow-hidden rounded-2xl border border-border bg-black shadow-2xl">
-          <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
-            <iframe
-              src={VIDEO_SRC}
-              title="Nectar.Pay onramp demo"
-              allow="autoplay; fullscreen; picture-in-picture"
-              allowFullScreen
-              className="absolute inset-0 h-full w-full"
-              loading="lazy"
-            />
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 /* ------------------------------------------------------------------ */
 /* Pitch                                                                */
