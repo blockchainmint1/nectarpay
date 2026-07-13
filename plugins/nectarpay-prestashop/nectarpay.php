@@ -49,6 +49,18 @@ class NectarPay extends PaymentModule
     {
         Configuration::updateValue(self::CONFIG_API_BASE, 'https://nectar-pay.com');
 
+        Db::getInstance()->execute(
+            'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'nectarpay_invoice` (
+              `id_cart`    INT UNSIGNED NOT NULL,
+              `invoice_id` VARCHAR(64) NOT NULL,
+              `amount`     DECIMAL(20,8) NOT NULL,
+              `currency`   VARCHAR(8) NOT NULL,
+              `created_at` DATETIME NOT NULL,
+              PRIMARY KEY (`id_cart`),
+              KEY `invoice_id` (`invoice_id`)
+            ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;'
+        );
+
         return parent::install()
             && $this->registerHook('paymentOptions')
             && $this->registerHook('displayPaymentReturn');
@@ -61,8 +73,10 @@ class NectarPay extends PaymentModule
         Configuration::deleteByName(self::CONFIG_API_BASE);
         Configuration::deleteByName(self::CONFIG_STORE_ID);
 
+        // Keep the invoice-cart mapping on uninstall for auditing.
         return parent::uninstall();
     }
+
 
     /* --------------------------------------------------------------- Config UI */
 

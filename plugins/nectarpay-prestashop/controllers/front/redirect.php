@@ -1,7 +1,7 @@
 <?php
 /**
  * Creates a NectarPay invoice for the current cart and redirects the
- * shopper to the hosted pay page. Order creation happens in the webhook
+ * shopper to the hosted checkout. Order creation happens in the webhook
  * controller once payment is confirmed on-chain.
  */
 
@@ -20,26 +20,23 @@ class NectarPayRedirectModuleFrontController extends ModuleFrontController
             Tools::redirect('index.php?controller=order&step=1');
         }
 
-        $api_base       = rtrim(Configuration::get(NectarPay::CONFIG_API_BASE) ?: 'https://nectar-pay.com', '/');
-        $api_key        = Configuration::get(NectarPay::CONFIG_API_KEY);
-        $store_id       = Configuration::get(NectarPay::CONFIG_STORE_ID);
-        $currency       = new Currency((int) $cart->id_currency);
-        $total          = (float) $cart->getOrderTotal(true, Cart::BOTH);
-        $webhook_url    = $this->context->link->getModuleLink('nectarpay', 'webhook', [], true);
-        $return_url     = $this->context->link->getModuleLink('nectarpay', 'return', ['id_cart' => $cart->id], true);
+        $api_base   = rtrim(Configuration::get(NectarPay::CONFIG_API_BASE) ?: 'https://nectar-pay.com', '/');
+        $api_key    = Configuration::get(NectarPay::CONFIG_API_KEY);
+        $currency   = new Currency((int) $cart->id_currency);
+        $total      = (float) $cart->getOrderTotal(true, Cart::BOTH);
+        $return_url = $this->context->link->getModuleLink('nectarpay', 'return', ['id_cart' => $cart->id], true);
 
+        // Match the NectarPay public API shape exactly:
+        //   POST /api/public/v1/invoices  Bearer sk_live_...
+        //   { amount, currency, order_id?, description?, redirect_url? }
+        // The webhook URL is configured per-store in the NectarPay dashboard,
+        // not per-invoice — do not send it here.
         $payload = [
-            'store_id'      => $store_id,
-            'fiat_amount'   => $total,
-            'fiat_currency' => $currency->iso_code,
-            'order_id'      => (string) $cart->id,
-            'redirect_url'  => $return_url,
-            'webhook_url'   => $webhook_url,
-            'metadata'      => [
-                'platform' => 'prestashop',
-                'ps_cart'  => (int) $cart->id,
-                'customer' => (int) $cart->id_customer,
-            ],
+            'amount'       => $total,
+            'currency'     => $currency->iso_code,
+            'order_id'     => (string) $cart->id,   // echoed back in webhooks as data.order_id
+            'description'  => 'PrestaShop cart #' . (int) $cart->id,
+            'redirect_url' => $return_url,
         ];
 
         $ch = curl_init($api_base . '/api/public/v1/invoices');
@@ -59,8 +56,25 @@ class NectarPayRedirectModuleFrontController extends ModuleFrontController
 
         if ($status >= 200 && $status < 300 && $body) {
             $data = json_decode($body, true);
-            if (!empty($data['pay_url'])) {
-                Tools::redirect($data['pay_url']);
+            if (!empty($data['checkout_url']) && !empty($data['id'])) {
+                // Persist the NectarPay invoice ID against the cart so the
+                // webhook + return handlers (and the merchant, later) can
+                // reconcile against the NectarPay admin panel.
+                Db::getInstance()->insert(
+                    'nectarpay_invoice',
+                    [
+                        'id_cart'    => (int) $cart->id,
+                        'invoice_id' => pSQL($data['id']),
+                        'amount'     => (float) $total,
+                        'currency'   => pSQL($currency->iso_code),
+                        'created_at' => date('Y-m-d H:i:s'),
+                    ],
+                    false,
+                    true,
+                    Db::REPLACE
+                );
+
+                Tools::redirect($data['checkout_url']);
             }
         }
 
