@@ -61,6 +61,12 @@ function AdminInvoices() {
           value={storeQ}
           onChange={(e) => setStoreQ(e.target.value)}
         />
+        <input
+          className={inputCls}
+          placeholder="Filter order #…"
+          value={orderQ}
+          onChange={(e) => setOrderQ(e.target.value)}
+        />
         <select
           className={inputCls}
           value={status}
@@ -73,13 +79,14 @@ function AdminInvoices() {
             </option>
           ))}
         </select>
-        {(merchantQ || storeQ || status) && (
+        {(merchantQ || storeQ || orderQ || status) && (
           <button
             type="button"
             className="h-9 rounded-md border border-border px-3 text-sm text-muted-foreground hover:text-foreground"
             onClick={() => {
               setMerchantQ("");
               setStoreQ("");
+              setOrderQ("");
               setStatus("");
             }}
           >
