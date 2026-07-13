@@ -21,6 +21,7 @@ import { Route as PriceRouteImport } from './routes/price'
 import { Route as PosBuildIdRouteImport } from './routes/pos-build-id'
 import { Route as PosApkRouteImport } from './routes/pos-apk'
 import { Route as PosRouteImport } from './routes/pos'
+import { Route as OnrampRouteImport } from './routes/onramp'
 import { Route as ManifestoRouteImport } from './routes/manifesto'
 import { Route as MRouteImport } from './routes/m'
 import { Route as LiveRouteImport } from './routes/live'
@@ -172,6 +173,11 @@ const PosApkRoute = PosApkRouteImport.update({
 const PosRoute = PosRouteImport.update({
   id: '/pos',
   path: '/pos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnrampRoute = OnrampRouteImport.update({
+  id: '/onramp',
+  path: '/onramp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ManifestoRoute = ManifestoRouteImport.update({
@@ -691,6 +697,7 @@ export interface FileRoutesByFullPath {
   '/live': typeof LiveRoute
   '/m': typeof MRoute
   '/manifesto': typeof ManifestoRoute
+  '/onramp': typeof OnrampRoute
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
   '/pos-build-id': typeof PosBuildIdRoute
@@ -796,6 +803,7 @@ export interface FileRoutesByTo {
   '/live': typeof LiveRoute
   '/m': typeof MRoute
   '/manifesto': typeof ManifestoRoute
+  '/onramp': typeof OnrampRoute
   '/pos-apk': typeof PosApkRoute
   '/pos-build-id': typeof PosBuildIdRoute
   '/price': typeof PriceRoute
@@ -899,6 +907,7 @@ export interface FileRoutesById {
   '/live': typeof LiveRoute
   '/m': typeof MRoute
   '/manifesto': typeof ManifestoRoute
+  '/onramp': typeof OnrampRoute
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
   '/pos-build-id': typeof PosBuildIdRoute
@@ -1006,6 +1015,7 @@ export interface FileRouteTypes {
     | '/live'
     | '/m'
     | '/manifesto'
+    | '/onramp'
     | '/pos'
     | '/pos-apk'
     | '/pos-build-id'
@@ -1111,6 +1121,7 @@ export interface FileRouteTypes {
     | '/live'
     | '/m'
     | '/manifesto'
+    | '/onramp'
     | '/pos-apk'
     | '/pos-build-id'
     | '/price'
@@ -1213,6 +1224,7 @@ export interface FileRouteTypes {
     | '/live'
     | '/m'
     | '/manifesto'
+    | '/onramp'
     | '/pos'
     | '/pos-apk'
     | '/pos-build-id'
@@ -1320,6 +1332,7 @@ export interface RootRouteChildren {
   LiveRoute: typeof LiveRoute
   MRoute: typeof MRoute
   ManifestoRoute: typeof ManifestoRoute
+  OnrampRoute: typeof OnrampRoute
   PosRoute: typeof PosRouteWithChildren
   PosApkRoute: typeof PosApkRoute
   PosBuildIdRoute: typeof PosBuildIdRoute
@@ -1445,6 +1458,13 @@ declare module '@tanstack/react-router' {
       path: '/pos'
       fullPath: '/pos'
       preLoaderRoute: typeof PosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onramp': {
+      id: '/onramp'
+      path: '/onramp'
+      fullPath: '/onramp'
+      preLoaderRoute: typeof OnrampRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/manifesto': {
@@ -2335,6 +2355,7 @@ const rootRouteChildren: RootRouteChildren = {
   LiveRoute: LiveRoute,
   MRoute: MRoute,
   ManifestoRoute: ManifestoRoute,
+  OnrampRoute: OnrampRoute,
   PosRoute: PosRouteWithChildren,
   PosApkRoute: PosApkRoute,
   PosBuildIdRoute: PosBuildIdRoute,
