@@ -25,6 +25,7 @@ function AdminInvoices() {
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-[0.2em] text-muted-foreground">
             <tr>
               <th className="px-4 py-2">Created</th>
+              <th className="px-4 py-2">Merchant</th>
               <th className="px-4 py-2">Status</th>
               <th className="px-4 py-2">Chain</th>
               <th className="px-4 py-2 text-right">USD</th>
@@ -37,6 +38,9 @@ function AdminInvoices() {
               <tr key={inv.id} className="border-t border-border/40">
                 <td className="px-4 py-2 text-muted-foreground">
                   {new Date(inv.created_at).toLocaleString()}
+                </td>
+                <td className="px-4 py-2">
+                  {inv.merchant_name ?? <span className="text-muted-foreground">—</span>}
                 </td>
                 <td className="px-4 py-2">{inv.status}</td>
                 <td className="px-4 py-2 uppercase">{inv.chain}</td>
@@ -53,7 +57,7 @@ function AdminInvoices() {
             ))}
             {(data ?? []).length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-muted-foreground">
+                <td colSpan={7} className="px-4 py-6 text-center text-muted-foreground">
                   No invoices yet.
                 </td>
               </tr>
