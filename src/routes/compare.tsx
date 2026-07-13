@@ -236,7 +236,7 @@ export function ComparePillars() {
   return (
     <section className="border-b border-border/60 bg-card/30">
       <a
-        href="/stats"
+        href="/live"
         className="group block transition hover:bg-card/60"
       >
         <div className="mx-auto grid max-w-6xl gap-6 px-4 py-12 md:grid-cols-4">
