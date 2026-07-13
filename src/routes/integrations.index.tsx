@@ -65,6 +65,15 @@ export function IntegrationsBody() {
             available
           />
           <IntegrationCard
+            icon={<ShoppingBag className="h-5 w-5" />}
+            name="PrestaShop"
+            tagline="PrestaShop 8.0 – 8.2. Ten-minute setup."
+            description="Drop our PHP module into PrestaShop, paste your API key, and checkout gains a 'Pay with crypto' option that settles straight to your wallet."
+            to="/integrations/prestashop"
+            cta="View module"
+            available
+          />
+          <IntegrationCard
             icon={<Zap className="h-5 w-5" />}
             name="Shopify"
             tagline="Probably never."
@@ -72,7 +81,7 @@ export function IntegrationsBody() {
           />
           <IntegrationCard
             icon={<Zap className="h-5 w-5" />}
-            name="Magento, OpenCart, PrestaShop"
+            name="Magento, OpenCart"
             tagline="On request."
             description="If your platform speaks REST, we can plug in. Talk to us about a custom connector."
           />
