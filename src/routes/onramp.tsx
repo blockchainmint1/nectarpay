@@ -159,7 +159,7 @@ function Hero() {
                   <div className="relative flex flex-col items-center gap-3 text-white">
                     <PlayCircle className="h-20 w-20 text-[color:var(--np-honey-400)] drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] transition-transform group-hover:scale-105" />
                     <span className="text-sm font-medium uppercase tracking-widest text-white/80">
-                      Watch the 90-sec demo
+                      WATCH THE 3 MIN INTRO
                     </span>
                   </div>
                   <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2 py-1 text-[10px] uppercase tracking-wider text-white/80 backdrop-blur">
