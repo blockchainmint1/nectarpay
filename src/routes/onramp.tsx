@@ -72,6 +72,7 @@ function OnrampPage() {
 /* ------------------------------------------------------------------ */
 
 function Hero() {
+  const [playing, setPlaying] = useState(false);
   return (
     <section className="relative overflow-hidden border-b border-border">
       <div
