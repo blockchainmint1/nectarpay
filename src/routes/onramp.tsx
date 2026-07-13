@@ -19,7 +19,7 @@ import {
   ArrowRight,
   CheckCircle2,
   CalendarClock,
-  
+  PlayCircle,
   ShieldCheck,
   Zap,
   Coins,
