@@ -108,6 +108,7 @@ function AdminInvoices() {
               <th className="px-4 py-2">Status</th>
               <th className="px-4 py-2">Chain</th>
               <th className="px-4 py-2 text-right">USD</th>
+              <th className="px-4 py-2">Order #</th>
               <th className="px-4 py-2 font-mono">Invoice</th>
             </tr>
           </thead>
@@ -128,6 +129,9 @@ function AdminInvoices() {
                 <td className="px-4 py-2 text-right tabular-nums">
                   {inv.fiat_amount ? `$${Number(inv.fiat_amount).toFixed(2)}` : "—"}
                 </td>
+                <td className="px-4 py-2 text-xs">
+                  {inv.external_order_id ?? <span className="text-muted-foreground">—</span>}
+                </td>
                 <td className="px-4 py-2 font-mono text-xs text-muted-foreground">
                   {inv.id.slice(0, 8)}…
                 </td>
@@ -135,7 +139,7 @@ function AdminInvoices() {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-muted-foreground">
+                <td colSpan={8} className="px-4 py-6 text-center text-muted-foreground">
                   No invoices match.
                 </td>
               </tr>
