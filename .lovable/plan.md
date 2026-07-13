@@ -1,79 +1,74 @@
+# Kit checkout on Nectar.Pay, BlockchainMint as fulfillment backend
 
-# Merchant Apps (iOS + Android) — Plan
+Goal: sell the Terminal Kit ($499) + optional first-year fee ($228) from `/checkout` on nectar-pay.com, paid in crypto via our own invoice system. BlockchainMint (BM) receives the fulfillment order once the invoice is paid and ships the kit.
 
-## App landscape
+## User flow
 
-Three distinct apps, one shared web codebase:
+1. `/price` "Get the Kit" button → `/checkout`
+2. `/checkout` (single page):
+   - Line items: **Kit $499** (required) + **First year $228** (toggle, default on)
+   - Fields: email, full name, phone, shipping address (street/city/state/postal/country)
+   - Pay-with: BTC / TXC / USDC (uses our existing invoice creation)
+   - Submit → creates a `kit_orders` row + an invoice → redirects to our existing `/pay/{invoiceId}`
+3. Buyer pays. Our existing paid-invoice handler fires.
+4. New hook: if invoice is linked to a `kit_orders` row, POST the order to BM's fulfillment endpoint. Store returned `bm_order_id` and `bm_synced_at`.
+5. `/checkout/thanks?order=…` — shows order number, payment confirmation, "we've handed it off to fulfillment, expect a tracking email" copy.
 
-| App | Platform | Distribution | Purpose |
-|---|---|---|---|
-| **NectarPay POS** (existing) | Android only | Sideloaded APK on Senraise terminals | Full hardware POS: NFC tap, thermal printer, Tangem card |
-| **NectarPay Merchant** (new) | iOS | App Store | Dashboard + virtual terminal |
-| **NectarPay Merchant** (new) | Android | Play Store | Dashboard + virtual terminal |
+## Database
 
-The two Merchant apps share the same code, same Capacitor config, same `appId`, and differ only by platform build. The existing Senraise terminal app keeps its current `appId` (`money.honest.nectarpos`) and stays sideload-only.
+New table `public.kit_orders`:
 
-## What the Merchant app does
+- `id uuid pk`
+- `user_id uuid null` (if logged in)
+- `invoice_id uuid null references invoices(id)`
+- `email text`, `full_name text`, `phone text`
+- `ship_line1/line2/city/region/postal/country text`
+- `include_first_year boolean default true`
+- `subtotal_usd numeric`, `total_usd numeric`
+- `status text` — `pending_payment` | `paid` | `submitted_to_bm` | `bm_failed` | `shipped` | `canceled`
+- `bm_order_id text null`, `bm_synced_at timestamptz null`, `bm_last_error text null`
+- `created_at`, `updated_at`
 
-**Dashboard** (already exists on web, wrap it):
-- Sales overview, recent transactions, payout status
-- Store settings, staff, terminals list
-- Invoices, customers, KYC status
-- Notifications / alerts
+RLS: users see their own; anon can insert via server function only (no direct anon insert); service_role full.
 
-**Virtual Terminal** (new flow, no hardware):
-- Enter amount → generate a payment request
-- Present as QR code for the customer to scan with any crypto wallet
-- Optionally send as a payment link (SMS / email / share sheet)
-- Live "waiting for payment" screen that flips to "paid" when the chain confirms (reuse existing invoice + watcher infra)
-- Refund / void from transaction detail
+## Server functions (this project)
 
-Explicitly **not** in the Merchant app: NFC tap-to-pay, receipt printer, Tangem SDK bridge. Those stay Android-native on the Senraise terminal build.
+- `src/lib/kit-checkout.functions.ts`
+  - `createKitCheckout({ email, shipping, includeFirstYear, payChain })` — validates with Zod, creates invoice, creates kit_orders row, returns `{ invoiceId, payUrl, orderId }`.
+  - `getKitOrder({ orderId })` — for thanks page.
+- Extend existing paid-invoice handler (wherever `invoices.status → paid` is written) with `maybeForwardToBm(invoiceId)`:
+  - Look up kit_orders by invoice_id. If exists and not yet submitted, POST to BM.
+  - Endpoint: `${BM_FULFILLMENT_URL}` with `Authorization: Bearer ${BM_FULFILLMENT_SECRET}`.
+  - Body: `{ external_order_id, email, shipping, line_items, paid_amount_usd, invoice_id, tx_ref }`.
+  - Timing-safe HMAC over body optional; token auth is fine for v1.
+  - On success: set `bm_order_id`, `bm_synced_at`, `status='submitted_to_bm'`.
+  - On failure: log to `bm_last_error`, `status='bm_failed'`; a small server function `retryKitOrderToBm(orderId)` for admin retry.
 
-## Technical approach
+## Secrets (this project)
 
-New Capacitor project alongside the existing one:
+- `BM_FULFILLMENT_URL` — full URL to BM intake endpoint (e.g. `https://blockchainmint.com/api/public/v1/external-orders`)
+- `BM_FULFILLMENT_SECRET` — bearer token BM will verify
 
-- New `appId`: `money.honest.nectarpay.merchant` (distinct from terminal so both can install side-by-side and get separate App Store / Play listings).
-- New `appName`: "NectarPay" (merchant-facing).
-- Add both platforms: `ios/` + a second Android target.
-- Point `server.url` at `https://nectar-pay.com/m` — a new merchant-only entry route that hides terminal-only UI and boots straight into the dashboard.
-- Add a lightweight `isMerchantApp()` runtime check (via Capacitor platform + a build flag) so the web app can:
-  - hide NFC / printer / pair-terminal UI
-  - show a "Virtual Terminal" tile instead of "Take Payment (tap)"
-  - route push notifications to native OS notifications
+Requested via `add_secret` after the pages exist.
 
-Two build configs, one repo:
+## Pages / components
 
-```text
-capacitor.config.ts          → Senraise terminal (Android only, existing)
-capacitor.merchant.config.ts → Merchant app (iOS + Android, new)
-```
+- `src/routes/checkout.tsx` — kit checkout page (line items, shipping form, submit).
+- `src/routes/checkout.thanks.tsx` — post-payment confirmation, reads `?order=`.
+- `src/components/kit-checkout/*` — form pieces (line items, address form).
+- Update `/price` Terminal Kit CTA button to link to `/checkout`.
 
-Build scripts:
-- `bun run build:terminal` → syncs terminal config, builds Android APK
-- `bun run build:merchant:ios` → syncs merchant config, opens Xcode
-- `bun run build:merchant:android` → syncs merchant config, builds AAB
+## BlockchainMint side (separate project — I'll draft the endpoint spec)
 
-## New web surface needed
+BM needs to build `POST /api/public/v1/external-orders`:
+- Header: `Authorization: Bearer ${BM_FULFILLMENT_SECRET}` (BM stores same secret).
+- Verify, then create an internal order in `orders` table with `source='nectarpay_external'`, `payment_status='paid'`, `payhme_invoice_id`, shipping, line items.
+- Return `{ order_id, order_number }`.
 
-- `/m` — merchant app entry route (auto-redirects to dashboard if signed in, else `/auth`)
-- `/m/virtual-terminal` — amount pad → QR / share flow
-- Detect `Capacitor.getPlatform() === 'ios' | 'android'` + merchant build flag to gate terminal-only UI everywhere it appears
+I'll ship the spec as `docs/BM_FULFILLMENT_ENDPOINT.md` in this project so it can be handed to BM. Actual BM implementation happens in the BlockchainMint.com project.
 
-## Store listing prep (do later, not this pass)
+## Out of scope (this pass)
 
-- App icons (1024 iOS, adaptive Android)
-- Screenshots (5 per device size)
-- Privacy policy URL (already exists on marketing site)
-- App Store description, keywords, category (Finance)
-- Play Store description, content rating, data safety form
-
-## Open questions before I build
-
-1. **Confirm virtual terminal scope**: QR + share-link is the MVP I'm proposing. Do you also want manual card entry (would require a payment processor integration on top of crypto), or crypto-only for v1?
-2. **Push notifications**: want native push for "payment received" / "payout sent" on day one, or ship without and add later?
-3. **Biometric unlock** (Face ID / fingerprint to open the app): yes for v1, or skip?
-4. **Naming**: keep both apps called "NectarPay" in the stores, or differentiate ("NectarPay" for merchant, since Senraise app is never public)?
-
-Once you answer those, I'll scaffold `/m`, the virtual terminal flow, the second Capacitor config, and add the iOS platform.
+- Multi-item cart. Only Kit + optional first-year.
+- Tax / shipping quotes (kit ships flat; first-year is digital). If BM needs to compute shipping later, we add a `getShippingQuote` call before invoice creation.
+- Refund flow (BM's existing refund path handles it, we mirror status via a webhook back from BM in a later pass).
