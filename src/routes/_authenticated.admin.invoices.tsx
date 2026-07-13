@@ -17,6 +17,7 @@ function AdminInvoices() {
 
   const [merchantQ, setMerchantQ] = useState("");
   const [storeQ, setStoreQ] = useState("");
+  const [orderQ, setOrderQ] = useState("");
   const [status, setStatus] = useState("");
 
   const statuses = useMemo(
@@ -27,13 +28,15 @@ function AdminInvoices() {
   const rows = useMemo(() => {
     const m = merchantQ.trim().toLowerCase();
     const s = storeQ.trim().toLowerCase();
+    const o = orderQ.trim().toLowerCase();
     return (data ?? []).filter((inv: any) => {
       if (status && inv.status !== status) return false;
       if (m && !(inv.merchant_name ?? "").toLowerCase().includes(m)) return false;
       if (s && !(inv.store_name ?? "").toLowerCase().includes(s)) return false;
+      if (o && !(inv.external_order_id ?? "").toLowerCase().includes(o)) return false;
       return true;
     });
-  }, [data, merchantQ, storeQ, status]);
+  }, [data, merchantQ, storeQ, orderQ, status]);
 
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading…</p>;
   if (error) return <p className="text-sm text-destructive">{(error as Error).message}</p>;
