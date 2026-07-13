@@ -301,7 +301,7 @@ function KitSection() {
             <span className="text-4xl font-bold">$499</span>
           </div>
           <div className="mt-3 flex items-baseline justify-between text-sm text-muted-foreground">
-            <span>+ optional first-year fee</span>
+            <span>+ first-year service fee</span>
             <span>$228</span>
           </div>
           <div className="mt-6 h-px w-full bg-border" />
