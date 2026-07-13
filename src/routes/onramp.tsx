@@ -342,7 +342,7 @@ function BookingSection() {
     name: "",
     email: "",
     telegram: "",
-    market: "Los Angeles" as (typeof LEAD_MARKETS)[number],
+    market: "Dallas / Fort Worth" as (typeof LEAD_MARKETS)[number],
     business: "",
     preferredTime: "",
     message: "",

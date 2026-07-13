@@ -3,8 +3,8 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const MARKETS = [
+  "Dallas / Fort Worth",
   "Los Angeles",
-  "Dallas",
   "Denver",
   "Salt Lake",
   "Nashville",
