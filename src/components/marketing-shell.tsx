@@ -158,7 +158,7 @@ export function MarketingNav() {
           <Sheet>
             <SheetTrigger asChild>
               <button
-                className="np-btn np-btn-ghost md:hidden"
+                className="np-btn np-btn-ghost md:!hidden"
                 style={{ padding: "10px 12px" }}
                 aria-label="Open menu"
               >
