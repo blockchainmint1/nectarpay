@@ -133,8 +133,7 @@ export function PricingPlansBody() {
 }
 
 export function TerminalKitSection() {
-  const kitUrl =
-    "https://blockchainmint.com/buy/nectar-pay-mobile-pos-terminal?clear=1";
+  const kitUrl = "/checkout";
   const { user } = useAuth();
 
   async function handleClaim() {
@@ -149,6 +148,7 @@ export function TerminalKitSection() {
       }
     }
   }
+
 
   return (
     <section className="relative overflow-hidden border-b border-border/60 bg-background py-20 text-foreground">
@@ -205,32 +205,22 @@ export function TerminalKitSection() {
               size="lg"
               className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
-              <a href={kitUrl} target="_blank" rel="noreferrer" onClick={handleClaim}>
+              <a href={kitUrl} onClick={handleClaim}>
                 Claim your kit <ArrowRight className="ml-2 h-4 w-4" />
               </a>
             </Button>
           </div>
           <p className="mt-4 text-xs text-muted-foreground">
-            Checkout on{" "}
-            <a
-              href="https://blockchainmint.com"
-              target="_blank"
-              rel="noreferrer"
-              className="underline decoration-primary/60 underline-offset-2 hover:text-foreground"
-            >
-              blockchainmint.com
-            </a>{" "}
-            · ships worldwide
+            Checkout on nectar-pay.com · ships worldwide from Blockchain Mint
           </p>
         </div>
 
         <a
           href={kitUrl}
-          target="_blank"
-          rel="noreferrer"
           onClick={handleClaim}
           className="group relative block rounded-2xl border border-border/50 bg-card/60 p-3 shadow-2xl shadow-primary/20 transition hover:-translate-y-1 hover:border-primary/40"
         >
+
           <img
             src={posTerminalAsset.url}
             alt="NectarPay POS terminal with BeeKeeper cold-storage coin and printed QR receipt"
