@@ -58,9 +58,9 @@ function OnrampPage() {
       <main className="flex-1">
         <Hero />
 
+        <BookingSection />
         <PitchSection />
         <KitSection />
-        <BookingSection />
       </main>
       <MarketingFooter />
     </div>
