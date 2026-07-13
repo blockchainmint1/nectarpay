@@ -68,13 +68,9 @@ export function NectarWordmark() {
 /* ------------------------------------------------------------------ */
 
 const navLinks = [
-  { to: "/where", label: "Where" },
-  { to: "/pricing", label: "Pricing" },
-  { to: "/compare", label: "Compare" },
-  { to: "/docs", label: "Docs" },
-  { to: "/integrations", label: "Integrations" },
+  { to: "/price", label: "Price" },
+  { to: "/integrate", label: "Integrate" },
   { to: "/investors", label: "Investors" },
-  { href: "https://beekeeper.honest.money", label: "Wallet", external: true },
 ] as const;
 
 export function MarketingNav() {
