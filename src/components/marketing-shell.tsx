@@ -93,23 +93,11 @@ export function MarketingNav() {
           className="hidden items-center gap-6 text-sm md:flex"
           style={{ color: "rgba(255,255,255,0.75)" }}
         >
-          {navLinks.map((link) =>
-            "external" in link ? (
-              <a
-                key={link.href}
-                href={link.href}
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-white"
-              >
-                {link.label}
-              </a>
-            ) : (
-              <Link key={link.to} to={link.to} className="hover:text-white">
-                {link.label}
-              </Link>
-            ),
-          )}
+          {navLinks.map((link) => (
+            <Link key={link.to} to={link.to} className="hover:text-white">
+              {link.label}
+            </Link>
+          ))}
         </nav>
         <div className="flex items-center gap-3">
           {loading ? null : user ? (
