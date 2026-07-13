@@ -195,7 +195,7 @@ export function TerminalKitSection() {
 
           <div className="mt-10 flex flex-wrap items-end gap-6">
             <div>
-              <div className="font-mono text-5xl text-primary">$495</div>
+              <div className="font-mono text-5xl text-primary">$499</div>
               <div className="mt-1 text-[11px] tracking-widest text-foreground/50">
                 ONE-TIME · NO PER-TX FEES, EVER
               </div>
@@ -240,7 +240,7 @@ export function TerminalKitSection() {
           <div className="flex items-center justify-between px-2 pt-3 pb-1 text-xs text-muted-foreground">
             <span>NectarPay POS · BeeKeeper Coin · QR receipts</span>
             <span className="text-primary group-hover:translate-x-0.5 transition">
-              $495 →
+              $499 →
             </span>
           </div>
         </a>
