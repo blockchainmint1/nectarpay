@@ -14,10 +14,12 @@ const MARKETS = [
 
 const INTERESTS = [
   "Become a merchant",
+  "Onramp demo",
   "Sales rep",
   "Open a market",
   "Other",
 ] as const;
+
 
 const submitSchema = z.object({
   name: z.string().trim().min(1).max(120),
