@@ -45,13 +45,6 @@ function AdminInvoices() {
                 <td className="px-4 py-2">
                   {(inv as any).store_name ?? <span className="text-muted-foreground">—</span>}
                 </td>
-              <tr key={inv.id} className="border-t border-border/40">
-                <td className="px-4 py-2 text-muted-foreground">
-                  {new Date(inv.created_at).toLocaleString()}
-                </td>
-                <td className="px-4 py-2">
-                  {inv.merchant_name ?? <span className="text-muted-foreground">—</span>}
-                </td>
                 <td className="px-4 py-2">{inv.status}</td>
                 <td className="px-4 py-2 uppercase">{inv.chain}</td>
                 <td className="px-4 py-2 text-right tabular-nums">
@@ -59,9 +52,6 @@ function AdminInvoices() {
                 </td>
                 <td className="px-4 py-2 font-mono text-xs text-muted-foreground">
                   {inv.id.slice(0, 8)}…
-                </td>
-                <td className="px-4 py-2 font-mono text-xs text-muted-foreground">
-                  {inv.store_id?.slice(0, 8)}…
                 </td>
               </tr>
             ))}
