@@ -29,6 +29,7 @@ import { Route as IntegrateRouteImport } from './routes/integrate'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CompareRouteImport } from './routes/compare'
+import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CashOutRouteImport } from './routes/cash-out'
 import { Route as BrandRouteImport } from './routes/brand'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -49,6 +50,7 @@ import { Route as IInvoiceIdRouteImport } from './routes/i.$invoiceId'
 import { Route as DocsWalletSetupRouteImport } from './routes/docs.wallet-setup'
 import { Route as DocsTapToPayTangemRouteImport } from './routes/docs.tap-to-pay-tangem'
 import { Route as DevTangemTestRouteImport } from './routes/dev.tangem-test'
+import { Route as CheckoutThanksRouteImport } from './routes/checkout.thanks'
 import { Route as AuthenticatedTerminalsRouteImport } from './routes/_authenticated.terminals'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated.notifications'
 import { Route as AuthenticatedExportsRouteImport } from './routes/_authenticated.exports'
@@ -212,6 +214,11 @@ const CompareRoute = CompareRouteImport.update({
   path: '/compare',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckoutRoute = CheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CashOutRoute = CashOutRouteImport.update({
   id: '/cash-out',
   path: '/cash-out',
@@ -310,6 +317,11 @@ const DevTangemTestRoute = DevTangemTestRouteImport.update({
   id: '/dev/tangem-test',
   path: '/dev/tangem-test',
   getParentRoute: () => rootRouteImport,
+} as any)
+const CheckoutThanksRoute = CheckoutThanksRouteImport.update({
+  id: '/thanks',
+  path: '/thanks',
+  getParentRoute: () => CheckoutRoute,
 } as any)
 const AuthenticatedTerminalsRoute = AuthenticatedTerminalsRouteImport.update({
   id: '/terminals',
@@ -670,6 +682,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
@@ -696,6 +709,7 @@ export interface FileRoutesByFullPath {
   '/exports': typeof AuthenticatedExportsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/terminals': typeof AuthenticatedTerminalsRoute
+  '/checkout/thanks': typeof CheckoutThanksRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
@@ -773,6 +787,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
@@ -797,6 +812,7 @@ export interface FileRoutesByTo {
   '/exports': typeof AuthenticatedExportsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/terminals': typeof AuthenticatedTerminalsRoute
+  '/checkout/thanks': typeof CheckoutThanksRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
@@ -874,6 +890,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
+  '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
@@ -900,6 +917,7 @@ export interface FileRoutesById {
   '/_authenticated/exports': typeof AuthenticatedExportsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/terminals': typeof AuthenticatedTerminalsRoute
+  '/checkout/thanks': typeof CheckoutThanksRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
@@ -979,6 +997,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/brand'
     | '/cash-out'
+    | '/checkout'
     | '/compare'
     | '/contact'
     | '/docs'
@@ -1005,6 +1024,7 @@ export interface FileRouteTypes {
     | '/exports'
     | '/notifications'
     | '/terminals'
+    | '/checkout/thanks'
     | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
@@ -1082,6 +1102,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/brand'
     | '/cash-out'
+    | '/checkout'
     | '/compare'
     | '/contact'
     | '/docs'
@@ -1106,6 +1127,7 @@ export interface FileRouteTypes {
     | '/exports'
     | '/notifications'
     | '/terminals'
+    | '/checkout/thanks'
     | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
@@ -1182,6 +1204,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/brand'
     | '/cash-out'
+    | '/checkout'
     | '/compare'
     | '/contact'
     | '/docs'
@@ -1208,6 +1231,7 @@ export interface FileRouteTypes {
     | '/_authenticated/exports'
     | '/_authenticated/notifications'
     | '/_authenticated/terminals'
+    | '/checkout/thanks'
     | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
@@ -1287,6 +1311,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BrandRoute: typeof BrandRoute
   CashOutRoute: typeof CashOutRoute
+  CheckoutRoute: typeof CheckoutRouteWithChildren
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
   DocsRoute: typeof DocsRouteWithChildren
@@ -1478,6 +1503,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompareRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkout': {
+      id: '/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cash-out': {
       id: '/cash-out'
       path: '/cash-out'
@@ -1617,6 +1649,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dev/tangem-test'
       preLoaderRoute: typeof DevTangemTestRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/checkout/thanks': {
+      id: '/checkout/thanks'
+      path: '/thanks'
+      fullPath: '/checkout/thanks'
+      preLoaderRoute: typeof CheckoutThanksRouteImport
+      parentRoute: typeof CheckoutRoute
     }
     '/_authenticated/terminals': {
       id: '/_authenticated/terminals'
@@ -2191,6 +2230,18 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface CheckoutRouteChildren {
+  CheckoutThanksRoute: typeof CheckoutThanksRoute
+}
+
+const CheckoutRouteChildren: CheckoutRouteChildren = {
+  CheckoutThanksRoute: CheckoutThanksRoute,
+}
+
+const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
+  CheckoutRouteChildren,
+)
+
 interface DocsRouteChildren {
   DocsTapToPayTangemRoute: typeof DocsTapToPayTangemRoute
   DocsWalletSetupRoute: typeof DocsWalletSetupRoute
@@ -2275,6 +2326,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BrandRoute: BrandRoute,
   CashOutRoute: CashOutRoute,
+  CheckoutRoute: CheckoutRouteWithChildren,
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
   DocsRoute: DocsRouteWithChildren,
