@@ -93,7 +93,7 @@ function Hero() {
             <span className="text-[color:var(--np-honey-400)]">Keep the whole sale.</span>
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-            Nectar.Pay is the point-of-sale layer for real-world crypto. Tap-to-pay
+            NectarPay is the point-of-sale layer for real-world crypto. Tap-to-pay
             terminal, printed receipt, live settlement — no chargebacks, no 3% haircut,
             no middleman touching your money.
           </p>
@@ -396,7 +396,7 @@ function BookingSection() {
           </h2>
           <p className="mt-3 text-muted-foreground">
             Tell us about your business and when a chat works for you. We'll confirm by email or
-            Telegram and send a video link — no phone tag, no sales script.
+            Telegram and send a call link — no phone tag, no sales script.
           </p>
           <ul className="mt-8 space-y-3 text-sm text-muted-foreground">
             {[
