@@ -47,6 +47,7 @@ import { Route as PosNfcInspectRouteImport } from './routes/pos.nfc-inspect'
 import { Route as PosHistoryRouteImport } from './routes/pos.history'
 import { Route as PayInvoiceIdRouteImport } from './routes/pay.$invoiceId'
 import { Route as IntegrationsWoocommerceRouteImport } from './routes/integrations.woocommerce'
+import { Route as IntegrationsPrestashopRouteImport } from './routes/integrations.prestashop'
 import { Route as IInvoiceIdRouteImport } from './routes/i.$invoiceId'
 import { Route as DocsWalletSetupRouteImport } from './routes/docs.wallet-setup'
 import { Route as DocsTapToPayTangemRouteImport } from './routes/docs.tap-to-pay-tangem'
@@ -302,6 +303,11 @@ const PayInvoiceIdRoute = PayInvoiceIdRouteImport.update({
 const IntegrationsWoocommerceRoute = IntegrationsWoocommerceRouteImport.update({
   id: '/integrations/woocommerce',
   path: '/integrations/woocommerce',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntegrationsPrestashopRoute = IntegrationsPrestashopRouteImport.update({
+  id: '/integrations/prestashop',
+  path: '/integrations/prestashop',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IInvoiceIdRoute = IInvoiceIdRouteImport.update({
@@ -721,6 +727,7 @@ export interface FileRoutesByFullPath {
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
+  '/integrations/prestashop': typeof IntegrationsPrestashopRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
   '/pos/history': typeof PosHistoryRoute
@@ -825,6 +832,7 @@ export interface FileRoutesByTo {
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
+  '/integrations/prestashop': typeof IntegrationsPrestashopRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
   '/pos/history': typeof PosHistoryRoute
@@ -931,6 +939,7 @@ export interface FileRoutesById {
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
+  '/integrations/prestashop': typeof IntegrationsPrestashopRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
   '/pos/history': typeof PosHistoryRoute
@@ -1039,6 +1048,7 @@ export interface FileRouteTypes {
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
     | '/i/$invoiceId'
+    | '/integrations/prestashop'
     | '/integrations/woocommerce'
     | '/pay/$invoiceId'
     | '/pos/history'
@@ -1143,6 +1153,7 @@ export interface FileRouteTypes {
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
     | '/i/$invoiceId'
+    | '/integrations/prestashop'
     | '/integrations/woocommerce'
     | '/pay/$invoiceId'
     | '/pos/history'
@@ -1248,6 +1259,7 @@ export interface FileRouteTypes {
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
     | '/i/$invoiceId'
+    | '/integrations/prestashop'
     | '/integrations/woocommerce'
     | '/pay/$invoiceId'
     | '/pos/history'
@@ -1347,6 +1359,7 @@ export interface RootRouteChildren {
   WhereRoute: typeof WhereRoute
   DevTangemTestRoute: typeof DevTangemTestRoute
   IInvoiceIdRoute: typeof IInvoiceIdRoute
+  IntegrationsPrestashopRoute: typeof IntegrationsPrestashopRoute
   IntegrationsWoocommerceRoute: typeof IntegrationsWoocommerceRoute
   PayInvoiceIdRoute: typeof PayInvoiceIdRoute
   SdkPayhmeDotjsRoute: typeof SdkPayhmeDotjsRoute
@@ -1640,6 +1653,13 @@ declare module '@tanstack/react-router' {
       path: '/integrations/woocommerce'
       fullPath: '/integrations/woocommerce'
       preLoaderRoute: typeof IntegrationsWoocommerceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/integrations/prestashop': {
+      id: '/integrations/prestashop'
+      path: '/integrations/prestashop'
+      fullPath: '/integrations/prestashop'
+      preLoaderRoute: typeof IntegrationsPrestashopRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/i/$invoiceId': {
@@ -2370,6 +2390,7 @@ const rootRouteChildren: RootRouteChildren = {
   WhereRoute: WhereRoute,
   DevTangemTestRoute: DevTangemTestRoute,
   IInvoiceIdRoute: IInvoiceIdRoute,
+  IntegrationsPrestashopRoute: IntegrationsPrestashopRoute,
   IntegrationsWoocommerceRoute: IntegrationsWoocommerceRoute,
   PayInvoiceIdRoute: PayInvoiceIdRoute,
   SdkPayhmeDotjsRoute: SdkPayhmeDotjsRoute,
