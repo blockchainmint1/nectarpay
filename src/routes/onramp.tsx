@@ -395,7 +395,7 @@ function BookingSection() {
             15 minutes. Real humans. Real questions.
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Tell us about your business and when works. We'll confirm by email or
+            Tell us about your business and when a chat works for you. We'll confirm by email or
             Telegram and send a video link — no phone tag, no sales script.
           </p>
           <ul className="mt-8 space-y-3 text-sm text-muted-foreground">
