@@ -135,9 +135,10 @@ class NectarPay extends PaymentModule
             return [];
         }
 
-        if (!Configuration::get(self::CONFIG_API_KEY) || !Configuration::get(self::CONFIG_STORE_ID)) {
+        if (!Configuration::get(self::CONFIG_API_KEY)) {
             return [];
         }
+
 
         $option = new PaymentOption();
         $option->setCallToActionText($this->l('Pay with crypto (BTC, TXC, stablecoins)'))
