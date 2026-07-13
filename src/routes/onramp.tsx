@@ -270,7 +270,7 @@ function KitSection() {
           </p>
           <ul className="mt-6 space-y-3 text-sm">
             {[
-              "Tangem tap terminal (hardware-secured)",
+              "Point of Sale NFC tap terminal",
               "Bluetooth thermal receipt printer",
               "Nectar.Pay POS app (iOS & Android)",
               "Merchant dashboard with live settlement feed",
