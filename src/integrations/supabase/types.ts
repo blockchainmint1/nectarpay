@@ -489,6 +489,98 @@ export type Database = {
           },
         ]
       }
+      kit_orders: {
+        Row: {
+          bm_attempt_count: number
+          bm_last_error: string | null
+          bm_order_id: string | null
+          bm_order_number: string | null
+          bm_synced_at: string | null
+          created_at: string
+          email: string
+          first_year_price_usd: number
+          full_name: string
+          id: string
+          include_first_year: boolean
+          invoice_id: string | null
+          kit_price_usd: number
+          phone: string | null
+          ship_city: string
+          ship_country: string
+          ship_line1: string
+          ship_line2: string | null
+          ship_postal: string
+          ship_region: string | null
+          status: string
+          subtotal_usd: number
+          total_usd: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          bm_attempt_count?: number
+          bm_last_error?: string | null
+          bm_order_id?: string | null
+          bm_order_number?: string | null
+          bm_synced_at?: string | null
+          created_at?: string
+          email: string
+          first_year_price_usd?: number
+          full_name: string
+          id?: string
+          include_first_year?: boolean
+          invoice_id?: string | null
+          kit_price_usd?: number
+          phone?: string | null
+          ship_city: string
+          ship_country: string
+          ship_line1: string
+          ship_line2?: string | null
+          ship_postal: string
+          ship_region?: string | null
+          status?: string
+          subtotal_usd: number
+          total_usd: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          bm_attempt_count?: number
+          bm_last_error?: string | null
+          bm_order_id?: string | null
+          bm_order_number?: string | null
+          bm_synced_at?: string | null
+          created_at?: string
+          email?: string
+          first_year_price_usd?: number
+          full_name?: string
+          id?: string
+          include_first_year?: boolean
+          invoice_id?: string | null
+          kit_price_usd?: number
+          phone?: string | null
+          ship_city?: string
+          ship_country?: string
+          ship_line1?: string
+          ship_line2?: string | null
+          ship_postal?: string
+          ship_region?: string | null
+          status?: string
+          subtotal_usd?: number
+          total_usd?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kit_orders_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kyc_verifications: {
         Row: {
           country_code: string | null
