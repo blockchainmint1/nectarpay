@@ -17,6 +17,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PriceRouteImport } from './routes/price'
 import { Route as PosBuildIdRouteImport } from './routes/pos-build-id'
 import { Route as PosApkRouteImport } from './routes/pos-apk'
 import { Route as PosRouteImport } from './routes/pos'
@@ -24,6 +25,7 @@ import { Route as ManifestoRouteImport } from './routes/manifesto'
 import { Route as MRouteImport } from './routes/m'
 import { Route as LiveRouteImport } from './routes/live'
 import { Route as InvestorsRouteImport } from './routes/investors'
+import { Route as IntegrateRouteImport } from './routes/integrate'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CompareRouteImport } from './routes/compare'
@@ -150,6 +152,11 @@ const PricingRoute = PricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PriceRoute = PriceRouteImport.update({
+  id: '/price',
+  path: '/price',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PosBuildIdRoute = PosBuildIdRouteImport.update({
   id: '/pos-build-id',
   path: '/pos-build-id',
@@ -183,6 +190,11 @@ const LiveRoute = LiveRouteImport.update({
 const InvestorsRoute = InvestorsRouteImport.update({
   id: '/investors',
   path: '/investors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntegrateRoute = IntegrateRouteImport.update({
+  id: '/integrate',
+  path: '/integrate',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsRoute = DocsRouteImport.update({
@@ -661,6 +673,7 @@ export interface FileRoutesByFullPath {
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
+  '/integrate': typeof IntegrateRoute
   '/investors': typeof InvestorsRoute
   '/live': typeof LiveRoute
   '/m': typeof MRoute
@@ -668,6 +681,7 @@ export interface FileRoutesByFullPath {
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
   '/pos-build-id': typeof PosBuildIdRoute
+  '/price': typeof PriceRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/setup': typeof SetupRoute
@@ -762,12 +776,14 @@ export interface FileRoutesByTo {
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
+  '/integrate': typeof IntegrateRoute
   '/investors': typeof InvestorsRoute
   '/live': typeof LiveRoute
   '/m': typeof MRoute
   '/manifesto': typeof ManifestoRoute
   '/pos-apk': typeof PosApkRoute
   '/pos-build-id': typeof PosBuildIdRoute
+  '/price': typeof PriceRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/setup': typeof SetupRoute
@@ -861,6 +877,7 @@ export interface FileRoutesById {
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
+  '/integrate': typeof IntegrateRoute
   '/investors': typeof InvestorsRoute
   '/live': typeof LiveRoute
   '/m': typeof MRoute
@@ -868,6 +885,7 @@ export interface FileRoutesById {
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
   '/pos-build-id': typeof PosBuildIdRoute
+  '/price': typeof PriceRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/setup': typeof SetupRoute
@@ -964,6 +982,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/contact'
     | '/docs'
+    | '/integrate'
     | '/investors'
     | '/live'
     | '/m'
@@ -971,6 +990,7 @@ export interface FileRouteTypes {
     | '/pos'
     | '/pos-apk'
     | '/pos-build-id'
+    | '/price'
     | '/pricing'
     | '/privacy'
     | '/setup'
@@ -1065,12 +1085,14 @@ export interface FileRouteTypes {
     | '/compare'
     | '/contact'
     | '/docs'
+    | '/integrate'
     | '/investors'
     | '/live'
     | '/m'
     | '/manifesto'
     | '/pos-apk'
     | '/pos-build-id'
+    | '/price'
     | '/pricing'
     | '/privacy'
     | '/setup'
@@ -1163,6 +1185,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/contact'
     | '/docs'
+    | '/integrate'
     | '/investors'
     | '/live'
     | '/m'
@@ -1170,6 +1193,7 @@ export interface FileRouteTypes {
     | '/pos'
     | '/pos-apk'
     | '/pos-build-id'
+    | '/price'
     | '/pricing'
     | '/privacy'
     | '/setup'
@@ -1266,6 +1290,7 @@ export interface RootRouteChildren {
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
   DocsRoute: typeof DocsRouteWithChildren
+  IntegrateRoute: typeof IntegrateRoute
   InvestorsRoute: typeof InvestorsRoute
   LiveRoute: typeof LiveRoute
   MRoute: typeof MRoute
@@ -1273,6 +1298,7 @@ export interface RootRouteChildren {
   PosRoute: typeof PosRouteWithChildren
   PosApkRoute: typeof PosApkRoute
   PosBuildIdRoute: typeof PosBuildIdRoute
+  PriceRoute: typeof PriceRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   SetupRoute: typeof SetupRoute
@@ -1368,6 +1394,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/price': {
+      id: '/price'
+      path: '/price'
+      fullPath: '/price'
+      preLoaderRoute: typeof PriceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pos-build-id': {
       id: '/pos-build-id'
       path: '/pos-build-id'
@@ -1415,6 +1448,13 @@ declare module '@tanstack/react-router' {
       path: '/investors'
       fullPath: '/investors'
       preLoaderRoute: typeof InvestorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/integrate': {
+      id: '/integrate'
+      path: '/integrate'
+      fullPath: '/integrate'
+      preLoaderRoute: typeof IntegrateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs': {
@@ -2238,6 +2278,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
   DocsRoute: DocsRouteWithChildren,
+  IntegrateRoute: IntegrateRoute,
   InvestorsRoute: InvestorsRoute,
   LiveRoute: LiveRoute,
   MRoute: MRoute,
@@ -2245,6 +2286,7 @@ const rootRouteChildren: RootRouteChildren = {
   PosRoute: PosRouteWithChildren,
   PosApkRoute: PosApkRoute,
   PosBuildIdRoute: PosBuildIdRoute,
+  PriceRoute: PriceRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   SetupRoute: SetupRoute,
