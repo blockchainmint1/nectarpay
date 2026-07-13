@@ -298,11 +298,11 @@ function KitSection() {
             <span className="text-sm uppercase tracking-wider text-muted-foreground">
               Total today
             </span>
-            <span className="text-4xl font-bold">$499</span>
+            <span className="text-4xl font-bold">$727</span>
           </div>
           <div className="mt-3 flex items-baseline justify-between text-sm text-muted-foreground">
-            <span>+ first-year service fee</span>
-            <span>$228</span>
+            <span>$499 one-time fee + first-year service fee</span>
+            <span></span>
           </div>
           <div className="mt-6 h-px w-full bg-border" />
           <div className="mt-6 grid gap-3 text-sm text-muted-foreground">
