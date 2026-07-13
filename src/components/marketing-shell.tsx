@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LayoutDashboard, LogOut, Menu, UserRound } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 /* ------------------------------------------------------------------ */
 /* Brand marks                                                          */
@@ -100,6 +101,7 @@ export function MarketingNav() {
           ))}
         </nav>
         <div className="flex items-center gap-3">
+          <ThemeToggle className="hidden sm:inline-flex" />
           {loading ? null : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
