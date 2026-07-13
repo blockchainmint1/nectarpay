@@ -129,14 +129,44 @@ function Hero() {
         <aside className="flex flex-col gap-4">
           <div className="overflow-hidden rounded-2xl border border-border bg-black shadow-2xl">
             <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
-              <iframe
-                src={VIDEO_SRC}
-                title="Nectar.Pay onramp demo"
-                allow="autoplay; fullscreen"
-                allowFullScreen
-                className="absolute inset-0 h-full w-full"
-                loading="lazy"
-              />
+              {playing ? (
+                <iframe
+                  src={`${VIDEO_SRC}autoplay=1`}
+                  title="Nectar.Pay onramp demo"
+                  allow="autoplay; fullscreen"
+                  allowFullScreen
+                  className="absolute inset-0 h-full w-full"
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setPlaying(true)}
+                  aria-label="Play demo video"
+                  className="group absolute inset-0 flex h-full w-full items-center justify-center overflow-hidden"
+                  style={{
+                    background:
+                      "radial-gradient(60% 60% at 50% 45%, color-mix(in oklab, var(--np-honey-400) 30%, transparent), transparent 70%), linear-gradient(135deg, #0b0b0f 0%, #1a1206 100%)",
+                  }}
+                >
+                  <div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 opacity-20"
+                    style={{
+                      backgroundImage:
+                        "repeating-linear-gradient(45deg, rgba(255,255,255,0.06) 0 2px, transparent 2px 12px)",
+                    }}
+                  />
+                  <div className="relative flex flex-col items-center gap-3 text-white">
+                    <PlayCircle className="h-20 w-20 text-[color:var(--np-honey-400)] drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] transition-transform group-hover:scale-105" />
+                    <span className="text-sm font-medium uppercase tracking-widest text-white/80">
+                      Watch the 90-sec demo
+                    </span>
+                  </div>
+                  <span className="absolute bottom-3 left-3 rounded-md bg-black/60 px-2 py-1 text-[10px] uppercase tracking-wider text-white/80 backdrop-blur">
+                    ▶ Video
+                  </span>
+                </button>
+              )}
             </div>
           </div>
           <div className="rounded-2xl border border-border bg-card/60 p-5 shadow-xl backdrop-blur">
