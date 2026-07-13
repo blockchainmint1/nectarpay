@@ -392,7 +392,7 @@ function BookingSection() {
             <CalendarClock className="h-3.5 w-3.5" /> Book a live demo
           </span>
           <h2 className="mt-4 text-3xl font-bold tracking-tight md:text-4xl">
-            15 minutes. Real terminal. Real questions.
+            15 minutes. Real humans. Real questions.
           </h2>
           <p className="mt-3 text-muted-foreground">
             Tell us about your business and when works. We'll confirm by email or
