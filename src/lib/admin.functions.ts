@@ -286,7 +286,7 @@ export const listAdminInvoices = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("invoices")
-      .select("id, store_id, status, fiat_amount, chain, created_at, stores(name, owner_id)")
+      .select("id, store_id, status, fiat_amount, chain, created_at, external_order_id, stores(name, owner_id)")
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) throw new Error(error.message);
