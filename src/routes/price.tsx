@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 import { TerminalKitSection, PricingPlansBody } from "./pricing";
-import { CompareBody } from "./compare";
+import { CompareHero, ComparePillars, CompareTable, CompareExtras } from "./compare";
 
 export const Route = createFileRoute("/price")({
   head: () => ({
@@ -16,7 +16,7 @@ export const Route = createFileRoute("/price")({
       { property: "og:title", content: "Price · Nectar.Pay" },
       {
         property: "og:description",
-        content: "Terminal kit at the top, honest comparison in the middle, plans at the bottom.",
+        content: "Honest comparison up top, the kit, live stats, feature-by-feature, then plans.",
       },
       { property: "og:url", content: "https://nectar-pay.com/price" },
     ],
@@ -29,8 +29,11 @@ function PricePage() {
   return (
     <div className="min-h-screen bg-background">
       <MarketingNav />
+      <CompareHero />
       <TerminalKitSection />
-      <CompareBody />
+      <ComparePillars />
+      <CompareTable />
+      <CompareExtras />
       <PricingPlansBody />
       <MarketingFooter />
     </div>

@@ -194,120 +194,148 @@ function ComparePage() {
 export function CompareBody() {
   return (
     <>
-      {/* Hero */}
-      <section className="border-b border-border/60">
-        <div className="mx-auto max-w-6xl px-4 py-20">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            The honest comparison
-          </div>
-          <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-6xl">
-            Non-custodial. <span className="text-primary">Branded hardware.</span>
-            <br />A real merchant map.
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
-            We're the only network shipping all three. BitPay holds your funds. BTCPay makes you host
-            your own server. Strike and Square own your settlement. IVPay is closest — but still
-            custodial. Here's the field, on one page.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Button asChild size="lg">
-              <Link to="/signup">Start free in 90 seconds</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link to="/where">See the merchant map</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+      <CompareHero />
+      <ComparePillars />
+      <CompareTable />
+      <CompareExtras />
+    </>
+  );
+}
 
-      {/* Pillars */}
-      <section className="border-b border-border/60 bg-card/30">
+export function CompareHero() {
+  return (
+    <section className="border-b border-border/60">
+      <div className="mx-auto max-w-6xl px-4 py-20">
+        <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+          The honest comparison
+        </div>
+        <h1 className="mt-4 text-4xl font-semibold tracking-tight md:text-6xl">
+          Non-custodial. <span className="text-primary">Branded hardware.</span>
+          <br />A real merchant map.
+        </h1>
+        <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
+          We're the only network shipping all three. BitPay holds your funds. BTCPay makes you host
+          your own server. Strike and Square own your settlement. IVPay is closest — but still
+          custodial. Here's the field, on one page.
+        </p>
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Button asChild size="lg">
+            <Link to="/signup">Start free in 90 seconds</Link>
+          </Button>
+          <Button asChild size="lg" variant="outline">
+            <Link to="/where">See the merchant map</Link>
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function ComparePillars() {
+  return (
+    <section className="border-b border-border/60 bg-card/30">
+      <a
+        href="/stats"
+        className="group block transition hover:bg-card/60"
+      >
         <div className="mx-auto grid max-w-6xl gap-6 px-4 py-12 md:grid-cols-4">
           <Pillar n="1,200" label="Terminals in production" />
           <Pillar n="8+" label="Chains supported" />
           <Pillar n="0%" label="Of your revenue taken" />
           <Pillar n="0" label="Keys we hold" />
         </div>
-      </section>
-
-      {/* Comparison Table */}
-      <section className="border-b border-border/60">
-        <div className="mx-auto max-w-6xl px-4 py-16">
-          <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">Feature by feature.</h2>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Researched from each company's public docs and product pages. If something's wrong, tell
-            us — we'll fix it the same day.
-          </p>
-
-          <div className="mt-8 overflow-x-auto rounded-xl border border-border">
-            <table className="w-full min-w-[820px] text-sm">
-              <thead>
-                <tr className="border-b border-border bg-muted/30">
-                  <th className="px-4 py-3 text-left font-medium text-muted-foreground">Feature</th>
-                  {COLS.map((c) => (
-                    <th
-                      key={c}
-                      className={`px-3 py-3 text-center text-xs font-semibold ${
-                        c === "nectar" ? "bg-primary/10 text-primary" : "text-foreground"
-                      }`}
-                    >
-                      {COL_LABELS[c]}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {ROWS.map((row) => {
-                  const Icon = row.icon;
-                  return (
-                    <tr key={row.label} className="border-b border-border/60 last:border-0">
-                      <td className="px-4 py-3 align-top">
-                        <div className="flex items-start gap-2">
-                          {Icon ? (
-                            <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                          ) : (
-                            <span className="mt-0.5 h-4 w-4 shrink-0" />
-                          )}
-                          <span>{row.label}</span>
-                        </div>
-                      </td>
-                      {COLS.map((c) => {
-                        const cell = row.cells[c];
-                        const isUs = c === "nectar";
-                        return (
-                          <td
-                            key={c}
-                            className={`px-3 py-3 text-center align-top ${
-                              isUs ? "bg-primary/5" : ""
-                            }`}
-                          >
-                            <div className="flex flex-col items-center gap-1">
-                              <CellGlyph cell={cell} isUs={isUs} />
-                              {cell.note ? (
-                                <span className="text-[10px] leading-tight text-muted-foreground">
-                                  {cell.note}
-                                </span>
-                              ) : null}
-                            </div>
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-            <Legend swatch="bg-emerald-500/15 text-emerald-500" icon={Check} label="Yes" />
-            <Legend swatch="bg-amber-500/15 text-amber-600" icon={Minus} label="Partial" />
-            <Legend swatch="bg-muted text-muted-foreground/60" icon={X} label="No" />
-          </div>
+        <div className="mx-auto max-w-6xl px-4 pb-6 text-xs text-muted-foreground group-hover:text-primary">
+          See the live stats →
         </div>
-      </section>
+      </a>
+    </section>
+  );
+}
 
+export function CompareTable() {
+  return (
+    <section className="border-b border-border/60">
+      <div className="mx-auto max-w-6xl px-4 py-16">
+        <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">Feature by feature.</h2>
+        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+          Researched from each company's public docs and product pages. If something's wrong, tell
+          us — we'll fix it the same day.
+        </p>
+
+        <div className="mt-8 overflow-x-auto rounded-xl border border-border">
+          <table className="w-full min-w-[820px] text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/30">
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Feature</th>
+                {COLS.map((c) => (
+                  <th
+                    key={c}
+                    className={`px-3 py-3 text-center text-xs font-semibold ${
+                      c === "nectar" ? "bg-primary/10 text-primary" : "text-foreground"
+                    }`}
+                  >
+                    {COL_LABELS[c]}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {ROWS.map((row) => {
+                const Icon = row.icon;
+                return (
+                  <tr key={row.label} className="border-b border-border/60 last:border-0">
+                    <td className="px-4 py-3 align-top">
+                      <div className="flex items-start gap-2">
+                        {Icon ? (
+                          <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                        ) : (
+                          <span className="mt-0.5 h-4 w-4 shrink-0" />
+                        )}
+                        <span>{row.label}</span>
+                      </div>
+                    </td>
+                    {COLS.map((c) => {
+                      const cell = row.cells[c];
+                      const isUs = c === "nectar";
+                      return (
+                        <td
+                          key={c}
+                          className={`px-3 py-3 text-center align-top ${
+                            isUs ? "bg-primary/5" : ""
+                          }`}
+                        >
+                          <div className="flex flex-col items-center gap-1">
+                            <CellGlyph cell={cell} isUs={isUs} />
+                            {cell.note ? (
+                              <span className="text-[10px] leading-tight text-muted-foreground">
+                                {cell.note}
+                              </span>
+                            ) : null}
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+          <Legend swatch="bg-emerald-500/15 text-emerald-500" icon={Check} label="Yes" />
+          <Legend swatch="bg-amber-500/15 text-amber-600" icon={Minus} label="Partial" />
+          <Legend swatch="bg-muted text-muted-foreground/60" icon={X} label="No" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function CompareExtras() {
+  return (
+    <>
       {/* Head-to-head cards */}
       <section className="border-b border-border/60 bg-card/30">
         <div className="mx-auto max-w-6xl px-4 py-16">
@@ -416,6 +444,7 @@ export function CompareBody() {
     </>
   );
 }
+
 
 function Pillar({ n, label }: { n: string; label: string }) {
   return (
