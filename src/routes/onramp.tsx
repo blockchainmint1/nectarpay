@@ -112,7 +112,7 @@ function Hero() {
 
           <ul className="mt-10 grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
             {[
-              "Settles in seconds on cry",
+              "Settles in seconds on mainstream",
               "Accepts BTC, TXC, and stables",
               "Ships in days — plug in and sell",
               "No monthly fee, no per-swipe cut",
