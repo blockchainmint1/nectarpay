@@ -26,15 +26,25 @@ function AdminInvoices() {
             <tr>
               <th className="px-4 py-2">Created</th>
               <th className="px-4 py-2">Merchant</th>
+              <th className="px-4 py-2">Store</th>
               <th className="px-4 py-2">Status</th>
               <th className="px-4 py-2">Chain</th>
               <th className="px-4 py-2 text-right">USD</th>
               <th className="px-4 py-2 font-mono">Invoice</th>
-              <th className="px-4 py-2 font-mono">Store</th>
             </tr>
           </thead>
           <tbody>
             {(data ?? []).map((inv) => (
+              <tr key={inv.id} className="border-t border-border/40">
+                <td className="px-4 py-2 text-muted-foreground">
+                  {new Date(inv.created_at).toLocaleString()}
+                </td>
+                <td className="px-4 py-2">
+                  {inv.merchant_name ?? <span className="text-muted-foreground">—</span>}
+                </td>
+                <td className="px-4 py-2">
+                  {(inv as any).store_name ?? <span className="text-muted-foreground">—</span>}
+                </td>
               <tr key={inv.id} className="border-t border-border/40">
                 <td className="px-4 py-2 text-muted-foreground">
                   {new Date(inv.created_at).toLocaleString()}
