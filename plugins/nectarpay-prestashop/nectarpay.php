@@ -49,6 +49,18 @@ class NectarPay extends PaymentModule
     {
         Configuration::updateValue(self::CONFIG_API_BASE, 'https://nectar-pay.com');
 
+        Db::getInstance()->execute(
+            'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'nectarpay_invoice` (
+              `id_cart`    INT UNSIGNED NOT NULL,
+              `invoice_id` VARCHAR(64) NOT NULL,
+              `amount`     DECIMAL(20,8) NOT NULL,
+              `currency`   VARCHAR(8) NOT NULL,
+              `created_at` DATETIME NOT NULL,
+              PRIMARY KEY (`id_cart`),
+              KEY `invoice_id` (`invoice_id`)
+            ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;'
+        );
+
         return parent::install()
             && $this->registerHook('paymentOptions')
             && $this->registerHook('displayPaymentReturn');
@@ -61,8 +73,10 @@ class NectarPay extends PaymentModule
         Configuration::deleteByName(self::CONFIG_API_BASE);
         Configuration::deleteByName(self::CONFIG_STORE_ID);
 
+        // Keep the invoice-cart mapping on uninstall for auditing.
         return parent::uninstall();
     }
+
 
     /* --------------------------------------------------------------- Config UI */
 
@@ -74,7 +88,6 @@ class NectarPay extends PaymentModule
             Configuration::updateValue(self::CONFIG_API_KEY, trim(Tools::getValue('api_key')));
             Configuration::updateValue(self::CONFIG_WEBHOOK_SECRET, trim(Tools::getValue('webhook_secret')));
             Configuration::updateValue(self::CONFIG_API_BASE, rtrim(trim(Tools::getValue('api_base')), '/'));
-            Configuration::updateValue(self::CONFIG_STORE_ID, trim(Tools::getValue('store_id')));
             $output .= $this->displayConfirmation($this->l('Settings saved.'));
         }
 
@@ -83,13 +96,14 @@ class NectarPay extends PaymentModule
 
     private function renderForm()
     {
+        // Store is derived from the API key server-side; the merchant only
+        // needs to paste the key + webhook secret from the NectarPay dashboard.
         $fields_form = [
             'form' => [
                 'legend' => ['title' => $this->l('NectarPay settings')],
                 'input'  => [
-                    ['type' => 'text', 'label' => $this->l('API key'),        'name' => 'api_key',        'size' => 60, 'required' => true],
-                    ['type' => 'text', 'label' => $this->l('Store ID'),       'name' => 'store_id',       'size' => 60, 'required' => true],
-                    ['type' => 'text', 'label' => $this->l('Webhook secret'), 'name' => 'webhook_secret', 'size' => 60, 'required' => true],
+                    ['type' => 'text', 'label' => $this->l('API key'),        'name' => 'api_key',        'size' => 60, 'required' => true, 'desc' => 'sk_live_… from Dashboard → API keys'],
+                    ['type' => 'text', 'label' => $this->l('Webhook secret'), 'name' => 'webhook_secret', 'size' => 60, 'required' => true, 'desc' => 'Dashboard → Webhooks → Signing secret'],
                     ['type' => 'text', 'label' => $this->l('API base URL'),   'name' => 'api_base',       'size' => 60, 'desc' => 'https://nectar-pay.com'],
                 ],
                 'submit' => ['title' => $this->l('Save'), 'class' => 'btn btn-default pull-right'],
@@ -105,13 +119,13 @@ class NectarPay extends PaymentModule
         $helper->default_form_language   = (int) Configuration::get('PS_LANG_DEFAULT');
         $helper->fields_value = [
             'api_key'        => Configuration::get(self::CONFIG_API_KEY),
-            'store_id'       => Configuration::get(self::CONFIG_STORE_ID),
             'webhook_secret' => Configuration::get(self::CONFIG_WEBHOOK_SECRET),
             'api_base'       => Configuration::get(self::CONFIG_API_BASE) ?: 'https://nectar-pay.com',
         ];
 
         return $helper->generateForm([$fields_form]);
     }
+
 
     /* --------------------------------------------------------------- Checkout */
 
@@ -121,9 +135,10 @@ class NectarPay extends PaymentModule
             return [];
         }
 
-        if (!Configuration::get(self::CONFIG_API_KEY) || !Configuration::get(self::CONFIG_STORE_ID)) {
+        if (!Configuration::get(self::CONFIG_API_KEY)) {
             return [];
         }
+
 
         $option = new PaymentOption();
         $option->setCallToActionText($this->l('Pay with crypto (BTC, TXC, stablecoins)'))

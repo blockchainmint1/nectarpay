@@ -17,6 +17,7 @@ function AdminInvoices() {
 
   const [merchantQ, setMerchantQ] = useState("");
   const [storeQ, setStoreQ] = useState("");
+  const [orderQ, setOrderQ] = useState("");
   const [status, setStatus] = useState("");
 
   const statuses = useMemo(
@@ -27,13 +28,15 @@ function AdminInvoices() {
   const rows = useMemo(() => {
     const m = merchantQ.trim().toLowerCase();
     const s = storeQ.trim().toLowerCase();
+    const o = orderQ.trim().toLowerCase();
     return (data ?? []).filter((inv: any) => {
       if (status && inv.status !== status) return false;
       if (m && !(inv.merchant_name ?? "").toLowerCase().includes(m)) return false;
       if (s && !(inv.store_name ?? "").toLowerCase().includes(s)) return false;
+      if (o && !(inv.external_order_id ?? "").toLowerCase().includes(o)) return false;
       return true;
     });
-  }, [data, merchantQ, storeQ, status]);
+  }, [data, merchantQ, storeQ, orderQ, status]);
 
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading…</p>;
   if (error) return <p className="text-sm text-destructive">{(error as Error).message}</p>;
@@ -58,6 +61,12 @@ function AdminInvoices() {
           value={storeQ}
           onChange={(e) => setStoreQ(e.target.value)}
         />
+        <input
+          className={inputCls}
+          placeholder="Filter order #…"
+          value={orderQ}
+          onChange={(e) => setOrderQ(e.target.value)}
+        />
         <select
           className={inputCls}
           value={status}
@@ -70,13 +79,14 @@ function AdminInvoices() {
             </option>
           ))}
         </select>
-        {(merchantQ || storeQ || status) && (
+        {(merchantQ || storeQ || orderQ || status) && (
           <button
             type="button"
             className="h-9 rounded-md border border-border px-3 text-sm text-muted-foreground hover:text-foreground"
             onClick={() => {
               setMerchantQ("");
               setStoreQ("");
+              setOrderQ("");
               setStatus("");
             }}
           >
@@ -98,6 +108,7 @@ function AdminInvoices() {
               <th className="px-4 py-2">Status</th>
               <th className="px-4 py-2">Chain</th>
               <th className="px-4 py-2 text-right">USD</th>
+              <th className="px-4 py-2">Order #</th>
               <th className="px-4 py-2 font-mono">Invoice</th>
             </tr>
           </thead>
@@ -118,6 +129,9 @@ function AdminInvoices() {
                 <td className="px-4 py-2 text-right tabular-nums">
                   {inv.fiat_amount ? `$${Number(inv.fiat_amount).toFixed(2)}` : "—"}
                 </td>
+                <td className="px-4 py-2 text-xs">
+                  {inv.external_order_id ?? <span className="text-muted-foreground">—</span>}
+                </td>
                 <td className="px-4 py-2 font-mono text-xs text-muted-foreground">
                   {inv.id.slice(0, 8)}…
                 </td>
@@ -125,7 +139,7 @@ function AdminInvoices() {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-muted-foreground">
+                <td colSpan={8} className="px-4 py-6 text-center text-muted-foreground">
                   No invoices match.
                 </td>
               </tr>

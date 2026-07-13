@@ -88,12 +88,39 @@ function PrestaShopPage() {
           />
         </div>
 
+        <h2 className="mt-12 text-xl font-semibold tracking-tight">Matching transactions</h2>
+        <p className="mt-2 text-muted-foreground">
+          Every checkout writes both IDs so you can jump between systems without guessing:
+        </p>
+        <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+          <li>
+            <strong className="text-foreground">Your PrestaShop cart / order #</strong> is sent as{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">order_id</code> when the invoice
+            is created, echoed back in every webhook as{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">data.order_id</code>, and shown
+            as the "Order #" column in your NectarPay dashboard's Invoices view — search by it
+            directly.
+          </li>
+          <li>
+            <strong className="text-foreground">NectarPay's invoice ID</strong> (a UUID) is
+            returned from the create call, stored on the shopper's PrestaShop order as the
+            payment transaction ID, and also written to a{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">ps_nectarpay_invoice</code>{" "}
+            table keyed by cart ID for auditing.
+          </li>
+        </ul>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Result: from either side — PrestaShop order or NectarPay invoice — you have the other
+          ID one click away.
+        </p>
+
         <h2 className="mt-12 text-xl font-semibold tracking-tight">Compatibility</h2>
         <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
           <li>PrestaShop 1.7.6 → 8.2 (tested on 8.1 and 8.2)</li>
           <li>PHP 7.4+</li>
           <li>Requires non-plain URL rewriting — enabled by default on 8.x</li>
         </ul>
+
 
         <h2 className="mt-10 text-xl font-semibold tracking-tight">On other platforms</h2>
         <p className="mt-2 text-muted-foreground">
