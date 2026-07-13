@@ -185,7 +185,15 @@ function ComparePage() {
   return (
     <div className="min-h-screen bg-background">
       <MarketingNav />
+      <CompareBody />
+      <MarketingFooter />
+    </div>
+  );
+}
 
+export function CompareBody() {
+  return (
+    <>
       {/* Hero */}
       <section className="border-b border-border/60">
         <div className="mx-auto max-w-6xl px-4 py-20">
@@ -367,7 +375,7 @@ function ComparePage() {
                 <a href="mailto:partners@nectar-pay.com">Become a partner</a>
               </Button>
               <Button asChild variant="outline">
-                <Link to="/pricing">See pricing</Link>
+                <Link to="/price">See pricing</Link>
               </Button>
             </div>
           </div>
@@ -400,14 +408,12 @@ function ComparePage() {
               <Link to="/signup">Start free</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link to="/docs">Read the docs</Link>
+              <Link to="/integrate">Read the docs</Link>
             </Button>
           </div>
         </div>
       </section>
-
-      <MarketingFooter />
-    </div>
+    </>
   );
 }
 
