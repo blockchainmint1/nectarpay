@@ -48,7 +48,8 @@ export const Route = createFileRoute("/onramp")({
 });
 
 const VIDEO_SRC =
-  "https://streamtxc.com/v/bafybeibr4yk5dojvbrhx7dlyqbtfnjlfsmihqpnagefjz7g6e7oqu3txau";
+  "https://streamtxc.com/embed/bafybeibr4yk5dojvbrhx7dlyqbtfnjlfsmihqpnagefjz7g6e7oqu3txau?";
+
 
 function OnrampPage() {
   return (
