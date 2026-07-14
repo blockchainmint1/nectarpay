@@ -212,6 +212,35 @@ function KycPage() {
         </div>
       </section>
 
+      {/* WHY WE BUILT IT */}
+      <section className="border-b border-border/60">
+        <div className="mx-auto max-w-3xl px-6 py-20">
+          <p className="np-eyebrow-chip mb-6">Why we built this</p>
+          <h2 className="np-display text-3xl sm:text-4xl">
+            Not a loophole. A <span className="honey-text">direct line.</span>
+          </h2>
+          <div className="mt-6 space-y-5 text-base leading-relaxed text-muted-foreground">
+            <p>
+              We didn't build Nectar<span className="text-primary">-Pay</span>{" "}
+              so you could break the rules or do bad things. We built it so
+              that you and your customers could work together and exchange
+              value <strong className="text-foreground">directly</strong> —
+              without having to go through a bank or processor and pay a fee
+              for the privilege.
+            </p>
+            <p>
+              The banks have enough money already. They provide plenty of real
+              bank services they can charge for, and they should.{" "}
+              <strong className="text-foreground">
+                Connecting you and your customers does not have to be one of them.
+              </strong>
+            </p>
+          </div>
+        </div>
+      </section>
+
+
+
       {/* CTA */}
       <section className="border-b border-border/60">
         <div className="mx-auto max-w-4xl px-6 py-20 text-center">
