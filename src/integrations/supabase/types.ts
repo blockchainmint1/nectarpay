@@ -816,6 +816,48 @@ export type Database = {
         }
         Relationships: []
       }
+      markets: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          manager_email: string | null
+          manager_name: string | null
+          manager_telegram: string | null
+          name: string
+          notes: string | null
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          manager_email?: string | null
+          manager_name?: string | null
+          manager_telegram?: string | null
+          name: string
+          notes?: string | null
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          manager_email?: string | null
+          manager_name?: string | null
+          manager_telegram?: string | null
+          name?: string
+          notes?: string | null
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       members_geo: {
         Row: {
           city: string | null

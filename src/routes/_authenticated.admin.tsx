@@ -39,7 +39,7 @@ function AdminLayout() {
 
         <nav className="mt-6 flex flex-col gap-1">
           <NavItem to="/admin" exact icon={<LayoutDashboard className="h-4 w-4" />}>Overview</NavItem>
-          <NavItem to="/admin/leads" icon={<UsersRound className="h-4 w-4" />}>Leads</NavItem>
+          <NavItem to="/admin/crm" icon={<UsersRound className="h-4 w-4" />}>CRM</NavItem>
           <NavItem to="/admin/merchants" icon={<StoreIcon className="h-4 w-4" />}>Merchants</NavItem>
           <NavItem to="/admin/invoices" icon={<Receipt className="h-4 w-4" />}>Invoices</NavItem>
           <NavItem to="/admin/knowledge" icon={<BookOpen className="h-4 w-4" />}>Knowledge</NavItem>

@@ -26,6 +26,18 @@ const SENDER_DOMAIN = "notify.nectar-pay.com";
 const FROM_DOMAIN = "nectar-pay.com";
 const ADMIN_NOTIFY_EMAILS = ["bobby@honest.money", "tim@nectar-pay.com"];
 
+async function marketManagerEmail(supabase: any, marketName: string): Promise<string | null> {
+  const { data } = await supabase
+    .from("markets")
+    .select("manager_email, active")
+    .eq("name", marketName)
+    .maybeSingle();
+  if (!data || !data.active) return null;
+  const em = (data.manager_email || "").trim();
+  return em || null;
+}
+
+
 const submitSchema = z.object({
   name: z.string().trim().min(1).max(120),
   email: z.string().trim().email().max(255),
@@ -92,7 +104,7 @@ function adminEmail(data: z.infer<typeof submitSchema>) {
 <div style="max-width:640px;margin:0 auto;background:#141418;border:1px solid #2a2a30;border-radius:12px;padding:24px;">
   <h1 style="margin:0 0 12px;font-size:18px;color:#f5c542;">New lead — ${escapeHtml(data.interest)}</h1>
   ${rows}
-  <p style="margin-top:20px;"><a href="https://nectar-pay.com/admin/leads" style="color:#f5c542;">Open in admin →</a></p>
+  <p style="margin-top:20px;"><a href="https://nectar-pay.com/admin/crm/leads" style="color:#f5c542;">Open in admin →</a></p>
 </div></body></html>`;
   return { subject, html, text };
 }
@@ -170,9 +182,13 @@ export const submitLead = createServerFn({ method: "POST" })
         "lead-confirmation",
       );
       const admin = adminEmail(data);
-      for (const to of ADMIN_NOTIFY_EMAILS) {
+      const recipients = new Set<string>(ADMIN_NOTIFY_EMAILS.map((e) => e.toLowerCase()));
+      const managerEmail = await marketManagerEmail(supabaseAdmin, data.market);
+      if (managerEmail) recipients.add(managerEmail.toLowerCase());
+      for (const to of recipients) {
         await enqueueTransactional(supabaseAdmin, to, admin.subject, admin.html, admin.text, "lead-admin-notify");
       }
+
     } catch (e) {
       console.error("[leads] notification enqueue error", e);
     }
@@ -211,6 +227,7 @@ const updateSchema = z.object({
   admin_notes: z.string().max(5000).optional(),
   follow_up_at: z.string().nullable().optional(),
   mark_contacted: z.boolean().optional(),
+  market: z.enum(MARKETS).optional(),
 });
 
 export const updateLead = createServerFn({ method: "POST" })
@@ -224,15 +241,83 @@ export const updateLead = createServerFn({ method: "POST" })
       admin_notes?: string;
       follow_up_at?: string | null;
       last_contacted_at?: string;
+      market?: string;
     } = {};
     if (data.status !== undefined) patch.status = data.status;
     if (data.admin_notes !== undefined) patch.admin_notes = data.admin_notes;
     if (data.follow_up_at !== undefined) patch.follow_up_at = data.follow_up_at;
     if (data.mark_contacted) patch.last_contacted_at = new Date().toISOString();
+    if (data.market !== undefined) patch.market = data.market;
     const { error } = await supabaseAdmin.from("leads").update(patch).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+// ─── Markets management ────────────────────────────────────────────────
+
+export const listMarkets = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("markets")
+      .select("*")
+      .order("sort_order", { ascending: true })
+      .order("name", { ascending: true });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+const marketUpsertSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().trim().min(1).max(120),
+  slug: z.string().trim().min(1).max(60).regex(/^[a-z0-9-]+$/, "lowercase, digits, and dashes only"),
+  manager_name: z.string().trim().max(120).optional().or(z.literal("")),
+  manager_email: z.string().trim().email().max(255).optional().or(z.literal("")),
+  manager_telegram: z.string().trim().max(120).optional().or(z.literal("")),
+  active: z.boolean().default(true),
+  sort_order: z.number().int().default(0),
+  notes: z.string().max(2000).optional().or(z.literal("")),
+});
+
+export const upsertMarket = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => marketUpsertSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const payload = {
+      name: data.name,
+      slug: data.slug,
+      manager_name: data.manager_name || null,
+      manager_email: data.manager_email || null,
+      manager_telegram: data.manager_telegram || null,
+      active: data.active,
+      sort_order: data.sort_order,
+      notes: data.notes || null,
+    };
+    if (data.id) {
+      const { error } = await supabaseAdmin.from("markets").update(payload).eq("id", data.id);
+      if (error) throw new Error(error.message);
+    } else {
+      const { error } = await supabaseAdmin.from("markets").insert(payload);
+      if (error) throw new Error(error.message);
+    }
+    return { ok: true };
+  });
+
+export const deleteMarket = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("markets").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
 
 export const LEAD_MARKETS = MARKETS;
 export const LEAD_INTERESTS = INTERESTS;
+
