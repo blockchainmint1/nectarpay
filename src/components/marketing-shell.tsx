@@ -323,10 +323,9 @@ export function MarketingFooter() {
               { label: "Affiliates", to: "/affiliates" },
               { label: "Contact", to: "/contact" },
               { label: "Brand", to: "/brand" },
-              { label: "Terms", to: "/terms" },
-              { label: "Privacy", to: "/privacy" },
             ]}
           />
+
 
         </div>
 
@@ -347,8 +346,16 @@ export function MarketingFooter() {
             ECOSYSTEM
           </p>
           <p className="np-mono text-xs" style={{ color: "var(--np-slate)" }}>
-            © {new Date().getFullYear()} NECTARPAY · V1.0
+            © {new Date().getFullYear()} NECTARPAY · V1.0 ·{" "}
+            <Link to="/terms" className="hover:text-white" style={{ color: "var(--np-slate)" }}>
+              TERMS
+            </Link>{" "}
+            ·{" "}
+            <Link to="/privacy" className="hover:text-white" style={{ color: "var(--np-slate)" }}>
+              PRIVACY
+            </Link>
           </p>
+
         </div>
       </div>
     </footer>
