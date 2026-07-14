@@ -493,22 +493,25 @@ const SLIDE_H = 1080;
 
 function SlideStage({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
+  const [scale, setScale] = useState(0.4);
 
   useEffect(() => {
     function fit() {
       const el = ref.current;
       if (!el) return;
-      const w = el.clientWidth;
-      const h = el.clientHeight;
+      const w = el.clientWidth || window.innerWidth;
+      const h = el.clientHeight || window.innerHeight;
+      if (w === 0 || h === 0) return;
       const s = Math.min(w / SLIDE_W, h / SLIDE_H);
-      setScale(s > 0 ? s : 1);
+      setScale(s > 0 ? s : 0.4);
     }
     fit();
     const ro = new ResizeObserver(fit);
     if (ref.current) ro.observe(ref.current);
-    return () => ro.disconnect();
+    window.addEventListener("resize", fit);
+    return () => { ro.disconnect(); window.removeEventListener("resize", fit); };
   }, []);
+
 
   return (
     <main ref={ref} className="relative flex-1 overflow-hidden">
