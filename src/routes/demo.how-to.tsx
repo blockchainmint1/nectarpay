@@ -337,7 +337,7 @@ function HowToDeck() {
 
   function go(n: number) {
     const next = clamp(n, 1, total);
-    navigate({ search: (prev) => ({ ...prev, slide: next }), replace: true });
+    navigate({ search: { slide: next }, replace: true });
   }
 
   useEffect(() => {

@@ -59,6 +59,7 @@ import { Route as GoKitRouteImport } from './routes/go.kit'
 import { Route as DocsWalletSetupRouteImport } from './routes/docs.wallet-setup'
 import { Route as DocsTapToPayTangemRouteImport } from './routes/docs.tap-to-pay-tangem'
 import { Route as DevTangemTestRouteImport } from './routes/dev.tangem-test'
+import { Route as DemoHowToRouteImport } from './routes/demo.how-to'
 import { Route as CheckoutThanksRouteImport } from './routes/checkout.thanks'
 import { Route as AuthenticatedTerminalsRouteImport } from './routes/_authenticated.terminals'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated.notifications'
@@ -377,6 +378,11 @@ const DevTangemTestRoute = DevTangemTestRouteImport.update({
   id: '/dev/tangem-test',
   path: '/dev/tangem-test',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DemoHowToRoute = DemoHowToRouteImport.update({
+  id: '/how-to',
+  path: '/how-to',
+  getParentRoute: () => DemoRoute,
 } as any)
 const CheckoutThanksRoute = CheckoutThanksRouteImport.update({
   id: '/thanks',
@@ -780,7 +786,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
-  '/demo': typeof DemoRoute
+  '/demo': typeof DemoRouteWithChildren
   '/docs': typeof DocsRouteWithChildren
   '/fees': typeof FeesRoute
   '/help': typeof HelpRoute
@@ -812,6 +818,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/terminals': typeof AuthenticatedTerminalsRoute
   '/checkout/thanks': typeof CheckoutThanksRoute
+  '/demo/how-to': typeof DemoHowToRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
@@ -900,7 +907,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
-  '/demo': typeof DemoRoute
+  '/demo': typeof DemoRouteWithChildren
   '/docs': typeof DocsRouteWithChildren
   '/fees': typeof FeesRoute
   '/help': typeof HelpRoute
@@ -930,6 +937,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/terminals': typeof AuthenticatedTerminalsRoute
   '/checkout/thanks': typeof CheckoutThanksRoute
+  '/demo/how-to': typeof DemoHowToRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
@@ -1017,7 +1025,7 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
-  '/demo': typeof DemoRoute
+  '/demo': typeof DemoRouteWithChildren
   '/docs': typeof DocsRouteWithChildren
   '/fees': typeof FeesRoute
   '/help': typeof HelpRoute
@@ -1049,6 +1057,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/terminals': typeof AuthenticatedTerminalsRoute
   '/checkout/thanks': typeof CheckoutThanksRoute
+  '/demo/how-to': typeof DemoHowToRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
@@ -1171,6 +1180,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/terminals'
     | '/checkout/thanks'
+    | '/demo/how-to'
     | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
@@ -1289,6 +1299,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/terminals'
     | '/checkout/thanks'
+    | '/demo/how-to'
     | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
@@ -1407,6 +1418,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/terminals'
     | '/checkout/thanks'
+    | '/demo/how-to'
     | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
@@ -1497,7 +1509,7 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRouteWithChildren
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
-  DemoRoute: typeof DemoRoute
+  DemoRoute: typeof DemoRouteWithChildren
   DocsRoute: typeof DocsRouteWithChildren
   FeesRoute: typeof FeesRoute
   HelpRoute: typeof HelpRoute
@@ -1905,6 +1917,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dev/tangem-test'
       preLoaderRoute: typeof DevTangemTestRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/demo/how-to': {
+      id: '/demo/how-to'
+      path: '/how-to'
+      fullPath: '/demo/how-to'
+      preLoaderRoute: typeof DemoHowToRouteImport
+      parentRoute: typeof DemoRoute
     }
     '/checkout/thanks': {
       id: '/checkout/thanks'
@@ -2559,6 +2578,16 @@ const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
   CheckoutRouteChildren,
 )
 
+interface DemoRouteChildren {
+  DemoHowToRoute: typeof DemoHowToRoute
+}
+
+const DemoRouteChildren: DemoRouteChildren = {
+  DemoHowToRoute: DemoHowToRoute,
+}
+
+const DemoRouteWithChildren = DemoRoute._addFileChildren(DemoRouteChildren)
+
 interface DocsRouteChildren {
   DocsTapToPayTangemRoute: typeof DocsTapToPayTangemRoute
   DocsWalletSetupRoute: typeof DocsWalletSetupRoute
@@ -2647,7 +2676,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRouteWithChildren,
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
-  DemoRoute: DemoRoute,
+  DemoRoute: DemoRouteWithChildren,
   DocsRoute: DocsRouteWithChildren,
   FeesRoute: FeesRoute,
   HelpRoute: HelpRoute,
