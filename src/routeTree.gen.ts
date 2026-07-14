@@ -74,7 +74,6 @@ import { Route as AuthenticatedStoresStoreIdRouteImport } from './routes/_authen
 import { Route as AuthenticatedMVirtualTerminalRouteImport } from './routes/_authenticated.m.virtual-terminal'
 import { Route as AuthenticatedMHomeRouteImport } from './routes/_authenticated.m.home'
 import { Route as AuthenticatedAdminMerchantsRouteImport } from './routes/_authenticated.admin.merchants'
-import { Route as AuthenticatedAdminLeadsRouteImport } from './routes/_authenticated.admin.leads'
 import { Route as AuthenticatedAdminKnowledgeRouteImport } from './routes/_authenticated.admin.knowledge'
 import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated.admin.invoices'
 import { Route as AuthenticatedStoresStoreIdIndexRouteImport } from './routes/_authenticated.stores.$storeId.index'
@@ -109,6 +108,7 @@ import { Route as AuthenticatedAdminKnowledgeMembersHeatmapRouteImport } from '.
 import { Route as AuthenticatedAdminKnowledgeManifestoRouteImport } from './routes/_authenticated.admin.knowledge.manifesto'
 import { Route as AuthenticatedAdminKnowledgeExecutiveSummaryRouteImport } from './routes/_authenticated.admin.knowledge.executive-summary'
 import { Route as AuthenticatedAdminKnowledgeConvenienceDoctrineRouteImport } from './routes/_authenticated.admin.knowledge.convenience-doctrine'
+import { Route as AuthenticatedAdminCrmLeadsRouteImport } from './routes/_authenticated.admin.crm.leads'
 import { Route as ApiPublicV1TerminalsPairRouteImport } from './routes/api/public/v1/terminals/pair'
 import { Route as ApiPublicV1TerminalsOptionsRouteImport } from './routes/api/public/v1/terminals/options'
 import { Route as ApiPublicV1TerminalsInvoiceRouteImport } from './routes/api/public/v1/terminals/invoice'
@@ -454,11 +454,6 @@ const AuthenticatedAdminMerchantsRoute =
     path: '/merchants',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
-const AuthenticatedAdminLeadsRoute = AuthenticatedAdminLeadsRouteImport.update({
-  id: '/leads',
-  path: '/leads',
-  getParentRoute: () => AuthenticatedAdminRoute,
-} as any)
 const AuthenticatedAdminKnowledgeRoute =
   AuthenticatedAdminKnowledgeRouteImport.update({
     id: '/knowledge',
@@ -654,6 +649,12 @@ const AuthenticatedAdminKnowledgeConvenienceDoctrineRoute =
     path: '/convenience-doctrine',
     getParentRoute: () => AuthenticatedAdminKnowledgeRoute,
   } as any)
+const AuthenticatedAdminCrmLeadsRoute =
+  AuthenticatedAdminCrmLeadsRouteImport.update({
+    id: '/crm/leads',
+    path: '/crm/leads',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const ApiPublicV1TerminalsPairRoute =
   ApiPublicV1TerminalsPairRouteImport.update({
     id: '/api/public/v1/terminals/pair',
@@ -803,7 +804,6 @@ export interface FileRoutesByFullPath {
   '/pos/': typeof PosIndexRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
-  '/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
   '/m/home': typeof AuthenticatedMHomeRoute
   '/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
@@ -811,6 +811,7 @@ export interface FileRoutesByFullPath {
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/stores/': typeof AuthenticatedStoresIndexRoute
+  '/admin/crm/leads': typeof AuthenticatedAdminCrmLeadsRoute
   '/admin/knowledge/convenience-doctrine': typeof AuthenticatedAdminKnowledgeConvenienceDoctrineRoute
   '/admin/knowledge/executive-summary': typeof AuthenticatedAdminKnowledgeExecutiveSummaryRoute
   '/admin/knowledge/manifesto': typeof AuthenticatedAdminKnowledgeManifestoRoute
@@ -916,13 +917,13 @@ export interface FileRoutesByTo {
   '/integrations': typeof IntegrationsIndexRoute
   '/pos': typeof PosIndexRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
-  '/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
   '/m/home': typeof AuthenticatedMHomeRoute
   '/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/stores': typeof AuthenticatedStoresIndexRoute
+  '/admin/crm/leads': typeof AuthenticatedAdminCrmLeadsRoute
   '/admin/knowledge/convenience-doctrine': typeof AuthenticatedAdminKnowledgeConvenienceDoctrineRoute
   '/admin/knowledge/executive-summary': typeof AuthenticatedAdminKnowledgeExecutiveSummaryRoute
   '/admin/knowledge/manifesto': typeof AuthenticatedAdminKnowledgeManifestoRoute
@@ -1033,7 +1034,6 @@ export interface FileRoutesById {
   '/pos/': typeof PosIndexRoute
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/_authenticated/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
-  '/_authenticated/admin/leads': typeof AuthenticatedAdminLeadsRoute
   '/_authenticated/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
   '/_authenticated/m/home': typeof AuthenticatedMHomeRoute
   '/_authenticated/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
@@ -1041,6 +1041,7 @@ export interface FileRoutesById {
   '/_authenticated/stores/new': typeof AuthenticatedStoresNewRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/stores/': typeof AuthenticatedStoresIndexRoute
+  '/_authenticated/admin/crm/leads': typeof AuthenticatedAdminCrmLeadsRoute
   '/_authenticated/admin/knowledge/convenience-doctrine': typeof AuthenticatedAdminKnowledgeConvenienceDoctrineRoute
   '/_authenticated/admin/knowledge/executive-summary': typeof AuthenticatedAdminKnowledgeExecutiveSummaryRoute
   '/_authenticated/admin/knowledge/manifesto': typeof AuthenticatedAdminKnowledgeManifestoRoute
@@ -1151,7 +1152,6 @@ export interface FileRouteTypes {
     | '/pos/'
     | '/admin/invoices'
     | '/admin/knowledge'
-    | '/admin/leads'
     | '/admin/merchants'
     | '/m/home'
     | '/m/virtual-terminal'
@@ -1159,6 +1159,7 @@ export interface FileRouteTypes {
     | '/stores/new'
     | '/admin/'
     | '/stores/'
+    | '/admin/crm/leads'
     | '/admin/knowledge/convenience-doctrine'
     | '/admin/knowledge/executive-summary'
     | '/admin/knowledge/manifesto'
@@ -1264,13 +1265,13 @@ export interface FileRouteTypes {
     | '/integrations'
     | '/pos'
     | '/admin/invoices'
-    | '/admin/leads'
     | '/admin/merchants'
     | '/m/home'
     | '/m/virtual-terminal'
     | '/stores/new'
     | '/admin'
     | '/stores'
+    | '/admin/crm/leads'
     | '/admin/knowledge/convenience-doctrine'
     | '/admin/knowledge/executive-summary'
     | '/admin/knowledge/manifesto'
@@ -1380,7 +1381,6 @@ export interface FileRouteTypes {
     | '/pos/'
     | '/_authenticated/admin/invoices'
     | '/_authenticated/admin/knowledge'
-    | '/_authenticated/admin/leads'
     | '/_authenticated/admin/merchants'
     | '/_authenticated/m/home'
     | '/_authenticated/m/virtual-terminal'
@@ -1388,6 +1388,7 @@ export interface FileRouteTypes {
     | '/_authenticated/stores/new'
     | '/_authenticated/admin/'
     | '/_authenticated/stores/'
+    | '/_authenticated/admin/crm/leads'
     | '/_authenticated/admin/knowledge/convenience-doctrine'
     | '/_authenticated/admin/knowledge/executive-summary'
     | '/_authenticated/admin/knowledge/manifesto'
@@ -1960,13 +1961,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminMerchantsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/_authenticated/admin/leads': {
-      id: '/_authenticated/admin/leads'
-      path: '/leads'
-      fullPath: '/admin/leads'
-      preLoaderRoute: typeof AuthenticatedAdminLeadsRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
     '/_authenticated/admin/knowledge': {
       id: '/_authenticated/admin/knowledge'
       path: '/knowledge'
@@ -2205,6 +2199,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminKnowledgeConvenienceDoctrineRouteImport
       parentRoute: typeof AuthenticatedAdminKnowledgeRoute
     }
+    '/_authenticated/admin/crm/leads': {
+      id: '/_authenticated/admin/crm/leads'
+      path: '/crm/leads'
+      fullPath: '/admin/crm/leads'
+      preLoaderRoute: typeof AuthenticatedAdminCrmLeadsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/api/public/v1/terminals/pair': {
       id: '/api/public/v1/terminals/pair'
       path: '/api/public/v1/terminals/pair'
@@ -2367,18 +2368,18 @@ const AuthenticatedAdminKnowledgeRouteWithChildren =
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminInvoicesRoute: typeof AuthenticatedAdminInvoicesRoute
   AuthenticatedAdminKnowledgeRoute: typeof AuthenticatedAdminKnowledgeRouteWithChildren
-  AuthenticatedAdminLeadsRoute: typeof AuthenticatedAdminLeadsRoute
   AuthenticatedAdminMerchantsRoute: typeof AuthenticatedAdminMerchantsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminCrmLeadsRoute: typeof AuthenticatedAdminCrmLeadsRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminInvoicesRoute: AuthenticatedAdminInvoicesRoute,
   AuthenticatedAdminKnowledgeRoute:
     AuthenticatedAdminKnowledgeRouteWithChildren,
-  AuthenticatedAdminLeadsRoute: AuthenticatedAdminLeadsRoute,
   AuthenticatedAdminMerchantsRoute: AuthenticatedAdminMerchantsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedAdminCrmLeadsRoute: AuthenticatedAdminCrmLeadsRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =
