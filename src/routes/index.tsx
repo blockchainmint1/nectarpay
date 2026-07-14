@@ -14,6 +14,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Zap, Shield, Wallet, Infinity as InfinityIcon, Check, X, Sparkles } from "lucide-react";
 import { PosLaunchChooser } from "@/components/pos-launch-chooser";
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
+import buzzyHero from "@/assets/buzzy-hero.png.asset.json";
 
 
 export const Route = createFileRoute("/")({
