@@ -26,6 +26,18 @@ const SENDER_DOMAIN = "notify.nectar-pay.com";
 const FROM_DOMAIN = "nectar-pay.com";
 const ADMIN_NOTIFY_EMAILS = ["bobby@honest.money", "tim@nectar-pay.com"];
 
+async function marketManagerEmail(supabase: any, marketName: string): Promise<string | null> {
+  const { data } = await supabase
+    .from("markets")
+    .select("manager_email, active")
+    .eq("name", marketName)
+    .maybeSingle();
+  if (!data || !data.active) return null;
+  const em = (data.manager_email || "").trim();
+  return em || null;
+}
+
+
 const submitSchema = z.object({
   name: z.string().trim().min(1).max(120),
   email: z.string().trim().email().max(255),
