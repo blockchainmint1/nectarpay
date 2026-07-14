@@ -55,6 +55,7 @@ import { Route as PayInvoiceIdRouteImport } from './routes/pay.$invoiceId'
 import { Route as IntegrationsWoocommerceRouteImport } from './routes/integrations.woocommerce'
 import { Route as IntegrationsPrestashopRouteImport } from './routes/integrations.prestashop'
 import { Route as IInvoiceIdRouteImport } from './routes/i.$invoiceId'
+import { Route as GoKitRouteImport } from './routes/go.kit'
 import { Route as DocsWalletSetupRouteImport } from './routes/docs.wallet-setup'
 import { Route as DocsTapToPayTangemRouteImport } from './routes/docs.tap-to-pay-tangem'
 import { Route as DevTangemTestRouteImport } from './routes/dev.tangem-test'
@@ -351,6 +352,11 @@ const IntegrationsPrestashopRoute = IntegrationsPrestashopRouteImport.update({
 const IInvoiceIdRoute = IInvoiceIdRouteImport.update({
   id: '/i/$invoiceId',
   path: '/i/$invoiceId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GoKitRoute = GoKitRouteImport.update({
+  id: '/go/kit',
+  path: '/go/kit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsWalletSetupRoute = DocsWalletSetupRouteImport.update({
@@ -781,6 +787,7 @@ export interface FileRoutesByFullPath {
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
+  '/go/kit': typeof GoKitRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/prestashop': typeof IntegrationsPrestashopRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
@@ -894,6 +901,7 @@ export interface FileRoutesByTo {
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
+  '/go/kit': typeof GoKitRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/prestashop': typeof IntegrationsPrestashopRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
@@ -1009,6 +1017,7 @@ export interface FileRoutesById {
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
+  '/go/kit': typeof GoKitRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/prestashop': typeof IntegrationsPrestashopRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
@@ -1126,6 +1135,7 @@ export interface FileRouteTypes {
     | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
+    | '/go/kit'
     | '/i/$invoiceId'
     | '/integrations/prestashop'
     | '/integrations/woocommerce'
@@ -1239,6 +1249,7 @@ export interface FileRouteTypes {
     | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
+    | '/go/kit'
     | '/i/$invoiceId'
     | '/integrations/prestashop'
     | '/integrations/woocommerce'
@@ -1353,6 +1364,7 @@ export interface FileRouteTypes {
     | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
+    | '/go/kit'
     | '/i/$invoiceId'
     | '/integrations/prestashop'
     | '/integrations/woocommerce'
@@ -1460,6 +1472,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   WhereRoute: typeof WhereRoute
   DevTangemTestRoute: typeof DevTangemTestRoute
+  GoKitRoute: typeof GoKitRoute
   IInvoiceIdRoute: typeof IInvoiceIdRoute
   IntegrationsPrestashopRoute: typeof IntegrationsPrestashopRoute
   IntegrationsWoocommerceRoute: typeof IntegrationsWoocommerceRoute
@@ -1812,6 +1825,13 @@ declare module '@tanstack/react-router' {
       path: '/i/$invoiceId'
       fullPath: '/i/$invoiceId'
       preLoaderRoute: typeof IInvoiceIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/go/kit': {
+      id: '/go/kit'
+      path: '/go/kit'
+      fullPath: '/go/kit'
+      preLoaderRoute: typeof GoKitRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs/wallet-setup': {
@@ -2556,6 +2576,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   WhereRoute: WhereRoute,
   DevTangemTestRoute: DevTangemTestRoute,
+  GoKitRoute: GoKitRoute,
   IInvoiceIdRoute: IInvoiceIdRoute,
   IntegrationsPrestashopRoute: IntegrationsPrestashopRoute,
   IntegrationsWoocommerceRoute: IntegrationsWoocommerceRoute,
