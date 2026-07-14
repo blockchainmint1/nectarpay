@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { LayoutDashboard, Store, BookOpen, LogOut, CreditCard, Bell, Download, Smartphone, UserRound } from "lucide-react";
+import { LayoutDashboard, Store, BookOpen, LogOut, CreditCard, Bell, Download, Smartphone, UserRound, Users } from "lucide-react";
 
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -86,6 +86,10 @@ function AuthenticatedLayout() {
           <NavItem to="/billing" icon={<CreditCard className="h-4 w-4" />}>
             Billing
           </NavItem>
+          <NavItem to="/affiliate" icon={<Users className="h-4 w-4" />}>
+            Affiliate
+          </NavItem>
+
           <NavItem to="/notifications" icon={<Bell className="h-4 w-4" />}>
             Notifications
           </NavItem>

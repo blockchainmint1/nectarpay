@@ -320,12 +320,14 @@ export function MarketingFooter() {
             items={[
               { label: "Manifesto", to: "/manifesto" },
               { label: "Investors", to: "/investors" },
+              { label: "Affiliates", to: "/affiliates" },
               { label: "Contact", to: "/contact" },
               { label: "Brand", to: "/brand" },
               { label: "Terms", to: "/terms" },
               { label: "Privacy", to: "/privacy" },
             ]}
           />
+
         </div>
 
         <div

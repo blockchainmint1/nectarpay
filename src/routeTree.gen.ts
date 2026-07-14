@@ -35,6 +35,7 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CashOutRouteImport } from './routes/cash-out'
 import { Route as BrandRouteImport } from './routes/brand'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AffiliatesRouteImport } from './routes/affiliates'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PosIndexRouteImport } from './routes/pos.index'
@@ -59,6 +60,7 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedExportsRouteImport } from './routes/_authenticated.exports'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated.billing'
+import { Route as AuthenticatedAffiliateRouteImport } from './routes/_authenticated.affiliate'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 import { Route as AuthenticatedStoresIndexRouteImport } from './routes/_authenticated.stores.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated.admin.index'
@@ -247,6 +249,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AffiliatesRoute = AffiliatesRouteImport.update({
+  id: '/affiliates',
+  path: '/affiliates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -365,6 +372,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAffiliateRoute = AuthenticatedAffiliateRouteImport.update({
+  id: '/affiliate',
+  path: '/affiliate',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -697,6 +709,7 @@ const ApiPublicV1TerminalsInvoiceIdCancelRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/affiliates': typeof AffiliatesRoute
   '/auth': typeof AuthRoute
   '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
@@ -724,6 +737,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/where': typeof WhereRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/affiliate': typeof AuthenticatedAffiliateRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exports': typeof AuthenticatedExportsRoute
@@ -805,6 +819,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/affiliates': typeof AffiliatesRoute
   '/auth': typeof AuthRoute
   '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
@@ -830,6 +845,7 @@ export interface FileRoutesByTo {
   '/start': typeof StartRoute
   '/terms': typeof TermsRoute
   '/where': typeof WhereRoute
+  '/affiliate': typeof AuthenticatedAffiliateRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exports': typeof AuthenticatedExportsRoute
@@ -911,6 +927,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/affiliates': typeof AffiliatesRoute
   '/auth': typeof AuthRoute
   '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
@@ -938,6 +955,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/where': typeof WhereRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/affiliate': typeof AuthenticatedAffiliateRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/exports': typeof AuthenticatedExportsRoute
@@ -1021,6 +1039,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/affiliates'
     | '/auth'
     | '/brand'
     | '/cash-out'
@@ -1048,6 +1067,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/where'
     | '/admin'
+    | '/affiliate'
     | '/billing'
     | '/dashboard'
     | '/exports'
@@ -1129,6 +1149,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/affiliates'
     | '/auth'
     | '/brand'
     | '/cash-out'
@@ -1154,6 +1175,7 @@ export interface FileRouteTypes {
     | '/start'
     | '/terms'
     | '/where'
+    | '/affiliate'
     | '/billing'
     | '/dashboard'
     | '/exports'
@@ -1234,6 +1256,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/affiliates'
     | '/auth'
     | '/brand'
     | '/cash-out'
@@ -1261,6 +1284,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/where'
     | '/_authenticated/admin'
+    | '/_authenticated/affiliate'
     | '/_authenticated/billing'
     | '/_authenticated/dashboard'
     | '/_authenticated/exports'
@@ -1344,6 +1368,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AffiliatesRoute: typeof AffiliatesRoute
   AuthRoute: typeof AuthRoute
   BrandRoute: typeof BrandRoute
   CashOutRoute: typeof CashOutRoute
@@ -1584,6 +1609,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/affiliates': {
+      id: '/affiliates'
+      path: '/affiliates'
+      fullPath: '/affiliates'
+      preLoaderRoute: typeof AffiliatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -1750,6 +1782,13 @@ declare module '@tanstack/react-router' {
       path: '/billing'
       fullPath: '/billing'
       preLoaderRoute: typeof AuthenticatedBillingRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/affiliate': {
+      id: '/_authenticated/affiliate'
+      path: '/affiliate'
+      fullPath: '/affiliate'
+      preLoaderRoute: typeof AuthenticatedAffiliateRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/admin': {
@@ -2260,6 +2299,7 @@ const AuthenticatedStoresStoreIdRouteWithChildren =
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedAffiliateRoute: typeof AuthenticatedAffiliateRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExportsRoute: typeof AuthenticatedExportsRoute
@@ -2274,6 +2314,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedAffiliateRoute: AuthenticatedAffiliateRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExportsRoute: AuthenticatedExportsRoute,
@@ -2383,6 +2424,7 @@ const ApiPublicV1TerminalsInvoiceRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AffiliatesRoute: AffiliatesRoute,
   AuthRoute: AuthRoute,
   BrandRoute: BrandRoute,
   CashOutRoute: CashOutRoute,
@@ -2442,13 +2484,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

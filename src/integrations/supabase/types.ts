@@ -56,6 +56,77 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_codes: {
+        Row: {
+          clicks: number
+          code: string
+          created_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          clicks?: number
+          code: string
+          created_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          clicks?: number
+          code?: string
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      affiliate_rewards: {
+        Row: {
+          affiliate_user_id: string
+          choice: string | null
+          chosen_at: string | null
+          created_at: string
+          granted_at: string | null
+          id: string
+          kit_order_id: string | null
+          referred_user_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          affiliate_user_id: string
+          choice?: string | null
+          chosen_at?: string | null
+          created_at?: string
+          granted_at?: string | null
+          id?: string
+          kit_order_id?: string | null
+          referred_user_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          affiliate_user_id?: string
+          choice?: string | null
+          chosen_at?: string | null
+          created_at?: string
+          granted_at?: string | null
+          id?: string
+          kit_order_id?: string | null
+          referred_user_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_rewards_kit_order_id_fkey"
+            columns: ["kit_order_id"]
+            isOneToOne: false
+            referencedRelation: "kit_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alchemy_webhooks: {
         Row: {
           callback_url: string
@@ -1883,6 +1954,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_affiliate_click: { Args: { _code: string }; Returns: undefined }
       is_subscription_active: { Args: { _user_id: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
