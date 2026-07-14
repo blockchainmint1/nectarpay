@@ -204,6 +204,134 @@ function AffiliateDashboardPage() {
   );
 }
 
+function QrPanel({ url, code }: { url: string; code: string }) {
+  const [dataUrl, setDataUrl] = useState<string>("");
+  useEffect(() => {
+    let cancelled = false;
+    QRCode.toDataURL(url, {
+      errorCorrectionLevel: "H",
+      margin: 2,
+      width: 640,
+      color: { dark: "#0B1220", light: "#FFFFFF" },
+    })
+      .then((d) => {
+        if (!cancelled) setDataUrl(d);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
+  const download = () => {
+    if (!dataUrl) return;
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = `nectarpay-qr-${code}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
+  const print = () => {
+    if (!dataUrl) return;
+    const w = window.open("", "_blank");
+    if (!w) return;
+    w.document.write(`<html><head><title>QR ${code}</title></head><body style="margin:0;display:grid;place-items:center;height:100vh;font-family:system-ui;"><div style="text-align:center"><img src="${dataUrl}" style="width:70vmin;height:70vmin"/><div style="margin-top:1rem;font-family:monospace">${url}</div></div><script>window.onload=()=>window.print()</script></body></html>`);
+    w.document.close();
+  };
+
+  return (
+    <div className="rounded-lg border border-border bg-card/50 p-5">
+      <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+        <QrCode className="h-3.5 w-3.5" /> Your QR code
+      </div>
+      <div className="mt-4 flex items-center gap-5">
+        <div className="rounded-md bg-white p-3">
+          {dataUrl ? (
+            <img src={dataUrl} alt="Affiliate QR" className="h-40 w-40" />
+          ) : (
+            <div className="h-40 w-40 animate-pulse rounded bg-muted" />
+          )}
+        </div>
+        <div className="flex-1 space-y-2">
+          <p className="text-sm text-muted-foreground">
+            Print it, tape it on your window, or flash it from your phone. Scans hit your tracking link.
+          </p>
+          <div className="flex flex-wrap gap-2 pt-1">
+            <Button size="sm" variant="outline" onClick={download} disabled={!dataUrl}>
+              <Download className="mr-1 h-4 w-4" /> PNG
+            </Button>
+            <Button size="sm" variant="ghost" onClick={print} disabled={!dataUrl}>
+              Print
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FlyerPanel({ url, code }: { url: string; code: string }) {
+  const [variant, setVariant] = useState<FlyerVariant>("front");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const generate = async () => {
+    setBusy(true);
+    setErr(null);
+    try {
+      const bytes = await generateAffiliateFlyer({ variant, trackingUrl: url, affiliateCode: code });
+      downloadBlob(bytes, `nectarpay-flyer-${variant}-${code}.pdf`);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Failed to generate flyer");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="rounded-lg border border-border bg-card/50 p-5">
+      <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+        <FileText className="h-3.5 w-3.5" /> Printable flyer
+      </div>
+      <div className="mt-4 grid gap-2">
+        {FLYER_VARIANTS.map((f) => (
+          <label
+            key={f.id}
+            className={`flex cursor-pointer items-start gap-3 rounded-md border p-3 text-sm transition ${
+              variant === f.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+            }`}
+          >
+            <input
+              type="radio"
+              name="flyer-variant"
+              className="mt-1"
+              checked={variant === f.id}
+              onChange={() => setVariant(f.id)}
+            />
+            <div>
+              <div className="font-medium">{f.label}</div>
+              <div className="text-xs text-muted-foreground">{f.description}</div>
+            </div>
+          </label>
+        ))}
+      </div>
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">
+          We overlay your QR code and tracking URL onto the flyer before download.
+        </p>
+        <Button size="sm" onClick={generate} disabled={busy}>
+          <Download className="mr-1 h-4 w-4" />
+          {busy ? "Generating…" : "Generate PDF"}
+        </Button>
+      </div>
+      {err ? <p className="mt-2 text-xs text-destructive">{err}</p> : null}
+    </div>
+  );
+}
+
+
 function TrackingUrlBox({ url, code }: { url: string; code: string }) {
   const [copied, setCopied] = useState(false);
   return (
