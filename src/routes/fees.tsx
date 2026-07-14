@@ -203,7 +203,7 @@ function FeesPage() {
                   <p className="font-mono text-xs uppercase tracking-widest text-warning">Volatility warning</p>
                 </div>
                 <h4 className="mt-3 text-lg font-semibold text-foreground">
-                  When Elong tweets about Doge…
+                  When Elon tweets about Doge…
                 </h4>
                 <p className="mt-3 text-sm leading-relaxed text-foreground/80">
                   Ethereum gas can spike <strong className="text-foreground">10x or 100x</strong> normal.
