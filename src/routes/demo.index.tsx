@@ -28,7 +28,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-export const Route = createFileRoute("/demo")({
+export const Route = createFileRoute("/demo/")({
   head: () => ({
     meta: [
       { title: "Watch the Demo · Nectar.Pay" },
