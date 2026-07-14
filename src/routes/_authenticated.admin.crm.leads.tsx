@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { listLeads, updateLead } from "@/lib/leads.functions";
+import { listLeads, updateLead, LEAD_MARKETS } from "@/lib/leads.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -191,8 +191,10 @@ function AdminLeads() {
             onNotes={(admin_notes) => mutate.mutate({ id: l.id, admin_notes })}
             onFollowUp={(follow_up_at) => mutate.mutate({ id: l.id, follow_up_at })}
             onMarkContacted={() => mutate.mutate({ id: l.id, mark_contacted: true, status: "contacted" })}
+            onMarket={(market) => mutate.mutate({ id: l.id, market: market as any })}
           />
         ))}
+
       </div>
     </div>
   );
@@ -204,13 +206,16 @@ function LeadCard({
   onNotes,
   onFollowUp,
   onMarkContacted,
+  onMarket,
 }: {
   lead: any;
   onStatus: (s: string) => void;
   onNotes: (n: string) => void;
   onFollowUp: (v: string | null) => void;
   onMarkContacted: () => void;
+  onMarket: (m: string) => void;
 }) {
+
   const [notes, setNotes] = useState<string>(lead.admin_notes ?? "");
   const [expanded, setExpanded] = useState(false);
   const [followUp, setFollowUp] = useState<string>(
@@ -257,6 +262,12 @@ function LeadCard({
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" variant="secondary" onClick={onMarkContacted}>Mark contacted</Button>
+          <Select value={lead.market} onValueChange={onMarket}>
+            <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {LEAD_MARKETS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+            </SelectContent>
+          </Select>
           <Select value={lead.status} onValueChange={onStatus}>
             <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -265,6 +276,7 @@ function LeadCard({
           </Select>
         </div>
       </div>
+
 
       {lead.message && (
         <p className="mt-3 whitespace-pre-wrap rounded bg-muted/40 p-3 text-sm">{lead.message}</p>
