@@ -29,6 +29,7 @@ import { Route as LiveRouteImport } from './routes/live'
 import { Route as KycRouteImport } from './routes/kyc'
 import { Route as InvestorsRouteImport } from './routes/investors'
 import { Route as IntegrateRouteImport } from './routes/integrate'
+import { Route as HelpRouteImport } from './routes/help'
 import { Route as FeesRouteImport } from './routes/fees'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DemoRouteImport } from './routes/demo'
@@ -221,6 +222,11 @@ const InvestorsRoute = InvestorsRouteImport.update({
 const IntegrateRoute = IntegrateRouteImport.update({
   id: '/integrate',
   path: '/integrate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HelpRoute = HelpRouteImport.update({
+  id: '/help',
+  path: '/help',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeesRoute = FeesRouteImport.update({
@@ -743,6 +749,7 @@ export interface FileRoutesByFullPath {
   '/demo': typeof DemoRoute
   '/docs': typeof DocsRouteWithChildren
   '/fees': typeof FeesRoute
+  '/help': typeof HelpRoute
   '/integrate': typeof IntegrateRoute
   '/investors': typeof InvestorsRoute
   '/kyc': typeof KycRoute
@@ -857,6 +864,7 @@ export interface FileRoutesByTo {
   '/demo': typeof DemoRoute
   '/docs': typeof DocsRouteWithChildren
   '/fees': typeof FeesRoute
+  '/help': typeof HelpRoute
   '/integrate': typeof IntegrateRoute
   '/investors': typeof InvestorsRoute
   '/kyc': typeof KycRoute
@@ -969,6 +977,7 @@ export interface FileRoutesById {
   '/demo': typeof DemoRoute
   '/docs': typeof DocsRouteWithChildren
   '/fees': typeof FeesRoute
+  '/help': typeof HelpRoute
   '/integrate': typeof IntegrateRoute
   '/investors': typeof InvestorsRoute
   '/kyc': typeof KycRoute
@@ -1085,6 +1094,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/docs'
     | '/fees'
+    | '/help'
     | '/integrate'
     | '/investors'
     | '/kyc'
@@ -1199,6 +1209,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/docs'
     | '/fees'
+    | '/help'
     | '/integrate'
     | '/investors'
     | '/kyc'
@@ -1310,6 +1321,7 @@ export interface FileRouteTypes {
     | '/demo'
     | '/docs'
     | '/fees'
+    | '/help'
     | '/integrate'
     | '/investors'
     | '/kyc'
@@ -1426,6 +1438,7 @@ export interface RootRouteChildren {
   DemoRoute: typeof DemoRoute
   DocsRoute: typeof DocsRouteWithChildren
   FeesRoute: typeof FeesRoute
+  HelpRoute: typeof HelpRoute
   IntegrateRoute: typeof IntegrateRoute
   InvestorsRoute: typeof InvestorsRoute
   KycRoute: typeof KycRoute
@@ -1617,6 +1630,13 @@ declare module '@tanstack/react-router' {
       path: '/integrate'
       fullPath: '/integrate'
       preLoaderRoute: typeof IntegrateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/help': {
+      id: '/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof HelpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/fees': {
@@ -2514,6 +2534,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoRoute: DemoRoute,
   DocsRoute: DocsRouteWithChildren,
   FeesRoute: FeesRoute,
+  HelpRoute: HelpRoute,
   IntegrateRoute: IntegrateRoute,
   InvestorsRoute: InvestorsRoute,
   KycRoute: KycRoute,
