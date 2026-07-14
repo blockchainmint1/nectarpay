@@ -54,6 +54,8 @@ function AdminLeads() {
       admin_notes?: string;
       follow_up_at?: string | null;
       mark_contacted?: boolean;
+      market?: string;
+
     }) => upd({ data: vars as any }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-leads"] }),
     onError: (e) => toast.error(e instanceof Error ? e.message : "Update failed"),
