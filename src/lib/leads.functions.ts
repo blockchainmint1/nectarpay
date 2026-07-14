@@ -17,6 +17,7 @@ const INTERESTS = [
   "Onramp demo",
   "Sales rep",
   "Open a market",
+  "Support / question",
   "Other",
 ] as const;
 
