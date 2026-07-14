@@ -76,8 +76,10 @@ import { Route as AuthenticatedMHomeRouteImport } from './routes/_authenticated.
 import { Route as AuthenticatedAdminMerchantsRouteImport } from './routes/_authenticated.admin.merchants'
 import { Route as AuthenticatedAdminKnowledgeRouteImport } from './routes/_authenticated.admin.knowledge'
 import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated.admin.invoices'
+import { Route as AuthenticatedAdminCrmRouteImport } from './routes/_authenticated.admin.crm'
 import { Route as AuthenticatedStoresStoreIdIndexRouteImport } from './routes/_authenticated.stores.$storeId.index'
 import { Route as AuthenticatedAdminKnowledgeIndexRouteImport } from './routes/_authenticated.admin.knowledge.index'
+import { Route as AuthenticatedAdminCrmIndexRouteImport } from './routes/_authenticated.admin.crm.index'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -108,6 +110,7 @@ import { Route as AuthenticatedAdminKnowledgeMembersHeatmapRouteImport } from '.
 import { Route as AuthenticatedAdminKnowledgeManifestoRouteImport } from './routes/_authenticated.admin.knowledge.manifesto'
 import { Route as AuthenticatedAdminKnowledgeExecutiveSummaryRouteImport } from './routes/_authenticated.admin.knowledge.executive-summary'
 import { Route as AuthenticatedAdminKnowledgeConvenienceDoctrineRouteImport } from './routes/_authenticated.admin.knowledge.convenience-doctrine'
+import { Route as AuthenticatedAdminCrmMarketsRouteImport } from './routes/_authenticated.admin.crm.markets'
 import { Route as AuthenticatedAdminCrmLeadsRouteImport } from './routes/_authenticated.admin.crm.leads'
 import { Route as ApiPublicV1TerminalsPairRouteImport } from './routes/api/public/v1/terminals/pair'
 import { Route as ApiPublicV1TerminalsOptionsRouteImport } from './routes/api/public/v1/terminals/options'
@@ -466,6 +469,11 @@ const AuthenticatedAdminInvoicesRoute =
     path: '/invoices',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminCrmRoute = AuthenticatedAdminCrmRouteImport.update({
+  id: '/crm',
+  path: '/crm',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedStoresStoreIdIndexRoute =
   AuthenticatedStoresStoreIdIndexRouteImport.update({
     id: '/',
@@ -477,6 +485,12 @@ const AuthenticatedAdminKnowledgeIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedAdminKnowledgeRoute,
+  } as any)
+const AuthenticatedAdminCrmIndexRoute =
+  AuthenticatedAdminCrmIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAdminCrmRoute,
   } as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
@@ -649,11 +663,17 @@ const AuthenticatedAdminKnowledgeConvenienceDoctrineRoute =
     path: '/convenience-doctrine',
     getParentRoute: () => AuthenticatedAdminKnowledgeRoute,
   } as any)
+const AuthenticatedAdminCrmMarketsRoute =
+  AuthenticatedAdminCrmMarketsRouteImport.update({
+    id: '/markets',
+    path: '/markets',
+    getParentRoute: () => AuthenticatedAdminCrmRoute,
+  } as any)
 const AuthenticatedAdminCrmLeadsRoute =
   AuthenticatedAdminCrmLeadsRouteImport.update({
-    id: '/crm/leads',
-    path: '/crm/leads',
-    getParentRoute: () => AuthenticatedAdminRoute,
+    id: '/leads',
+    path: '/leads',
+    getParentRoute: () => AuthenticatedAdminCrmRoute,
   } as any)
 const ApiPublicV1TerminalsPairRoute =
   ApiPublicV1TerminalsPairRouteImport.update({
@@ -802,6 +822,7 @@ export interface FileRoutesByFullPath {
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
+  '/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
   '/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
@@ -812,6 +833,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/stores/': typeof AuthenticatedStoresIndexRoute
   '/admin/crm/leads': typeof AuthenticatedAdminCrmLeadsRoute
+  '/admin/crm/markets': typeof AuthenticatedAdminCrmMarketsRoute
   '/admin/knowledge/convenience-doctrine': typeof AuthenticatedAdminKnowledgeConvenienceDoctrineRoute
   '/admin/knowledge/executive-summary': typeof AuthenticatedAdminKnowledgeExecutiveSummaryRoute
   '/admin/knowledge/manifesto': typeof AuthenticatedAdminKnowledgeManifestoRoute
@@ -842,6 +864,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/admin/crm/': typeof AuthenticatedAdminCrmIndexRoute
   '/admin/knowledge/': typeof AuthenticatedAdminKnowledgeIndexRoute
   '/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
   '/admin/knowledge/pitch/consumers': typeof AuthenticatedAdminKnowledgePitchConsumersRoute
@@ -924,6 +947,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/stores': typeof AuthenticatedStoresIndexRoute
   '/admin/crm/leads': typeof AuthenticatedAdminCrmLeadsRoute
+  '/admin/crm/markets': typeof AuthenticatedAdminCrmMarketsRoute
   '/admin/knowledge/convenience-doctrine': typeof AuthenticatedAdminKnowledgeConvenienceDoctrineRoute
   '/admin/knowledge/executive-summary': typeof AuthenticatedAdminKnowledgeExecutiveSummaryRoute
   '/admin/knowledge/manifesto': typeof AuthenticatedAdminKnowledgeManifestoRoute
@@ -954,6 +978,7 @@ export interface FileRoutesByTo {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/admin/crm': typeof AuthenticatedAdminCrmIndexRoute
   '/admin/knowledge': typeof AuthenticatedAdminKnowledgeIndexRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdIndexRoute
   '/admin/knowledge/pitch/consumers': typeof AuthenticatedAdminKnowledgePitchConsumersRoute
@@ -1032,6 +1057,7 @@ export interface FileRoutesById {
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
+  '/_authenticated/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/_authenticated/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
   '/_authenticated/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
@@ -1042,6 +1068,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/stores/': typeof AuthenticatedStoresIndexRoute
   '/_authenticated/admin/crm/leads': typeof AuthenticatedAdminCrmLeadsRoute
+  '/_authenticated/admin/crm/markets': typeof AuthenticatedAdminCrmMarketsRoute
   '/_authenticated/admin/knowledge/convenience-doctrine': typeof AuthenticatedAdminKnowledgeConvenienceDoctrineRoute
   '/_authenticated/admin/knowledge/executive-summary': typeof AuthenticatedAdminKnowledgeExecutiveSummaryRoute
   '/_authenticated/admin/knowledge/manifesto': typeof AuthenticatedAdminKnowledgeManifestoRoute
@@ -1072,6 +1099,7 @@ export interface FileRoutesById {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/_authenticated/admin/crm/': typeof AuthenticatedAdminCrmIndexRoute
   '/_authenticated/admin/knowledge/': typeof AuthenticatedAdminKnowledgeIndexRoute
   '/_authenticated/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
   '/_authenticated/admin/knowledge/pitch/consumers': typeof AuthenticatedAdminKnowledgePitchConsumersRoute
@@ -1150,6 +1178,7 @@ export interface FileRouteTypes {
     | '/sdk/payhme.js'
     | '/integrations/'
     | '/pos/'
+    | '/admin/crm'
     | '/admin/invoices'
     | '/admin/knowledge'
     | '/admin/merchants'
@@ -1160,6 +1189,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/stores/'
     | '/admin/crm/leads'
+    | '/admin/crm/markets'
     | '/admin/knowledge/convenience-doctrine'
     | '/admin/knowledge/executive-summary'
     | '/admin/knowledge/manifesto'
@@ -1190,6 +1220,7 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/admin/crm/'
     | '/admin/knowledge/'
     | '/stores/$storeId/'
     | '/admin/knowledge/pitch/consumers'
@@ -1272,6 +1303,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/stores'
     | '/admin/crm/leads'
+    | '/admin/crm/markets'
     | '/admin/knowledge/convenience-doctrine'
     | '/admin/knowledge/executive-summary'
     | '/admin/knowledge/manifesto'
@@ -1302,6 +1334,7 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/admin/crm'
     | '/admin/knowledge'
     | '/stores/$storeId'
     | '/admin/knowledge/pitch/consumers'
@@ -1379,6 +1412,7 @@ export interface FileRouteTypes {
     | '/sdk/payhme.js'
     | '/integrations/'
     | '/pos/'
+    | '/_authenticated/admin/crm'
     | '/_authenticated/admin/invoices'
     | '/_authenticated/admin/knowledge'
     | '/_authenticated/admin/merchants'
@@ -1389,6 +1423,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/_authenticated/stores/'
     | '/_authenticated/admin/crm/leads'
+    | '/_authenticated/admin/crm/markets'
     | '/_authenticated/admin/knowledge/convenience-doctrine'
     | '/_authenticated/admin/knowledge/executive-summary'
     | '/_authenticated/admin/knowledge/manifesto'
@@ -1419,6 +1454,7 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/_authenticated/admin/crm/'
     | '/_authenticated/admin/knowledge/'
     | '/_authenticated/stores/$storeId/'
     | '/_authenticated/admin/knowledge/pitch/consumers'
@@ -1975,6 +2011,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminInvoicesRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/crm': {
+      id: '/_authenticated/admin/crm'
+      path: '/crm'
+      fullPath: '/admin/crm'
+      preLoaderRoute: typeof AuthenticatedAdminCrmRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/stores/$storeId/': {
       id: '/_authenticated/stores/$storeId/'
       path: '/'
@@ -1988,6 +2031,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/knowledge/'
       preLoaderRoute: typeof AuthenticatedAdminKnowledgeIndexRouteImport
       parentRoute: typeof AuthenticatedAdminKnowledgeRoute
+    }
+    '/_authenticated/admin/crm/': {
+      id: '/_authenticated/admin/crm/'
+      path: '/'
+      fullPath: '/admin/crm/'
+      preLoaderRoute: typeof AuthenticatedAdminCrmIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminCrmRoute
     }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
@@ -2199,12 +2249,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminKnowledgeConvenienceDoctrineRouteImport
       parentRoute: typeof AuthenticatedAdminKnowledgeRoute
     }
+    '/_authenticated/admin/crm/markets': {
+      id: '/_authenticated/admin/crm/markets'
+      path: '/markets'
+      fullPath: '/admin/crm/markets'
+      preLoaderRoute: typeof AuthenticatedAdminCrmMarketsRouteImport
+      parentRoute: typeof AuthenticatedAdminCrmRoute
+    }
     '/_authenticated/admin/crm/leads': {
       id: '/_authenticated/admin/crm/leads'
-      path: '/crm/leads'
+      path: '/leads'
       fullPath: '/admin/crm/leads'
       preLoaderRoute: typeof AuthenticatedAdminCrmLeadsRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
+      parentRoute: typeof AuthenticatedAdminCrmRoute
     }
     '/api/public/v1/terminals/pair': {
       id: '/api/public/v1/terminals/pair'
@@ -2314,6 +2371,23 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedAdminCrmRouteChildren {
+  AuthenticatedAdminCrmLeadsRoute: typeof AuthenticatedAdminCrmLeadsRoute
+  AuthenticatedAdminCrmMarketsRoute: typeof AuthenticatedAdminCrmMarketsRoute
+  AuthenticatedAdminCrmIndexRoute: typeof AuthenticatedAdminCrmIndexRoute
+}
+
+const AuthenticatedAdminCrmRouteChildren: AuthenticatedAdminCrmRouteChildren = {
+  AuthenticatedAdminCrmLeadsRoute: AuthenticatedAdminCrmLeadsRoute,
+  AuthenticatedAdminCrmMarketsRoute: AuthenticatedAdminCrmMarketsRoute,
+  AuthenticatedAdminCrmIndexRoute: AuthenticatedAdminCrmIndexRoute,
+}
+
+const AuthenticatedAdminCrmRouteWithChildren =
+  AuthenticatedAdminCrmRoute._addFileChildren(
+    AuthenticatedAdminCrmRouteChildren,
+  )
+
 interface AuthenticatedAdminKnowledgeRouteChildren {
   AuthenticatedAdminKnowledgeConvenienceDoctrineRoute: typeof AuthenticatedAdminKnowledgeConvenienceDoctrineRoute
   AuthenticatedAdminKnowledgeExecutiveSummaryRoute: typeof AuthenticatedAdminKnowledgeExecutiveSummaryRoute
@@ -2366,20 +2440,20 @@ const AuthenticatedAdminKnowledgeRouteWithChildren =
   )
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminCrmRoute: typeof AuthenticatedAdminCrmRouteWithChildren
   AuthenticatedAdminInvoicesRoute: typeof AuthenticatedAdminInvoicesRoute
   AuthenticatedAdminKnowledgeRoute: typeof AuthenticatedAdminKnowledgeRouteWithChildren
   AuthenticatedAdminMerchantsRoute: typeof AuthenticatedAdminMerchantsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
-  AuthenticatedAdminCrmLeadsRoute: typeof AuthenticatedAdminCrmLeadsRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminCrmRoute: AuthenticatedAdminCrmRouteWithChildren,
   AuthenticatedAdminInvoicesRoute: AuthenticatedAdminInvoicesRoute,
   AuthenticatedAdminKnowledgeRoute:
     AuthenticatedAdminKnowledgeRouteWithChildren,
   AuthenticatedAdminMerchantsRoute: AuthenticatedAdminMerchantsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
-  AuthenticatedAdminCrmLeadsRoute: AuthenticatedAdminCrmLeadsRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =
