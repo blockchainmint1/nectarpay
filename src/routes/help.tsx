@@ -303,7 +303,6 @@ function HelpPage() {
                   <Select value={form.interest} onValueChange={(v) => update("interest", v)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Support / question">Support / question</SelectItem>
                       {LEAD_INTERESTS.map((i) => (
                         <SelectItem key={i} value={i}>{i}</SelectItem>
                       ))}
