@@ -32,7 +32,6 @@ import { Route as IntegrateRouteImport } from './routes/integrate'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as FeesRouteImport } from './routes/fees'
 import { Route as DocsRouteImport } from './routes/docs'
-import { Route as DemoRouteImport } from './routes/demo'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -44,6 +43,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PosIndexRouteImport } from './routes/pos.index'
 import { Route as IntegrationsIndexRouteImport } from './routes/integrations.index'
+import { Route as DemoIndexRouteImport } from './routes/demo.index'
 import { Route as SdkPayhmeDotjsRouteImport } from './routes/sdk.payhme[.]js'
 import { Route as PosSettingsRouteImport } from './routes/pos.settings'
 import { Route as PosPrinterTestRouteImport } from './routes/pos.printer-test'
@@ -59,6 +59,7 @@ import { Route as GoKitRouteImport } from './routes/go.kit'
 import { Route as DocsWalletSetupRouteImport } from './routes/docs.wallet-setup'
 import { Route as DocsTapToPayTangemRouteImport } from './routes/docs.tap-to-pay-tangem'
 import { Route as DevTangemTestRouteImport } from './routes/dev.tangem-test'
+import { Route as DemoHowToRouteImport } from './routes/demo.how-to'
 import { Route as CheckoutThanksRouteImport } from './routes/checkout.thanks'
 import { Route as AuthenticatedTerminalsRouteImport } from './routes/_authenticated.terminals'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated.notifications'
@@ -244,11 +245,6 @@ const DocsRoute = DocsRouteImport.update({
   path: '/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoRoute = DemoRouteImport.update({
-  id: '/demo',
-  path: '/demo',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
@@ -301,6 +297,11 @@ const PosIndexRoute = PosIndexRouteImport.update({
 const IntegrationsIndexRoute = IntegrationsIndexRouteImport.update({
   id: '/integrations/',
   path: '/integrations/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoIndexRoute = DemoIndexRouteImport.update({
+  id: '/demo/',
+  path: '/demo/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SdkPayhmeDotjsRoute = SdkPayhmeDotjsRouteImport.update({
@@ -376,6 +377,11 @@ const DocsTapToPayTangemRoute = DocsTapToPayTangemRouteImport.update({
 const DevTangemTestRoute = DevTangemTestRouteImport.update({
   id: '/dev/tangem-test',
   path: '/dev/tangem-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoHowToRoute = DemoHowToRouteImport.update({
+  id: '/demo/how-to',
+  path: '/demo/how-to',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutThanksRoute = CheckoutThanksRouteImport.update({
@@ -780,7 +786,6 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
-  '/demo': typeof DemoRoute
   '/docs': typeof DocsRouteWithChildren
   '/fees': typeof FeesRoute
   '/help': typeof HelpRoute
@@ -812,6 +817,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/terminals': typeof AuthenticatedTerminalsRoute
   '/checkout/thanks': typeof CheckoutThanksRoute
+  '/demo/how-to': typeof DemoHowToRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
@@ -827,6 +833,7 @@ export interface FileRoutesByFullPath {
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
+  '/demo/': typeof DemoIndexRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
   '/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
@@ -900,7 +907,6 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
-  '/demo': typeof DemoRoute
   '/docs': typeof DocsRouteWithChildren
   '/fees': typeof FeesRoute
   '/help': typeof HelpRoute
@@ -930,6 +936,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/terminals': typeof AuthenticatedTerminalsRoute
   '/checkout/thanks': typeof CheckoutThanksRoute
+  '/demo/how-to': typeof DemoHowToRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
@@ -945,6 +952,7 @@ export interface FileRoutesByTo {
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
+  '/demo': typeof DemoIndexRoute
   '/integrations': typeof IntegrationsIndexRoute
   '/pos': typeof PosIndexRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
@@ -1017,7 +1025,6 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
-  '/demo': typeof DemoRoute
   '/docs': typeof DocsRouteWithChildren
   '/fees': typeof FeesRoute
   '/help': typeof HelpRoute
@@ -1049,6 +1056,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/terminals': typeof AuthenticatedTerminalsRoute
   '/checkout/thanks': typeof CheckoutThanksRoute
+  '/demo/how-to': typeof DemoHowToRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
@@ -1064,6 +1072,7 @@ export interface FileRoutesById {
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
+  '/demo/': typeof DemoIndexRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
   '/_authenticated/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
@@ -1139,7 +1148,6 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/compare'
     | '/contact'
-    | '/demo'
     | '/docs'
     | '/fees'
     | '/help'
@@ -1171,6 +1179,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/terminals'
     | '/checkout/thanks'
+    | '/demo/how-to'
     | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
@@ -1186,6 +1195,7 @@ export interface FileRouteTypes {
     | '/pos/printer-test'
     | '/pos/settings'
     | '/sdk/payhme.js'
+    | '/demo/'
     | '/integrations/'
     | '/pos/'
     | '/admin/crm'
@@ -1259,7 +1269,6 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/compare'
     | '/contact'
-    | '/demo'
     | '/docs'
     | '/fees'
     | '/help'
@@ -1289,6 +1298,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/terminals'
     | '/checkout/thanks'
+    | '/demo/how-to'
     | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
@@ -1304,6 +1314,7 @@ export interface FileRouteTypes {
     | '/pos/printer-test'
     | '/pos/settings'
     | '/sdk/payhme.js'
+    | '/demo'
     | '/integrations'
     | '/pos'
     | '/admin/invoices'
@@ -1375,7 +1386,6 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/compare'
     | '/contact'
-    | '/demo'
     | '/docs'
     | '/fees'
     | '/help'
@@ -1407,6 +1417,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/terminals'
     | '/checkout/thanks'
+    | '/demo/how-to'
     | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
@@ -1422,6 +1433,7 @@ export interface FileRouteTypes {
     | '/pos/printer-test'
     | '/pos/settings'
     | '/sdk/payhme.js'
+    | '/demo/'
     | '/integrations/'
     | '/pos/'
     | '/_authenticated/admin/crm'
@@ -1497,7 +1509,6 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRouteWithChildren
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
-  DemoRoute: typeof DemoRoute
   DocsRoute: typeof DocsRouteWithChildren
   FeesRoute: typeof FeesRoute
   HelpRoute: typeof HelpRoute
@@ -1521,6 +1532,7 @@ export interface RootRouteChildren {
   StartRoute: typeof StartRoute
   TermsRoute: typeof TermsRoute
   WhereRoute: typeof WhereRoute
+  DemoHowToRoute: typeof DemoHowToRoute
   DevTangemTestRoute: typeof DevTangemTestRoute
   GoKitRoute: typeof GoKitRoute
   IInvoiceIdRoute: typeof IInvoiceIdRoute
@@ -1528,6 +1540,7 @@ export interface RootRouteChildren {
   IntegrationsWoocommerceRoute: typeof IntegrationsWoocommerceRoute
   PayInvoiceIdRoute: typeof PayInvoiceIdRoute
   SdkPayhmeDotjsRoute: typeof SdkPayhmeDotjsRoute
+  DemoIndexRoute: typeof DemoIndexRoute
   IntegrationsIndexRoute: typeof IntegrationsIndexRoute
   ApiPublicAffiliateClickRoute: typeof ApiPublicAffiliateClickRoute
   ApiPublicAuthWalletCallbackRoute: typeof ApiPublicAuthWalletCallbackRoute
@@ -1717,13 +1730,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo': {
-      id: '/demo'
-      path: '/demo'
-      fullPath: '/demo'
-      preLoaderRoute: typeof DemoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/contact': {
       id: '/contact'
       path: '/contact'
@@ -1799,6 +1805,13 @@ declare module '@tanstack/react-router' {
       path: '/integrations'
       fullPath: '/integrations/'
       preLoaderRoute: typeof IntegrationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/': {
+      id: '/demo/'
+      path: '/demo'
+      fullPath: '/demo/'
+      preLoaderRoute: typeof DemoIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sdk/payhme.js': {
@@ -1904,6 +1917,13 @@ declare module '@tanstack/react-router' {
       path: '/dev/tangem-test'
       fullPath: '/dev/tangem-test'
       preLoaderRoute: typeof DevTangemTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/how-to': {
+      id: '/demo/how-to'
+      path: '/demo/how-to'
+      fullPath: '/demo/how-to'
+      preLoaderRoute: typeof DemoHowToRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout/thanks': {
@@ -2647,7 +2667,6 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRouteWithChildren,
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
-  DemoRoute: DemoRoute,
   DocsRoute: DocsRouteWithChildren,
   FeesRoute: FeesRoute,
   HelpRoute: HelpRoute,
@@ -2671,6 +2690,7 @@ const rootRouteChildren: RootRouteChildren = {
   StartRoute: StartRoute,
   TermsRoute: TermsRoute,
   WhereRoute: WhereRoute,
+  DemoHowToRoute: DemoHowToRoute,
   DevTangemTestRoute: DevTangemTestRoute,
   GoKitRoute: GoKitRoute,
   IInvoiceIdRoute: IInvoiceIdRoute,
@@ -2678,6 +2698,7 @@ const rootRouteChildren: RootRouteChildren = {
   IntegrationsWoocommerceRoute: IntegrationsWoocommerceRoute,
   PayInvoiceIdRoute: PayInvoiceIdRoute,
   SdkPayhmeDotjsRoute: SdkPayhmeDotjsRoute,
+  DemoIndexRoute: DemoIndexRoute,
   IntegrationsIndexRoute: IntegrationsIndexRoute,
   ApiPublicAffiliateClickRoute: ApiPublicAffiliateClickRoute,
   ApiPublicAuthWalletCallbackRoute: ApiPublicAuthWalletCallbackRoute,

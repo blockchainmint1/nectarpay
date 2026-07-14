@@ -28,7 +28,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-export const Route = createFileRoute("/demo")({
+export const Route = createFileRoute("/demo/")({
   head: () => ({
     meta: [
       { title: "Watch the Demo · Nectar.Pay" },
@@ -136,6 +136,11 @@ function Hero() {
             </a>
           </Button>
           <Button asChild size="lg" variant="outline" className="gap-2">
+            <Link to="/demo/how-to">
+              Read the how-to deck <PlayCircle className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="ghost" className="gap-2">
             <a href="/go/kit" target="_blank" rel="noreferrer">
               Or buy the kit <Coins className="h-4 w-4" />
             </a>
