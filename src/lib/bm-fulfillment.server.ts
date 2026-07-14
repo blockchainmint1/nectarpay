@@ -10,7 +10,7 @@ export async function forwardKitOrderToBmForInvoice(invoiceId: string): Promise<
   const { data: order } = await supabaseAdmin
     .from("kit_orders")
     .select(
-      "id, email, full_name, phone, ship_line1, ship_line2, ship_city, ship_region, ship_postal, ship_country, include_first_year, kit_price_usd, first_year_price_usd, subtotal_usd, total_usd, status, bm_order_id, bm_attempt_count, invoice_id",
+      "id, user_id, email, full_name, phone, ship_line1, ship_line2, ship_city, ship_region, ship_postal, ship_country, include_first_year, kit_price_usd, first_year_price_usd, subtotal_usd, total_usd, status, bm_order_id, bm_attempt_count, invoice_id",
     )
     .eq("invoice_id", invoiceId)
     .maybeSingle();
@@ -21,7 +21,13 @@ export async function forwardKitOrderToBmForInvoice(invoiceId: string): Promise<
   // Mark paid first regardless of BM outcome.
   if (order.status === "pending_payment") {
     await supabaseAdmin.from("kit_orders").update({ status: "paid" }).eq("id", order.id);
+    // Award any affiliate for this referred buyer. Fire-and-forget: an
+    // affiliate outage must not block fulfillment.
+    if (order.user_id) {
+      void awardAffiliateForKitPurchase(order.user_id, order.id);
+    }
   }
+
 
   if (!BM_URL || !BM_SECRET) {
     await supabaseAdmin
@@ -128,3 +134,45 @@ export async function forwardKitOrderToBmForInvoice(invoiceId: string): Promise<
       .eq("id", order.id);
   }
 }
+
+/**
+ * General-affiliate program award: when a referred merchant buys the
+ * Merchant Start-up Kit, create a pending_choice reward row for the
+ * affiliate. Idempotent via affiliate_rewards.referred_user_id UNIQUE.
+ * mineTXC-only affiliate ids (not present in affiliate_codes) are
+ * skipped silently — miners are awarded via mineTXC's own hash-power flow.
+ */
+async function awardAffiliateForKitPurchase(
+  referredUserId: string,
+  kitOrderId: string,
+): Promise<void> {
+  try {
+    const { data: att } = await supabaseAdmin
+      .from("affiliate_attributions")
+      .select("affiliate_id")
+      .eq("user_id", referredUserId)
+      .maybeSingle();
+    if (!att?.affiliate_id) return;
+
+    const { data: codeRow } = await supabaseAdmin
+      .from("affiliate_codes")
+      .select("user_id")
+      .eq("code", att.affiliate_id)
+      .maybeSingle();
+    if (!codeRow?.user_id) return; // mineTXC or unknown code
+    if (codeRow.user_id === referredUserId) return; // self-referral guard
+
+    const { error } = await supabaseAdmin.from("affiliate_rewards").insert({
+      affiliate_user_id: codeRow.user_id,
+      referred_user_id: referredUserId,
+      kit_order_id: kitOrderId,
+      status: "pending_choice",
+    });
+    if (error && !/duplicate|unique/i.test(error.message)) {
+      console.error("[affiliate-award] insert failed", error.message);
+    }
+  } catch (e) {
+    console.error("[affiliate-award] failed", e);
+  }
+}
+
