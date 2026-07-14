@@ -151,6 +151,10 @@ function RootComponent() {
     captureAffiliateFromUrl();
   }, [location.pathname, location.search]);
 
+  // Decorate outbound links to blockchainmint.com / coldstoragecoins.com
+  // with the captured affiliate ref so attribution survives the hop.
+  useEffect(() => installOutboundAffiliateDecorator(), []);
+
   useEffect(() => {
     const inPosShell =
       location.pathname.startsWith("/pos") ||
