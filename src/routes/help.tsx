@@ -29,7 +29,7 @@ const PHONE_HREF = "tel:+18556632827"; // 855-663-2827
 const FAQS: { q: string; a: string }[] = [
   {
     q: "What is NectarPay?",
-    a: "NectarPay is a payment platform that lets any merchant accept stablecoins and other crypto directly from customers — with no bank, no card processor, and no middleman touching your funds. You get the software, we ship you an optional POS terminal, and customers pay you peer-to-peer.",
+    a: "NectarPay is a software platform that lets any merchant accept stablecoins and other crypto directly from customers — with no bank, no card processor, and no middleman touching your funds. You get the software, we ship you an optional POS terminal, and customers pay you peer-to-peer.",
   },
   {
     q: "How much does it cost?",
