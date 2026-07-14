@@ -217,7 +217,12 @@ export const updateLead = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const patch: Record<string, unknown> = {};
+    const patch: {
+      status?: string;
+      admin_notes?: string;
+      follow_up_at?: string | null;
+      last_contacted_at?: string;
+    } = {};
     if (data.status !== undefined) patch.status = data.status;
     if (data.admin_notes !== undefined) patch.admin_notes = data.admin_notes;
     if (data.follow_up_at !== undefined) patch.follow_up_at = data.follow_up_at;
