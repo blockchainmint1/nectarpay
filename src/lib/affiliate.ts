@@ -65,10 +65,17 @@ export function captureAffiliateFromUrl() {
     localStorage.setItem(FIRST_SEEN, now);
     localStorage.setItem(UTM_KEY, JSON.stringify(utm));
     if (document.referrer) localStorage.setItem(REFERRER_KEY, document.referrer);
+
+    // Fire-and-forget click count bump for general-program codes. Safe
+    // for mineTXC ids too — the RPC is a no-op when the code isn't found.
+    void import("@/integrations/supabase/client").then(({ supabase }) => {
+      supabase.rpc("increment_affiliate_click", { _code: ref }).then(() => {}, () => {});
+    });
   } catch {
     /* ignore */
   }
 }
+
 
 export function readAffiliateSnapshot(): AffiliateSnapshot | null {
   if (typeof window === "undefined") return null;
