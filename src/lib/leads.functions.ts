@@ -104,7 +104,7 @@ function adminEmail(data: z.infer<typeof submitSchema>) {
 <div style="max-width:640px;margin:0 auto;background:#141418;border:1px solid #2a2a30;border-radius:12px;padding:24px;">
   <h1 style="margin:0 0 12px;font-size:18px;color:#f5c542;">New lead — ${escapeHtml(data.interest)}</h1>
   ${rows}
-  <p style="margin-top:20px;"><a href="https://nectar-pay.com/admin/leads" style="color:#f5c542;">Open in admin →</a></p>
+  <p style="margin-top:20px;"><a href="https://nectar-pay.com/admin/crm/leads" style="color:#f5c542;">Open in admin →</a></p>
 </div></body></html>`;
   return { subject, html, text };
 }
