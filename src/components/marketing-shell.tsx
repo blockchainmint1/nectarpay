@@ -305,6 +305,7 @@ export function MarketingFooter() {
               { label: "POS terminal", to: "/pos" },
               { label: "Compare", to: "/compare" },
               { label: "Pricing", to: "/pricing" },
+              { label: "Demo", to: "/demo" },
             ]}
           />
           <FooterCol
