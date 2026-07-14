@@ -70,9 +70,11 @@ export function NectarWordmark() {
 
 const navLinks = [
   { to: "/price", label: "Price" },
+  { to: "/fees", label: "Fees" },
   { to: "/integrate", label: "Integrate" },
   { to: "/investors", label: "Investors" },
 ] as const;
+
 
 export function MarketingNav() {
   const { user, loading, signOut } = useAuth();
