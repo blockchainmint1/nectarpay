@@ -86,23 +86,23 @@ function FeesPage() {
                 <ul className="mt-6 space-y-3 text-sm leading-relaxed text-foreground/80">
                   <li className="flex gap-3">
                     <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                    Uses the built-in receipt printer? You'll need thermal paper now and then. Cheap. From anywhere.
+                    <span>Uses the built-in receipt printer? You'll need thermal paper now and then. Cheap. From anywhere.</span>
                   </li>
                   <li className="flex gap-3">
                     <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                    One-year warranty. If it fails without provocation, we replace it. Full stop.
+                    <span>One-year warranty. If it fails without provocation, we replace it. Full stop.</span>
                   </li>
                   <li className="flex gap-3">
                     <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                    Beat the heck out of it and it breaks? <em>You break it, you buy it (again).</em> Fair's fair.
+                    <span>Beat the heck out of it and it breaks? <em>You break it, you buy it (again).</em> Fair's fair.</span>
                   </li>
                   <li className="flex gap-3">
                     <Wifi className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                    Needs a Wi-Fi connection — you provide it, we don't.
+                    <span>Needs a Wi-Fi connection — you provide it, we don't.</span>
                   </li>
                   <li className="flex gap-3">
                     <Smartphone className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                    Has a SIM slot for mobile use — also on you.
+                    <span>Has a SIM slot for mobile use — also on you.</span>
                   </li>
                 </ul>
                 <div className="mt-6 rounded-lg border border-primary/20 bg-primary/5 p-4 text-sm">
