@@ -46,8 +46,14 @@ export function captureAffiliateFromUrl() {
   if (typeof window === "undefined") return;
   try {
     const url = new URL(window.location.href);
-    const ref = url.searchParams.get("r");
+    const ref =
+      url.searchParams.get("r") ||
+      url.searchParams.get("ref") ||
+      url.searchParams.get("aff") ||
+      url.searchParams.get("affiliate") ||
+      url.searchParams.get("partner");
     if (!ref || !AFFILIATE_ID_RE.test(ref)) return;
+
 
     // First-touch — bail if we already recorded one.
     if (readCookie(COOKIE) || localStorage.getItem(COOKIE)) return;
@@ -107,4 +113,37 @@ export function clearAffiliateSnapshot() {
   [COOKIE, LANDING, FIRST_SEEN, UTM_KEY, REFERRER_KEY].forEach((k) =>
     localStorage.removeItem(k),
   );
+}
+
+/**
+ * Decorate every outbound <a> click to blockchainmint.com / coldstoragecoins.com
+ * with the captured affiliate ref, so attribution survives the hop.
+ * Idempotent: won't overwrite an existing ?ref= on the target URL.
+ * Returns a cleanup function.
+ */
+const OUTBOUND_HOSTS = /(^|\.)(blockchainmint\.com|coldstoragecoins\.com)$/i;
+
+export function installOutboundAffiliateDecorator(): () => void {
+  if (typeof document === "undefined") return () => {};
+  const handler = (e: MouseEvent) => {
+    const target = e.target as Element | null;
+    const a = target?.closest?.("a[href]") as HTMLAnchorElement | null;
+    if (!a) return;
+    const href = a.getAttribute("href") || "";
+    if (!/^https?:\/\//i.test(href)) return;
+    let u: URL;
+    try { u = new URL(href); } catch { return; }
+    if (!OUTBOUND_HOSTS.test(u.hostname)) return;
+
+    const snap = readAffiliateSnapshot();
+    const code = snap?.affiliate_id;
+    if (!code) return;
+    if (!u.searchParams.has("ref")) u.searchParams.set("ref", code);
+    if (!u.searchParams.has("utm_source")) u.searchParams.set("utm_source", "nectarpay");
+    if (!u.searchParams.has("utm_medium")) u.searchParams.set("utm_medium", "affiliate");
+    if (!u.searchParams.has("utm_campaign")) u.searchParams.set("utm_campaign", code);
+    a.href = u.toString();
+  };
+  document.addEventListener("click", handler, true);
+  return () => document.removeEventListener("click", handler, true);
 }

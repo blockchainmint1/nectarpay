@@ -17,7 +17,7 @@ import { ThemeProvider, themeBootstrapScript } from "../lib/theme";
 import { Toaster } from "../components/ui/sonner";
 import { PosReturnBar } from "../components/pos-return-bar";
 import { isNative } from "../lib/pos-native";
-import { captureAffiliateFromUrl } from "../lib/affiliate";
+import { captureAffiliateFromUrl, installOutboundAffiliateDecorator } from "../lib/affiliate";
 
 function NotFoundComponent() {
   return (
@@ -150,6 +150,10 @@ function RootComponent() {
   useEffect(() => {
     captureAffiliateFromUrl();
   }, [location.pathname, location.search]);
+
+  // Decorate outbound links to blockchainmint.com / coldstoragecoins.com
+  // with the captured affiliate ref so attribution survives the hop.
+  useEffect(() => installOutboundAffiliateDecorator(), []);
 
   useEffect(() => {
     const inPosShell =

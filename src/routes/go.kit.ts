@@ -36,7 +36,12 @@ export const Route = createFileRoute("/go/kit")({
       GET: async ({ request }) => {
         const url = new URL(request.url);
         // Explicit override wins (e.g. shared link with ?r=CODE).
-        const explicit = url.searchParams.get("r");
+        const explicit =
+          url.searchParams.get("r") ||
+          url.searchParams.get("ref") ||
+          url.searchParams.get("aff") ||
+          url.searchParams.get("affiliate") ||
+          url.searchParams.get("partner");
         const cookie = readCookie(request.headers.get("cookie"), "nectar_ref");
         const raw = explicit || cookie || "";
         const code = CODE_RE.test(raw) ? raw : null;
