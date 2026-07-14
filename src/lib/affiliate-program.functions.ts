@@ -106,9 +106,10 @@ export const chooseAffiliateReward = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { userId } = context;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: row, error: readErr } = await supabase
+    const { data: row, error: readErr } = await supabaseAdmin
       .from("affiliate_rewards")
       .select("id, choice, affiliate_user_id")
       .eq("id", data.reward_id)
@@ -117,7 +118,9 @@ export const chooseAffiliateReward = createServerFn({ method: "POST" })
     if (!row || row.affiliate_user_id !== userId) throw new Error("Not found");
     if (row.choice) throw new Error("Reward already chosen");
 
-    const { error } = await supabase
+    // Only 'choice' and 'chosen_at' are ever mutated here; status/granted_at
+    // are service-role-only and never touched from a user-driven path.
+    const { error } = await supabaseAdmin
       .from("affiliate_rewards")
       .update({ choice: data.choice, chosen_at: new Date().toISOString() })
       .eq("id", data.reward_id);
