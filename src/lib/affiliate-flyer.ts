@@ -30,7 +30,7 @@ export const FLYER_VARIANTS: Array<{
 // Front: large QR bottom-right, above the nectar-pay.com/start button.
 // Back:  small QR to the right of the "Get Started Today" CTA.
 const QR_POSITIONS: Record<FlyerVariant, { x: number; y: number; size: number; urlX: number; urlY: number; urlSize: number }> = {
-  front: { x: 448, y: 28, size: 128, urlX: 448, urlY: 15, urlSize: 8 },
+  front: { x: 438, y: 40, size: 128, urlX: 438, urlY: 27, urlSize: 8 },
   back: { x: 512, y: 30, size: 66, urlX: 380, urlY: 20, urlSize: 7 },
 };
 
