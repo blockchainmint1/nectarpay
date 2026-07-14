@@ -721,14 +721,19 @@ export type Database = {
         Row: {
           admin_notes: string | null
           assignee: string | null
+          business: string | null
           created_at: string
           email: string
+          follow_up_at: string | null
           id: string
           interest: string
           ip_address: string | null
+          last_contacted_at: string | null
           market: string
           message: string | null
           name: string
+          phone: string | null
+          preferred_time: string | null
           source: string | null
           status: string
           telegram: string | null
@@ -738,14 +743,19 @@ export type Database = {
         Insert: {
           admin_notes?: string | null
           assignee?: string | null
+          business?: string | null
           created_at?: string
           email: string
+          follow_up_at?: string | null
           id?: string
           interest: string
           ip_address?: string | null
+          last_contacted_at?: string | null
           market: string
           message?: string | null
           name: string
+          phone?: string | null
+          preferred_time?: string | null
           source?: string | null
           status?: string
           telegram?: string | null
@@ -755,14 +765,19 @@ export type Database = {
         Update: {
           admin_notes?: string | null
           assignee?: string | null
+          business?: string | null
           created_at?: string
           email?: string
+          follow_up_at?: string | null
           id?: string
           interest?: string
           ip_address?: string | null
+          last_contacted_at?: string | null
           market?: string
           message?: string | null
           name?: string
+          phone?: string | null
+          preferred_time?: string | null
           source?: string | null
           status?: string
           telegram?: string | null
