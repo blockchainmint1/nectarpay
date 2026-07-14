@@ -239,26 +239,6 @@ function HelpPage() {
           </div>
         </div>
 
-        {/* FAQ */}
-        <section className="mt-16">
-          <h2 className="text-2xl font-bold tracking-tight">
-            Frequently asked questions
-          </h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Can't find your answer? Send us a note below.
-          </p>
-          <Accordion type="single" collapsible className="mt-6 rounded-xl border border-border bg-card/60 px-6">
-            {FAQS.map((f, i) => (
-              <AccordionItem key={i} value={`faq-${i}`}>
-                <AccordionTrigger className="text-left">{f.q}</AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
-                  {f.a}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </section>
-
         {/* Contact form */}
         <section className="mt-16">
           <h2 className="text-2xl font-bold tracking-tight">Send us a note</h2>
@@ -370,6 +350,27 @@ function HelpPage() {
             </form>
           )}
         </section>
+
+        {/* FAQ */}
+        <section className="mt-16">
+          <h2 className="text-2xl font-bold tracking-tight">
+            Frequently asked questions
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Can't find your answer? Send us a note above.
+          </p>
+          <Accordion type="single" collapsible className="mt-6 rounded-xl border border-border bg-card/60 px-6">
+            {FAQS.map((f, i) => (
+              <AccordionItem key={i} value={`faq-${i}`}>
+                <AccordionTrigger className="text-left">{f.q}</AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  {f.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </section>
+
       </main>
       <MarketingFooter />
     </div>
