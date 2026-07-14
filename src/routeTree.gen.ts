@@ -25,6 +25,7 @@ import { Route as OnrampRouteImport } from './routes/onramp'
 import { Route as ManifestoRouteImport } from './routes/manifesto'
 import { Route as MRouteImport } from './routes/m'
 import { Route as LiveRouteImport } from './routes/live'
+import { Route as KycRouteImport } from './routes/kyc'
 import { Route as InvestorsRouteImport } from './routes/investors'
 import { Route as IntegrateRouteImport } from './routes/integrate'
 import { Route as FeesRouteImport } from './routes/fees'
@@ -199,6 +200,11 @@ const MRoute = MRouteImport.update({
 const LiveRoute = LiveRouteImport.update({
   id: '/live',
   path: '/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KycRoute = KycRouteImport.update({
+  id: '/kyc',
+  path: '/kyc',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InvestorsRoute = InvestorsRouteImport.update({
@@ -733,6 +739,7 @@ export interface FileRoutesByFullPath {
   '/fees': typeof FeesRoute
   '/integrate': typeof IntegrateRoute
   '/investors': typeof InvestorsRoute
+  '/kyc': typeof KycRoute
   '/live': typeof LiveRoute
   '/m': typeof MRoute
   '/manifesto': typeof ManifestoRoute
@@ -845,6 +852,7 @@ export interface FileRoutesByTo {
   '/fees': typeof FeesRoute
   '/integrate': typeof IntegrateRoute
   '/investors': typeof InvestorsRoute
+  '/kyc': typeof KycRoute
   '/live': typeof LiveRoute
   '/m': typeof MRoute
   '/manifesto': typeof ManifestoRoute
@@ -955,6 +963,7 @@ export interface FileRoutesById {
   '/fees': typeof FeesRoute
   '/integrate': typeof IntegrateRoute
   '/investors': typeof InvestorsRoute
+  '/kyc': typeof KycRoute
   '/live': typeof LiveRoute
   '/m': typeof MRoute
   '/manifesto': typeof ManifestoRoute
@@ -1069,6 +1078,7 @@ export interface FileRouteTypes {
     | '/fees'
     | '/integrate'
     | '/investors'
+    | '/kyc'
     | '/live'
     | '/m'
     | '/manifesto'
@@ -1181,6 +1191,7 @@ export interface FileRouteTypes {
     | '/fees'
     | '/integrate'
     | '/investors'
+    | '/kyc'
     | '/live'
     | '/m'
     | '/manifesto'
@@ -1290,6 +1301,7 @@ export interface FileRouteTypes {
     | '/fees'
     | '/integrate'
     | '/investors'
+    | '/kyc'
     | '/live'
     | '/m'
     | '/manifesto'
@@ -1404,6 +1416,7 @@ export interface RootRouteChildren {
   FeesRoute: typeof FeesRoute
   IntegrateRoute: typeof IntegrateRoute
   InvestorsRoute: typeof InvestorsRoute
+  KycRoute: typeof KycRoute
   LiveRoute: typeof LiveRoute
   MRoute: typeof MRoute
   ManifestoRoute: typeof ManifestoRoute
@@ -1563,6 +1576,13 @@ declare module '@tanstack/react-router' {
       path: '/live'
       fullPath: '/live'
       preLoaderRoute: typeof LiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kyc': {
+      id: '/kyc'
+      path: '/kyc'
+      fullPath: '/kyc'
+      preLoaderRoute: typeof KycRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/investors': {
@@ -2476,6 +2496,7 @@ const rootRouteChildren: RootRouteChildren = {
   FeesRoute: FeesRoute,
   IntegrateRoute: IntegrateRoute,
   InvestorsRoute: InvestorsRoute,
+  KycRoute: KycRoute,
   LiveRoute: LiveRoute,
   MRoute: MRoute,
   ManifestoRoute: ManifestoRoute,
