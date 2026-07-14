@@ -110,6 +110,54 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_external_sales: {
+        Row: {
+          affiliate_code: string
+          affiliate_user_id: string | null
+          created_at: string
+          currency: string
+          customer_email_hash: string | null
+          external_order_id: string
+          id: string
+          order_number: string | null
+          paid_at: string
+          raw_payload: Json | null
+          source: string
+          total_usd: number
+          updated_at: string
+        }
+        Insert: {
+          affiliate_code: string
+          affiliate_user_id?: string | null
+          created_at?: string
+          currency?: string
+          customer_email_hash?: string | null
+          external_order_id: string
+          id?: string
+          order_number?: string | null
+          paid_at?: string
+          raw_payload?: Json | null
+          source: string
+          total_usd?: number
+          updated_at?: string
+        }
+        Update: {
+          affiliate_code?: string
+          affiliate_user_id?: string | null
+          created_at?: string
+          currency?: string
+          customer_email_hash?: string | null
+          external_order_id?: string
+          id?: string
+          order_number?: string | null
+          paid_at?: string
+          raw_payload?: Json | null
+          source?: string
+          total_usd?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       affiliate_rewards: {
         Row: {
           affiliate_user_id: string
