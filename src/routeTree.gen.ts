@@ -118,6 +118,7 @@ import { Route as ApiPublicV1TerminalsInvoiceRouteImport } from './routes/api/pu
 import { Route as ApiPublicV1TerminalsHeartbeatRouteImport } from './routes/api/public/v1/terminals/heartbeat'
 import { Route as ApiPublicV1PayInvoiceIdRouteImport } from './routes/api/public/v1/pay/$invoiceId'
 import { Route as ApiPublicV1InvoicesIdRouteImport } from './routes/api.public.v1.invoices.$id'
+import { Route as ApiPublicV1HooksAffiliateSaleRouteImport } from './routes/api/public/v1/hooks/affiliate-sale'
 import { Route as AuthenticatedAdminKnowledgeTrainingSalesRepsRouteImport } from './routes/_authenticated.admin.knowledge.training.sales-reps'
 import { Route as AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRouteImport } from './routes/_authenticated.admin.knowledge.training.merchant-onboarding'
 import { Route as AuthenticatedAdminKnowledgeTrainingCryptopopRouteImport } from './routes/_authenticated.admin.knowledge.training.cryptopop'
@@ -709,6 +710,12 @@ const ApiPublicV1InvoicesIdRoute = ApiPublicV1InvoicesIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => ApiPublicV1InvoicesRoute,
 } as any)
+const ApiPublicV1HooksAffiliateSaleRoute =
+  ApiPublicV1HooksAffiliateSaleRouteImport.update({
+    id: '/api/public/v1/hooks/affiliate-sale',
+    path: '/api/public/v1/hooks/affiliate-sale',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedAdminKnowledgeTrainingSalesRepsRoute =
   AuthenticatedAdminKnowledgeTrainingSalesRepsRouteImport.update({
     id: '/training/sales-reps',
@@ -873,6 +880,7 @@ export interface FileRoutesByFullPath {
   '/admin/knowledge/training/cryptopop': typeof AuthenticatedAdminKnowledgeTrainingCryptopopRoute
   '/admin/knowledge/training/merchant-onboarding': typeof AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute
   '/admin/knowledge/training/sales-reps': typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRoute
+  '/api/public/v1/hooks/affiliate-sale': typeof ApiPublicV1HooksAffiliateSaleRoute
   '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
@@ -987,6 +995,7 @@ export interface FileRoutesByTo {
   '/admin/knowledge/training/cryptopop': typeof AuthenticatedAdminKnowledgeTrainingCryptopopRoute
   '/admin/knowledge/training/merchant-onboarding': typeof AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute
   '/admin/knowledge/training/sales-reps': typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRoute
+  '/api/public/v1/hooks/affiliate-sale': typeof ApiPublicV1HooksAffiliateSaleRoute
   '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
@@ -1108,6 +1117,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/knowledge/training/cryptopop': typeof AuthenticatedAdminKnowledgeTrainingCryptopopRoute
   '/_authenticated/admin/knowledge/training/merchant-onboarding': typeof AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute
   '/_authenticated/admin/knowledge/training/sales-reps': typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRoute
+  '/api/public/v1/hooks/affiliate-sale': typeof ApiPublicV1HooksAffiliateSaleRoute
   '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
@@ -1229,6 +1239,7 @@ export interface FileRouteTypes {
     | '/admin/knowledge/training/cryptopop'
     | '/admin/knowledge/training/merchant-onboarding'
     | '/admin/knowledge/training/sales-reps'
+    | '/api/public/v1/hooks/affiliate-sale'
     | '/api/public/v1/invoices/$id'
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/terminals/heartbeat'
@@ -1343,6 +1354,7 @@ export interface FileRouteTypes {
     | '/admin/knowledge/training/cryptopop'
     | '/admin/knowledge/training/merchant-onboarding'
     | '/admin/knowledge/training/sales-reps'
+    | '/api/public/v1/hooks/affiliate-sale'
     | '/api/public/v1/invoices/$id'
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/terminals/heartbeat'
@@ -1463,6 +1475,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/knowledge/training/cryptopop'
     | '/_authenticated/admin/knowledge/training/merchant-onboarding'
     | '/_authenticated/admin/knowledge/training/sales-reps'
+    | '/api/public/v1/hooks/affiliate-sale'
     | '/api/public/v1/invoices/$id'
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/terminals/heartbeat'
@@ -1533,6 +1546,7 @@ export interface RootRouteChildren {
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
+  ApiPublicV1HooksAffiliateSaleRoute: typeof ApiPublicV1HooksAffiliateSaleRoute
   ApiPublicV1PayInvoiceIdRoute: typeof ApiPublicV1PayInvoiceIdRoute
   ApiPublicV1TerminalsHeartbeatRoute: typeof ApiPublicV1TerminalsHeartbeatRoute
   ApiPublicV1TerminalsInvoiceRoute: typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
@@ -2305,6 +2319,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1InvoicesIdRouteImport
       parentRoute: typeof ApiPublicV1InvoicesRoute
     }
+    '/api/public/v1/hooks/affiliate-sale': {
+      id: '/api/public/v1/hooks/affiliate-sale'
+      path: '/api/public/v1/hooks/affiliate-sale'
+      fullPath: '/api/public/v1/hooks/affiliate-sale'
+      preLoaderRoute: typeof ApiPublicV1HooksAffiliateSaleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/knowledge/training/sales-reps': {
       id: '/_authenticated/admin/knowledge/training/sales-reps'
       path: '/training/sales-reps'
@@ -2675,6 +2696,7 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
+  ApiPublicV1HooksAffiliateSaleRoute: ApiPublicV1HooksAffiliateSaleRoute,
   ApiPublicV1PayInvoiceIdRoute: ApiPublicV1PayInvoiceIdRoute,
   ApiPublicV1TerminalsHeartbeatRoute: ApiPublicV1TerminalsHeartbeatRoute,
   ApiPublicV1TerminalsInvoiceRoute:
@@ -2685,13 +2707,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
