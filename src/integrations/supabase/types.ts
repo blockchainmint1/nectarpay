@@ -56,6 +56,36 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_clickouts: {
+        Row: {
+          affiliate_id: string
+          created_at: string
+          id: string
+          referrer: string | null
+          target: string
+          target_url: string
+          user_agent: string | null
+        }
+        Insert: {
+          affiliate_id: string
+          created_at?: string
+          id?: string
+          referrer?: string | null
+          target: string
+          target_url: string
+          user_agent?: string | null
+        }
+        Update: {
+          affiliate_id?: string
+          created_at?: string
+          id?: string
+          referrer?: string | null
+          target?: string
+          target_url?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       affiliate_codes: {
         Row: {
           clicks: number
