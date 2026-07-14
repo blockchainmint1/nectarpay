@@ -26,18 +26,34 @@ import { LEAD_MARKETS, LEAD_INTERESTS, submitLead } from "@/lib/leads.functions"
 const PHONE_DISPLAY = "855-6-NECTAR";
 const PHONE_HREF = "tel:+18556632827"; // 855-663-2827
 
-const FAQS: { q: string; a: string }[] = [
+function A({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <a href={href} className="text-primary underline underline-offset-4 hover:no-underline">
+      {children}
+    </a>
+  );
+}
+
+const FAQS: { q: string; a: React.ReactNode }[] = [
   {
     q: "What is NectarPay?",
     a: "NectarPay is a software platform that lets any merchant accept stablecoins and other crypto directly from customers — with no bank, no card processor, and no middleman touching your funds. You get the software, we ship you an optional POS terminal, and customers pay you peer-to-peer.",
   },
   {
     q: "How much does it cost?",
-    a: "The software is free to start. Our POS terminal kit is $499 up front plus a $228 first-year service fee. See the /price and /fees pages for the full breakdown — there are no per-transaction card fees because there is no card network.",
+    a: (
+      <>
+        The software is free to start. Our POS terminal kit is $499 up front plus a $228 first-year service fee. See the <A href="/price">pricing</A> and <A href="/fees">fees</A> pages for the full breakdown — there are no per-transaction card fees because there is no card network.
+      </>
+    ),
   },
   {
     q: "Do you hold my money?",
-    a: "No. NectarPay is non-custodial. Funds move directly from your customer's wallet to yours. We never touch, hold, or freeze your money — see /kyc for the full explanation.",
+    a: (
+      <>
+        No. NectarPay is non-custodial. Funds move directly from your customer's wallet to yours. We never touch, hold, or freeze your money — see <A href="/kyc">/kyc</A> for the full explanation.
+      </>
+    ),
   },
   {
     q: "Do I need to KYC to use NectarPay?",
@@ -49,7 +65,11 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "How do I cash out to my bank?",
-    a: "Since you're settling in stablecoins pegged to the dollar, you can off-ramp through any exchange or on/off-ramp provider that supports your region. See /cash-out for the current partners we recommend.",
+    a: (
+      <>
+        Since you're settling in stablecoins pegged to the dollar, you can off-ramp through any exchange or on/off-ramp provider that supports your region. See <A href="/cash-out">cash-out</A> for the current partners we recommend.
+      </>
+    ),
   },
   {
     q: "How fast do payments settle?",
@@ -57,23 +77,43 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Do you have a merchant app?",
-    a: "Yes — a mobile merchant view at /m for phone-only operators, and a full POS build for the terminal kit. Both connect to the same dashboard.",
+    a: (
+      <>
+        Yes — a mobile merchant view at <A href="/m">/m</A> for phone-only operators, and a full POS build for the terminal kit. Both connect to the same dashboard. Native iOS and Android apps are coming soon to the App Store and Google Play.
+      </>
+    ),
   },
   {
     q: "How do I get a demo?",
-    a: "Head to /demo — book a live walkthrough with our team, or watch the pre-recorded videos covering account setup, processing a transaction, velocity of money, and cashing out.",
+    a: (
+      <>
+        Head to <A href="/demo">/demo</A> — book a live walkthrough with our team, or watch the pre-recorded videos covering account setup, processing a transaction, velocity of money, and cashing out.
+      </>
+    ),
   },
   {
-    q: "I have a store on WooCommerce / PrestaShop / Shopify — does NectarPay work?",
-    a: "Yes. We ship official plugins for WooCommerce and PrestaShop today, with more integrations rolling out. See /integrations for the current list and setup docs.",
+    q: "I have a store on WooCommerce or PrestaShop — does NectarPay work?",
+    a: (
+      <>
+        Yes. We ship official plugins for WooCommerce and PrestaShop today, with more integrations rolling out. See <A href="/integrations">/integrations</A> for the current list and setup docs.
+      </>
+    ),
   },
   {
     q: "Is there an API?",
-    a: "Yes. Public REST endpoints for invoicing, payments, and terminal control. See /docs for the full reference and /integrate for a quickstart.",
+    a: (
+      <>
+        Yes. Public REST endpoints for invoicing, payments, and terminal control. See <A href="/docs">/docs</A> for the full reference and <A href="/integrate">/integrate</A> for a quickstart.
+      </>
+    ),
   },
   {
     q: "How do I become an affiliate or sales rep?",
-    a: "Sign up, then visit /affiliate in your dashboard for your referral link, or see the public /affiliates page for program details.",
+    a: (
+      <>
+        Sign up, then visit /affiliate in your dashboard for your referral link, or see the public <A href="/affiliates">affiliates</A> page for program details.
+      </>
+    ),
   },
 ];
 
