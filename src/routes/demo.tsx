@@ -136,7 +136,7 @@ function Hero() {
             </a>
           </Button>
           <Button asChild size="lg" variant="outline" className="gap-2">
-            <a href="https://blockchainmint.com/buy/nectar-pay-mobile-pos-terminal?to=cart&variant=40cc988e-8a2c-4b39-95af-75bc57024301&clear=1" target="_blank" rel="noreferrer">
+            <a href="/go/kit" target="_blank" rel="noreferrer">
               Or buy the kit <Coins className="h-4 w-4" />
             </a>
           </Button>
@@ -278,7 +278,7 @@ function KitCta() {
               </div>
             </div>
             <Button asChild size="lg" className="w-full gap-2">
-              <a href="https://blockchainmint.com/buy/nectar-pay-mobile-pos-terminal?to=cart&variant=40cc988e-8a2c-4b39-95af-75bc57024301&clear=1" target="_blank" rel="noreferrer">
+              <a href="/go/kit" target="_blank" rel="noreferrer">
                 Buy the kit <ArrowRight className="h-4 w-4" />
               </a>
             </Button>
@@ -375,7 +375,7 @@ function SeenEnough() {
                 We'll confirm your demo time within one business day.
               </p>
               <Button asChild variant="outline" className="mt-6">
-                <a href="https://blockchainmint.com/buy/nectar-pay-mobile-pos-terminal?to=cart&variant=40cc988e-8a2c-4b39-95af-75bc57024301&clear=1" target="_blank" rel="noreferrer">Or grab your kit now →</a>
+                <a href="/go/kit" target="_blank" rel="noreferrer">Or grab your kit now →</a>
               </Button>
             </div>
           </div>
