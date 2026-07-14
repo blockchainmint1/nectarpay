@@ -314,28 +314,22 @@ function SeenEnough() {
     e.preventDefault();
     setSending(true);
     try {
-      const combined = [
-        form.phone && `Phone: ${form.phone}`,
-        form.business && `Business: ${form.business}`,
-        form.preferredTime && `Preferred demo time: ${form.preferredTime}`,
-        form.message,
-      ]
-        .filter(Boolean)
-        .join("\n\n");
-
       await submit({
         data: {
           name: form.name,
           email: form.email,
+          phone: form.phone,
           telegram: form.telegram,
+          business: form.business,
+          preferred_time: form.preferredTime,
           market: form.market,
           interest: "Onramp demo",
-          message: combined,
+          message: form.message,
           source: "demo-page",
         },
       });
       setSent(true);
-      toast.success("Booked — we'll confirm your demo shortly.");
+      toast.success("Booked — check your email for confirmation.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not send. Try again.");
     } finally {
