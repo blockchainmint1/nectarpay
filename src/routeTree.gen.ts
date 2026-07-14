@@ -90,6 +90,7 @@ import { Route as ApiPublicAuthWalletStatusRouteImport } from './routes/api/publ
 import { Route as ApiPublicAuthWalletExchangeRouteImport } from './routes/api/public/auth/wallet-exchange'
 import { Route as ApiPublicAuthWalletChallengeRouteImport } from './routes/api/public/auth/wallet-challenge'
 import { Route as ApiPublicAuthWalletCallbackRouteImport } from './routes/api/public/auth/wallet-callback'
+import { Route as ApiPublicAffiliateClickRouteImport } from './routes/api/public/affiliate.click'
 import { Route as AuthenticatedStoresStoreIdTerminalsRouteImport } from './routes/_authenticated.stores.$storeId.terminals'
 import { Route as AuthenticatedStoresStoreIdTangemRouteImport } from './routes/_authenticated.stores.$storeId.tangem'
 import { Route as AuthenticatedStoresStoreIdPosSettingsRouteImport } from './routes/_authenticated.stores.$storeId.pos-settings'
@@ -540,6 +541,11 @@ const ApiPublicAuthWalletCallbackRoute =
     path: '/api/public/auth/wallet-callback',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicAffiliateClickRoute = ApiPublicAffiliateClickRouteImport.update({
+  id: '/api/public/affiliate/click',
+  path: '/api/public/affiliate/click',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedStoresStoreIdTerminalsRoute =
   AuthenticatedStoresStoreIdTerminalsRouteImport.update({
     id: '/terminals',
@@ -783,6 +789,7 @@ export interface FileRoutesByFullPath {
   '/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
   '/stores/$storeId/tangem': typeof AuthenticatedStoresStoreIdTangemRoute
   '/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
+  '/api/public/affiliate/click': typeof ApiPublicAffiliateClickRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
   '/api/public/auth/wallet-exchange': typeof ApiPublicAuthWalletExchangeRoute
@@ -889,6 +896,7 @@ export interface FileRoutesByTo {
   '/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
   '/stores/$storeId/tangem': typeof AuthenticatedStoresStoreIdTangemRoute
   '/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
+  '/api/public/affiliate/click': typeof ApiPublicAffiliateClickRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
   '/api/public/auth/wallet-exchange': typeof ApiPublicAuthWalletExchangeRoute
@@ -1001,6 +1009,7 @@ export interface FileRoutesById {
   '/_authenticated/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
   '/_authenticated/stores/$storeId/tangem': typeof AuthenticatedStoresStoreIdTangemRoute
   '/_authenticated/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
+  '/api/public/affiliate/click': typeof ApiPublicAffiliateClickRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
   '/api/public/auth/wallet-exchange': typeof ApiPublicAuthWalletExchangeRoute
@@ -1113,6 +1122,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId/pos-settings'
     | '/stores/$storeId/tangem'
     | '/stores/$storeId/terminals'
+    | '/api/public/affiliate/click'
     | '/api/public/auth/wallet-callback'
     | '/api/public/auth/wallet-challenge'
     | '/api/public/auth/wallet-exchange'
@@ -1219,6 +1229,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId/pos-settings'
     | '/stores/$storeId/tangem'
     | '/stores/$storeId/terminals'
+    | '/api/public/affiliate/click'
     | '/api/public/auth/wallet-callback'
     | '/api/public/auth/wallet-challenge'
     | '/api/public/auth/wallet-exchange'
@@ -1330,6 +1341,7 @@ export interface FileRouteTypes {
     | '/_authenticated/stores/$storeId/pos-settings'
     | '/_authenticated/stores/$storeId/tangem'
     | '/_authenticated/stores/$storeId/terminals'
+    | '/api/public/affiliate/click'
     | '/api/public/auth/wallet-callback'
     | '/api/public/auth/wallet-challenge'
     | '/api/public/auth/wallet-exchange'
@@ -1402,6 +1414,7 @@ export interface RootRouteChildren {
   PayInvoiceIdRoute: typeof PayInvoiceIdRoute
   SdkPayhmeDotjsRoute: typeof SdkPayhmeDotjsRoute
   IntegrationsIndexRoute: typeof IntegrationsIndexRoute
+  ApiPublicAffiliateClickRoute: typeof ApiPublicAffiliateClickRoute
   ApiPublicAuthWalletCallbackRoute: typeof ApiPublicAuthWalletCallbackRoute
   ApiPublicAuthWalletChallengeRoute: typeof ApiPublicAuthWalletChallengeRoute
   ApiPublicAuthWalletExchangeRoute: typeof ApiPublicAuthWalletExchangeRoute
@@ -1994,6 +2007,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAuthWalletCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/affiliate/click': {
+      id: '/api/public/affiliate/click'
+      path: '/api/public/affiliate/click'
+      fullPath: '/api/public/affiliate/click'
+      preLoaderRoute: typeof ApiPublicAffiliateClickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/stores/$storeId/terminals': {
       id: '/_authenticated/stores/$storeId/terminals'
       path: '/terminals'
@@ -2458,6 +2478,7 @@ const rootRouteChildren: RootRouteChildren = {
   PayInvoiceIdRoute: PayInvoiceIdRoute,
   SdkPayhmeDotjsRoute: SdkPayhmeDotjsRoute,
   IntegrationsIndexRoute: IntegrationsIndexRoute,
+  ApiPublicAffiliateClickRoute: ApiPublicAffiliateClickRoute,
   ApiPublicAuthWalletCallbackRoute: ApiPublicAuthWalletCallbackRoute,
   ApiPublicAuthWalletChallengeRoute: ApiPublicAuthWalletChallengeRoute,
   ApiPublicAuthWalletExchangeRoute: ApiPublicAuthWalletExchangeRoute,
