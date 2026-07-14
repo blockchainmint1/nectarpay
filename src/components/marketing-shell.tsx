@@ -73,6 +73,7 @@ const navLinks = [
   { to: "/fees", label: "Fees" },
   { to: "/integrate", label: "Integrate" },
   { to: "/investors", label: "Investors" },
+  { to: "/help", label: "Help" },
 ] as const;
 
 
