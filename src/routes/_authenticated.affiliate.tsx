@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { Copy, Check, Gift, Wallet, ArrowRight, Share2 } from "lucide-react";
+import { Copy, Check, Gift, Wallet, ArrowRight, Share2, Download, FileText, QrCode } from "lucide-react";
+import QRCode from "qrcode";
 
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,20 @@ import {
   getMyAffiliateData,
   chooseAffiliateReward,
 } from "@/lib/affiliate-program.functions";
+import {
+  FLYER_VARIANTS,
+  generateAffiliateFlyer,
+  downloadBlob,
+  type FlyerVariant,
+} from "@/lib/affiliate-flyer";
+
+const LANDING_OPTIONS: Array<{ value: string; label: string; hint: string }> = [
+  { value: "/", label: "Homepage", hint: "General intro to NectarPay" },
+  { value: "/onramp", label: "Merchant Start-up Kit ($727)", hint: "Best for reward-qualifying referrals" },
+  { value: "/pricing", label: "Pricing", hint: "Plans and processing fees" },
+  { value: "/affiliates", label: "Affiliate program", hint: "Recruit sub-affiliates" },
+  { value: "custom", label: "Custom path…", hint: "Any page on nectar-pay.com" },
+];
 
 export const Route = createFileRoute("/_authenticated/affiliate")({
   head: () => ({ meta: [{ title: "Affiliate · Nectar.Pay" }] }),
@@ -20,7 +35,6 @@ function AffiliateDashboardPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
 
-  // Auto-provision a code the first time the page loads.
   useEffect(() => {
     if (!user) return;
     ensureMyAffiliateCode()
@@ -34,12 +48,22 @@ function AffiliateDashboardPage() {
     enabled: !!user,
   });
 
+  const [landing, setLanding] = useState<string>("/onramp");
+  const [customPath, setCustomPath] = useState<string>("/");
+
+  const effectivePath = useMemo(() => {
+    const raw = landing === "custom" ? customPath : landing;
+    if (!raw) return "/";
+    return raw.startsWith("/") ? raw : `/${raw}`;
+  }, [landing, customPath]);
+
   const trackingUrl = useMemo(() => {
     if (!data?.code) return "";
     const origin =
       typeof window !== "undefined" ? window.location.origin : "https://nectar-pay.com";
-    return `${origin}/?r=${data.code}`;
-  }, [data?.code]);
+    const sep = effectivePath.includes("?") ? "&" : "?";
+    return `${origin}${effectivePath}${sep}r=${data.code}`;
+  }, [data?.code, effectivePath]);
 
   return (
     <div className="mx-auto max-w-[90rem] px-4 py-10 md:px-8">
@@ -58,15 +82,52 @@ function AffiliateDashboardPage() {
 
       {/* Tracking URL */}
       <div className="mt-8 rounded-lg border border-border bg-card/50 p-5">
-        <div className="text-xs uppercase tracking-wider text-muted-foreground">
-          Your tracking link
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">
+            Your tracking link
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-muted-foreground">Send visitors to</label>
+            <select
+              value={landing}
+              onChange={(e) => setLanding(e.target.value)}
+              className="rounded-md border border-border bg-background px-2 py-1 text-xs"
+            >
+              {LANDING_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+            {landing === "custom" && (
+              <input
+                value={customPath}
+                onChange={(e) => setCustomPath(e.target.value)}
+                placeholder="/some-page"
+                className="w-40 rounded-md border border-border bg-background px-2 py-1 font-mono text-xs"
+              />
+            )}
+          </div>
         </div>
         {isLoading || !data?.code ? (
           <div className="mt-3 h-10 animate-pulse rounded-md bg-muted" />
         ) : (
           <TrackingUrlBox url={trackingUrl} code={data.code} />
         )}
+        <p className="mt-2 text-xs text-muted-foreground">
+          {LANDING_OPTIONS.find((o) => o.value === landing)?.hint}
+        </p>
       </div>
+
+      {/* QR + Flyer */}
+      {data?.code && trackingUrl ? (
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <QrPanel url={trackingUrl} code={data.code} />
+          <FlyerPanel url={trackingUrl} code={data.code} />
+        </div>
+      ) : null}
+
+
 
       {/* Stats */}
       <div className="mt-6 grid gap-4 sm:grid-cols-4">
@@ -142,6 +203,134 @@ function AffiliateDashboardPage() {
     </div>
   );
 }
+
+function QrPanel({ url, code }: { url: string; code: string }) {
+  const [dataUrl, setDataUrl] = useState<string>("");
+  useEffect(() => {
+    let cancelled = false;
+    QRCode.toDataURL(url, {
+      errorCorrectionLevel: "H",
+      margin: 2,
+      width: 640,
+      color: { dark: "#0B1220", light: "#FFFFFF" },
+    })
+      .then((d) => {
+        if (!cancelled) setDataUrl(d);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [url]);
+
+  const download = () => {
+    if (!dataUrl) return;
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = `nectarpay-qr-${code}.png`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
+  const print = () => {
+    if (!dataUrl) return;
+    const w = window.open("", "_blank");
+    if (!w) return;
+    w.document.write(`<html><head><title>QR ${code}</title></head><body style="margin:0;display:grid;place-items:center;height:100vh;font-family:system-ui;"><div style="text-align:center"><img src="${dataUrl}" style="width:70vmin;height:70vmin"/><div style="margin-top:1rem;font-family:monospace">${url}</div></div><script>window.onload=()=>window.print()</script></body></html>`);
+    w.document.close();
+  };
+
+  return (
+    <div className="rounded-lg border border-border bg-card/50 p-5">
+      <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+        <QrCode className="h-3.5 w-3.5" /> Your QR code
+      </div>
+      <div className="mt-4 flex items-center gap-5">
+        <div className="rounded-md bg-white p-3">
+          {dataUrl ? (
+            <img src={dataUrl} alt="Affiliate QR" className="h-40 w-40" />
+          ) : (
+            <div className="h-40 w-40 animate-pulse rounded bg-muted" />
+          )}
+        </div>
+        <div className="flex-1 space-y-2">
+          <p className="text-sm text-muted-foreground">
+            Print it, tape it on your window, or flash it from your phone. Scans hit your tracking link.
+          </p>
+          <div className="flex flex-wrap gap-2 pt-1">
+            <Button size="sm" variant="outline" onClick={download} disabled={!dataUrl}>
+              <Download className="mr-1 h-4 w-4" /> PNG
+            </Button>
+            <Button size="sm" variant="ghost" onClick={print} disabled={!dataUrl}>
+              Print
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FlyerPanel({ url, code }: { url: string; code: string }) {
+  const [variant, setVariant] = useState<FlyerVariant>("front");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const generate = async () => {
+    setBusy(true);
+    setErr(null);
+    try {
+      const bytes = await generateAffiliateFlyer({ variant, trackingUrl: url, affiliateCode: code });
+      downloadBlob(bytes, `nectarpay-flyer-${variant}-${code}.pdf`);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Failed to generate flyer");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="rounded-lg border border-border bg-card/50 p-5">
+      <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-muted-foreground">
+        <FileText className="h-3.5 w-3.5" /> Printable flyer
+      </div>
+      <div className="mt-4 grid gap-2">
+        {FLYER_VARIANTS.map((f) => (
+          <label
+            key={f.id}
+            className={`flex cursor-pointer items-start gap-3 rounded-md border p-3 text-sm transition ${
+              variant === f.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+            }`}
+          >
+            <input
+              type="radio"
+              name="flyer-variant"
+              className="mt-1"
+              checked={variant === f.id}
+              onChange={() => setVariant(f.id)}
+            />
+            <div>
+              <div className="font-medium">{f.label}</div>
+              <div className="text-xs text-muted-foreground">{f.description}</div>
+            </div>
+          </label>
+        ))}
+      </div>
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">
+          We overlay your QR code and tracking URL onto the flyer before download.
+        </p>
+        <Button size="sm" onClick={generate} disabled={busy}>
+          <Download className="mr-1 h-4 w-4" />
+          {busy ? "Generating…" : "Generate PDF"}
+        </Button>
+      </div>
+      {err ? <p className="mt-2 text-xs text-destructive">{err}</p> : null}
+    </div>
+  );
+}
+
 
 function TrackingUrlBox({ url, code }: { url: string; code: string }) {
   const [copied, setCopied] = useState(false);
