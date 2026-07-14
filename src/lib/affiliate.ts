@@ -46,8 +46,14 @@ export function captureAffiliateFromUrl() {
   if (typeof window === "undefined") return;
   try {
     const url = new URL(window.location.href);
-    const ref = url.searchParams.get("r");
+    const ref =
+      url.searchParams.get("r") ||
+      url.searchParams.get("ref") ||
+      url.searchParams.get("aff") ||
+      url.searchParams.get("affiliate") ||
+      url.searchParams.get("partner");
     if (!ref || !AFFILIATE_ID_RE.test(ref)) return;
+
 
     // First-touch — bail if we already recorded one.
     if (readCookie(COOKIE) || localStorage.getItem(COOKIE)) return;
