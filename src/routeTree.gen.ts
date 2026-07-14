@@ -29,6 +29,7 @@ import { Route as InvestorsRouteImport } from './routes/investors'
 import { Route as IntegrateRouteImport } from './routes/integrate'
 import { Route as FeesRouteImport } from './routes/fees'
 import { Route as DocsRouteImport } from './routes/docs'
+import { Route as DemoRouteImport } from './routes/demo'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -218,6 +219,11 @@ const FeesRoute = FeesRouteImport.update({
 const DocsRoute = DocsRouteImport.update({
   id: '/docs',
   path: '/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoRoute = DemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -722,6 +728,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
+  '/demo': typeof DemoRoute
   '/docs': typeof DocsRouteWithChildren
   '/fees': typeof FeesRoute
   '/integrate': typeof IntegrateRoute
@@ -833,6 +840,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
+  '/demo': typeof DemoRoute
   '/docs': typeof DocsRouteWithChildren
   '/fees': typeof FeesRoute
   '/integrate': typeof IntegrateRoute
@@ -942,6 +950,7 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
+  '/demo': typeof DemoRoute
   '/docs': typeof DocsRouteWithChildren
   '/fees': typeof FeesRoute
   '/integrate': typeof IntegrateRoute
@@ -1055,6 +1064,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/compare'
     | '/contact'
+    | '/demo'
     | '/docs'
     | '/fees'
     | '/integrate'
@@ -1166,6 +1176,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/compare'
     | '/contact'
+    | '/demo'
     | '/docs'
     | '/fees'
     | '/integrate'
@@ -1274,6 +1285,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/compare'
     | '/contact'
+    | '/demo'
     | '/docs'
     | '/fees'
     | '/integrate'
@@ -1387,6 +1399,7 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRouteWithChildren
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
+  DemoRoute: typeof DemoRoute
   DocsRoute: typeof DocsRouteWithChildren
   FeesRoute: typeof FeesRoute
   IntegrateRoute: typeof IntegrateRoute
@@ -1578,6 +1591,13 @@ declare module '@tanstack/react-router' {
       path: '/docs'
       fullPath: '/docs'
       preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo': {
+      id: '/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -2451,6 +2471,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRouteWithChildren,
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
+  DemoRoute: DemoRoute,
   DocsRoute: DocsRouteWithChildren,
   FeesRoute: FeesRoute,
   IntegrateRoute: IntegrateRoute,
