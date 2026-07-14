@@ -131,15 +131,15 @@ function FeesPage() {
                 <ul className="mt-6 space-y-3 text-sm leading-relaxed text-foreground/80">
                   <li className="flex gap-3">
                     <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                    Standard plan is <strong className="text-foreground">$19/month</strong>, paid up front for the year.
+                    <span>Standard plan is <strong className="text-foreground">$19/month</strong>, paid up front for the year.</span>
                   </li>
                   <li className="flex gap-3">
                     <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                    Want <strong className="text-foreground">white-glove support?</strong> Bump it to <span className="font-mono">$99/mo</span>. We'll pick up the phone.
+                    <span>Want <strong className="text-foreground">white-glove support?</strong> Bump it to <span className="font-mono">$99/mo</span>. We'll pick up the phone.</span>
                   </li>
                   <li className="flex gap-3">
                     <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                    There is a <strong className="text-foreground">free tier</strong> — but you can't use it with the POS terminal hardware. Software-only.
+                    <span>There is a <strong className="text-foreground">free tier</strong> — but you can't use it with the POS terminal hardware. Software-only.</span>
                   </li>
                 </ul>
                 <div className="mt-6 rounded-lg border border-border bg-background/40 p-4 text-sm text-muted-foreground">
