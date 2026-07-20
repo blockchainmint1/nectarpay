@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LayoutDashboard, LogOut, Menu, UserRound } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 /* ------------------------------------------------------------------ */
 /* Brand marks                                                          */
@@ -68,14 +69,13 @@ export function NectarWordmark() {
 /* ------------------------------------------------------------------ */
 
 const navLinks = [
-  { to: "/where", label: "Where" },
-  { to: "/pricing", label: "Pricing" },
-  { to: "/compare", label: "Compare" },
-  { to: "/docs", label: "Docs" },
-  { to: "/integrations", label: "Integrations" },
+  { to: "/price", label: "Price" },
+  { to: "/fees", label: "Fees" },
+  { to: "/integrate", label: "Integrate" },
   { to: "/investors", label: "Investors" },
-  { href: "https://beekeeper.honest.money", label: "Wallet", external: true },
+  { to: "/help", label: "Help" },
 ] as const;
+
 
 export function MarketingNav() {
   const { user, loading, signOut } = useAuth();
@@ -97,25 +97,14 @@ export function MarketingNav() {
           className="hidden items-center gap-6 text-sm md:flex"
           style={{ color: "rgba(255,255,255,0.75)" }}
         >
-          {navLinks.map((link) =>
-            "external" in link ? (
-              <a
-                key={link.href}
-                href={link.href}
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-white"
-              >
-                {link.label}
-              </a>
-            ) : (
-              <Link key={link.to} to={link.to} className="hover:text-white">
-                {link.label}
-              </Link>
-            ),
-          )}
+          {navLinks.map((link) => (
+            <Link key={link.to} to={link.to} className="hover:text-white">
+              {link.label}
+            </Link>
+          ))}
         </nav>
         <div className="flex items-center gap-3">
+          <ThemeToggle className="hidden sm:inline-flex" />
           {loading ? null : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -174,7 +163,7 @@ export function MarketingNav() {
           <Sheet>
             <SheetTrigger asChild>
               <button
-                className="np-btn np-btn-ghost md:hidden"
+                className="np-btn np-btn-ghost md:!hidden"
                 style={{ padding: "10px 12px" }}
                 aria-label="Open menu"
               >
@@ -184,26 +173,13 @@ export function MarketingNav() {
             <SheetContent side="right" className="np flex flex-col" style={{ background: "var(--np-navy)", color: "var(--np-white)", borderColor: "rgba(255,255,255,0.08)" }}>
               <SheetTitle className="sr-only">Navigation menu</SheetTitle>
               <nav className="mt-8 flex flex-col gap-4 text-base">
-                {navLinks.map((link) =>
-                  "external" in link ? (
-                    <SheetClose asChild key={link.href}>
-                      <a
-                        href={link.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{ color: "rgba(255,255,255,0.75)" }}
-                      >
-                        {link.label}
-                      </a>
-                    </SheetClose>
-                  ) : (
-                    <SheetClose asChild key={link.to}>
-                      <Link to={link.to} style={{ color: "rgba(255,255,255,0.75)" }}>
-                        {link.label}
-                      </Link>
-                    </SheetClose>
-                  ),
-                )}
+                {navLinks.map((link) => (
+                  <SheetClose asChild key={link.to}>
+                    <Link to={link.to} style={{ color: "rgba(255,255,255,0.75)" }}>
+                      {link.label}
+                    </Link>
+                  </SheetClose>
+                ))}
               </nav>
               <div className="mt-auto flex flex-col gap-3 border-t pt-6" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
                 {loading ? null : user ? (
@@ -330,6 +306,7 @@ export function MarketingFooter() {
               { label: "POS terminal", to: "/pos" },
               { label: "Compare", to: "/compare" },
               { label: "Pricing", to: "/pricing" },
+              { label: "Demo", to: "/demo" },
             ]}
           />
           <FooterCol
@@ -345,12 +322,13 @@ export function MarketingFooter() {
             items={[
               { label: "Manifesto", to: "/manifesto" },
               { label: "Investors", to: "/investors" },
+              { label: "Affiliates", to: "/affiliates" },
               { label: "Contact", to: "/contact" },
               { label: "Brand", to: "/brand" },
-              { label: "Terms", to: "/terms" },
-              { label: "Privacy", to: "/privacy" },
             ]}
           />
+
+
         </div>
 
         <div
@@ -370,8 +348,16 @@ export function MarketingFooter() {
             ECOSYSTEM
           </p>
           <p className="np-mono text-xs" style={{ color: "var(--np-slate)" }}>
-            © {new Date().getFullYear()} NECTARPAY · V1.0
+            © {new Date().getFullYear()} NECTARPAY · V1.0 ·{" "}
+            <Link to="/terms" className="hover:text-white" style={{ color: "var(--np-slate)" }}>
+              TERMS
+            </Link>{" "}
+            ·{" "}
+            <Link to="/privacy" className="hover:text-white" style={{ color: "var(--np-slate)" }}>
+              PRIVACY
+            </Link>
           </p>
+
         </div>
       </div>
     </footer>

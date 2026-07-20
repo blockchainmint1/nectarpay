@@ -29,50 +29,65 @@ function IntegrationsIndex() {
   return (
     <div className="min-h-screen bg-background">
       <MarketingNav />
-      <section className="border-b border-border/60 py-20">
-        <div className="mx-auto max-w-5xl px-4">
-          <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">Integrations.</h1>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
-            Drop Nectar.Pay into the platforms you already use. Non-custodial — funds settle
-            straight to your wallet.
-          </p>
-
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
-            <IntegrationCard
-              icon={<ShoppingBag className="h-5 w-5" />}
-              name="WooCommerce"
-              tagline="WordPress plugin. Five-minute setup."
-              description="Drop our plugin into WordPress, paste your API key, and your customers can pay in BTC, TEXITcoin, or stablecoins."
-              to="/integrations/woocommerce"
-              cta="View plugin"
-              available
-            />
-            <IntegrationCard
-              icon={<Code2 className="h-5 w-5" />}
-              name="REST API"
-              tagline="Build it into anything."
-              description="Create invoices, watch for payments, and verify webhooks from any backend. Full reference in the docs."
-              to="/docs"
-              cta="Read the docs"
-              available
-            />
-            <IntegrationCard
-              icon={<Zap className="h-5 w-5" />}
-              name="Shopify"
-              tagline="Coming soon."
-              description="Native Shopify app in the works. Drop us your email on the WooCommerce page if you want a heads-up."
-            />
-            <IntegrationCard
-              icon={<Zap className="h-5 w-5" />}
-              name="Magento, OpenCart, PrestaShop"
-              tagline="On request."
-              description="If your platform speaks REST, we can plug in. Talk to us about a custom connector."
-            />
-          </div>
-        </div>
-      </section>
+      <IntegrationsBody />
       <MarketingFooter />
     </div>
+  );
+}
+
+export function IntegrationsBody() {
+  return (
+    <section className="border-b border-border/60 py-20">
+      <div className="mx-auto max-w-5xl px-4">
+        <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">Integrations.</h1>
+        <p className="mt-3 max-w-2xl text-muted-foreground">
+          Drop Nectar.Pay into the platforms you already use. Non-custodial — funds settle
+          straight to your wallet.
+        </p>
+
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
+          <IntegrationCard
+            icon={<ShoppingBag className="h-5 w-5" />}
+            name="WooCommerce"
+            tagline="WordPress plugin. Five-minute setup."
+            description="Drop our plugin into WordPress, paste your API key, and your customers can pay in BTC, TEXITcoin, or stablecoins."
+            to="/integrations/woocommerce"
+            cta="View plugin"
+            available
+          />
+          <IntegrationCard
+            icon={<Code2 className="h-5 w-5" />}
+            name="REST API"
+            tagline="Build it into anything."
+            description="Create invoices, watch for payments, and verify webhooks from any backend. Full reference in the docs."
+            to="/docs"
+            cta="Read the docs"
+            available
+          />
+          <IntegrationCard
+            icon={<ShoppingBag className="h-5 w-5" />}
+            name="PrestaShop"
+            tagline="PrestaShop 8.0 – 8.2. Ten-minute setup."
+            description="Drop our PHP module into PrestaShop, paste your API key, and checkout gains a 'Pay with crypto' option that settles straight to your wallet."
+            to="/integrations/prestashop"
+            cta="View module"
+            available
+          />
+          <IntegrationCard
+            icon={<Zap className="h-5 w-5" />}
+            name="Shopify"
+            tagline="Probably never."
+            description="Shopify's payment layer is closed, centralized, and tuned to a public-stock incentive structure. If you're waiting for them to open the rails, you're better off watching their stock price."
+          />
+          <IntegrationCard
+            icon={<Zap className="h-5 w-5" />}
+            name="Magento, OpenCart"
+            tagline="On request."
+            description="If your platform speaks REST, we can plug in. Talk to us about a custom connector."
+          />
+        </div>
+      </div>
+    </section>
   );
 }
 

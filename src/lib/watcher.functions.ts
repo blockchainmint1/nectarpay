@@ -256,6 +256,17 @@ export async function settleInvoice(
     }
   }
 
+  // If this invoice backs a Terminal Kit checkout, forward the order to
+  // BlockchainMint for fulfillment as soon as it confirms.
+  if (newStatus === "confirmed") {
+    try {
+      const { forwardKitOrderToBmForInvoice } = await import("./bm-fulfillment.server");
+      await forwardKitOrderToBmForInvoice(inv.id);
+    } catch (err) {
+      console.error(`bm handoff failed (invoice ${inv.id}):`, err);
+    }
+  }
+
   return { status: newStatus, changed: true, paidUsd: paidAmountUsd };
 }
 

@@ -286,9 +286,25 @@ export const listAdminInvoices = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("invoices")
-      .select("id, store_id, status, fiat_amount, chain, created_at")
+      .select("id, store_id, status, fiat_amount, chain, created_at, external_order_id, stores(name, owner_id)")
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) throw new Error(error.message);
-    return data ?? [];
+
+    const ownerIds = Array.from(
+      new Set((data ?? []).map((inv: any) => inv.stores?.owner_id).filter(Boolean)),
+    );
+    const profilesRes = ownerIds.length
+      ? await supabaseAdmin.from("profiles").select("user_id, email, full_name").in("user_id", ownerIds)
+      : { data: [] as any[] };
+    const profileMap = new Map((profilesRes.data ?? []).map((p: any) => [p.user_id, p]));
+
+    return (data ?? []).map((inv: any) => {
+      const profile: any = profileMap.get(inv.stores?.owner_id);
+      return {
+        ...inv,
+        store_name: inv.stores?.name ?? null,
+        merchant_name: profile?.full_name ?? profile?.email ?? null,
+      };
+    });
   });

@@ -56,6 +56,155 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_clickouts: {
+        Row: {
+          affiliate_id: string
+          created_at: string
+          id: string
+          referrer: string | null
+          target: string
+          target_url: string
+          user_agent: string | null
+        }
+        Insert: {
+          affiliate_id: string
+          created_at?: string
+          id?: string
+          referrer?: string | null
+          target: string
+          target_url: string
+          user_agent?: string | null
+        }
+        Update: {
+          affiliate_id?: string
+          created_at?: string
+          id?: string
+          referrer?: string | null
+          target?: string
+          target_url?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      affiliate_codes: {
+        Row: {
+          clicks: number
+          code: string
+          created_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          clicks?: number
+          code: string
+          created_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          clicks?: number
+          code?: string
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      affiliate_external_sales: {
+        Row: {
+          affiliate_code: string
+          affiliate_user_id: string | null
+          created_at: string
+          currency: string
+          customer_email_hash: string | null
+          external_order_id: string
+          id: string
+          order_number: string | null
+          paid_at: string
+          raw_payload: Json | null
+          source: string
+          total_usd: number
+          updated_at: string
+        }
+        Insert: {
+          affiliate_code: string
+          affiliate_user_id?: string | null
+          created_at?: string
+          currency?: string
+          customer_email_hash?: string | null
+          external_order_id: string
+          id?: string
+          order_number?: string | null
+          paid_at?: string
+          raw_payload?: Json | null
+          source: string
+          total_usd?: number
+          updated_at?: string
+        }
+        Update: {
+          affiliate_code?: string
+          affiliate_user_id?: string | null
+          created_at?: string
+          currency?: string
+          customer_email_hash?: string | null
+          external_order_id?: string
+          id?: string
+          order_number?: string | null
+          paid_at?: string
+          raw_payload?: Json | null
+          source?: string
+          total_usd?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      affiliate_rewards: {
+        Row: {
+          affiliate_user_id: string
+          choice: string | null
+          chosen_at: string | null
+          created_at: string
+          granted_at: string | null
+          id: string
+          kit_order_id: string | null
+          referred_user_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          affiliate_user_id: string
+          choice?: string | null
+          chosen_at?: string | null
+          created_at?: string
+          granted_at?: string | null
+          id?: string
+          kit_order_id?: string | null
+          referred_user_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          affiliate_user_id?: string
+          choice?: string | null
+          chosen_at?: string | null
+          created_at?: string
+          granted_at?: string | null
+          id?: string
+          kit_order_id?: string | null
+          referred_user_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_rewards_kit_order_id_fkey"
+            columns: ["kit_order_id"]
+            isOneToOne: false
+            referencedRelation: "kit_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alchemy_webhooks: {
         Row: {
           callback_url: string
@@ -489,6 +638,98 @@ export type Database = {
           },
         ]
       }
+      kit_orders: {
+        Row: {
+          bm_attempt_count: number
+          bm_last_error: string | null
+          bm_order_id: string | null
+          bm_order_number: string | null
+          bm_synced_at: string | null
+          created_at: string
+          email: string
+          first_year_price_usd: number
+          full_name: string
+          id: string
+          include_first_year: boolean
+          invoice_id: string | null
+          kit_price_usd: number
+          phone: string | null
+          ship_city: string
+          ship_country: string
+          ship_line1: string
+          ship_line2: string | null
+          ship_postal: string
+          ship_region: string | null
+          status: string
+          subtotal_usd: number
+          total_usd: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          bm_attempt_count?: number
+          bm_last_error?: string | null
+          bm_order_id?: string | null
+          bm_order_number?: string | null
+          bm_synced_at?: string | null
+          created_at?: string
+          email: string
+          first_year_price_usd?: number
+          full_name: string
+          id?: string
+          include_first_year?: boolean
+          invoice_id?: string | null
+          kit_price_usd?: number
+          phone?: string | null
+          ship_city: string
+          ship_country: string
+          ship_line1: string
+          ship_line2?: string | null
+          ship_postal: string
+          ship_region?: string | null
+          status?: string
+          subtotal_usd: number
+          total_usd: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          bm_attempt_count?: number
+          bm_last_error?: string | null
+          bm_order_id?: string | null
+          bm_order_number?: string | null
+          bm_synced_at?: string | null
+          created_at?: string
+          email?: string
+          first_year_price_usd?: number
+          full_name?: string
+          id?: string
+          include_first_year?: boolean
+          invoice_id?: string | null
+          kit_price_usd?: number
+          phone?: string | null
+          ship_city?: string
+          ship_country?: string
+          ship_line1?: string
+          ship_line2?: string | null
+          ship_postal?: string
+          ship_region?: string | null
+          status?: string
+          subtotal_usd?: number
+          total_usd?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kit_orders_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kyc_verifications: {
         Row: {
           country_code: string | null
@@ -558,14 +799,19 @@ export type Database = {
         Row: {
           admin_notes: string | null
           assignee: string | null
+          business: string | null
           created_at: string
           email: string
+          follow_up_at: string | null
           id: string
           interest: string
           ip_address: string | null
+          last_contacted_at: string | null
           market: string
           message: string | null
           name: string
+          phone: string | null
+          preferred_time: string | null
           source: string | null
           status: string
           telegram: string | null
@@ -575,14 +821,19 @@ export type Database = {
         Insert: {
           admin_notes?: string | null
           assignee?: string | null
+          business?: string | null
           created_at?: string
           email: string
+          follow_up_at?: string | null
           id?: string
           interest: string
           ip_address?: string | null
+          last_contacted_at?: string | null
           market: string
           message?: string | null
           name: string
+          phone?: string | null
+          preferred_time?: string | null
           source?: string | null
           status?: string
           telegram?: string | null
@@ -592,19 +843,66 @@ export type Database = {
         Update: {
           admin_notes?: string | null
           assignee?: string | null
+          business?: string | null
           created_at?: string
           email?: string
+          follow_up_at?: string | null
           id?: string
           interest?: string
           ip_address?: string | null
+          last_contacted_at?: string | null
           market?: string
           message?: string | null
           name?: string
+          phone?: string | null
+          preferred_time?: string | null
           source?: string | null
           status?: string
           telegram?: string | null
           updated_at?: string
           user_agent?: string | null
+        }
+        Relationships: []
+      }
+      markets: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          manager_email: string | null
+          manager_name: string | null
+          manager_telegram: string | null
+          name: string
+          notes: string | null
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          manager_email?: string | null
+          manager_name?: string | null
+          manager_telegram?: string | null
+          name: string
+          notes?: string | null
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          manager_email?: string | null
+          manager_name?: string | null
+          manager_telegram?: string | null
+          name?: string
+          notes?: string | null
+          slug?: string
+          sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1791,6 +2089,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_affiliate_click: { Args: { _code: string }; Returns: undefined }
       is_subscription_active: { Args: { _user_id: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
