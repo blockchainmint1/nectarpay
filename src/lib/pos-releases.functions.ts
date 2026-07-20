@@ -25,7 +25,14 @@ export const getLatestPosRelease = createServerFn({ method: "GET" }).handler(asy
     .limit(1)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  return data;
+  if (!data) return { version: null, url: null, publishedAt: null, sha256: null, notes: null };
+  return {
+    version: data.version,
+    url: "/pos-apk",
+    publishedAt: data.published_at,
+    sha256: data.sha256,
+    notes: data.notes,
+  };
 });
 
 const VERSION_RE = /nectar-pos-(\d+\.\d+\.\d+)\.apk$/i;
