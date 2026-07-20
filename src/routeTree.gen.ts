@@ -74,6 +74,7 @@ import { Route as AuthenticatedStoresNewRouteImport } from './routes/_authentica
 import { Route as AuthenticatedStoresStoreIdRouteImport } from './routes/_authenticated.stores.$storeId'
 import { Route as AuthenticatedMVirtualTerminalRouteImport } from './routes/_authenticated.m.virtual-terminal'
 import { Route as AuthenticatedMHomeRouteImport } from './routes/_authenticated.m.home'
+import { Route as AuthenticatedAdminUpdatesRouteImport } from './routes/_authenticated.admin.updates'
 import { Route as AuthenticatedAdminMerchantsRouteImport } from './routes/_authenticated.admin.merchants'
 import { Route as AuthenticatedAdminKnowledgeRouteImport } from './routes/_authenticated.admin.knowledge'
 import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated.admin.invoices'
@@ -458,6 +459,12 @@ const AuthenticatedMHomeRoute = AuthenticatedMHomeRouteImport.update({
   path: '/m/home',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminUpdatesRoute =
+  AuthenticatedAdminUpdatesRouteImport.update({
+    id: '/updates',
+    path: '/updates',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminMerchantsRoute =
   AuthenticatedAdminMerchantsRouteImport.update({
     id: '/merchants',
@@ -840,6 +847,7 @@ export interface FileRoutesByFullPath {
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
   '/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
+  '/admin/updates': typeof AuthenticatedAdminUpdatesRoute
   '/m/home': typeof AuthenticatedMHomeRoute
   '/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
@@ -957,6 +965,7 @@ export interface FileRoutesByTo {
   '/pos': typeof PosIndexRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
+  '/admin/updates': typeof AuthenticatedAdminUpdatesRoute
   '/m/home': typeof AuthenticatedMHomeRoute
   '/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
   '/stores/new': typeof AuthenticatedStoresNewRoute
@@ -1079,6 +1088,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/_authenticated/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
   '/_authenticated/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
+  '/_authenticated/admin/updates': typeof AuthenticatedAdminUpdatesRoute
   '/_authenticated/m/home': typeof AuthenticatedMHomeRoute
   '/_authenticated/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
   '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
@@ -1202,6 +1212,7 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/knowledge'
     | '/admin/merchants'
+    | '/admin/updates'
     | '/m/home'
     | '/m/virtual-terminal'
     | '/stores/$storeId'
@@ -1319,6 +1330,7 @@ export interface FileRouteTypes {
     | '/pos'
     | '/admin/invoices'
     | '/admin/merchants'
+    | '/admin/updates'
     | '/m/home'
     | '/m/virtual-terminal'
     | '/stores/new'
@@ -1440,6 +1452,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/invoices'
     | '/_authenticated/admin/knowledge'
     | '/_authenticated/admin/merchants'
+    | '/_authenticated/admin/updates'
     | '/_authenticated/m/home'
     | '/_authenticated/m/virtual-terminal'
     | '/_authenticated/stores/$storeId'
@@ -2024,6 +2037,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMHomeRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin/updates': {
+      id: '/_authenticated/admin/updates'
+      path: '/updates'
+      fullPath: '/admin/updates'
+      preLoaderRoute: typeof AuthenticatedAdminUpdatesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/merchants': {
       id: '/_authenticated/admin/merchants'
       path: '/merchants'
@@ -2485,6 +2505,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminInvoicesRoute: typeof AuthenticatedAdminInvoicesRoute
   AuthenticatedAdminKnowledgeRoute: typeof AuthenticatedAdminKnowledgeRouteWithChildren
   AuthenticatedAdminMerchantsRoute: typeof AuthenticatedAdminMerchantsRoute
+  AuthenticatedAdminUpdatesRoute: typeof AuthenticatedAdminUpdatesRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
@@ -2494,6 +2515,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminKnowledgeRoute:
     AuthenticatedAdminKnowledgeRouteWithChildren,
   AuthenticatedAdminMerchantsRoute: AuthenticatedAdminMerchantsRoute,
+  AuthenticatedAdminUpdatesRoute: AuthenticatedAdminUpdatesRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
 
@@ -2728,13 +2750,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

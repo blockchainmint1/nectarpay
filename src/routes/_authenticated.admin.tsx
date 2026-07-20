@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, UsersRound, Store as StoreIcon, Receipt, BookOpen, LogOut, ArrowLeft } from "lucide-react";
+import { LayoutDashboard, UsersRound, Store as StoreIcon, Receipt, BookOpen, LogOut, ArrowLeft, Smartphone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,7 @@ function AdminLayout() {
           <NavItem to="/admin/crm" icon={<UsersRound className="h-4 w-4" />}>CRM</NavItem>
           <NavItem to="/admin/merchants" icon={<StoreIcon className="h-4 w-4" />}>Merchants</NavItem>
           <NavItem to="/admin/invoices" icon={<Receipt className="h-4 w-4" />}>Invoices</NavItem>
+          <NavItem to="/admin/updates" icon={<Smartphone className="h-4 w-4" />}>POS Updates</NavItem>
           <NavItem to="/admin/knowledge" icon={<BookOpen className="h-4 w-4" />}>Knowledge</NavItem>
         </nav>
 
