@@ -210,7 +210,7 @@ function Home2() {
                 <Link to="/signup" className="np-btn np-btn-honey">
                   Create your account <ArrowRight className="h-4 w-4" />
                 </Link>
-                <a href="#demo" className="np-btn np-btn-ghost">See a demo</a>
+                <Link to="/demo" className="np-btn np-btn-ghost">See a demo</Link>
               </div>
 
               {/* Mono live ticker */}
