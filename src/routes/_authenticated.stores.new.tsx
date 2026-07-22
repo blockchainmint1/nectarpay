@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { notifyNewStore } from "@/lib/notify-events.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,6 +51,10 @@ function NewStorePage() {
         .single();
       if (error) throw error;
       toast.success("Store created");
+      // Fire-and-forget admin notification
+      notifyNewStore({ data: { storeId: data.id } }).catch((e) =>
+        console.error("[stores.new] notify admin failed", e),
+      );
       navigate({ to: "/stores/$storeId", params: { storeId: data.id } });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to create store");
