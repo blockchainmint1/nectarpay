@@ -97,6 +97,33 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", type: "image/png", href: "/__l5e/assets-v1/9a1a15be-5b2c-4cc1-ad77-3fd244828324/nectar-hive-mark.png" },
       { rel: "apple-touch-icon", href: "/__l5e/assets-v1/9a1a15be-5b2c-4cc1-ad77-3fd244828324/nectar-hive-mark.png" },
     ],
+
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              "@id": "https://nectar-pay.com/#organization",
+              name: "Nectar.Pay",
+              url: "https://nectar-pay.com",
+              description:
+                "Non-custodial crypto payment gateway for merchants — Bitcoin, TEXITcoin and stablecoins with zero percentage fees.",
+              telephone: "+1-855-663-2827",
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://nectar-pay.com/#website",
+              name: "Nectar.Pay",
+              url: "https://nectar-pay.com",
+              publisher: { "@id": "https://nectar-pay.com/#organization" },
+            },
+          ],
+        }),
+      },
+    ],
   }),
 
 

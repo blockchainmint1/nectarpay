@@ -19,6 +19,20 @@ export const Route = createFileRoute("/manifesto")({
       { property: "og:url", content: "https://nectar-pay.com/manifesto" },
     ],
     links: [{ rel: "canonical", href: "https://nectar-pay.com/manifesto" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: "The Nectar.Pay Manifesto — Honest Money for the Marketplace",
+          description:
+            "Why Nectar.Pay exists: non-custodial crypto payments built on TEXITcoin. No middleman, no debasement, no permission.",
+          mainEntityOfPage: "https://nectar-pay.com/manifesto",
+          publisher: { "@type": "Organization", name: "Nectar.Pay", url: "https://nectar-pay.com" },
+        }),
+      },
+    ],
   }),
 
   component: ManifestoPage,
