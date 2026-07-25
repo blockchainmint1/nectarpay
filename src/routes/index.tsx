@@ -22,10 +22,10 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "NectarPay — Accept crypto. Keep every cent." },
       { name: "description", content: "The easiest, safest and smartest way to accept crypto payments. Zero fees, non-custodial, instant settlement. Set up in two minutes." },
-      { property: "og:title", content: "NectarPay — Accept crypto. Keep every cent." },
+      { property: "og:title", content: "NectarPay — Zero-fee, non-custodial crypto checkout" },
       { property: "og:description", content: "0% fees. 100% yours. The non-custodial payment ecosystem for Bitcoin, TEXITcoin, stablecoins and every digital currency still to come." },
+      { property: "og:url", content: "https://nectar-pay.com/" },
       { name: "theme-color", content: "#0D1B33" },
-      { name: "robots", content: "noindex" }, // draft
     ],
     links: [
       { rel: "preconnect", href: "https://api.fontshare.com" },
