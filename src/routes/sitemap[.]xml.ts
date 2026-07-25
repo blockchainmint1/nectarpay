@@ -19,6 +19,7 @@ const ENTRIES: SitemapEntry[] = [
   { path: "/docs", changefreq: "weekly", priority: "0.7" },
   { path: "/docs/wallet-setup", changefreq: "monthly", priority: "0.6" },
   { path: "/compare", changefreq: "monthly", priority: "0.6" },
+  { path: "/compare/bitpay-coingate-vs-nectar", changefreq: "monthly", priority: "0.7" },
   { path: "/cash-out", changefreq: "monthly", priority: "0.6" },
   { path: "/where", changefreq: "daily", priority: "0.5" },
   { path: "/start", changefreq: "monthly", priority: "0.6" },
