@@ -260,7 +260,14 @@ export function CompareTable() {
         <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">Feature by feature.</h2>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
           Researched from each company's public docs and product pages. If something's wrong, tell
-          us — we'll fix it the same day.
+          us — we'll fix it the same day. Want the deep dive on the custodial incumbents?{" "}
+          <Link
+            to="/compare/bitpay-coingate-vs-nectar"
+            className="font-medium text-primary underline underline-offset-4"
+          >
+            Read the BitPay vs CoinGate vs Nectar.Pay guide
+          </Link>
+          .
         </p>
 
         <div className="mt-8 overflow-x-auto rounded-xl border border-border">
