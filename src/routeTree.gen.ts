@@ -60,6 +60,7 @@ import { Route as DocsWalletSetupRouteImport } from './routes/docs.wallet-setup'
 import { Route as DocsTapToPayTangemRouteImport } from './routes/docs.tap-to-pay-tangem'
 import { Route as DevTangemTestRouteImport } from './routes/dev.tangem-test'
 import { Route as DemoHowToRouteImport } from './routes/demo.how-to'
+import { Route as CompareBitpayCoingateVsNectarRouteImport } from './routes/compare_.bitpay-coingate-vs-nectar'
 import { Route as CheckoutThanksRouteImport } from './routes/checkout.thanks'
 import { Route as AuthenticatedTerminalsRouteImport } from './routes/_authenticated.terminals'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated.notifications'
@@ -385,6 +386,12 @@ const DemoHowToRoute = DemoHowToRouteImport.update({
   path: '/demo/how-to',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompareBitpayCoingateVsNectarRoute =
+  CompareBitpayCoingateVsNectarRouteImport.update({
+    id: '/compare_/bitpay-coingate-vs-nectar',
+    path: '/compare/bitpay-coingate-vs-nectar',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const CheckoutThanksRoute = CheckoutThanksRouteImport.update({
   id: '/thanks',
   path: '/thanks',
@@ -824,6 +831,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/terminals': typeof AuthenticatedTerminalsRoute
   '/checkout/thanks': typeof CheckoutThanksRoute
+  '/compare/bitpay-coingate-vs-nectar': typeof CompareBitpayCoingateVsNectarRoute
   '/demo/how-to': typeof DemoHowToRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
@@ -944,6 +952,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/terminals': typeof AuthenticatedTerminalsRoute
   '/checkout/thanks': typeof CheckoutThanksRoute
+  '/compare/bitpay-coingate-vs-nectar': typeof CompareBitpayCoingateVsNectarRoute
   '/demo/how-to': typeof DemoHowToRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
@@ -1065,6 +1074,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/terminals': typeof AuthenticatedTerminalsRoute
   '/checkout/thanks': typeof CheckoutThanksRoute
+  '/compare_/bitpay-coingate-vs-nectar': typeof CompareBitpayCoingateVsNectarRoute
   '/demo/how-to': typeof DemoHowToRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
@@ -1189,6 +1199,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/terminals'
     | '/checkout/thanks'
+    | '/compare/bitpay-coingate-vs-nectar'
     | '/demo/how-to'
     | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
@@ -1309,6 +1320,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/terminals'
     | '/checkout/thanks'
+    | '/compare/bitpay-coingate-vs-nectar'
     | '/demo/how-to'
     | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
@@ -1429,6 +1441,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/terminals'
     | '/checkout/thanks'
+    | '/compare_/bitpay-coingate-vs-nectar'
     | '/demo/how-to'
     | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
@@ -1545,6 +1558,7 @@ export interface RootRouteChildren {
   StartRoute: typeof StartRoute
   TermsRoute: typeof TermsRoute
   WhereRoute: typeof WhereRoute
+  CompareBitpayCoingateVsNectarRoute: typeof CompareBitpayCoingateVsNectarRoute
   DemoHowToRoute: typeof DemoHowToRoute
   DevTangemTestRoute: typeof DevTangemTestRoute
   GoKitRoute: typeof GoKitRoute
@@ -1937,6 +1951,13 @@ declare module '@tanstack/react-router' {
       path: '/demo/how-to'
       fullPath: '/demo/how-to'
       preLoaderRoute: typeof DemoHowToRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare_/bitpay-coingate-vs-nectar': {
+      id: '/compare_/bitpay-coingate-vs-nectar'
+      path: '/compare/bitpay-coingate-vs-nectar'
+      fullPath: '/compare/bitpay-coingate-vs-nectar'
+      preLoaderRoute: typeof CompareBitpayCoingateVsNectarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout/thanks': {
@@ -2712,6 +2733,7 @@ const rootRouteChildren: RootRouteChildren = {
   StartRoute: StartRoute,
   TermsRoute: TermsRoute,
   WhereRoute: WhereRoute,
+  CompareBitpayCoingateVsNectarRoute: CompareBitpayCoingateVsNectarRoute,
   DemoHowToRoute: DemoHowToRoute,
   DevTangemTestRoute: DevTangemTestRoute,
   GoKitRoute: GoKitRoute,
