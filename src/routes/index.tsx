@@ -240,10 +240,14 @@ function Home2() {
               <img
                 src={buzzyHero.url}
                 alt="Buzzy, the NectarPay mascot, holding a NectarPay terminal"
+                width={1024}
+                height={1024}
                 className="relative block h-auto w-full max-w-[440px] select-none drop-shadow-[0_30px_60px_rgba(0,0,0,0.55)]"
+                style={{ aspectRatio: "1 / 1" }}
                 loading="eager"
                 draggable={false}
               />
+
             </div>
           </div>
 
