@@ -90,7 +90,7 @@ function ThanksPage() {
                 <Link to="/">Back to home</Link>
               </Button>
               <Button asChild variant="ghost">
-                <Link to="/integrate">While you wait — read the docs</Link>
+                <Link to="/docs">While you wait — read the docs</Link>
               </Button>
             </div>
           </div>

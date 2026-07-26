@@ -70,9 +70,7 @@ export function NectarWordmark() {
 
 const navLinks = [
   { to: "/price", label: "Price" },
-  { to: "/fees", label: "Fees" },
-  { to: "/integrate", label: "Integrate" },
-  { to: "/investors", label: "Investors" },
+  { to: "/docs", label: "Docs" },
   { to: "/help", label: "Help" },
 ] as const;
 
@@ -149,13 +147,6 @@ export function MarketingNav() {
               >
                 Sign in
               </Link>
-              <Link
-                to="/signup"
-                className="np-btn np-btn-honey text-sm"
-                style={{ padding: "10px 18px" }}
-              >
-                Start free
-              </Link>
             </>
           )}
 
@@ -209,11 +200,6 @@ export function MarketingNav() {
                     <SheetClose asChild>
                       <Link to="/auth" className="np-btn np-btn-ghost text-sm">
                         Sign in
-                      </Link>
-                    </SheetClose>
-                    <SheetClose asChild>
-                      <Link to="/signup" className="np-btn np-btn-honey text-sm">
-                        Start free
                       </Link>
                     </SheetClose>
                   </>

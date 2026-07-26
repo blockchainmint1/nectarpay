@@ -294,7 +294,7 @@ function PlanCard({
         /* non-blocking */
       }
     }
-    navigate({ to: "/signup", search: { plan: planId } as never });
+    navigate({ to: "/auth", search: { plan: planId } as never });
   }
 
   return (

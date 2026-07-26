@@ -10,10 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
-import { Route as StartRouteImport } from './routes/start'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as SignupRouteImport } from './routes/signup'
-import { Route as SetupRouteImport } from './routes/setup'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PriceRouteImport } from './routes/price'
@@ -26,10 +23,7 @@ import { Route as ManifestoRouteImport } from './routes/manifesto'
 import { Route as MRouteImport } from './routes/m'
 import { Route as LiveRouteImport } from './routes/live'
 import { Route as KycRouteImport } from './routes/kyc'
-import { Route as InvestorsRouteImport } from './routes/investors'
-import { Route as IntegrateRouteImport } from './routes/integrate'
 import { Route as HelpRouteImport } from './routes/help'
-import { Route as FeesRouteImport } from './routes/fees'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -39,7 +33,6 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PosIndexRouteImport } from './routes/pos.index'
-import { Route as IntegrationsIndexRouteImport } from './routes/integrations.index'
 import { Route as SdkPayhmeDotjsRouteImport } from './routes/sdk.payhme[.]js'
 import { Route as PosSettingsRouteImport } from './routes/pos.settings'
 import { Route as PosPrinterTestRouteImport } from './routes/pos.printer-test'
@@ -131,24 +124,9 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StartRoute = StartRouteImport.update({
-  id: '/start',
-  path: '/start',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SignupRoute = SignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SetupRoute = SetupRouteImport.update({
-  id: '/setup',
-  path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -211,24 +189,9 @@ const KycRoute = KycRouteImport.update({
   path: '/kyc',
   getParentRoute: () => rootRouteImport,
 } as any)
-const InvestorsRoute = InvestorsRouteImport.update({
-  id: '/investors',
-  path: '/investors',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IntegrateRoute = IntegrateRouteImport.update({
-  id: '/integrate',
-  path: '/integrate',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const HelpRoute = HelpRouteImport.update({
   id: '/help',
   path: '/help',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FeesRoute = FeesRouteImport.update({
-  id: '/fees',
-  path: '/fees',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsRoute = DocsRouteImport.update({
@@ -274,11 +237,6 @@ const PosIndexRoute = PosIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => PosRoute,
-} as any)
-const IntegrationsIndexRoute = IntegrationsIndexRouteImport.update({
-  id: '/integrations/',
-  path: '/integrations/',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const SdkPayhmeDotjsRoute = SdkPayhmeDotjsRouteImport.update({
   id: '/sdk/payhme.js',
@@ -763,10 +721,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/docs': typeof DocsRouteWithChildren
-  '/fees': typeof FeesRoute
   '/help': typeof HelpRoute
-  '/integrate': typeof IntegrateRoute
-  '/investors': typeof InvestorsRoute
   '/kyc': typeof KycRoute
   '/live': typeof LiveRoute
   '/m': typeof MRoute
@@ -779,10 +734,7 @@ export interface FileRoutesByFullPath {
   '/price': typeof PriceRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/setup': typeof SetupRoute
-  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/start': typeof StartRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/billing': typeof AuthenticatedBillingRoute
@@ -807,7 +759,6 @@ export interface FileRoutesByFullPath {
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
-  '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
   '/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
@@ -880,10 +831,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/docs': typeof DocsRouteWithChildren
-  '/fees': typeof FeesRoute
   '/help': typeof HelpRoute
-  '/integrate': typeof IntegrateRoute
-  '/investors': typeof InvestorsRoute
   '/kyc': typeof KycRoute
   '/live': typeof LiveRoute
   '/m': typeof MRoute
@@ -895,10 +843,7 @@ export interface FileRoutesByTo {
   '/price': typeof PriceRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/setup': typeof SetupRoute
-  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/start': typeof StartRoute
   '/terms': typeof TermsRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -922,7 +867,6 @@ export interface FileRoutesByTo {
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
-  '/integrations': typeof IntegrationsIndexRoute
   '/pos': typeof PosIndexRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
@@ -994,10 +938,7 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/docs': typeof DocsRouteWithChildren
-  '/fees': typeof FeesRoute
   '/help': typeof HelpRoute
-  '/integrate': typeof IntegrateRoute
-  '/investors': typeof InvestorsRoute
   '/kyc': typeof KycRoute
   '/live': typeof LiveRoute
   '/m': typeof MRoute
@@ -1010,10 +951,7 @@ export interface FileRoutesById {
   '/price': typeof PriceRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/setup': typeof SetupRoute
-  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/start': typeof StartRoute
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
@@ -1038,7 +976,6 @@ export interface FileRoutesById {
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
-  '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
   '/_authenticated/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
@@ -1113,10 +1050,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/compare'
     | '/docs'
-    | '/fees'
     | '/help'
-    | '/integrate'
-    | '/investors'
     | '/kyc'
     | '/live'
     | '/m'
@@ -1129,10 +1063,7 @@ export interface FileRouteTypes {
     | '/price'
     | '/pricing'
     | '/privacy'
-    | '/setup'
-    | '/signup'
     | '/sitemap.xml'
-    | '/start'
     | '/terms'
     | '/admin'
     | '/billing'
@@ -1157,7 +1088,6 @@ export interface FileRouteTypes {
     | '/pos/printer-test'
     | '/pos/settings'
     | '/sdk/payhme.js'
-    | '/integrations/'
     | '/pos/'
     | '/admin/crm'
     | '/admin/invoices'
@@ -1230,10 +1160,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/compare'
     | '/docs'
-    | '/fees'
     | '/help'
-    | '/integrate'
-    | '/investors'
     | '/kyc'
     | '/live'
     | '/m'
@@ -1245,10 +1172,7 @@ export interface FileRouteTypes {
     | '/price'
     | '/pricing'
     | '/privacy'
-    | '/setup'
-    | '/signup'
     | '/sitemap.xml'
-    | '/start'
     | '/terms'
     | '/billing'
     | '/dashboard'
@@ -1272,7 +1196,6 @@ export interface FileRouteTypes {
     | '/pos/printer-test'
     | '/pos/settings'
     | '/sdk/payhme.js'
-    | '/integrations'
     | '/pos'
     | '/admin/invoices'
     | '/admin/merchants'
@@ -1343,10 +1266,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/compare'
     | '/docs'
-    | '/fees'
     | '/help'
-    | '/integrate'
-    | '/investors'
     | '/kyc'
     | '/live'
     | '/m'
@@ -1359,10 +1279,7 @@ export interface FileRouteTypes {
     | '/price'
     | '/pricing'
     | '/privacy'
-    | '/setup'
-    | '/signup'
     | '/sitemap.xml'
-    | '/start'
     | '/terms'
     | '/_authenticated/admin'
     | '/_authenticated/billing'
@@ -1387,7 +1304,6 @@ export interface FileRouteTypes {
     | '/pos/printer-test'
     | '/pos/settings'
     | '/sdk/payhme.js'
-    | '/integrations/'
     | '/pos/'
     | '/_authenticated/admin/crm'
     | '/_authenticated/admin/invoices'
@@ -1462,10 +1378,7 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRouteWithChildren
   CompareRoute: typeof CompareRoute
   DocsRoute: typeof DocsRouteWithChildren
-  FeesRoute: typeof FeesRoute
   HelpRoute: typeof HelpRoute
-  IntegrateRoute: typeof IntegrateRoute
-  InvestorsRoute: typeof InvestorsRoute
   KycRoute: typeof KycRoute
   LiveRoute: typeof LiveRoute
   MRoute: typeof MRoute
@@ -1478,10 +1391,7 @@ export interface RootRouteChildren {
   PriceRoute: typeof PriceRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
-  SetupRoute: typeof SetupRoute
-  SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  StartRoute: typeof StartRoute
   TermsRoute: typeof TermsRoute
   CompareBitpayCoingateVsNectarRoute: typeof CompareBitpayCoingateVsNectarRoute
   DevTangemTestRoute: typeof DevTangemTestRoute
@@ -1491,7 +1401,6 @@ export interface RootRouteChildren {
   IntegrationsWoocommerceRoute: typeof IntegrationsWoocommerceRoute
   PayInvoiceIdRoute: typeof PayInvoiceIdRoute
   SdkPayhmeDotjsRoute: typeof SdkPayhmeDotjsRoute
-  IntegrationsIndexRoute: typeof IntegrationsIndexRoute
   ApiPublicAffiliateClickRoute: typeof ApiPublicAffiliateClickRoute
   ApiPublicAuthWalletCallbackRoute: typeof ApiPublicAuthWalletCallbackRoute
   ApiPublicAuthWalletChallengeRoute: typeof ApiPublicAuthWalletChallengeRoute
@@ -1526,32 +1435,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/start': {
-      id: '/start'
-      path: '/start'
-      fullPath: '/start'
-      preLoaderRoute: typeof StartRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/setup': {
-      id: '/setup'
-      path: '/setup'
-      fullPath: '/setup'
-      preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -1638,32 +1526,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KycRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/investors': {
-      id: '/investors'
-      path: '/investors'
-      fullPath: '/investors'
-      preLoaderRoute: typeof InvestorsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/integrate': {
-      id: '/integrate'
-      path: '/integrate'
-      fullPath: '/integrate'
-      preLoaderRoute: typeof IntegrateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/help': {
       id: '/help'
       path: '/help'
       fullPath: '/help'
       preLoaderRoute: typeof HelpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/fees': {
-      id: '/fees'
-      path: '/fees'
-      fullPath: '/fees'
-      preLoaderRoute: typeof FeesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs': {
@@ -1728,13 +1595,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/pos/'
       preLoaderRoute: typeof PosIndexRouteImport
       parentRoute: typeof PosRoute
-    }
-    '/integrations/': {
-      id: '/integrations/'
-      path: '/integrations'
-      fullPath: '/integrations/'
-      preLoaderRoute: typeof IntegrationsIndexRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/sdk/payhme.js': {
       id: '/sdk/payhme.js'
@@ -2588,10 +2448,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRouteWithChildren,
   CompareRoute: CompareRoute,
   DocsRoute: DocsRouteWithChildren,
-  FeesRoute: FeesRoute,
   HelpRoute: HelpRoute,
-  IntegrateRoute: IntegrateRoute,
-  InvestorsRoute: InvestorsRoute,
   KycRoute: KycRoute,
   LiveRoute: LiveRoute,
   MRoute: MRoute,
@@ -2604,10 +2461,7 @@ const rootRouteChildren: RootRouteChildren = {
   PriceRoute: PriceRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
-  SetupRoute: SetupRoute,
-  SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  StartRoute: StartRoute,
   TermsRoute: TermsRoute,
   CompareBitpayCoingateVsNectarRoute: CompareBitpayCoingateVsNectarRoute,
   DevTangemTestRoute: DevTangemTestRoute,
@@ -2617,7 +2471,6 @@ const rootRouteChildren: RootRouteChildren = {
   IntegrationsWoocommerceRoute: IntegrationsWoocommerceRoute,
   PayInvoiceIdRoute: PayInvoiceIdRoute,
   SdkPayhmeDotjsRoute: SdkPayhmeDotjsRoute,
-  IntegrationsIndexRoute: IntegrationsIndexRoute,
   ApiPublicAffiliateClickRoute: ApiPublicAffiliateClickRoute,
   ApiPublicAuthWalletCallbackRoute: ApiPublicAuthWalletCallbackRoute,
   ApiPublicAuthWalletChallengeRoute: ApiPublicAuthWalletChallengeRoute,
