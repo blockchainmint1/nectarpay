@@ -86,9 +86,6 @@ function AuthenticatedLayout() {
           <NavItem to="/billing" icon={<CreditCard className="h-4 w-4" />}>
             Billing
           </NavItem>
-          <NavItem to="/affiliate" icon={<Users className="h-4 w-4" />}>
-            Affiliate
-          </NavItem>
 
           <NavItem to="/notifications" icon={<Bell className="h-4 w-4" />}>
             Notifications

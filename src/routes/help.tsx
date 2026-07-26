@@ -87,7 +87,8 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
     q: "How do I get a demo?",
     a: (
       <>
-        Head to <A href="/demo">/demo</A> — book a live walkthrough with our team, or watch the pre-recorded videos covering account setup, processing a transaction, velocity of money, and cashing out.
+        Call or email us and we'll set up a live walkthrough covering account
+        setup, processing a transaction, velocity of money, and cashing out.
       </>
     ),
   },
@@ -109,11 +110,7 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
   },
   {
     q: "How do I become an affiliate or sales rep?",
-    a: (
-      <>
-        Sign up, then visit /affiliate in your dashboard for your referral link, or see the public <A href="/affiliates">affiliates</A> page for program details.
-      </>
-    ),
+    a: <>Get in touch with our team and we'll walk you through the program.</>,
   },
 ];
 
@@ -225,17 +222,6 @@ function HelpPage() {
           </a>
           <div className="flex items-start gap-3 rounded-xl border border-border bg-card/60 p-5">
             <MessageSquare className="mt-0.5 h-5 w-5 text-primary" />
-            <div>
-              <div className="text-xs uppercase tracking-widest text-muted-foreground">
-                Book a demo
-              </div>
-              <div className="mt-1 font-semibold">
-                <a href="/demo" className="underline underline-offset-4">
-                  Schedule a walkthrough
-                </a>
-              </div>
-              <div className="text-xs text-muted-foreground">Live, with a human</div>
-            </div>
           </div>
         </div>
 

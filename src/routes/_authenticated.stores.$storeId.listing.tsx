@@ -135,11 +135,7 @@ function ListingSettingsPage() {
         <MapPin className="h-5 w-5" /> Public listing
       </h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Controls how your store appears on{" "}
-        <Link to="/where" className="text-primary hover:underline">
-          /where to spend crypto
-        </Link>
-        .
+        Controls how your store appears on the public "where to spend crypto" map.
       </p>
 
       <section className="mt-8 rounded-xl border border-border bg-card/60 p-6">

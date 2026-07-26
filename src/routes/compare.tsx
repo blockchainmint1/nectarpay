@@ -68,7 +68,7 @@ const ROWS: Row[] = [
     label: "First-party merchant heatmap (find where to spend)",
     icon: MapPin,
     cells: {
-      nectar: { v: "yes", note: "/where" },
+      nectar: { v: "yes" },
       bitpay: { v: "partial", note: "Directory only" },
       btcpay: { v: "no" },
       ivpay: { v: "yes" },
@@ -222,9 +222,6 @@ export function CompareHero() {
         <div className="mt-8 flex flex-wrap gap-3">
           <Button asChild size="lg">
             <Link to="/signup">Start free in 90 seconds</Link>
-          </Button>
-          <Button asChild size="lg" variant="outline">
-            <Link to="/where">See the merchant map</Link>
           </Button>
         </div>
       </div>
