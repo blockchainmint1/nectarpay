@@ -13,8 +13,6 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as StartRouteImport } from './routes/start'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as PriceRouteImport } from './routes/price'
 import { Route as PosBuildIdRouteImport } from './routes/pos-build-id'
 import { Route as PosApkRouteImport } from './routes/pos-apk'
 import { Route as PosRouteImport } from './routes/pos'
@@ -138,16 +136,6 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PricingRoute = PricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PriceRoute = PriceRouteImport.update({
-  id: '/price',
-  path: '/price',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PosBuildIdRoute = PosBuildIdRouteImport.update({
@@ -737,8 +725,6 @@ export interface FileRoutesByFullPath {
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
   '/pos-build-id': typeof PosBuildIdRoute
-  '/price': typeof PriceRoute
-  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/start': typeof StartRoute
@@ -847,8 +833,6 @@ export interface FileRoutesByTo {
   '/onramp': typeof OnrampRoute
   '/pos-apk': typeof PosApkRoute
   '/pos-build-id': typeof PosBuildIdRoute
-  '/price': typeof PriceRoute
-  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/start': typeof StartRoute
@@ -956,8 +940,6 @@ export interface FileRoutesById {
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
   '/pos-build-id': typeof PosBuildIdRoute
-  '/price': typeof PriceRoute
-  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/start': typeof StartRoute
@@ -1069,8 +1051,6 @@ export interface FileRouteTypes {
     | '/pos'
     | '/pos-apk'
     | '/pos-build-id'
-    | '/price'
-    | '/pricing'
     | '/privacy'
     | '/sitemap.xml'
     | '/start'
@@ -1179,8 +1159,6 @@ export interface FileRouteTypes {
     | '/onramp'
     | '/pos-apk'
     | '/pos-build-id'
-    | '/price'
-    | '/pricing'
     | '/privacy'
     | '/sitemap.xml'
     | '/start'
@@ -1287,8 +1265,6 @@ export interface FileRouteTypes {
     | '/pos'
     | '/pos-apk'
     | '/pos-build-id'
-    | '/price'
-    | '/pricing'
     | '/privacy'
     | '/sitemap.xml'
     | '/start'
@@ -1400,8 +1376,6 @@ export interface RootRouteChildren {
   PosRoute: typeof PosRouteWithChildren
   PosApkRoute: typeof PosApkRoute
   PosBuildIdRoute: typeof PosBuildIdRoute
-  PriceRoute: typeof PriceRoute
-  PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StartRoute: typeof StartRoute
@@ -1467,20 +1441,6 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pricing': {
-      id: '/pricing'
-      path: '/pricing'
-      fullPath: '/pricing'
-      preLoaderRoute: typeof PricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/price': {
-      id: '/price'
-      path: '/price'
-      fullPath: '/price'
-      preLoaderRoute: typeof PriceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pos-build-id': {
@@ -2478,8 +2438,6 @@ const rootRouteChildren: RootRouteChildren = {
   PosRoute: PosRouteWithChildren,
   PosApkRoute: PosApkRoute,
   PosBuildIdRoute: PosBuildIdRoute,
-  PriceRoute: PriceRoute,
-  PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StartRoute: StartRoute,

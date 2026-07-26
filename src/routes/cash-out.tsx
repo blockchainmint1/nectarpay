@@ -332,9 +332,6 @@ function CashOutPage() {
           <Link to="/docs" className="text-muted-foreground hover:text-foreground">
             Docs
           </Link>
-          <Link to="/pricing" className="text-muted-foreground hover:text-foreground">
-            Pricing
-          </Link>
         </div>
       </div>
       </article>

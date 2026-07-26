@@ -406,9 +406,6 @@ export function CompareExtras() {
               <Button asChild>
                 <a href="mailto:partners@nectar-pay.com">Become a partner</a>
               </Button>
-              <Button asChild variant="outline">
-                <Link to="/price">See pricing</Link>
-              </Button>
             </div>
           </div>
           <div className="rounded-xl border border-border bg-card/60 p-6">

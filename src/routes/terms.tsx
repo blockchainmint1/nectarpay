@@ -78,8 +78,8 @@ function TermsPage() {
 
         <h2>4. Fees and plans</h2>
         <p>
-          Current pricing is published on our{" "}
-          <Link to="/pricing">pricing page</Link>. We may change pricing
+          Current pricing is published in our{" "}
+          <Link to="/docs">docs</Link>. We may change pricing
           prospectively with reasonable notice. Because Nectar.Pay is
           non-custodial, we do not deduct fees from your settlements; plan
           fees are billed separately.

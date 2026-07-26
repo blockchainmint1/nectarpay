@@ -69,7 +69,6 @@ export function NectarWordmark() {
 /* ------------------------------------------------------------------ */
 
 const navLinks = [
-  { to: "/price", label: "Price" },
   { to: "/docs", label: "Docs" },
   { to: "/help", label: "Help" },
 ] as const;
@@ -290,7 +289,6 @@ export function MarketingFooter() {
             items={[
               { label: "POS terminal", to: "/pos" },
               { label: "Compare", to: "/compare" },
-              { label: "Pricing", to: "/pricing" },
             ]}
           />
           <FooterCol
