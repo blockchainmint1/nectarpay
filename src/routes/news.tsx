@@ -163,8 +163,8 @@ function NewsPage() {
             <Link to="/help" className="np-btn np-btn-honey text-sm">
               Talk to us
             </Link>
-            <Link to="/signup" className="np-btn np-btn-ghost text-sm">
-              Start free
+            <Link to="/auth" className="np-btn np-btn-ghost text-sm">
+              Sign in
             </Link>
           </div>
         </div>
