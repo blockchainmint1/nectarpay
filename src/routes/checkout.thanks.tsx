@@ -47,7 +47,7 @@ function ThanksPage() {
               If you just paid, check your email — we&rsquo;ll confirm as soon as it lands.
             </p>
             <Button asChild variant="outline" className="mt-6">
-              <Link to="/price">Back to pricing</Link>
+              <Link to="/docs">Back to docs</Link>
             </Button>
           </div>
         ) : isLoading || !data ? (

@@ -43,7 +43,7 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
     q: "How much does it cost?",
     a: (
       <>
-        The software is free to start. Our POS terminal kit is $499 up front plus a $228 first-year service fee. See the <A href="/price">pricing</A> page for the full breakdown — there are no per-transaction card fees because there is no card network.
+        The software is free to start. Our POS terminal kit is $499 up front plus a $228 first-year service fee. See the <A href="/docs">docs</A> for the full breakdown — there are no per-transaction card fees because there is no card network.
       </>
     ),
   },

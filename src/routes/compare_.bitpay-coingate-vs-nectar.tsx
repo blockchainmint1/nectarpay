@@ -170,9 +170,6 @@ function GuidePage() {
               <Button asChild size="lg">
                 <Link to="/auth">Sign in to get started</Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link to="/price">See pricing</Link>
-              </Button>
             </div>
           </div>
         </section>
