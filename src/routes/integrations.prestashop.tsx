@@ -56,7 +56,7 @@ function PrestaShopPage() {
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
           Module zip becomes available after phase 7 of the rollout — the PHP source is already in
-          our repo. Reach out via <Link to="/contact" className="underline">contact</Link> for
+          our repo. Reach out via <Link to="/help" className="underline">help</Link> for
           early access.
         </p>
 

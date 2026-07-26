@@ -302,11 +302,9 @@ export function MarketingFooter() {
           <FooterCol
             title="Product"
             items={[
-              { label: "Where", to: "/where" },
               { label: "POS terminal", to: "/pos" },
               { label: "Compare", to: "/compare" },
               { label: "Pricing", to: "/pricing" },
-              { label: "Demo", to: "/demo" },
             ]}
           />
           <FooterCol
@@ -322,8 +320,6 @@ export function MarketingFooter() {
             items={[
               { label: "Manifesto", to: "/manifesto" },
               { label: "Investors", to: "/investors" },
-              { label: "Affiliates", to: "/affiliates" },
-              { label: "Contact", to: "/contact" },
               { label: "Brand", to: "/brand" },
             ]}
           />

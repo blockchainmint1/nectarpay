@@ -104,7 +104,7 @@ const ROWS: { label: string; nectar: [V, string?]; bitpay: [V, string?]; coingat
   },
   {
     label: "First-party merchant map",
-    nectar: ["yes", "/where"],
+    nectar: ["yes", "Public map"],
     bitpay: ["partial", "Directory"],
     coingate: ["no"],
   },

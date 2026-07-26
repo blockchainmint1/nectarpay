@@ -592,7 +592,7 @@ function ListingStep({
   return (
     <StepCard
       title="Get found on the map"
-      desc="Nectar.Pay maintains a public 'where to spend crypto' directory at /where. Choose how you want to appear."
+      desc="Nectar.Pay maintains a public 'where to spend crypto' directory. Choose how you want to appear."
     >
       <div className="space-y-3">
         {[
@@ -865,8 +865,7 @@ function DoneStep({
         <li className="flex items-start gap-2">
           <CheckCircle2 className="mt-0.5 h-4 w-4 text-primary" />
           <span>
-            Check <Link to="/where" className="text-primary hover:underline">/where</Link>
-            {" "}— your city pin should appear within a few minutes of your
+            Your city pin appears on the public merchant map within a few minutes of your
             first terminal heartbeat.
           </span>
         </li>
