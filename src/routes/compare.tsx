@@ -221,7 +221,7 @@ export function CompareHero() {
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Button asChild size="lg">
-            <Link to="/signup">Start free in 90 seconds</Link>
+            <Link to="/auth">Sign in to get started</Link>
           </Button>
         </div>
       </div>
@@ -437,10 +437,10 @@ export function CompareExtras() {
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Button asChild size="lg">
-              <Link to="/signup">Start free</Link>
+              <Link to="/auth">Sign in</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link to="/integrate">Read the docs</Link>
+              <Link to="/docs">Read the docs</Link>
             </Button>
           </div>
         </div>

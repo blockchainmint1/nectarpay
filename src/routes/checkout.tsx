@@ -278,7 +278,7 @@ function CheckoutPage() {
 
             <p className="text-[11px] text-foreground/40">
               Questions?{" "}
-              <Link to="/integrate" className="underline hover:text-foreground/70">
+              <Link to="/docs" className="underline hover:text-foreground/70">
                 See docs
               </Link>{" "}
               or email support@nectar-pay.com.

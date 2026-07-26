@@ -168,7 +168,7 @@ function GuidePage() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg">
-                <Link to="/signup">Start free in 90 seconds</Link>
+                <Link to="/auth">Sign in to get started</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
                 <Link to="/price">See pricing</Link>
@@ -332,7 +332,7 @@ function GuidePage() {
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
               <Button asChild size="lg">
-                <Link to="/signup">Start free</Link>
+                <Link to="/auth">Sign in</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
                 <Link to="/compare">Compare the whole field</Link>

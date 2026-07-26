@@ -165,7 +165,7 @@ function PairSigninPage() {
           <div className="mt-8 rounded-lg border border-white/10 bg-white/5 p-5 text-sm text-white/70">
             <p>You don&apos;t have any stores set up yet.</p>
             <Link
-              to="/start"
+              to="/stores/new"
               className="mt-3 inline-block rounded-md bg-amber-500 px-3 py-2 text-xs font-bold tracking-widest text-black hover:bg-amber-400"
             >
               CREATE A STORE
