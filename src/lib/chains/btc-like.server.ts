@@ -1,5 +1,7 @@
-// Esplora-compatible watcher used for both BTC (mempool.space) and TXC
-// (mempool.texitcoin.org). Same API shape.
+// UTXO-chain watcher client. Speaks Esplora natively (BTC via mempool.space,
+// TXC via mempool.texitcoin.org, LTC via litecoinspace.org) and transparently
+// falls back to the Blockbook adapter for chains with no public Esplora
+// (DOGE, BCH, DASH). Both produce the same `EsploraTx` shape.
 
 import type { BtcLikeNetwork } from "./networks";
 
@@ -24,12 +26,20 @@ async function fetchJson<T>(url: string): Promise<T> {
 }
 
 export async function getTipHeight(net: BtcLikeNetwork): Promise<number> {
+  if (net.indexer === "blockbook") {
+    const { getBlockbookTipHeight } = await import("./blockbook.server");
+    return getBlockbookTipHeight(net);
+  }
   const res = await fetch(`${net.esploraBase}/blocks/tip/height`);
   if (!res.ok) throw new Error(`tip height ${res.status}`);
   return Number(await res.text());
 }
 
 export async function getAddressTxs(net: BtcLikeNetwork, address: string): Promise<EsploraTx[]> {
+  if (net.indexer === "blockbook") {
+    const { getBlockbookAddressTxs } = await import("./blockbook.server");
+    return getBlockbookAddressTxs(net, address);
+  }
   const [confirmedOrRecent, mempool] = await Promise.allSettled([
     fetchJson<EsploraTx[]>(`${net.esploraBase}/address/${address}/txs`),
     fetchJson<EsploraTx[]>(`${net.esploraBase}/address/${address}/txs/mempool`),
