@@ -42,7 +42,21 @@ export function buildPaymentUri(
     }
     return `texitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
   }
-  if (chain === "doge") return `dogecoin:${address}${amount ? `?amount=${amount}` : ""}`;
+  // Bitcoin forks that use plain BIP-21 with their own URI scheme.
+  const BIP21_SCHEMES: Record<string, string> = {
+    doge: "dogecoin",
+    ltc: "litecoin",
+    dash: "dash",
+  };
+  if (BIP21_SCHEMES[chain]) {
+    return `${BIP21_SCHEMES[chain]}:${address}${amount ? `?amount=${amount}` : ""}`;
+  }
+  if (chain === "bch") {
+    // CashAddr strings already carry the "bitcoincash:" prefix, which is
+    // itself the BIP-21 scheme — never prepend it twice.
+    const base = address.includes(":") ? address : `bitcoincash:${address}`;
+    return `${base}${amount ? `?amount=${amount}` : ""}`;
+  }
 
 
   if (chain === "eth" || chain === "base" || chain === "bsc") {

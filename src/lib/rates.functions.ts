@@ -11,6 +11,10 @@ const CMC_ID_MAP: Record<string, number> = {
   TXC: 32744, // confirmed: https://coinmarketcap.com/currencies/texitcoin/ UCID 32744
   TRX: 1958,
   SOL: 5426,
+  LTC: 2,
+  BCH: 1831,
+  DOGE: 74,
+  DASH: 131,
 };
 
 export async function pollRates(): Promise<{
@@ -40,7 +44,7 @@ export async function pollRates(): Promise<{
         const price = row?.quote?.USD?.price;
         if (typeof price === "number" && price > 0) {
           const chainSym = sym === "TRX" ? "tron" : sym.toLowerCase();
-          const chain = chainSym as "btc" | "eth" | "txc" | "tron" | "sol";
+          const chain = chainSym as "btc" | "eth" | "txc" | "tron" | "sol" | "ltc" | "bch" | "doge" | "dash";
           const { error } = await supabaseAdmin
             .from("rates_cache")
             .upsert(
@@ -90,7 +94,7 @@ export async function getUsdRate(symbol: string): Promise<number> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   // TRX is stored under chain="tron"; everything else lowercases.
   const chain = (up === "TRX" ? "tron" : up.toLowerCase()) as
-    | "btc" | "eth" | "txc" | "base" | "doge" | "isk" | "zcu" | "tron" | "sol";
+    | "btc" | "eth" | "txc" | "base" | "doge" | "isk" | "zcu" | "tron" | "sol" | "ltc" | "bch" | "dash";
   const { data } = await supabaseAdmin
     .from("rates_cache")
     .select("rate")
