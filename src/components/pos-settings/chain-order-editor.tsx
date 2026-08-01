@@ -36,6 +36,8 @@ import {
   SUPPORTED_STABLES_BY_CHAIN,
   evmChainsForStable,
   EVM_CHAIN_LABEL,
+  getOmniToken,
+  pinPreferredOptions,
 } from "@/lib/chains/networks";
 
 const NATIVE_LABEL: Record<string, string> = {
@@ -240,7 +242,10 @@ function expandedOptions(row: ChainRow): { key: string; label: string; sub: stri
   for (const sym of allow) {
     if (!enabled.includes(sym)) continue;
     let label: string;
-    if (chain === "eth") {
+    const omni = getOmniToken(chain, sym);
+    if (omni) {
+      label = omni.label;
+    } else if (chain === "eth") {
       const nets = evmChainsForStable(sym).map((k) => EVM_CHAIN_LABEL[k]);
       label = `${sym} on ${joinNetworks(nets)}`;
     } else {
@@ -252,7 +257,7 @@ function expandedOptions(row: ChainRow): { key: string; label: string; sub: stri
 }
 
 function TerminalMockup({ order }: { order: ChainRow[] }) {
-  const flat = order.flatMap(expandedOptions);
+  const flat = pinPreferredOptions(order.flatMap(expandedOptions));
   return (
     <div className="rounded-2xl border border-border bg-card p-3 shadow-sm">
       <div className="rounded-xl bg-[#0a0d12] p-3 text-white">
