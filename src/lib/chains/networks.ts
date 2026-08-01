@@ -14,11 +14,23 @@ export type ChainKind =
   | "tron"
   | "sol";
 
+/** Omni Layer token issued on a BTC-like chain (Class C / OP_RETURN sends). */
+export interface OmniToken {
+  symbol: string;
+  /** Omni property id (e.g. Texas Stable Dollar = 39 on TEXITcoin). */
+  propertyId: number;
+  decimals: number;
+  /** Human label used on checkout / POS pickers. */
+  label: string;
+}
+
 export interface BtcLikeNetwork {
   kind: "btc-like";
   symbol: ChainKind;
   name: string;
   esploraBase: string;
+  /** Omni Layer tokens accepted on this chain. */
+  omniStables?: OmniToken[];
   explorerTx: (txid: string) => string;
   explorerAddr: (addr: string) => string;
   pubKeyHash: number;
