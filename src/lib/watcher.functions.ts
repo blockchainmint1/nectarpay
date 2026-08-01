@@ -282,10 +282,11 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
   if (!inv || !inv.address || !isBtcLikeChain(inv.chain)) return false;
   if (["confirmed", "overpaid", "expired", "cancelled", "failed"].includes(inv.status)) return false;
 
-  const net = getNetwork(inv.chain as ChainKind) as BtcLikeNetwork;
+  const chainKey = inv.chain as ChainKind;
+  const net = getNetwork(chainKey) as BtcLikeNetwork;
   // Omni Layer token invoice (e.g. TSD on TEXITcoin) — credits come from the
   // OP_RETURN payload, not the native value of the output.
-  const omni = inv.token_symbol ? getOmniToken(inv.chain, inv.token_symbol as string) : null;
+  const omni = inv.token_symbol ? getOmniToken(chainKey, inv.token_symbol as string) : null;
   const [tip, txs] = await Promise.all([getTipHeight(net), getAddressTxs(net, inv.address)]);
   const credits = omni
     ? extractOmniIncoming(txs, inv.address, omni.propertyId, omni.decimals, tip).map((c) => ({
@@ -302,9 +303,9 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
       ? 1
       : lockedRate && lockedRate > 0
         ? lockedRate
-        : await getUsdRate(inv.chain);
+        : await getUsdRate(chainKey);
     const paidUsd = paidCrypto * usdRate;
-    const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd, inv.chain);
+    const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd, chainKey);
     const isConfirmed = credit.confirmations >= required;
     await recordTransaction(inv.id, credit.txid, paidCrypto, credit.confirmations, null, isConfirmed);
     if (isConfirmed) {
@@ -507,7 +508,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
         const { data: openInvoices } = await supabaseAdmin
           .from("invoices")
           .select("id, store_id, address, token_symbol, fiat_amount, status, rate, crypto_amount")
-          .eq("chain", chain)
+          .eq("chain", chain as ChainKind)
           .in("store_id", configList.map((c) => c.store_id))
           .in("status", ["pending", "detected", "underpaid"])
           .not("address", "is", null);

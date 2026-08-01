@@ -395,8 +395,8 @@ export const SLOW_FINALITY_CHAINS: readonly ChainKind[] = ["btc", "txc", "eth", 
 /** Every BTC-fork chain the shared UTXO watcher handles. */
 export const BTC_LIKE_CHAINS: readonly ChainKind[] = ["btc", "txc", "ltc", "doge", "bch", "dash"] as const;
 
-export function isBtcLikeChain(chain: string): boolean {
-  return (BTC_LIKE_CHAINS as readonly string[]).includes(chain);
+export function isBtcLikeChain(chain: string | null | undefined): boolean {
+  return !!chain && (BTC_LIKE_CHAINS as readonly string[]).includes(chain);
 }
 
 export function isFastFinality(chain: string): boolean {
