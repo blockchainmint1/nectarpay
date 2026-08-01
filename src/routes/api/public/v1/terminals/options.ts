@@ -68,7 +68,7 @@ export const Route = createFileRoute("/api/public/v1/terminals/options")({
             return `${names.slice(0, -1).join(", ")} or ${names[names.length - 1]}`;
           }
 
-          const NATIVE_OPT_IN: Record<string, string> = { eth: "ETH", tron: "TRX", sol: "SOL" };
+          const NATIVE_OPT_IN: Record<string, string> = { txc: "TXC", eth: "ETH", tron: "TRX", sol: "SOL" };
 
           const options: Array<{ key: string; chain: string; tokenSymbol: string | null; label: string }> = [];
           for (const cfg of cfgs ?? []) {
