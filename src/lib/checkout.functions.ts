@@ -127,7 +127,7 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
     // Per-chain native opt-in: for chains where the merchant can choose to
     // disable the native asset and only accept stablecoins, we only surface
     // the native option when the matching symbol is present in `stables`.
-    const NATIVE_OPT_IN: Record<string, string> = { eth: "ETH", tron: "TRX", sol: "SOL" };
+    const NATIVE_OPT_IN: Record<string, string> = { txc: "TXC", eth: "ETH", tron: "TRX", sol: "SOL" };
 
     const availableOptions: CheckoutPaymentOption[] = [];
     for (const cfg of cfgs ?? []) {

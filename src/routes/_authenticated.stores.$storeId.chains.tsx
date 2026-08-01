@@ -99,7 +99,7 @@ const CHAINS: ChainMeta[] = [
 // server. Kept inline because this is a client component and the server
 // network module pulls in node-only crypto deps.
 const STABLES_BY_CHAIN: Partial<Record<ChainKey, readonly string[]>> = {
-  txc: ["TSD"],
+  txc: ["TSD", "TXC"],
   eth: ["ETH", "USDC", "USDT", "PYUSD", "DAI"],
   tron: ["TRX", "USDT", "USDC"],
   sol: ["SOL", "USDC", "USDT", "PYUSD"],
@@ -110,6 +110,7 @@ const STABLES_BY_CHAIN: Partial<Record<ChainKey, readonly string[]>> = {
 // Native tokens — rendered alongside stables under "Accept on this network",
 // but labelled as the chain's native asset rather than a stablecoin.
 const NATIVE_BY_CHAIN: Partial<Record<ChainKey, string>> = {
+  txc: "TXC",
   eth: "ETH",
   tron: "TRX",
   sol: "SOL",
