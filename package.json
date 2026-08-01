@@ -128,7 +128,8 @@
   },
   "pnpm": {
     "overrides": {
-      "entities": "4.5.0"
+      "entities": "4.5.0",
+      "seroval": "1.6.0"
     }
   }
 }
