@@ -58,6 +58,18 @@ export async function getAddressTxs(net: BtcLikeNetwork, address: string): Promi
 }
 
 /**
+ * Address equality that tolerates CashAddr prefixes ("bitcoincash:q…" vs
+ * "q…"). Base58 chains fall back to exact, case-sensitive comparison.
+ */
+function sameAddress(a: string | undefined, b: string): boolean {
+  if (!a) return false;
+  if (a === b) return true;
+  if (!a.includes(":") && !b.includes(":")) return false;
+  const strip = (x: string) => (x.includes(":") ? x.split(":")[1] : x).toLowerCase();
+  return strip(a) === strip(b);
+}
+
+/**
  * Returns incoming credits to `address` from `txs`. Each entry is one vout
  * paying the address. `confirmations` is computed against `tipHeight`; 0 = mempool.
  */
@@ -75,7 +87,7 @@ export function extractIncoming(
   const out: ReturnType<typeof extractIncoming> = [];
   for (const tx of txs) {
     tx.vout.forEach((v, idx) => {
-      if (v.scriptpubkey_address !== address) return;
+      if (!sameAddress(v.scriptpubkey_address, address)) return;
       const confs =
         tx.status.confirmed && tx.status.block_height
           ? Math.max(0, tipHeight - tx.status.block_height + 1)

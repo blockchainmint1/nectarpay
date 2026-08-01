@@ -28,6 +28,11 @@ export function deriveBtcLikeAddress(
   if (!child.publicKey) throw new Error("Failed to derive public key");
   const h160 = hash160(child.publicKey);
 
+  if (network.cashAddrPrefix) {
+    // Bitcoin Cash: CashAddr (BCH-40 checksum), type 0 = P2PKH.
+    return encodeCashAddr(network.cashAddrPrefix, 0, h160);
+  }
+
   if (network.defaultAddressType === "p2wpkh") {
     // bech32 P2WPKH, witness version 0
     const words = bech32.toWords(h160);
@@ -84,4 +89,63 @@ export function isSolanaAddressLike(s: string): boolean {
 /** Validate a Tron address: starts with T, 34 chars, base58. */
 export function isTronAddressLike(s: string): boolean {
   return /^T[1-9A-HJ-NP-Za-km-z]{33}$/.test(s.trim());
+}
+
+
+// ---- CashAddr (Bitcoin Cash) ----
+// Spec: https://reference.cash/protocol/blockchain/encoding/cashaddr
+const CASHADDR_CHARSET = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
+
+function cashAddrPolymod(values: number[]): bigint {
+  let c = 1n;
+  for (const d of values) {
+    const c0 = c >> 35n;
+    c = ((c & 0x07ffffffffn) << 5n) ^ BigInt(d);
+    if (c0 & 0x01n) c ^= 0x98f2bc8e61n;
+    if (c0 & 0x02n) c ^= 0x79b76d99e2n;
+    if (c0 & 0x04n) c ^= 0xf33e5fb3c4n;
+    if (c0 & 0x08n) c ^= 0xae2eabe2a8n;
+    if (c0 & 0x10n) c ^= 0x1e4f43e470n;
+  }
+  return c ^ 1n;
+}
+
+/** Generic base-2^from → base-2^to bit regrouping. */
+function convertBits(data: Uint8Array | number[], from: number, to: number, pad: boolean): number[] {
+  let acc = 0;
+  let bits = 0;
+  const out: number[] = [];
+  const maxv = (1 << to) - 1;
+  for (const value of data) {
+    acc = (acc << from) | value;
+    bits += from;
+    while (bits >= to) {
+      bits -= to;
+      out.push((acc >> bits) & maxv);
+    }
+  }
+  if (pad && bits > 0) out.push((acc << (to - bits)) & maxv);
+  return out;
+}
+
+/** Encode a hash160 as a CashAddr string, e.g. "bitcoincash:qq…". */
+export function encodeCashAddr(prefix: string, type: number, hash160Bytes: Uint8Array): string {
+  // version byte: type << 3 | size bits (0 = 160-bit hash)
+  const versionByte = (type << 3) | 0;
+  const payload = new Uint8Array(1 + hash160Bytes.length);
+  payload[0] = versionByte;
+  payload.set(hash160Bytes, 1);
+
+  const payloadWords = convertBits(payload, 8, 5, true);
+  const prefixWords = [...prefix].map((c) => c.charCodeAt(0) & 0x1f);
+  const checksumInput = [...prefixWords, 0, ...payloadWords, 0, 0, 0, 0, 0, 0, 0, 0];
+  const mod = cashAddrPolymod(checksumInput);
+
+  const checksumWords: number[] = [];
+  for (let i = 0; i < 8; i++) {
+    checksumWords.push(Number((mod >> BigInt(5 * (7 - i))) & 0x1fn));
+  }
+
+  const body = [...payloadWords, ...checksumWords].map((w) => CASHADDR_CHARSET[w]).join("");
+  return `${prefix}:${body}`;
 }
