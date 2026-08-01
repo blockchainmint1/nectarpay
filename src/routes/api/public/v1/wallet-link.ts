@@ -479,8 +479,10 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
               xpub: v,
               xpub_or_address: v,
               derivation_path: null,
-              enabled: existing?.enabled ?? false,
-              stables: existing?.stables ?? [],
+              // TEXITcoin ships on by default (Texas Stable Dollar rail).
+              enabled: existing?.enabled ?? dbChain === "txc",
+              stables: existing?.stables ?? (dbChain === "txc" ? ["TSD"] : []),
+
             };
 
             const { error: upErr } = await supabaseAdmin
