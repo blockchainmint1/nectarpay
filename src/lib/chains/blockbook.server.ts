@@ -41,14 +41,51 @@ interface BlockbookStatus {
   backend?: { blocks?: number };
 }
 
-async function fetchJson<T>(url: string): Promise<T> {
-  const res = await fetch(url, { headers: { Accept: "application/json" } });
-  if (!res.ok) throw new Error(`${url} → ${res.status}`);
+// Trezor's public Blockbook nodes sit behind Cloudflare and reject server-side
+// traffic, so each chain's endpoint is configurable. Resolution order:
+//   1) BLOCKBOOK_<CHAIN>_URL — a self-hosted or dedicated Blockbook instance
+//   2) NOWNODES_API_KEY      — NOWNodes' hosted Blockbook, keyed per request
+//   3) the network's default public host (best-effort)
+const ENV_BASE_VAR: Record<string, string> = {
+  doge: "BLOCKBOOK_DOGE_URL",
+  bch: "BLOCKBOOK_BCH_URL",
+  dash: "BLOCKBOOK_DASH_URL",
+  ltc: "BLOCKBOOK_LTC_URL",
+};
+
+const NOWNODES_HOST: Record<string, string> = {
+  doge: "https://doge.nownodes.io",
+  bch: "https://bch.nownodes.io",
+  dash: "https://dash.nownodes.io",
+  ltc: "https://ltc.nownodes.io",
+};
+
+function resolveEndpoint(net: BtcLikeNetwork): { base: string; headers: Record<string, string> } {
+  const envVar = ENV_BASE_VAR[net.symbol];
+  const override = envVar ? process.env[envVar] : undefined;
+  if (override) return { base: override.replace(/\/+$/, ""), headers: {} };
+
+  const key = process.env["NOWNODES_API_KEY"];
+  const host = NOWNODES_HOST[net.symbol];
+  if (key && host) return { base: host, headers: { "api-key": key } };
+
+  return { base: net.esploraBase, headers: {} };
+}
+
+async function fetchJson<T>(net: BtcLikeNetwork, path: string): Promise<T> {
+  const { base, headers } = resolveEndpoint(net);
+  const url = `${base}${path}`;
+  const res = await fetch(url, { headers: { Accept: "application/json", ...headers } });
+  if (!res.ok) {
+    throw new Error(
+      `blockbook ${net.symbol}: ${res.status} — set ${ENV_BASE_VAR[net.symbol] ?? "an indexer URL"} or NOWNODES_API_KEY`,
+    );
+  }
   return (await res.json()) as T;
 }
 
 export async function getBlockbookTipHeight(net: BtcLikeNetwork): Promise<number> {
-  const json = await fetchJson<BlockbookStatus>(`${net.esploraBase}/api/v2`);
+  const json = await fetchJson<BlockbookStatus>(net, "/api/v2");
   const h = json.blockbook?.bestHeight ?? json.backend?.blocks;
   if (!h || !Number.isFinite(h)) throw new Error("blockbook: no tip height");
   return Number(h);
@@ -87,7 +124,8 @@ export async function getBlockbookAddressTxs(
   address: string,
 ): Promise<EsploraTx[]> {
   const json = await fetchJson<BlockbookAddress>(
-    `${net.esploraBase}/api/v2/address/${encodeURIComponent(address)}?details=txs&pageSize=50`,
+    net,
+    `/api/v2/address/${encodeURIComponent(address)}?details=txs&pageSize=50`,
   );
   return (json.transactions ?? []).map(toEsploraTx);
 }
