@@ -45,7 +45,7 @@ export const Route = createFileRoute("/_authenticated/stores/$storeId/chains")({
   component: ChainsPage,
 });
 
-type ChainKey = "btc" | "txc" | "eth" | "tron" | "sol";
+type ChainKey = "btc" | "txc" | "eth" | "ltc" | "bch" | "doge" | "dash" | "tron" | "sol";
 
 type ChainMeta = {
   key: ChainKey;
@@ -76,6 +76,34 @@ const CHAINS: ChainMeta[] = [
     inputKind: "xpub",
     placeholder: "xpub6C… at m/44'/60'/0'",
     hint: "One account-level xpub covers every EVM chain — same derivation path (m/0/n), same addresses. Enable the chains you accept; we watch them all against this xpub.",
+  },
+  {
+    key: "ltc",
+    name: "Litecoin (LTC)",
+    inputKind: "xpub",
+    placeholder: "xpub6C… / zpub…",
+    hint: "Extended public key. Native SegWit (ltc1…) address per invoice, ~2.5 min blocks.",
+  },
+  {
+    key: "bch",
+    name: "Bitcoin Cash (BCH)",
+    inputKind: "xpub",
+    placeholder: "xpub6C… at m/44'/145'/0'",
+    hint: "Extended public key. We emit CashAddr (bitcoincash:q…) addresses so every BCH wallet scans cleanly.",
+  },
+  {
+    key: "doge",
+    name: "Dogecoin (DOGE)",
+    inputKind: "xpub",
+    placeholder: "xpub6C… at m/44'/3'/0'",
+    hint: "Extended public key. Legacy D… address per invoice, ~1 min blocks.",
+  },
+  {
+    key: "dash",
+    name: "Dash (DASH)",
+    inputKind: "xpub",
+    placeholder: "xpub6C… at m/44'/5'/0'",
+    hint: "Extended public key. Legacy X… address per invoice — fastest in-person settlement of the Bitcoin forks.",
   },
   {
     key: "tron",
