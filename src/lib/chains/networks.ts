@@ -121,7 +121,20 @@ export const TXC_NETWORK: BtcLikeNetwork = {
   receiveBranch: 0,
   defaultAddressType: "p2pkh",
   confirmationsRequired: 1,
+  // Omni Layer tokens on TEXITcoin. Texas Stable Dollar is property #39,
+  // managed + divisible (8 decimals), sent as Class C OP_RETURN simple sends.
+  omniStables: [
+    { symbol: "TSD", propertyId: 39, decimals: 8, label: "Texas Stable Dollar (TSD)" },
+  ],
 };
+
+/** Omni token lookup for a BTC-like chain, e.g. getOmniToken("txc", "TSD"). */
+export function getOmniToken(chain: string, symbol: string): OmniToken | null {
+  const net = (ALL_NETWORKS as Record<string, { kind: string; omniStables?: OmniToken[] }>)[chain];
+  if (!net || net.kind !== "btc-like") return null;
+  const sym = symbol.toUpperCase();
+  return net.omniStables?.find((t) => t.symbol.toUpperCase() === sym) ?? null;
+}
 
 export const ETH_NETWORK: EvmNetwork = {
   kind: "evm",
