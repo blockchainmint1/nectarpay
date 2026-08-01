@@ -26,7 +26,7 @@ function json(body: unknown, status = 200, extra: Record<string, string> = {}) {
 }
 
 const Body = z.object({
-  chain: z.enum(["btc", "txc", "eth", "base", "tron", "sol", "doge", "isk", "zcu"]).optional().nullable(),
+  chain: z.enum(["btc", "txc", "eth", "base", "tron", "sol", "doge", "ltc", "bch", "dash", "isk", "zcu"]).optional().nullable(),
   amount: z.number().positive().max(1_000_000),
   currency: z.string().min(3).max(8).default("USD"),
   order_id: z.string().max(128).nullable().optional(),
