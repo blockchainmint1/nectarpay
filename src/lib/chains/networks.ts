@@ -9,6 +9,9 @@ export type ChainKind =
   | "base"
   | "bsc"
   | "doge"
+  | "ltc"
+  | "bch"
+  | "dash"
   | "isk"
   | "zcu"
   | "tron"
@@ -28,7 +31,17 @@ export interface BtcLikeNetwork {
   kind: "btc-like";
   symbol: ChainKind;
   name: string;
+  /**
+   * Base URL of the block indexer. Esplora and Blockbook expose different
+   * REST shapes; `indexer` selects the client adapter used by the watcher.
+   */
   esploraBase: string;
+  /** Indexer flavour. Defaults to "esplora" when omitted. */
+  indexer?: "esplora" | "blockbook";
+  /** Emit BCH-style CashAddr strings instead of legacy base58 addresses. */
+  cashAddrPrefix?: string;
+  /** Wallet URI scheme for BIP-21 payment links (e.g. "litecoin"). */
+  uriScheme?: string;
   /** Omni Layer tokens accepted on this chain. */
   omniStables?: OmniToken[];
   explorerTx: (txid: string) => string;
@@ -135,6 +148,97 @@ export function getOmniToken(chain: string, symbol: string): OmniToken | null {
   const sym = symbol.toUpperCase();
   return net.omniStables?.find((t) => t.symbol.toUpperCase() === sym) ?? null;
 }
+
+export const LTC_NETWORK: BtcLikeNetwork = {
+  kind: "btc-like",
+  symbol: "ltc",
+  name: "Litecoin",
+  esploraBase: "https://litecoinspace.org/api",
+  indexer: "esplora",
+  uriScheme: "litecoin",
+  explorerTx: (t) => `https://litecoinspace.org/tx/${t}`,
+  explorerAddr: (a) => `https://litecoinspace.org/address/${a}`,
+  pubKeyHash: 0x30,
+  scriptHash: 0x32,
+  bech32Hrp: "ltc",
+  wif: 0xb0,
+  bip32Public: 0x0488b21e,
+  bip32Private: 0x0488ade4,
+  coinType: 2,
+  decimals: 8,
+  receiveBranch: 0,
+  defaultAddressType: "p2wpkh",
+  confirmationsRequired: 3, // ~7 minutes
+};
+
+export const DOGE_NETWORK: BtcLikeNetwork = {
+  kind: "btc-like",
+  symbol: "doge",
+  name: "Dogecoin",
+  esploraBase: "https://doge1.trezor.io",
+  indexer: "blockbook",
+  uriScheme: "dogecoin",
+  explorerTx: (t) => `https://doge1.trezor.io/tx/${t}`,
+  explorerAddr: (a) => `https://doge1.trezor.io/address/${a}`,
+  pubKeyHash: 0x1e,
+  scriptHash: 0x16,
+  bech32Hrp: "",
+  wif: 0x9e,
+  bip32Public: 0x0488b21e,
+  bip32Private: 0x0488ade4,
+  coinType: 3,
+  decimals: 8,
+  receiveBranch: 0,
+  defaultAddressType: "p2pkh",
+  confirmationsRequired: 6, // ~6 minutes
+};
+
+export const BCH_NETWORK: BtcLikeNetwork = {
+  kind: "btc-like",
+  symbol: "bch",
+  name: "Bitcoin Cash",
+  esploraBase: "https://bch1.trezor.io",
+  indexer: "blockbook",
+  uriScheme: "bitcoincash",
+  cashAddrPrefix: "bitcoincash",
+  explorerTx: (t) => `https://bch1.trezor.io/tx/${t}`,
+  explorerAddr: (a) => `https://bch1.trezor.io/address/${a}`,
+  pubKeyHash: 0x00,
+  scriptHash: 0x05,
+  bech32Hrp: "",
+  wif: 0x80,
+  bip32Public: 0x0488b21e,
+  bip32Private: 0x0488ade4,
+  coinType: 145,
+  decimals: 8,
+  receiveBranch: 0,
+  defaultAddressType: "p2pkh",
+  confirmationsRequired: 2, // ~20 minutes
+};
+
+export const DASH_NETWORK: BtcLikeNetwork = {
+  kind: "btc-like",
+  symbol: "dash",
+  name: "Dash",
+  esploraBase: "https://dash1.trezor.io",
+  indexer: "blockbook",
+  uriScheme: "dash",
+  explorerTx: (t) => `https://dash1.trezor.io/tx/${t}`,
+  explorerAddr: (a) => `https://dash1.trezor.io/address/${a}`,
+  pubKeyHash: 0x4c,
+  scriptHash: 0x10,
+  bech32Hrp: "",
+  wif: 0xcc,
+  bip32Public: 0x0488b21e,
+  bip32Private: 0x0488ade4,
+  coinType: 5,
+  decimals: 8,
+  receiveBranch: 0,
+  defaultAddressType: "p2pkh",
+  // InstantSend locks most Dash payments within ~2s; the watcher treats an
+  // InstantSend-locked tx as confirmed regardless of block depth.
+  confirmationsRequired: 2,
+};
 
 export const ETH_NETWORK: EvmNetwork = {
   kind: "evm",
@@ -286,7 +390,14 @@ export const FAST_FINALITY_CHAINS: readonly ChainKind[] = ["base", "bsc", "tron"
  * Slow-finality chains: Bitcoin family + Ethereum L1, where reorgs/double-spends
  * carry meaningfully more risk. Mempool acceptance here is the "yolo" tier.
  */
-export const SLOW_FINALITY_CHAINS: readonly ChainKind[] = ["btc", "txc", "eth", "doge", "isk", "zcu"] as const;
+export const SLOW_FINALITY_CHAINS: readonly ChainKind[] = ["btc", "txc", "eth", "doge", "ltc", "bch", "dash", "isk", "zcu"] as const;
+
+/** Every BTC-fork chain the shared UTXO watcher handles. */
+export const BTC_LIKE_CHAINS: readonly ChainKind[] = ["btc", "txc", "ltc", "doge", "bch", "dash"] as const;
+
+export function isBtcLikeChain(chain: string): boolean {
+  return (BTC_LIKE_CHAINS as readonly string[]).includes(chain);
+}
 
 export function isFastFinality(chain: string): boolean {
   return (FAST_FINALITY_CHAINS as readonly string[]).includes(chain);
@@ -327,6 +438,10 @@ export function getStable(chain: ChainKind, symbol: string): StableMeta | null {
 export const ALL_NETWORKS = {
   btc: BTC_NETWORK,
   txc: TXC_NETWORK,
+  ltc: LTC_NETWORK,
+  doge: DOGE_NETWORK,
+  bch: BCH_NETWORK,
+  dash: DASH_NETWORK,
   eth: ETH_NETWORK,
   base: BASE_NETWORK,
   bsc: BSC_NETWORK,
