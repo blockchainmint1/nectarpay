@@ -58,7 +58,7 @@ export const Route = createFileRoute("/api/public/v1/terminals/options")({
           const cfgs = cfgsRes.data;
           const store = storeRes.data;
 
-          const { SUPPORTED_STABLES_BY_CHAIN, evmChainsForStable, EVM_CHAIN_LABEL } = await import(
+          const { SUPPORTED_STABLES_BY_CHAIN, evmChainsForStable, EVM_CHAIN_LABEL, getOmniToken, pinPreferredOptions } = await import(
             "@/lib/chains/networks"
           );
 

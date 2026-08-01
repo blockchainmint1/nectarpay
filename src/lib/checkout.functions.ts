@@ -97,7 +97,7 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
     // enabled on the shared EVM xpub (chain="eth"), we list every EVM network
     // where the watcher will detect that token, since they all share the same
     // derived address — e.g. "USDC on Ethereum, Base or BSC".
-    const { SUPPORTED_STABLES_BY_CHAIN, evmChainsForStable, EVM_CHAIN_LABEL } = await import(
+    const { SUPPORTED_STABLES_BY_CHAIN, evmChainsForStable, EVM_CHAIN_LABEL, getOmniToken, pinPreferredOptions } = await import(
       "@/lib/chains/networks"
     );
     const NATIVE_LABEL: Record<string, string> = {
