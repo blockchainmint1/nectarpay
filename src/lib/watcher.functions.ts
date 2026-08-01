@@ -4,7 +4,7 @@
 //   2) Poll the chain for incoming credits to those addresses
 //   3) Match credits to open invoices, mark paid/underpaid, emit notifications & webhooks
 
-import { BTC_NETWORK, TXC_NETWORK, ETH_NETWORK, EVM_NETWORKS, TRON_NETWORK, SOL_NETWORK, isFastFinality, type EvmNetwork } from "./chains/networks";
+import { BTC_NETWORK, TXC_NETWORK, ETH_NETWORK, getNetwork, isBtcLikeChain, type BtcLikeNetwork, type ChainKind, EVM_NETWORKS, TRON_NETWORK, SOL_NETWORK, isFastFinality, type EvmNetwork } from "./chains/networks";
 import { deriveBtcLikeAddress, deriveEvmAddress, deriveTronAddress } from "./chains/derive.server";
 import { extractIncoming, getAddressTxs, getTipHeight } from "./chains/btc-like.server";
 import { extractOmniIncoming } from "./chains/omni.server";
@@ -279,10 +279,10 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
     .select("id, store_id, chain, address, token_symbol, fiat_amount, status, rate, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow)")
     .eq("id", invoiceId)
     .maybeSingle();
-  if (!inv || !inv.address || (inv.chain !== "btc" && inv.chain !== "txc")) return false;
+  if (!inv || !inv.address || !isBtcLikeChain(inv.chain)) return false;
   if (["confirmed", "overpaid", "expired", "cancelled", "failed"].includes(inv.status)) return false;
 
-  const net = inv.chain === "btc" ? BTC_NETWORK : TXC_NETWORK;
+  const net = getNetwork(inv.chain as ChainKind) as BtcLikeNetwork;
   // Omni Layer token invoice (e.g. TSD on TEXITcoin) — credits come from the
   // OP_RETURN payload, not the native value of the output.
   const omni = inv.token_symbol ? getOmniToken(inv.chain, inv.token_symbol as string) : null;
@@ -502,7 +502,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
   for (const [chain, configList] of byChain.entries()) {
     const r: WatcherResult = { chain, addresses: 0, credits: 0, invoicesUpdated: 0 };
     try {
-      if (chain === "btc" || chain === "txc") {
+      if (isBtcLikeChain(chain)) {
         const cfgByStoreId = new Map(configList.map((c) => [c.store_id, c]));
         const { data: openInvoices } = await supabaseAdmin
           .from("invoices")
@@ -518,7 +518,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           continue;
         }
 
-        const net = chain === "btc" ? BTC_NETWORK : TXC_NETWORK;
+        const net = getNetwork(chain as ChainKind) as BtcLikeNetwork;
         const tip = await getTipHeight(net);
 
         for (const cfg of configList) {
