@@ -125,8 +125,10 @@ type Row = {
   stables: string[];
 };
 
-// Standard setup defaults: Texas Stable Dollar is on by default for TEXITcoin.
+// Standard setup defaults: TEXITcoin is enabled by default and Texas Stable
+// Dollar is checked on it. Native TXC stays opt-in.
 const DEFAULT_STABLES: Partial<Record<ChainKey, string[]>> = { txc: ["TSD"] };
+const DEFAULT_ENABLED: Partial<Record<ChainKey, boolean>> = { txc: true };
 
 function emptyRow(chain: ChainKey): Row {
   return {
@@ -134,7 +136,7 @@ function emptyRow(chain: ChainKey): Row {
     chain,
     xpub: null,
     xpub_or_address: "",
-    enabled: false,
+    enabled: DEFAULT_ENABLED[chain] ?? false,
     stables: [...(DEFAULT_STABLES[chain] ?? [])],
   };
 }
