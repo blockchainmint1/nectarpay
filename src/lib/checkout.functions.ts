@@ -97,7 +97,7 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
     // enabled on the shared EVM xpub (chain="eth"), we list every EVM network
     // where the watcher will detect that token, since they all share the same
     // derived address — e.g. "USDC on Ethereum, Base or BSC".
-    const { SUPPORTED_STABLES_BY_CHAIN, evmChainsForStable, EVM_CHAIN_LABEL } = await import(
+    const { SUPPORTED_STABLES_BY_CHAIN, evmChainsForStable, EVM_CHAIN_LABEL, getOmniToken, pinPreferredOptions } = await import(
       "@/lib/chains/networks"
     );
     const NATIVE_LABEL: Record<string, string> = {
@@ -148,7 +148,10 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
         if (sym === nativeOptIn) continue; // native handled above
         if (!enabled.includes(sym)) continue;
         let label: string;
-        if (chain === "eth") {
+        const omni = getOmniToken(chain, sym);
+        if (omni) {
+          label = omni.label;
+        } else if (chain === "eth") {
           const nets = evmChainsForStable(sym).map((k) => EVM_CHAIN_LABEL[k]);
           label = `${sym} on ${joinNetworks(nets)}`;
         } else {
@@ -189,7 +192,7 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
         confirmedAt: t.confirmed_at,
         firstSeenAt: t.first_seen_at,
       })),
-      availableOptions,
+      availableOptions: pinPreferredOptions(availableOptions),
     };
   });
 

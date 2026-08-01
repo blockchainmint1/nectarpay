@@ -14,11 +14,23 @@ export type ChainKind =
   | "tron"
   | "sol";
 
+/** Omni Layer token issued on a BTC-like chain (Class C / OP_RETURN sends). */
+export interface OmniToken {
+  symbol: string;
+  /** Omni property id (e.g. Texas Stable Dollar = 39 on TEXITcoin). */
+  propertyId: number;
+  decimals: number;
+  /** Human label used on checkout / POS pickers. */
+  label: string;
+}
+
 export interface BtcLikeNetwork {
   kind: "btc-like";
   symbol: ChainKind;
   name: string;
   esploraBase: string;
+  /** Omni Layer tokens accepted on this chain. */
+  omniStables?: OmniToken[];
   explorerTx: (txid: string) => string;
   explorerAddr: (addr: string) => string;
   pubKeyHash: number;
@@ -109,7 +121,20 @@ export const TXC_NETWORK: BtcLikeNetwork = {
   receiveBranch: 0,
   defaultAddressType: "p2pkh",
   confirmationsRequired: 1,
+  // Omni Layer tokens on TEXITcoin. Texas Stable Dollar is property #39,
+  // managed + divisible (8 decimals), sent as Class C OP_RETURN simple sends.
+  omniStables: [
+    { symbol: "TSD", propertyId: 39, decimals: 8, label: "Texas Stable Dollar (TSD)" },
+  ],
 };
+
+/** Omni token lookup for a BTC-like chain, e.g. getOmniToken("txc", "TSD"). */
+export function getOmniToken(chain: string, symbol: string): OmniToken | null {
+  const net = (ALL_NETWORKS as Record<string, { kind: string; omniStables?: OmniToken[] }>)[chain];
+  if (!net || net.kind !== "btc-like") return null;
+  const sym = symbol.toUpperCase();
+  return net.omniStables?.find((t) => t.symbol.toUpperCase() === sym) ?? null;
+}
 
 export const ETH_NETWORK: EvmNetwork = {
   kind: "evm",
@@ -198,12 +223,36 @@ export const SOL_NETWORK: SolanaNetwork = {
 
 /** Stable symbols we allow to be enabled per chain. Curated whitelist. */
 export const SUPPORTED_STABLES_BY_CHAIN: Partial<Record<ChainKind, readonly string[]>> = {
+  txc: ["TSD"],
   eth: ["USDC", "USDT", "PYUSD", "DAI"],
   base: ["USDC", "USDT", "DAI"],
   bsc: ["USDT", "USDC", "DAI"],
   tron: ["USDT", "USDC"],
   sol: ["USDC", "USDT", "PYUSD"],
 };
+
+/** Every stable symbol pegged to $1 in the conversion layer. */
+export const PEGGED_USD_SYMBOLS: readonly string[] = ["USDC", "USDT", "DAI", "PYUSD", "TSD"];
+
+/**
+ * Payment options pinned to the top of every picker (POS + hosted checkout),
+ * regardless of the merchant's chain display_order. Texas Stable Dollar is
+ * the flagship rail: instant, dollar-denominated, near-zero fees.
+ */
+export const PINNED_OPTION_KEYS: readonly string[] = ["txc:TSD"];
+
+/** Stable-sorts a payment-option list so pinned keys come first, in order. */
+export function pinPreferredOptions<T extends { key: string }>(options: T[]): T[] {
+  const rank = (k: string) => {
+    const i = PINNED_OPTION_KEYS.indexOf(k);
+    return i === -1 ? PINNED_OPTION_KEYS.length : i;
+  };
+  return options
+    .map((o, i) => ({ o, i }))
+    .sort((a, b) => rank(a.o.key) - rank(b.o.key) || a.i - b.i)
+    .map(({ o }) => o);
+}
+
 
 /**
  * EVM chains that share a single derived address per xpub index. For checkout
@@ -264,8 +313,16 @@ export function getStable(chain: ChainKind, symbol: string): StableMeta | null {
     const t = net.stables.find((s) => s.symbol.toUpperCase() === sym);
     return t ? { chain, symbol: t.symbol, address: t.mint, decimals: t.decimals } : null;
   }
+  if (net.kind === "btc-like") {
+    // Omni Layer token: "address" is the property id as a string.
+    const t = net.omniStables?.find((s) => s.symbol.toUpperCase() === sym);
+    return t
+      ? { chain, symbol: t.symbol, address: String(t.propertyId), decimals: t.decimals }
+      : null;
+  }
   return null;
 }
+
 
 export const ALL_NETWORKS = {
   btc: BTC_NETWORK,

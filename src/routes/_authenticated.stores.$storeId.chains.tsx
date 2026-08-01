@@ -99,6 +99,7 @@ const CHAINS: ChainMeta[] = [
 // server. Kept inline because this is a client component and the server
 // network module pulls in node-only crypto deps.
 const STABLES_BY_CHAIN: Partial<Record<ChainKey, readonly string[]>> = {
+  txc: ["TSD"],
   eth: ["ETH", "USDC", "USDT", "PYUSD", "DAI"],
   tron: ["TRX", "USDT", "USDC"],
   sol: ["SOL", "USDC", "USDT", "PYUSD"],
@@ -123,6 +124,9 @@ type Row = {
   stables: string[];
 };
 
+// Standard setup defaults: Texas Stable Dollar is on by default for TEXITcoin.
+const DEFAULT_STABLES: Partial<Record<ChainKey, string[]>> = { txc: ["TSD"] };
+
 function emptyRow(chain: ChainKey): Row {
   return {
     id: null,
@@ -130,7 +134,7 @@ function emptyRow(chain: ChainKey): Row {
     xpub: null,
     xpub_or_address: "",
     enabled: false,
-    stables: [],
+    stables: [...(DEFAULT_STABLES[chain] ?? [])],
   };
 }
 

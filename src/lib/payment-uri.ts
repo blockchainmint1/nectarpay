@@ -29,8 +29,21 @@ export function buildPaymentUri(
   opts?: { multiChainEvm?: boolean },
 ): string {
   if (chain === "btc") return `bitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
-  if (chain === "txc") return `texitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
+  if (chain === "txc") {
+    // Omni Layer token on TEXITcoin (e.g. Texas Stable Dollar, property #39):
+    // BIP-21 style with an `omni` property hint; `amount` is the token amount.
+    const omni = tokenSymbol ? getStable("txc", tokenSymbol) : null;
+    if (omni) {
+      const params = new URLSearchParams();
+      if (amount) params.set("amount", String(amount));
+      params.set("omni", omni.address);
+      params.set("token", omni.symbol);
+      return `texitcoin:${address}?${params.toString()}`;
+    }
+    return `texitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
+  }
   if (chain === "doge") return `dogecoin:${address}${amount ? `?amount=${amount}` : ""}`;
+
 
   if (chain === "eth" || chain === "base" || chain === "bsc") {
     const net = getNetwork(chain as ChainKind);

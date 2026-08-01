@@ -12,9 +12,10 @@ export interface EsploraTxStatus {
 export interface EsploraTx {
   txid: string;
   vin: { prevout?: { scriptpubkey_address?: string; value: number } }[];
-  vout: { scriptpubkey_address?: string; value: number }[];
+  vout: { scriptpubkey_address?: string; scriptpubkey?: string; value: number }[];
   status: EsploraTxStatus;
 }
+
 
 async function fetchJson<T>(url: string): Promise<T> {
   const res = await fetch(url);
