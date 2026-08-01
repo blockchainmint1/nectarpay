@@ -109,6 +109,9 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
       tron: "Tron",
       sol: "Solana",
       doge: "Dogecoin",
+      ltc: "Litecoin",
+      bch: "Bitcoin Cash",
+      dash: "Dash",
       isk: "Iskander",
       zcu: "ZCU",
     };

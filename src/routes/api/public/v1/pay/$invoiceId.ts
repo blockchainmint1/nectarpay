@@ -26,7 +26,7 @@ function json(body: unknown, status = 200) {
   });
 }
 
-const VALID_CHAINS = new Set(["btc", "txc", "eth", "base", "bsc", "tron", "sol", "doge", "isk", "zcu"]);
+const VALID_CHAINS = new Set(["btc", "txc", "eth", "base", "bsc", "tron", "sol", "doge", "ltc", "bch", "dash", "isk", "zcu"]);
 const VALID_STABLES = new Set(["USDC", "USDT", "PYUSD", "DAI"]);
 
 const SelectBody = z.object({

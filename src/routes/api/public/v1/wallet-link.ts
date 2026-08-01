@@ -97,17 +97,18 @@ function manifestResponse(manifest: unknown, accept: string, status = 200) {
 
 
 // Uppercase wire-protocol chain keys (wallet side).
-const WIRE_CHAINS = ["BTC", "TXC", "EVM", "LTC", "BCH", "DOGE", "TRX"] as const;
+const WIRE_CHAINS = ["BTC", "TXC", "EVM", "LTC", "BCH", "DOGE", "DASH", "TRX"] as const;
 type WireChain = (typeof WIRE_CHAINS)[number];
 
 // Map wire-protocol key → chain_configs.chain enum value (lowercase, EVM → eth).
-const WIRE_TO_DB: Record<WireChain, "btc" | "txc" | "eth" | "ltc" | "bch" | "doge" | "tron"> = {
+const WIRE_TO_DB: Record<WireChain, "btc" | "txc" | "eth" | "ltc" | "bch" | "doge" | "dash" | "tron"> = {
   BTC: "btc",
   TXC: "txc",
   EVM: "eth",
   LTC: "ltc",
   BCH: "bch",
   DOGE: "doge",
+  DASH: "dash",
   TRX: "tron",
 };
 
