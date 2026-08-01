@@ -89,7 +89,10 @@ export const Route = createFileRoute("/api/public/v1/terminals/options")({
               if (sym === nativeOptIn) continue;
               if (!enabled.includes(sym)) continue;
               let label: string;
-              if (chain === "eth") {
+              const omni = getOmniToken(chain, sym);
+              if (omni) {
+                label = omni.label;
+              } else if (chain === "eth") {
                 const nets = evmChainsForStable(sym).map((k) => EVM_CHAIN_LABEL[k]);
                 label = `${sym} on ${joinNetworks(nets)}`;
               } else {
@@ -100,7 +103,7 @@ export const Route = createFileRoute("/api/public/v1/terminals/options")({
           }
 
           return json({
-            options,
+            options: pinPreferredOptions(options),
             store_name: store?.name ?? null,
             experience: {
               tip_enabled: store?.pos_tip_enabled ?? true,
