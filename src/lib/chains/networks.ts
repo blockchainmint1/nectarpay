@@ -313,8 +313,16 @@ export function getStable(chain: ChainKind, symbol: string): StableMeta | null {
     const t = net.stables.find((s) => s.symbol.toUpperCase() === sym);
     return t ? { chain, symbol: t.symbol, address: t.mint, decimals: t.decimals } : null;
   }
+  if (net.kind === "btc-like") {
+    // Omni Layer token: "address" is the property id as a string.
+    const t = net.omniStables?.find((s) => s.symbol.toUpperCase() === sym);
+    return t
+      ? { chain, symbol: t.symbol, address: String(t.propertyId), decimals: t.decimals }
+      : null;
+  }
   return null;
 }
+
 
 export const ALL_NETWORKS = {
   btc: BTC_NETWORK,
