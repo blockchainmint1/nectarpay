@@ -2128,6 +2128,7 @@ export type Database = {
         | "bsc"
         | "ltc"
         | "bch"
+        | "dash"
       invoice_status:
         | "pending"
         | "detected"
@@ -2289,6 +2290,7 @@ export const Constants = {
         "bsc",
         "ltc",
         "bch",
+        "dash",
       ],
       invoice_status: [
         "pending",
