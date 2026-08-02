@@ -153,10 +153,26 @@ function AuthenticatedLayout() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <Outlet />
+        <div className="pb-[calc(64px+env(safe-area-inset-bottom))] md:pb-0">
+          <Outlet />
+        </div>
+        <MobileTabBar
+          items={[
+            { to: "/dashboard", label: "Overview", icon: <LayoutDashboard className="h-5 w-5" /> },
+            { to: "/stores", label: "Stores", icon: <Store className="h-5 w-5" /> },
+            { to: "/terminals", label: "Terminals", icon: <Smartphone className="h-5 w-5" /> },
+            { to: "/billing", label: "Billing", icon: <CreditCard className="h-5 w-5" /> },
+          ]}
+          more={[
+            { to: "/notifications", label: "Notifications", icon: <Bell className="h-4 w-4" /> },
+            { to: "/exports", label: "Exports", icon: <Download className="h-4 w-4" /> },
+            { to: "/docs", label: "Docs", icon: <BookOpen className="h-4 w-4" /> },
+          ]}
+        />
       </main>
     </div>
   );
+
 }
 
 function NavItem({
