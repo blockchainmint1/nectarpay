@@ -85,9 +85,9 @@ export function buildPaymentUri(
     if (opts?.multiChainEvm) {
       if (!tokenSymbol && amount) {
         const wei = toBaseUnits(amount, 18);
-        return `ethereum:${address}?value=${wei}`;
+        return withLabel(`ethereum:${address}?value=${wei}`, label);
       }
-      return `ethereum:${address}`;
+      return withLabel(`ethereum:${address}`, label);
     }
 
     // Chain-locked: emit full EIP-681 with token contract + chainId.
@@ -99,15 +99,15 @@ export function buildPaymentUri(
         const qs = baseUnits
           ? `?address=${address}&uint256=${baseUnits}`
           : `?address=${address}`;
-        return `ethereum:${target}/transfer${qs}`;
+        return withLabel(`ethereum:${target}/transfer${qs}`, label);
       }
     }
     // Native transfer.
     if (chainId && amount) {
       const wei = toBaseUnits(amount, 18);
-      return `ethereum:${address}@${chainId}?value=${wei}`;
+      return withLabel(`ethereum:${address}@${chainId}?value=${wei}`, label);
     }
-    return `ethereum:${address}${chainId ? `@${chainId}` : ""}`;
+    return withLabel(`ethereum:${address}${chainId ? `@${chainId}` : ""}`, label);
   }
 
 
@@ -118,6 +118,7 @@ export function buildPaymentUri(
       const stable = getStable("tron", tokenSymbol);
       if (stable) params.set("token", stable.address);
     }
+    if (label) params.set("label", label);
     const qs = params.toString();
     return `tron:${address}${qs ? `?${qs}` : ""}`;
   }
@@ -129,7 +130,7 @@ export function buildPaymentUri(
       const stable = getStable("sol", tokenSymbol);
       if (stable) params.set("spl-token", stable.address);
     }
-    params.set("label", "Nectar-PAY");
+    params.set("label", label || "Nectar-PAY");
     const qs = params.toString();
     return `solana:${address}${qs ? `?${qs}` : ""}`;
   }
