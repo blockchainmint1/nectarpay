@@ -19,7 +19,7 @@ export const Route = createFileRoute("/news")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "https://nectar-pay.com/news" }],
+    links: [{ rel: "canonical", href: "https://app.nectar-pay.com/news" }],
   }),
   component: NewsPage,
 });
@@ -44,11 +44,7 @@ const items: NewsItem[] = [
         <strong>10,000 NectarPay terminals</strong>, destined for the{" "}
         <strong>Dallas–Fort Worth</strong> marketplace. DFW keeps asking, and
         we keep answering. If you're a merchant in North Texas and want to be
-        first in line,{" "}
-        <Link to="/demo" style={{ color: "var(--np-honey-400)" }}>
-          book a demo
-        </Link>
-        .
+        first in line, get in touch.
       </>
     ),
   },
@@ -164,11 +160,11 @@ function NewsPage() {
             Get a terminal in your hands and join the merchants making the news.
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
-            <Link to="/demo" className="np-btn np-btn-honey text-sm">
-              Book a demo
+            <Link to="/help" className="np-btn np-btn-honey text-sm">
+              Talk to us
             </Link>
-            <Link to="/signup" className="np-btn np-btn-ghost text-sm">
-              Start free
+            <Link to="/auth" className="np-btn np-btn-ghost text-sm">
+              Sign in
             </Link>
           </div>
         </div>

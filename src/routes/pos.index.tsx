@@ -348,10 +348,10 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
           />
         )}
         {screen === "waiting" && invoice && (
-          <WaitingScreen invoice={invoice} status={status} onCancel={onCancel} />
+          <WaitingScreen invoice={invoice} status={status} onCancel={onCancel} storeName={storeName} />
         )}
         {screen === "underpaid" && invoice && status && (
-          <UnderpaidScreen invoice={invoice} status={status} onCancel={onCancel} />
+          <UnderpaidScreen invoice={invoice} status={status} onCancel={onCancel} storeName={storeName} />
         )}
 
         {screen === "signature" && invoice && (
@@ -631,16 +631,17 @@ function ChainScreen({
 
 
 
-function paymentUri(chain: string, address: string, amount: number | null, tokenSymbol: string | null): string {
+function paymentUri(chain: string, address: string, amount: number | null, tokenSymbol: string | null, label?: string | null): string {
   // `chain === "eth"` is our multi-chain-EVM umbrella (address valid on ETH/Base/BSC).
   // Emit a bare `ethereum:<addr>` so the payer's wallet picks the chain + token.
-  return buildPaymentUri(chain, address, amount, tokenSymbol, { multiChainEvm: chain === "eth" });
+  // `label` carries the store name so wallets can name the tx locally.
+  return buildPaymentUri(chain, address, amount, tokenSymbol, { multiChainEvm: chain === "eth", label });
 }
 
 
 function WaitingScreen({
-  invoice, status, onCancel,
-}: { invoice: InvoiceResp; status: InvoiceStatus | null; onCancel: () => void }) {
+  invoice, status, onCancel, storeName,
+}: { invoice: InvoiceResp; status: InvoiceStatus | null; onCancel: () => void; storeName?: string | null }) {
   const expiresMs = new Date(invoice.expires_at).getTime();
   const [remaining, setRemaining] = useState(() => Math.max(0, expiresMs - Date.now()));
   const [addressOnly, setAddressOnly] = useState(false);
@@ -682,8 +683,8 @@ function WaitingScreen({
             ? preferred
             : invoice.chain)
         : invoice.chain!;
-    return paymentUri(effectiveChain, invoice.address!, invoice.crypto_amount, invoice.token_symbol);
-  }, [hasWallet, addressOnly, invoice]);
+    return paymentUri(effectiveChain, invoice.address!, invoice.crypto_amount, invoice.token_symbol, storeName);
+  }, [hasWallet, addressOnly, invoice, storeName]);
 
 
   useEffect(() => {
@@ -849,8 +850,8 @@ function TangemTapButton({ invoiceId }: { invoiceId: string }) {
 }
 
 function UnderpaidScreen({
-  invoice, status, onCancel,
-}: { invoice: InvoiceResp; status: InvoiceStatus; onCancel: () => void }) {
+  invoice, status, onCancel, storeName,
+}: { invoice: InvoiceResp; status: InvoiceStatus; onCancel: () => void; storeName?: string | null }) {
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [showQr, setShowQr] = useState(false);
 
@@ -866,8 +867,8 @@ function UnderpaidScreen({
 
   const qrValue = useMemo(() => {
     if (!invoice.chain || !invoice.address) return "";
-    return paymentUri(invoice.chain, invoice.address, dueCrypto, invoice.token_symbol);
-  }, [invoice, dueCrypto]);
+    return paymentUri(invoice.chain, invoice.address, dueCrypto, invoice.token_symbol, storeName);
+  }, [invoice, dueCrypto, storeName]);
 
   useEffect(() => {
     if (!showQr || !qrValue) return;

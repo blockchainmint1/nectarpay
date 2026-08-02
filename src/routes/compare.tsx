@@ -19,9 +19,9 @@ export const Route = createFileRoute("/compare")({
         content:
           "1,200 terminals shipping. Non-custodial. 8+ chains. First-party merchant map. Compare us to BitPay, BTCPay, IVPay, Strike, and Square.",
       },
-          { property: "og:url", content: "https://nectar-pay.com/compare" },
+          { property: "og:url", content: "https://app.nectar-pay.com/compare" },
 ],
-    links: [{ rel: "canonical", href: "https://nectar-pay.com/compare" }],
+    links: [{ rel: "canonical", href: "https://app.nectar-pay.com/compare" }],
   }),
   component: ComparePage,
 });
@@ -68,7 +68,7 @@ const ROWS: Row[] = [
     label: "First-party merchant heatmap (find where to spend)",
     icon: MapPin,
     cells: {
-      nectar: { v: "yes", note: "/where" },
+      nectar: { v: "yes" },
       bitpay: { v: "partial", note: "Directory only" },
       btcpay: { v: "no" },
       ivpay: { v: "yes" },
@@ -221,10 +221,7 @@ export function CompareHero() {
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
           <Button asChild size="lg">
-            <Link to="/signup">Start free in 90 seconds</Link>
-          </Button>
-          <Button asChild size="lg" variant="outline">
-            <Link to="/where">See the merchant map</Link>
+            <Link to="/auth">Sign in to get started</Link>
           </Button>
         </div>
       </div>
@@ -260,7 +257,14 @@ export function CompareTable() {
         <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">Feature by feature.</h2>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
           Researched from each company's public docs and product pages. If something's wrong, tell
-          us — we'll fix it the same day.
+          us — we'll fix it the same day. Want the deep dive on the custodial incumbents?{" "}
+          <Link
+            to="/compare/bitpay-coingate-vs-nectar"
+            className="font-medium text-primary underline underline-offset-4"
+          >
+            Read the BitPay vs CoinGate vs Nectar.Pay guide
+          </Link>
+          .
         </p>
 
         <div className="mt-8 overflow-x-auto rounded-xl border border-border">
@@ -402,9 +406,6 @@ export function CompareExtras() {
               <Button asChild>
                 <a href="mailto:partners@nectar-pay.com">Become a partner</a>
               </Button>
-              <Button asChild variant="outline">
-                <Link to="/price">See pricing</Link>
-              </Button>
             </div>
           </div>
           <div className="rounded-xl border border-border bg-card/60 p-6">
@@ -433,10 +434,10 @@ export function CompareExtras() {
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Button asChild size="lg">
-              <Link to="/signup">Start free</Link>
+              <Link to="/auth">Sign in</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
-              <Link to="/integrate">Read the docs</Link>
+              <Link to="/docs">Read the docs</Link>
             </Button>
           </div>
         </div>

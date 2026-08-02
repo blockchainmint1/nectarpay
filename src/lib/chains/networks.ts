@@ -9,16 +9,41 @@ export type ChainKind =
   | "base"
   | "bsc"
   | "doge"
+  | "ltc"
+  | "bch"
+  | "dash"
   | "isk"
   | "zcu"
   | "tron"
   | "sol";
 
+/** Omni Layer token issued on a BTC-like chain (Class C / OP_RETURN sends). */
+export interface OmniToken {
+  symbol: string;
+  /** Omni property id (e.g. Texas Stable Dollar = 39 on TEXITcoin). */
+  propertyId: number;
+  decimals: number;
+  /** Human label used on checkout / POS pickers. */
+  label: string;
+}
+
 export interface BtcLikeNetwork {
   kind: "btc-like";
   symbol: ChainKind;
   name: string;
+  /**
+   * Base URL of the block indexer. Esplora and Blockbook expose different
+   * REST shapes; `indexer` selects the client adapter used by the watcher.
+   */
   esploraBase: string;
+  /** Indexer flavour. Defaults to "esplora" when omitted. */
+  indexer?: "esplora" | "blockbook";
+  /** Emit BCH-style CashAddr strings instead of legacy base58 addresses. */
+  cashAddrPrefix?: string;
+  /** Wallet URI scheme for BIP-21 payment links (e.g. "litecoin"). */
+  uriScheme?: string;
+  /** Omni Layer tokens accepted on this chain. */
+  omniStables?: OmniToken[];
   explorerTx: (txid: string) => string;
   explorerAddr: (addr: string) => string;
   pubKeyHash: number;
@@ -109,6 +134,110 @@ export const TXC_NETWORK: BtcLikeNetwork = {
   receiveBranch: 0,
   defaultAddressType: "p2pkh",
   confirmationsRequired: 1,
+  // Omni Layer tokens on TEXITcoin. Texas Stable Dollar is property #39,
+  // managed + divisible (8 decimals), sent as Class C OP_RETURN simple sends.
+  omniStables: [
+    { symbol: "TSD", propertyId: 39, decimals: 8, label: "Texas Stable Dollar (TSD)" },
+  ],
+};
+
+/** Omni token lookup for a BTC-like chain, e.g. getOmniToken("txc", "TSD"). */
+export function getOmniToken(chain: string, symbol: string): OmniToken | null {
+  const net = (ALL_NETWORKS as Record<string, { kind: string; omniStables?: OmniToken[] }>)[chain];
+  if (!net || net.kind !== "btc-like") return null;
+  const sym = symbol.toUpperCase();
+  return net.omniStables?.find((t) => t.symbol.toUpperCase() === sym) ?? null;
+}
+
+export const LTC_NETWORK: BtcLikeNetwork = {
+  kind: "btc-like",
+  symbol: "ltc",
+  name: "Litecoin",
+  esploraBase: "https://litecoinspace.org/api",
+  indexer: "esplora",
+  uriScheme: "litecoin",
+  explorerTx: (t) => `https://litecoinspace.org/tx/${t}`,
+  explorerAddr: (a) => `https://litecoinspace.org/address/${a}`,
+  pubKeyHash: 0x30,
+  scriptHash: 0x32,
+  bech32Hrp: "ltc",
+  wif: 0xb0,
+  bip32Public: 0x0488b21e,
+  bip32Private: 0x0488ade4,
+  coinType: 2,
+  decimals: 8,
+  receiveBranch: 0,
+  defaultAddressType: "p2wpkh",
+  confirmationsRequired: 3, // ~7 minutes
+};
+
+export const DOGE_NETWORK: BtcLikeNetwork = {
+  kind: "btc-like",
+  symbol: "doge",
+  name: "Dogecoin",
+  esploraBase: "https://doge1.trezor.io",
+  indexer: "blockbook",
+  uriScheme: "dogecoin",
+  explorerTx: (t) => `https://doge1.trezor.io/tx/${t}`,
+  explorerAddr: (a) => `https://doge1.trezor.io/address/${a}`,
+  pubKeyHash: 0x1e,
+  scriptHash: 0x16,
+  bech32Hrp: "",
+  wif: 0x9e,
+  bip32Public: 0x0488b21e,
+  bip32Private: 0x0488ade4,
+  coinType: 3,
+  decimals: 8,
+  receiveBranch: 0,
+  defaultAddressType: "p2pkh",
+  confirmationsRequired: 6, // ~6 minutes
+};
+
+export const BCH_NETWORK: BtcLikeNetwork = {
+  kind: "btc-like",
+  symbol: "bch",
+  name: "Bitcoin Cash",
+  esploraBase: "https://bch1.trezor.io",
+  indexer: "blockbook",
+  uriScheme: "bitcoincash",
+  cashAddrPrefix: "bitcoincash",
+  explorerTx: (t) => `https://bch1.trezor.io/tx/${t}`,
+  explorerAddr: (a) => `https://bch1.trezor.io/address/${a}`,
+  pubKeyHash: 0x00,
+  scriptHash: 0x05,
+  bech32Hrp: "",
+  wif: 0x80,
+  bip32Public: 0x0488b21e,
+  bip32Private: 0x0488ade4,
+  coinType: 145,
+  decimals: 8,
+  receiveBranch: 0,
+  defaultAddressType: "p2pkh",
+  confirmationsRequired: 2, // ~20 minutes
+};
+
+export const DASH_NETWORK: BtcLikeNetwork = {
+  kind: "btc-like",
+  symbol: "dash",
+  name: "Dash",
+  esploraBase: "https://dash1.trezor.io",
+  indexer: "blockbook",
+  uriScheme: "dash",
+  explorerTx: (t) => `https://dash1.trezor.io/tx/${t}`,
+  explorerAddr: (a) => `https://dash1.trezor.io/address/${a}`,
+  pubKeyHash: 0x4c,
+  scriptHash: 0x10,
+  bech32Hrp: "",
+  wif: 0xcc,
+  bip32Public: 0x0488b21e,
+  bip32Private: 0x0488ade4,
+  coinType: 5,
+  decimals: 8,
+  receiveBranch: 0,
+  defaultAddressType: "p2pkh",
+  // InstantSend locks most Dash payments within ~2s; the watcher treats an
+  // InstantSend-locked tx as confirmed regardless of block depth.
+  confirmationsRequired: 2,
 };
 
 export const ETH_NETWORK: EvmNetwork = {
@@ -198,12 +327,36 @@ export const SOL_NETWORK: SolanaNetwork = {
 
 /** Stable symbols we allow to be enabled per chain. Curated whitelist. */
 export const SUPPORTED_STABLES_BY_CHAIN: Partial<Record<ChainKind, readonly string[]>> = {
+  txc: ["TSD"],
   eth: ["USDC", "USDT", "PYUSD", "DAI"],
   base: ["USDC", "USDT", "DAI"],
   bsc: ["USDT", "USDC", "DAI"],
   tron: ["USDT", "USDC"],
   sol: ["USDC", "USDT", "PYUSD"],
 };
+
+/** Every stable symbol pegged to $1 in the conversion layer. */
+export const PEGGED_USD_SYMBOLS: readonly string[] = ["USDC", "USDT", "DAI", "PYUSD", "TSD"];
+
+/**
+ * Payment options pinned to the top of every picker (POS + hosted checkout),
+ * regardless of the merchant's chain display_order. Texas Stable Dollar is
+ * the flagship rail: instant, dollar-denominated, near-zero fees.
+ */
+export const PINNED_OPTION_KEYS: readonly string[] = ["txc:TSD"];
+
+/** Stable-sorts a payment-option list so pinned keys come first, in order. */
+export function pinPreferredOptions<T extends { key: string }>(options: T[]): T[] {
+  const rank = (k: string) => {
+    const i = PINNED_OPTION_KEYS.indexOf(k);
+    return i === -1 ? PINNED_OPTION_KEYS.length : i;
+  };
+  return options
+    .map((o, i) => ({ o, i }))
+    .sort((a, b) => rank(a.o.key) - rank(b.o.key) || a.i - b.i)
+    .map(({ o }) => o);
+}
+
 
 /**
  * EVM chains that share a single derived address per xpub index. For checkout
@@ -237,7 +390,14 @@ export const FAST_FINALITY_CHAINS: readonly ChainKind[] = ["base", "bsc", "tron"
  * Slow-finality chains: Bitcoin family + Ethereum L1, where reorgs/double-spends
  * carry meaningfully more risk. Mempool acceptance here is the "yolo" tier.
  */
-export const SLOW_FINALITY_CHAINS: readonly ChainKind[] = ["btc", "txc", "eth", "doge", "isk", "zcu"] as const;
+export const SLOW_FINALITY_CHAINS: readonly ChainKind[] = ["btc", "txc", "eth", "doge", "ltc", "bch", "dash", "isk", "zcu"] as const;
+
+/** Every BTC-fork chain the shared UTXO watcher handles. */
+export const BTC_LIKE_CHAINS: readonly ChainKind[] = ["btc", "txc", "ltc", "doge", "bch", "dash"] as const;
+
+export function isBtcLikeChain(chain: string | null | undefined): boolean {
+  return !!chain && (BTC_LIKE_CHAINS as readonly string[]).includes(chain);
+}
 
 export function isFastFinality(chain: string): boolean {
   return (FAST_FINALITY_CHAINS as readonly string[]).includes(chain);
@@ -264,12 +424,24 @@ export function getStable(chain: ChainKind, symbol: string): StableMeta | null {
     const t = net.stables.find((s) => s.symbol.toUpperCase() === sym);
     return t ? { chain, symbol: t.symbol, address: t.mint, decimals: t.decimals } : null;
   }
+  if (net.kind === "btc-like") {
+    // Omni Layer token: "address" is the property id as a string.
+    const t = net.omniStables?.find((s) => s.symbol.toUpperCase() === sym);
+    return t
+      ? { chain, symbol: t.symbol, address: String(t.propertyId), decimals: t.decimals }
+      : null;
+  }
   return null;
 }
+
 
 export const ALL_NETWORKS = {
   btc: BTC_NETWORK,
   txc: TXC_NETWORK,
+  ltc: LTC_NETWORK,
+  doge: DOGE_NETWORK,
+  bch: BCH_NETWORK,
+  dash: DASH_NETWORK,
   eth: ETH_NETWORK,
   base: BASE_NETWORK,
   bsc: BSC_NETWORK,

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 
-const BASE_URL = "https://nectar-pay.com";
+const BASE_URL = "https://app.nectar-pay.com";
 
 interface SitemapEntry {
   path: string;
@@ -11,18 +11,14 @@ interface SitemapEntry {
 
 const ENTRIES: SitemapEntry[] = [
   { path: "/", changefreq: "weekly", priority: "1.0" },
-  { path: "/pricing", changefreq: "weekly", priority: "0.9" },
+  { path: "/start", changefreq: "weekly", priority: "0.9" },
   { path: "/manifesto", changefreq: "monthly", priority: "0.7" },
-  { path: "/investors", changefreq: "monthly", priority: "0.6" },
-  { path: "/integrations", changefreq: "monthly", priority: "0.8" },
   { path: "/integrations/woocommerce", changefreq: "monthly", priority: "0.7" },
   { path: "/docs", changefreq: "weekly", priority: "0.7" },
   { path: "/docs/wallet-setup", changefreq: "monthly", priority: "0.6" },
   { path: "/compare", changefreq: "monthly", priority: "0.6" },
+  { path: "/compare/bitpay-coingate-vs-nectar", changefreq: "monthly", priority: "0.7" },
   { path: "/cash-out", changefreq: "monthly", priority: "0.6" },
-  { path: "/where", changefreq: "daily", priority: "0.5" },
-  { path: "/start", changefreq: "monthly", priority: "0.6" },
-  { path: "/signup", changefreq: "monthly", priority: "0.6" },
   { path: "/terms", changefreq: "yearly", priority: "0.3" },
   { path: "/privacy", changefreq: "yearly", priority: "0.3" },
 ];

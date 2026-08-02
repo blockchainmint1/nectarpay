@@ -29,9 +29,9 @@ export const Route = createFileRoute("/start")({
           "Mobile-first onboarding. Sign in with your wallet, name your business, link a wallet, done. About 90 seconds.",
       },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-          { property: "og:url", content: "https://nectar-pay.com/start" },
+          { property: "og:url", content: "https://app.nectar-pay.com/start" },
 ],
-    links: [{ rel: "canonical", href: "https://nectar-pay.com/start" }],
+    links: [{ rel: "canonical", href: "https://app.nectar-pay.com/start" }],
   }),
   component: StartPage,
 });
@@ -581,7 +581,7 @@ function WalletLink({ storeId, onDone }: { storeId: string; onDone: () => void }
       const result = await createCode({ data: { storeId, allowNewWallet: false } });
       const canonical =
         (import.meta.env.VITE_PUBLIC_SITE_URL as string | undefined)?.replace(/\/$/, "") ||
-        "https://nectar-pay.com";
+        "https://app.nectar-pay.com";
       const linkUrl = `${canonical}/api/public/v1/wallet-link?token=${encodeURIComponent(result.token)}`;
       const dataUrl = await qrToDataURL(linkUrl, { width: 320, margin: 1 });
       setQrDataUrl(dataUrl);

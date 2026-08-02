@@ -47,7 +47,7 @@ function ThanksPage() {
               If you just paid, check your email — we&rsquo;ll confirm as soon as it lands.
             </p>
             <Button asChild variant="outline" className="mt-6">
-              <Link to="/price">Back to pricing</Link>
+              <Link to="/docs">Back to docs</Link>
             </Button>
           </div>
         ) : isLoading || !data ? (
@@ -90,7 +90,7 @@ function ThanksPage() {
                 <Link to="/">Back to home</Link>
               </Button>
               <Button asChild variant="ghost">
-                <Link to="/integrate">While you wait — read the docs</Link>
+                <Link to="/docs">While you wait — read the docs</Link>
               </Button>
             </div>
           </div>

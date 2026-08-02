@@ -21,16 +21,57 @@ function toBaseUnits(amount: number, decimals: number): string {
   return combined || "0";
 }
 
+/**
+ * Append a `label=<vendor name>` hint to a URI's query string.
+ * Wallets that support local vendor labelling (e.g. CryptoPOP) read this and
+ * name the transaction in history — nothing leaves the device, the chain and
+ * our backend still only ever see an address.
+ */
+function withLabel(uri: string, label?: string | null): string {
+  const name = label?.trim();
+  if (!name) return uri;
+  const sep = uri.includes("?") ? "&" : "?";
+  return `${uri}${sep}label=${encodeURIComponent(name)}`;
+}
+
 export function buildPaymentUri(
   chain: string,
   address: string,
   amount: number | null,
   tokenSymbol: string | null,
-  opts?: { multiChainEvm?: boolean },
+  opts?: { multiChainEvm?: boolean; label?: string | null },
 ): string {
-  if (chain === "btc") return `bitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
-  if (chain === "txc") return `texitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
-  if (chain === "doge") return `dogecoin:${address}${amount ? `?amount=${amount}` : ""}`;
+  const label = opts?.label ?? null;
+  if (chain === "btc") return withLabel(`bitcoin:${address}${amount ? `?amount=${amount}` : ""}`, label);
+  if (chain === "txc") {
+    // Omni Layer token on TEXITcoin (e.g. Texas Stable Dollar, property #39):
+    // BIP-21 style with an `omni` property hint; `amount` is the token amount.
+    const omni = tokenSymbol ? getStable("txc", tokenSymbol) : null;
+    if (omni) {
+      const params = new URLSearchParams();
+      if (amount) params.set("amount", String(amount));
+      params.set("omni", omni.address);
+      params.set("token", omni.symbol);
+      return withLabel(`texitcoin:${address}?${params.toString()}`, label);
+    }
+    return withLabel(`texitcoin:${address}${amount ? `?amount=${amount}` : ""}`, label);
+  }
+  // Bitcoin forks that use plain BIP-21 with their own URI scheme.
+  const BIP21_SCHEMES: Record<string, string> = {
+    doge: "dogecoin",
+    ltc: "litecoin",
+    dash: "dash",
+  };
+  if (BIP21_SCHEMES[chain]) {
+    return withLabel(`${BIP21_SCHEMES[chain]}:${address}${amount ? `?amount=${amount}` : ""}`, label);
+  }
+  if (chain === "bch") {
+    // CashAddr strings already carry the "bitcoincash:" prefix, which is
+    // itself the BIP-21 scheme — never prepend it twice.
+    const base = address.includes(":") ? address : `bitcoincash:${address}`;
+    return withLabel(`${base}${amount ? `?amount=${amount}` : ""}`, label);
+  }
+
 
   if (chain === "eth" || chain === "base" || chain === "bsc") {
     const net = getNetwork(chain as ChainKind);
@@ -44,9 +85,9 @@ export function buildPaymentUri(
     if (opts?.multiChainEvm) {
       if (!tokenSymbol && amount) {
         const wei = toBaseUnits(amount, 18);
-        return `ethereum:${address}?value=${wei}`;
+        return withLabel(`ethereum:${address}?value=${wei}`, label);
       }
-      return `ethereum:${address}`;
+      return withLabel(`ethereum:${address}`, label);
     }
 
     // Chain-locked: emit full EIP-681 with token contract + chainId.
@@ -58,15 +99,15 @@ export function buildPaymentUri(
         const qs = baseUnits
           ? `?address=${address}&uint256=${baseUnits}`
           : `?address=${address}`;
-        return `ethereum:${target}/transfer${qs}`;
+        return withLabel(`ethereum:${target}/transfer${qs}`, label);
       }
     }
     // Native transfer.
     if (chainId && amount) {
       const wei = toBaseUnits(amount, 18);
-      return `ethereum:${address}@${chainId}?value=${wei}`;
+      return withLabel(`ethereum:${address}@${chainId}?value=${wei}`, label);
     }
-    return `ethereum:${address}${chainId ? `@${chainId}` : ""}`;
+    return withLabel(`ethereum:${address}${chainId ? `@${chainId}` : ""}`, label);
   }
 
 
@@ -77,6 +118,7 @@ export function buildPaymentUri(
       const stable = getStable("tron", tokenSymbol);
       if (stable) params.set("token", stable.address);
     }
+    if (label) params.set("label", label);
     const qs = params.toString();
     return `tron:${address}${qs ? `?${qs}` : ""}`;
   }
@@ -88,7 +130,7 @@ export function buildPaymentUri(
       const stable = getStable("sol", tokenSymbol);
       if (stable) params.set("spl-token", stable.address);
     }
-    params.set("label", "Nectar-PAY");
+    params.set("label", label || "Nectar-PAY");
     const qs = params.toString();
     return `solana:${address}${qs ? `?${qs}` : ""}`;
   }

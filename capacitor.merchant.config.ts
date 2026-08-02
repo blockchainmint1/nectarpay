@@ -23,7 +23,7 @@ const config: CapacitorConfig = {
   webDir: "dist",
   server: {
     // Live-loaded UI so store updates ship without a resubmit.
-    url: "https://nectar-pay.com/m?mode=merchant",
+    url: "https://app.nectar-pay.com/m?mode=merchant",
     androidScheme: "https",
     iosScheme: "https",
     cleartext: false,

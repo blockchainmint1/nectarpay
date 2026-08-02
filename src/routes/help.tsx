@@ -43,7 +43,7 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
     q: "How much does it cost?",
     a: (
       <>
-        The software is free to start. Our POS terminal kit is $499 up front plus a $228 first-year service fee. See the <A href="/price">pricing</A> and <A href="/fees">fees</A> pages for the full breakdown — there are no per-transaction card fees because there is no card network.
+        The software is free to start. Our POS terminal kit is $499 up front plus a $228 first-year service fee. See the <A href="/docs">docs</A> for the full breakdown — there are no per-transaction card fees because there is no card network.
       </>
     ),
   },
@@ -87,7 +87,8 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
     q: "How do I get a demo?",
     a: (
       <>
-        Head to <A href="/demo">/demo</A> — book a live walkthrough with our team, or watch the pre-recorded videos covering account setup, processing a transaction, velocity of money, and cashing out.
+        Call or email us and we'll set up a live walkthrough covering account
+        setup, processing a transaction, velocity of money, and cashing out.
       </>
     ),
   },
@@ -95,7 +96,7 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
     q: "I have a store on WooCommerce or PrestaShop — does NectarPay work?",
     a: (
       <>
-        Yes. We ship official plugins for WooCommerce and PrestaShop today, with more integrations rolling out. See <A href="/integrations">/integrations</A> for the current list and setup docs.
+        Yes. We ship official plugins for WooCommerce and PrestaShop today, with more integrations rolling out. See <A href="/docs">/docs</A> for the current list and setup docs.
       </>
     ),
   },
@@ -103,17 +104,13 @@ const FAQS: { q: string; a: React.ReactNode }[] = [
     q: "Is there an API?",
     a: (
       <>
-        Yes. Public REST endpoints for invoicing, payments, and terminal control. See <A href="/docs">/docs</A> for the full reference and <A href="/integrate">/integrate</A> for a quickstart.
+        Yes. Public REST endpoints for invoicing, payments, and terminal control. See <A href="/docs">/docs</A> for the full reference and quickstart.
       </>
     ),
   },
   {
     q: "How do I become an affiliate or sales rep?",
-    a: (
-      <>
-        Sign up, then visit /affiliate in your dashboard for your referral link, or see the public <A href="/affiliates">affiliates</A> page for program details.
-      </>
-    ),
+    a: <>Get in touch with our team and we'll walk you through the program.</>,
   },
 ];
 
@@ -134,7 +131,7 @@ export const Route = createFileRoute("/help")({
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { rel: "canonical", href: "https://nectar-pay.com/help" },
+      { rel: "canonical", href: "https://app.nectar-pay.com/help" },
     ],
   }),
   component: HelpPage,
@@ -225,17 +222,6 @@ function HelpPage() {
           </a>
           <div className="flex items-start gap-3 rounded-xl border border-border bg-card/60 p-5">
             <MessageSquare className="mt-0.5 h-5 w-5 text-primary" />
-            <div>
-              <div className="text-xs uppercase tracking-widest text-muted-foreground">
-                Book a demo
-              </div>
-              <div className="mt-1 font-semibold">
-                <a href="/demo" className="underline underline-offset-4">
-                  Schedule a walkthrough
-                </a>
-              </div>
-              <div className="text-xs text-muted-foreground">Live, with a human</div>
-            </div>
           </div>
         </div>
 

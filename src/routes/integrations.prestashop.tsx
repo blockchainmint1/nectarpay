@@ -19,9 +19,9 @@ export const Route = createFileRoute("/integrations/prestashop")({
         content:
           "Non-custodial crypto payments for PrestaShop 8.x. Ten-minute setup, no monthly fee.",
       },
-      { property: "og:url", content: "https://nectar-pay.com/integrations/prestashop" },
+      { property: "og:url", content: "https://app.nectar-pay.com/integrations/prestashop" },
     ],
-    links: [{ rel: "canonical", href: "https://nectar-pay.com/integrations/prestashop" }],
+    links: [{ rel: "canonical", href: "https://app.nectar-pay.com/integrations/prestashop" }],
   }),
   component: PrestaShopPage,
 });
@@ -56,7 +56,7 @@ function PrestaShopPage() {
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
           Module zip becomes available after phase 7 of the rollout — the PHP source is already in
-          our repo. Reach out via <Link to="/contact" className="underline">contact</Link> for
+          our repo. Reach out via <Link to="/help" className="underline">help</Link> for
           early access.
         </p>
 

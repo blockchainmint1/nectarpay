@@ -4,9 +4,11 @@
 //   2) Poll the chain for incoming credits to those addresses
 //   3) Match credits to open invoices, mark paid/underpaid, emit notifications & webhooks
 
-import { BTC_NETWORK, TXC_NETWORK, ETH_NETWORK, EVM_NETWORKS, TRON_NETWORK, SOL_NETWORK, isFastFinality, type EvmNetwork } from "./chains/networks";
+import { BTC_NETWORK, TXC_NETWORK, ETH_NETWORK, getNetwork, isBtcLikeChain, type BtcLikeNetwork, type ChainKind, EVM_NETWORKS, TRON_NETWORK, SOL_NETWORK, isFastFinality, type EvmNetwork } from "./chains/networks";
 import { deriveBtcLikeAddress, deriveEvmAddress, deriveTronAddress } from "./chains/derive.server";
 import { extractIncoming, getAddressTxs, getTipHeight } from "./chains/btc-like.server";
+import { extractOmniIncoming } from "./chains/omni.server";
+import { getOmniToken } from "./chains/networks";
 import { getBlockNumber, getTransfersTo } from "./chains/evm.server";
 import { getTronBlockNumber, getTronTransfersTo } from "./chains/tron.server";
 import { getSolanaSlot, getSolanaCreditsTo } from "./chains/solana.server";
@@ -274,23 +276,36 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
-    .select("id, store_id, chain, address, fiat_amount, status, rate, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow)")
+    .select("id, store_id, chain, address, token_symbol, fiat_amount, status, rate, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow)")
     .eq("id", invoiceId)
     .maybeSingle();
-  if (!inv || !inv.address || (inv.chain !== "btc" && inv.chain !== "txc")) return false;
+  if (!inv || !inv.address || !isBtcLikeChain(inv.chain)) return false;
   if (["confirmed", "overpaid", "expired", "cancelled", "failed"].includes(inv.status)) return false;
 
-  const net = inv.chain === "btc" ? BTC_NETWORK : TXC_NETWORK;
+  const chainKey = inv.chain as ChainKind;
+  const net = getNetwork(chainKey) as BtcLikeNetwork;
+  // Omni Layer token invoice (e.g. TSD on TEXITcoin) — credits come from the
+  // OP_RETURN payload, not the native value of the output.
+  const omni = inv.token_symbol ? getOmniToken(chainKey, inv.token_symbol as string) : null;
   const [tip, txs] = await Promise.all([getTipHeight(net), getAddressTxs(net, inv.address)]);
-  const credits = extractIncoming(txs, inv.address, tip);
+  const credits = omni
+    ? extractOmniIncoming(txs, inv.address, omni.propertyId, omni.decimals, tip).map((c) => ({
+        ...c,
+        amountSats: Math.round(c.amount * 10 ** net.decimals),
+      }))
+    : extractIncoming(txs, inv.address, tip);
   let changed = false;
 
   for (const credit of credits) {
     const paidCrypto = credit.amountSats / 10 ** net.decimals;
     const lockedRate = inv.rate == null ? null : Number(inv.rate);
-    const usdRate = lockedRate && lockedRate > 0 ? lockedRate : await getUsdRate(inv.chain);
+    const usdRate = omni
+      ? 1
+      : lockedRate && lockedRate > 0
+        ? lockedRate
+        : await getUsdRate(chainKey);
     const paidUsd = paidCrypto * usdRate;
-    const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd, inv.chain);
+    const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd, chainKey);
     const isConfirmed = credit.confirmations >= required;
     await recordTransaction(inv.id, credit.txid, paidCrypto, credit.confirmations, null, isConfirmed);
     if (isConfirmed) {
@@ -488,12 +503,12 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
   for (const [chain, configList] of byChain.entries()) {
     const r: WatcherResult = { chain, addresses: 0, credits: 0, invoicesUpdated: 0 };
     try {
-      if (chain === "btc" || chain === "txc") {
+      if (isBtcLikeChain(chain)) {
         const cfgByStoreId = new Map(configList.map((c) => [c.store_id, c]));
         const { data: openInvoices } = await supabaseAdmin
           .from("invoices")
-          .select("id, store_id, address, fiat_amount, status, rate, crypto_amount")
-          .eq("chain", chain)
+          .select("id, store_id, address, token_symbol, fiat_amount, status, rate, crypto_amount")
+          .eq("chain", chain as ChainKind)
           .in("store_id", configList.map((c) => c.store_id))
           .in("status", ["pending", "detected", "underpaid"])
           .not("address", "is", null);
@@ -504,7 +519,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           continue;
         }
 
-        const net = chain === "btc" ? BTC_NETWORK : TXC_NETWORK;
+        const net = getNetwork(chain as ChainKind) as BtcLikeNetwork;
         const tip = await getTipHeight(net);
 
         for (const cfg of configList) {
@@ -521,8 +536,14 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
 
         for (const inv of openInvoices ?? []) {
           if (!inv.address) continue;
+          const omni = inv.token_symbol ? getOmniToken(chain, inv.token_symbol as string) : null;
           const txs = await getAddressTxs(net, inv.address).catch(() => []);
-          const credits = extractIncoming(txs, inv.address, tip);
+          const credits = omni
+            ? extractOmniIncoming(txs, inv.address, omni.propertyId, omni.decimals, tip).map((c) => ({
+                ...c,
+                amountSats: Math.round(c.amount * 10 ** net.decimals),
+              }))
+            : extractIncoming(txs, inv.address, tip);
           r.credits += credits.length;
           const cfg = cfgByStoreId.get(inv.store_id);
           for (const credit of credits) {
@@ -531,7 +552,11 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             // tiny market move between quoting and payment makes an exact-
             // amount payment look "underpaid" forever.
             const lockedRate = inv.rate == null ? null : Number(inv.rate);
-            const usdRate = lockedRate && lockedRate > 0 ? lockedRate : await getUsdRate(chain);
+            const usdRate = omni
+              ? 1
+              : lockedRate && lockedRate > 0
+                ? lockedRate
+                : await getUsdRate(chain);
             const paidUsd = paidCrypto * usdRate;
             const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, paidUsd, chain);
             const isConfirmed = credit.confirmations >= required;

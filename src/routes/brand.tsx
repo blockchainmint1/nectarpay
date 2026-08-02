@@ -18,9 +18,9 @@ export const Route = createFileRoute("/brand")({
         content:
           "One hive. Endless applications. The full Nectar.Pay brand system v1.0.",
       },
-      { property: "og:url", content: "https://nectar-pay.com/brand" },
+      { property: "og:url", content: "https://app.nectar-pay.com/brand" },
     ],
-    links: [{ rel: "canonical", href: "https://nectar-pay.com/brand" }],
+    links: [{ rel: "canonical", href: "https://app.nectar-pay.com/brand" }],
   }),
   component: BrandPage,
 });

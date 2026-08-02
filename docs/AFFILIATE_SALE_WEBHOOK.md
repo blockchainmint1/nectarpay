@@ -8,7 +8,7 @@ attribute external revenue to the affiliate who drove the traffic.
 
 ## Route
 
-`POST https://nectar-pay.com/api/public/v1/hooks/affiliate-sale`
+`POST https://app.nectar-pay.com/api/public/v1/hooks/affiliate-sale`
 
 Stable URLs also work:
 - `https://project--faa7c23e-4f75-4eed-8c8c-23234e4242f7.lovable.app/api/public/v1/hooks/affiliate-sale`
@@ -88,7 +88,7 @@ body), `500` (misconfigured or DB error). Body: `{ "error": "…" }`.
 BODY='{"source":"blockchainmint","external_order_id":"bm_ord_test_1","order_number":"BM-1","affiliate_code":"ABC12345","total_usd":727,"currency":"USD","paid_at":"2026-07-14T10:12:00Z"}'
 T=$(date +%s)
 SIG="t=$T,v1=$(printf "%s.%s" "$T" "$BODY" | openssl dgst -sha256 -hmac "$SECRET" | awk '{print $2}')"
-curl -sS -X POST https://nectar-pay.com/api/public/v1/hooks/affiliate-sale \
+curl -sS -X POST https://app.nectar-pay.com/api/public/v1/hooks/affiliate-sale \
   -H "Authorization: Bearer $SECRET" \
   -H "X-Nectar-Signature: $SIG" \
   -H "Content-Type: application/json" \

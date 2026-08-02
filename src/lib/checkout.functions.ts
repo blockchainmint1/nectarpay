@@ -97,7 +97,7 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
     // enabled on the shared EVM xpub (chain="eth"), we list every EVM network
     // where the watcher will detect that token, since they all share the same
     // derived address — e.g. "USDC on Ethereum, Base or BSC".
-    const { SUPPORTED_STABLES_BY_CHAIN, evmChainsForStable, EVM_CHAIN_LABEL } = await import(
+    const { SUPPORTED_STABLES_BY_CHAIN, evmChainsForStable, EVM_CHAIN_LABEL, getOmniToken, pinPreferredOptions } = await import(
       "@/lib/chains/networks"
     );
     const NATIVE_LABEL: Record<string, string> = {
@@ -109,6 +109,9 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
       tron: "Tron",
       sol: "Solana",
       doge: "Dogecoin",
+      ltc: "Litecoin",
+      bch: "Bitcoin Cash",
+      dash: "Dash",
       isk: "Iskander",
       zcu: "ZCU",
     };
@@ -127,7 +130,7 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
     // Per-chain native opt-in: for chains where the merchant can choose to
     // disable the native asset and only accept stablecoins, we only surface
     // the native option when the matching symbol is present in `stables`.
-    const NATIVE_OPT_IN: Record<string, string> = { eth: "ETH", tron: "TRX", sol: "SOL" };
+    const NATIVE_OPT_IN: Record<string, string> = { txc: "TXC", eth: "ETH", tron: "TRX", sol: "SOL" };
 
     const availableOptions: CheckoutPaymentOption[] = [];
     for (const cfg of cfgs ?? []) {
@@ -148,7 +151,10 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
         if (sym === nativeOptIn) continue; // native handled above
         if (!enabled.includes(sym)) continue;
         let label: string;
-        if (chain === "eth") {
+        const omni = getOmniToken(chain, sym);
+        if (omni) {
+          label = omni.label;
+        } else if (chain === "eth") {
           const nets = evmChainsForStable(sym).map((k) => EVM_CHAIN_LABEL[k]);
           label = `${sym} on ${joinNetworks(nets)}`;
         } else {
@@ -189,7 +195,7 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
         confirmedAt: t.confirmed_at,
         firstSeenAt: t.first_seen_at,
       })),
-      availableOptions,
+      availableOptions: pinPreferredOptions(availableOptions),
     };
   });
 

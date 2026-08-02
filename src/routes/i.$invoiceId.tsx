@@ -44,6 +44,9 @@ const CHAIN_LABEL: Record<string, string> = {
   tron: "Tron",
   sol: "Solana",
   doge: "Dogecoin",
+  ltc: "Litecoin",
+  bch: "Bitcoin Cash",
+  dash: "Dash",
   isk: "Iskander",
   zcu: "ZCU",
 };
@@ -80,8 +83,9 @@ function paymentUri(
   address: string,
   amount: number | null,
   tokenSymbol: string | null = null,
+  label?: string | null,
 ): string {
-  return buildPaymentUri(chain, address, amount, tokenSymbol, { multiChainEvm: chain === "eth" });
+  return buildPaymentUri(chain, address, amount, tokenSymbol, { multiChainEvm: chain === "eth", label });
 }
 
 
@@ -315,6 +319,7 @@ function CheckoutPage() {
                     requiredConfs={requiredConfs}
                     availableOptions={availableOptions}
                     canSwitchChain={inv.status === "pending" && txs.length === 0}
+                    storeName={store?.name ?? null}
                   />
 
                 )}
@@ -375,6 +380,7 @@ function PayingFrame({
   requiredConfs,
   availableOptions,
   canSwitchChain,
+  storeName,
 }: {
   inv: Invoice;
   memo: string | null;
@@ -384,6 +390,7 @@ function PayingFrame({
   requiredConfs: number;
   availableOptions: CheckoutPaymentOption[];
   canSwitchChain: boolean;
+  storeName?: string | null;
 }) {
   const isDetected = inv.status === "detected" || inv.status === "underpaid";
   const latestTx = txs[0];
@@ -421,7 +428,7 @@ function PayingFrame({
 
   const uri = addressOnlyQr
     ? inv.address
-    : paymentUri(inv.chain, inv.address, inv.cryptoAmount, inv.tokenSymbol);
+    : paymentUri(inv.chain, inv.address, inv.cryptoAmount, inv.tokenSymbol, storeName);
 
 
 

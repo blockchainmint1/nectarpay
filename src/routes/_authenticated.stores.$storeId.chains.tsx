@@ -45,7 +45,7 @@ export const Route = createFileRoute("/_authenticated/stores/$storeId/chains")({
   component: ChainsPage,
 });
 
-type ChainKey = "btc" | "txc" | "eth" | "tron" | "sol";
+type ChainKey = "btc" | "txc" | "eth" | "ltc" | "bch" | "doge" | "dash" | "tron" | "sol";
 
 type ChainMeta = {
   key: ChainKey;
@@ -78,6 +78,34 @@ const CHAINS: ChainMeta[] = [
     hint: "One account-level xpub covers every EVM chain — same derivation path (m/0/n), same addresses. Enable the chains you accept; we watch them all against this xpub.",
   },
   {
+    key: "ltc",
+    name: "Litecoin (LTC)",
+    inputKind: "xpub",
+    placeholder: "xpub6C… / zpub…",
+    hint: "Extended public key. Native SegWit (ltc1…) address per invoice, ~2.5 min blocks.",
+  },
+  {
+    key: "bch",
+    name: "Bitcoin Cash (BCH)",
+    inputKind: "xpub",
+    placeholder: "xpub6C… at m/44'/145'/0'",
+    hint: "Extended public key. We emit CashAddr (bitcoincash:q…) addresses so every BCH wallet scans cleanly.",
+  },
+  {
+    key: "doge",
+    name: "Dogecoin (DOGE)",
+    inputKind: "xpub",
+    placeholder: "xpub6C… at m/44'/3'/0'",
+    hint: "Extended public key. Legacy D… address per invoice, ~1 min blocks.",
+  },
+  {
+    key: "dash",
+    name: "Dash (DASH)",
+    inputKind: "xpub",
+    placeholder: "xpub6C… at m/44'/5'/0'",
+    hint: "Extended public key. Legacy X… address per invoice — fastest in-person settlement of the Bitcoin forks.",
+  },
+  {
     key: "tron",
     name: "Tron (TRX / USDT-TRC20)",
     inputKind: "xpub-or-address",
@@ -99,6 +127,7 @@ const CHAINS: ChainMeta[] = [
 // server. Kept inline because this is a client component and the server
 // network module pulls in node-only crypto deps.
 const STABLES_BY_CHAIN: Partial<Record<ChainKey, readonly string[]>> = {
+  txc: ["TSD", "TXC"],
   eth: ["ETH", "USDC", "USDT", "PYUSD", "DAI"],
   tron: ["TRX", "USDT", "USDC"],
   sol: ["SOL", "USDC", "USDT", "PYUSD"],
@@ -109,6 +138,7 @@ const STABLES_BY_CHAIN: Partial<Record<ChainKey, readonly string[]>> = {
 // Native tokens — rendered alongside stables under "Accept on this network",
 // but labelled as the chain's native asset rather than a stablecoin.
 const NATIVE_BY_CHAIN: Partial<Record<ChainKey, string>> = {
+  txc: "TXC",
   eth: "ETH",
   tron: "TRX",
   sol: "SOL",
@@ -123,14 +153,19 @@ type Row = {
   stables: string[];
 };
 
+// Standard setup defaults: TEXITcoin is enabled by default and Texas Stable
+// Dollar is checked on it. Native TXC stays opt-in.
+const DEFAULT_STABLES: Partial<Record<ChainKey, string[]>> = { txc: ["TSD"] };
+const DEFAULT_ENABLED: Partial<Record<ChainKey, boolean>> = { txc: true };
+
 function emptyRow(chain: ChainKey): Row {
   return {
     id: null,
     chain,
     xpub: null,
     xpub_or_address: "",
-    enabled: false,
-    stables: [],
+    enabled: DEFAULT_ENABLED[chain] ?? false,
+    stables: [...(DEFAULT_STABLES[chain] ?? [])],
   };
 }
 
@@ -701,7 +736,7 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
       // against a different host.
       const canonical =
         (import.meta.env.VITE_PUBLIC_SITE_URL as string | undefined)?.replace(/\/$/, "") ||
-        "https://nectar-pay.com";
+        "https://app.nectar-pay.com";
       const linkUrl = `${canonical}/api/public/v1/wallet-link?token=${encodeURIComponent(result.token)}`;
       const qr = await qrToDataURL(linkUrl, { width: 320, margin: 1 });
       setQrDataUrl(qr);

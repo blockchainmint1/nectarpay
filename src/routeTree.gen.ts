@@ -9,15 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WhereRouteImport } from './routes/where'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as StartRouteImport } from './routes/start'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as SignupRouteImport } from './routes/signup'
-import { Route as SetupRouteImport } from './routes/setup'
 import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as PriceRouteImport } from './routes/price'
 import { Route as PosBuildIdRouteImport } from './routes/pos-build-id'
 import { Route as PosApkRouteImport } from './routes/pos-apk'
 import { Route as PosRouteImport } from './routes/pos'
@@ -27,23 +22,16 @@ import { Route as ManifestoRouteImport } from './routes/manifesto'
 import { Route as MRouteImport } from './routes/m'
 import { Route as LiveRouteImport } from './routes/live'
 import { Route as KycRouteImport } from './routes/kyc'
-import { Route as InvestorsRouteImport } from './routes/investors'
-import { Route as IntegrateRouteImport } from './routes/integrate'
 import { Route as HelpRouteImport } from './routes/help'
-import { Route as FeesRouteImport } from './routes/fees'
 import { Route as DocsRouteImport } from './routes/docs'
-import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CashOutRouteImport } from './routes/cash-out'
 import { Route as BrandRouteImport } from './routes/brand'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AffiliatesRouteImport } from './routes/affiliates'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PosIndexRouteImport } from './routes/pos.index'
-import { Route as IntegrationsIndexRouteImport } from './routes/integrations.index'
-import { Route as DemoIndexRouteImport } from './routes/demo.index'
 import { Route as SdkPayhmeDotjsRouteImport } from './routes/sdk.payhme[.]js'
 import { Route as PosSettingsRouteImport } from './routes/pos.settings'
 import { Route as PosPrinterTestRouteImport } from './routes/pos.printer-test'
@@ -59,14 +47,13 @@ import { Route as GoKitRouteImport } from './routes/go.kit'
 import { Route as DocsWalletSetupRouteImport } from './routes/docs.wallet-setup'
 import { Route as DocsTapToPayTangemRouteImport } from './routes/docs.tap-to-pay-tangem'
 import { Route as DevTangemTestRouteImport } from './routes/dev.tangem-test'
-import { Route as DemoHowToRouteImport } from './routes/demo.how-to'
+import { Route as CompareBitpayCoingateVsNectarRouteImport } from './routes/compare_.bitpay-coingate-vs-nectar'
 import { Route as CheckoutThanksRouteImport } from './routes/checkout.thanks'
 import { Route as AuthenticatedTerminalsRouteImport } from './routes/_authenticated.terminals'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated.notifications'
 import { Route as AuthenticatedExportsRouteImport } from './routes/_authenticated.exports'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated.billing'
-import { Route as AuthenticatedAffiliateRouteImport } from './routes/_authenticated.affiliate'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 import { Route as AuthenticatedStoresIndexRouteImport } from './routes/_authenticated.stores.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated.admin.index'
@@ -131,11 +118,6 @@ import { Route as ApiPublicV1TerminalsInvoiceIdRouteImport } from './routes/api/
 import { Route as ApiPublicV1TerminalsInvoiceIdReceiptRouteImport } from './routes/api/public/v1/terminals/invoice.$id.receipt'
 import { Route as ApiPublicV1TerminalsInvoiceIdCancelRouteImport } from './routes/api/public/v1/terminals/invoice.$id.cancel'
 
-const WhereRoute = WhereRouteImport.update({
-  id: '/where',
-  path: '/where',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -151,29 +133,9 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SignupRoute = SignupRouteImport.update({
-  id: '/signup',
-  path: '/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SetupRoute = SetupRouteImport.update({
-  id: '/setup',
-  path: '/setup',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PricingRoute = PricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PriceRoute = PriceRouteImport.update({
-  id: '/price',
-  path: '/price',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PosBuildIdRoute = PosBuildIdRouteImport.update({
@@ -221,34 +183,14 @@ const KycRoute = KycRouteImport.update({
   path: '/kyc',
   getParentRoute: () => rootRouteImport,
 } as any)
-const InvestorsRoute = InvestorsRouteImport.update({
-  id: '/investors',
-  path: '/investors',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IntegrateRoute = IntegrateRouteImport.update({
-  id: '/integrate',
-  path: '/integrate',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const HelpRoute = HelpRouteImport.update({
   id: '/help',
   path: '/help',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FeesRoute = FeesRouteImport.update({
-  id: '/fees',
-  path: '/fees',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DocsRoute = DocsRouteImport.update({
   id: '/docs',
   path: '/docs',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ContactRoute = ContactRouteImport.update({
-  id: '/contact',
-  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -276,11 +218,6 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AffiliatesRoute = AffiliatesRouteImport.update({
-  id: '/affiliates',
-  path: '/affiliates',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
@@ -294,16 +231,6 @@ const PosIndexRoute = PosIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => PosRoute,
-} as any)
-const IntegrationsIndexRoute = IntegrationsIndexRouteImport.update({
-  id: '/integrations/',
-  path: '/integrations/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DemoIndexRoute = DemoIndexRouteImport.update({
-  id: '/demo/',
-  path: '/demo/',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const SdkPayhmeDotjsRoute = SdkPayhmeDotjsRouteImport.update({
   id: '/sdk/payhme.js',
@@ -380,11 +307,12 @@ const DevTangemTestRoute = DevTangemTestRouteImport.update({
   path: '/dev/tangem-test',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DemoHowToRoute = DemoHowToRouteImport.update({
-  id: '/demo/how-to',
-  path: '/demo/how-to',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const CompareBitpayCoingateVsNectarRoute =
+  CompareBitpayCoingateVsNectarRouteImport.update({
+    id: '/compare_/bitpay-coingate-vs-nectar',
+    path: '/compare/bitpay-coingate-vs-nectar',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const CheckoutThanksRoute = CheckoutThanksRouteImport.update({
   id: '/thanks',
   path: '/thanks',
@@ -414,11 +342,6 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedAffiliateRoute = AuthenticatedAffiliateRouteImport.update({
-  id: '/affiliate',
-  path: '/affiliate',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -786,18 +709,13 @@ const ApiPublicV1TerminalsInvoiceIdCancelRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/affiliates': typeof AffiliatesRoute
   '/auth': typeof AuthRoute
   '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
-  '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
-  '/fees': typeof FeesRoute
   '/help': typeof HelpRoute
-  '/integrate': typeof IntegrateRoute
-  '/investors': typeof InvestorsRoute
   '/kyc': typeof KycRoute
   '/live': typeof LiveRoute
   '/m': typeof MRoute
@@ -807,24 +725,18 @@ export interface FileRoutesByFullPath {
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
   '/pos-build-id': typeof PosBuildIdRoute
-  '/price': typeof PriceRoute
-  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/setup': typeof SetupRoute
-  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/start': typeof StartRoute
   '/terms': typeof TermsRoute
-  '/where': typeof WhereRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
-  '/affiliate': typeof AuthenticatedAffiliateRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exports': typeof AuthenticatedExportsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/terminals': typeof AuthenticatedTerminalsRoute
   '/checkout/thanks': typeof CheckoutThanksRoute
-  '/demo/how-to': typeof DemoHowToRoute
+  '/compare/bitpay-coingate-vs-nectar': typeof CompareBitpayCoingateVsNectarRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
@@ -840,8 +752,6 @@ export interface FileRoutesByFullPath {
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
-  '/demo/': typeof DemoIndexRoute
-  '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
   '/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
@@ -908,18 +818,13 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/affiliates': typeof AffiliatesRoute
   '/auth': typeof AuthRoute
   '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
-  '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
-  '/fees': typeof FeesRoute
   '/help': typeof HelpRoute
-  '/integrate': typeof IntegrateRoute
-  '/investors': typeof InvestorsRoute
   '/kyc': typeof KycRoute
   '/live': typeof LiveRoute
   '/m': typeof MRoute
@@ -928,23 +833,17 @@ export interface FileRoutesByTo {
   '/onramp': typeof OnrampRoute
   '/pos-apk': typeof PosApkRoute
   '/pos-build-id': typeof PosBuildIdRoute
-  '/price': typeof PriceRoute
-  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/setup': typeof SetupRoute
-  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/start': typeof StartRoute
   '/terms': typeof TermsRoute
-  '/where': typeof WhereRoute
-  '/affiliate': typeof AuthenticatedAffiliateRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exports': typeof AuthenticatedExportsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/terminals': typeof AuthenticatedTerminalsRoute
   '/checkout/thanks': typeof CheckoutThanksRoute
-  '/demo/how-to': typeof DemoHowToRoute
+  '/compare/bitpay-coingate-vs-nectar': typeof CompareBitpayCoingateVsNectarRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
@@ -960,8 +859,6 @@ export interface FileRoutesByTo {
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
-  '/demo': typeof DemoIndexRoute
-  '/integrations': typeof IntegrationsIndexRoute
   '/pos': typeof PosIndexRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
@@ -1027,18 +924,13 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
-  '/affiliates': typeof AffiliatesRoute
   '/auth': typeof AuthRoute
   '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
-  '/contact': typeof ContactRoute
   '/docs': typeof DocsRouteWithChildren
-  '/fees': typeof FeesRoute
   '/help': typeof HelpRoute
-  '/integrate': typeof IntegrateRoute
-  '/investors': typeof InvestorsRoute
   '/kyc': typeof KycRoute
   '/live': typeof LiveRoute
   '/m': typeof MRoute
@@ -1048,24 +940,18 @@ export interface FileRoutesById {
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
   '/pos-build-id': typeof PosBuildIdRoute
-  '/price': typeof PriceRoute
-  '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/setup': typeof SetupRoute
-  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/start': typeof StartRoute
   '/terms': typeof TermsRoute
-  '/where': typeof WhereRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
-  '/_authenticated/affiliate': typeof AuthenticatedAffiliateRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/exports': typeof AuthenticatedExportsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/terminals': typeof AuthenticatedTerminalsRoute
   '/checkout/thanks': typeof CheckoutThanksRoute
-  '/demo/how-to': typeof DemoHowToRoute
+  '/compare_/bitpay-coingate-vs-nectar': typeof CompareBitpayCoingateVsNectarRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
@@ -1081,8 +967,6 @@ export interface FileRoutesById {
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
-  '/demo/': typeof DemoIndexRoute
-  '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
   '/_authenticated/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
@@ -1151,18 +1035,13 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/affiliates'
     | '/auth'
     | '/brand'
     | '/cash-out'
     | '/checkout'
     | '/compare'
-    | '/contact'
     | '/docs'
-    | '/fees'
     | '/help'
-    | '/integrate'
-    | '/investors'
     | '/kyc'
     | '/live'
     | '/m'
@@ -1172,24 +1051,18 @@ export interface FileRouteTypes {
     | '/pos'
     | '/pos-apk'
     | '/pos-build-id'
-    | '/price'
-    | '/pricing'
     | '/privacy'
-    | '/setup'
-    | '/signup'
     | '/sitemap.xml'
     | '/start'
     | '/terms'
-    | '/where'
     | '/admin'
-    | '/affiliate'
     | '/billing'
     | '/dashboard'
     | '/exports'
     | '/notifications'
     | '/terminals'
     | '/checkout/thanks'
-    | '/demo/how-to'
+    | '/compare/bitpay-coingate-vs-nectar'
     | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
@@ -1205,8 +1078,6 @@ export interface FileRouteTypes {
     | '/pos/printer-test'
     | '/pos/settings'
     | '/sdk/payhme.js'
-    | '/demo/'
-    | '/integrations/'
     | '/pos/'
     | '/admin/crm'
     | '/admin/invoices'
@@ -1273,18 +1144,13 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/affiliates'
     | '/auth'
     | '/brand'
     | '/cash-out'
     | '/checkout'
     | '/compare'
-    | '/contact'
     | '/docs'
-    | '/fees'
     | '/help'
-    | '/integrate'
-    | '/investors'
     | '/kyc'
     | '/live'
     | '/m'
@@ -1293,23 +1159,17 @@ export interface FileRouteTypes {
     | '/onramp'
     | '/pos-apk'
     | '/pos-build-id'
-    | '/price'
-    | '/pricing'
     | '/privacy'
-    | '/setup'
-    | '/signup'
     | '/sitemap.xml'
     | '/start'
     | '/terms'
-    | '/where'
-    | '/affiliate'
     | '/billing'
     | '/dashboard'
     | '/exports'
     | '/notifications'
     | '/terminals'
     | '/checkout/thanks'
-    | '/demo/how-to'
+    | '/compare/bitpay-coingate-vs-nectar'
     | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
@@ -1325,8 +1185,6 @@ export interface FileRouteTypes {
     | '/pos/printer-test'
     | '/pos/settings'
     | '/sdk/payhme.js'
-    | '/demo'
-    | '/integrations'
     | '/pos'
     | '/admin/invoices'
     | '/admin/merchants'
@@ -1391,18 +1249,13 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
-    | '/affiliates'
     | '/auth'
     | '/brand'
     | '/cash-out'
     | '/checkout'
     | '/compare'
-    | '/contact'
     | '/docs'
-    | '/fees'
     | '/help'
-    | '/integrate'
-    | '/investors'
     | '/kyc'
     | '/live'
     | '/m'
@@ -1412,24 +1265,18 @@ export interface FileRouteTypes {
     | '/pos'
     | '/pos-apk'
     | '/pos-build-id'
-    | '/price'
-    | '/pricing'
     | '/privacy'
-    | '/setup'
-    | '/signup'
     | '/sitemap.xml'
     | '/start'
     | '/terms'
-    | '/where'
     | '/_authenticated/admin'
-    | '/_authenticated/affiliate'
     | '/_authenticated/billing'
     | '/_authenticated/dashboard'
     | '/_authenticated/exports'
     | '/_authenticated/notifications'
     | '/_authenticated/terminals'
     | '/checkout/thanks'
-    | '/demo/how-to'
+    | '/compare_/bitpay-coingate-vs-nectar'
     | '/dev/tangem-test'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
@@ -1445,8 +1292,6 @@ export interface FileRouteTypes {
     | '/pos/printer-test'
     | '/pos/settings'
     | '/sdk/payhme.js'
-    | '/demo/'
-    | '/integrations/'
     | '/pos/'
     | '/_authenticated/admin/crm'
     | '/_authenticated/admin/invoices'
@@ -1515,18 +1360,13 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
-  AffiliatesRoute: typeof AffiliatesRoute
   AuthRoute: typeof AuthRoute
   BrandRoute: typeof BrandRoute
   CashOutRoute: typeof CashOutRoute
   CheckoutRoute: typeof CheckoutRouteWithChildren
   CompareRoute: typeof CompareRoute
-  ContactRoute: typeof ContactRoute
   DocsRoute: typeof DocsRouteWithChildren
-  FeesRoute: typeof FeesRoute
   HelpRoute: typeof HelpRoute
-  IntegrateRoute: typeof IntegrateRoute
-  InvestorsRoute: typeof InvestorsRoute
   KycRoute: typeof KycRoute
   LiveRoute: typeof LiveRoute
   MRoute: typeof MRoute
@@ -1536,16 +1376,11 @@ export interface RootRouteChildren {
   PosRoute: typeof PosRouteWithChildren
   PosApkRoute: typeof PosApkRoute
   PosBuildIdRoute: typeof PosBuildIdRoute
-  PriceRoute: typeof PriceRoute
-  PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
-  SetupRoute: typeof SetupRoute
-  SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StartRoute: typeof StartRoute
   TermsRoute: typeof TermsRoute
-  WhereRoute: typeof WhereRoute
-  DemoHowToRoute: typeof DemoHowToRoute
+  CompareBitpayCoingateVsNectarRoute: typeof CompareBitpayCoingateVsNectarRoute
   DevTangemTestRoute: typeof DevTangemTestRoute
   GoKitRoute: typeof GoKitRoute
   IInvoiceIdRoute: typeof IInvoiceIdRoute
@@ -1553,8 +1388,6 @@ export interface RootRouteChildren {
   IntegrationsWoocommerceRoute: typeof IntegrationsWoocommerceRoute
   PayInvoiceIdRoute: typeof PayInvoiceIdRoute
   SdkPayhmeDotjsRoute: typeof SdkPayhmeDotjsRoute
-  DemoIndexRoute: typeof DemoIndexRoute
-  IntegrationsIndexRoute: typeof IntegrationsIndexRoute
   ApiPublicAffiliateClickRoute: typeof ApiPublicAffiliateClickRoute
   ApiPublicAuthWalletCallbackRoute: typeof ApiPublicAuthWalletCallbackRoute
   ApiPublicAuthWalletChallengeRoute: typeof ApiPublicAuthWalletChallengeRoute
@@ -1582,13 +1415,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/where': {
-      id: '/where'
-      path: '/where'
-      fullPath: '/where'
-      preLoaderRoute: typeof WhereRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -1610,39 +1436,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/signup': {
-      id: '/signup'
-      path: '/signup'
-      fullPath: '/signup'
-      preLoaderRoute: typeof SignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/setup': {
-      id: '/setup'
-      path: '/setup'
-      fullPath: '/setup'
-      preLoaderRoute: typeof SetupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pricing': {
-      id: '/pricing'
-      path: '/pricing'
-      fullPath: '/pricing'
-      preLoaderRoute: typeof PricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/price': {
-      id: '/price'
-      path: '/price'
-      fullPath: '/price'
-      preLoaderRoute: typeof PriceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pos-build-id': {
@@ -1708,20 +1506,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KycRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/investors': {
-      id: '/investors'
-      path: '/investors'
-      fullPath: '/investors'
-      preLoaderRoute: typeof InvestorsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/integrate': {
-      id: '/integrate'
-      path: '/integrate'
-      fullPath: '/integrate'
-      preLoaderRoute: typeof IntegrateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/help': {
       id: '/help'
       path: '/help'
@@ -1729,25 +1513,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HelpRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/fees': {
-      id: '/fees'
-      path: '/fees'
-      fullPath: '/fees'
-      preLoaderRoute: typeof FeesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/docs': {
       id: '/docs'
       path: '/docs'
       fullPath: '/docs'
       preLoaderRoute: typeof DocsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/contact': {
-      id: '/contact'
-      path: '/contact'
-      fullPath: '/contact'
-      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -1785,13 +1555,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/affiliates': {
-      id: '/affiliates'
-      path: '/affiliates'
-      fullPath: '/affiliates'
-      preLoaderRoute: typeof AffiliatesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
@@ -1812,20 +1575,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/pos/'
       preLoaderRoute: typeof PosIndexRouteImport
       parentRoute: typeof PosRoute
-    }
-    '/integrations/': {
-      id: '/integrations/'
-      path: '/integrations'
-      fullPath: '/integrations/'
-      preLoaderRoute: typeof IntegrationsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/demo/': {
-      id: '/demo/'
-      path: '/demo'
-      fullPath: '/demo/'
-      preLoaderRoute: typeof DemoIndexRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/sdk/payhme.js': {
       id: '/sdk/payhme.js'
@@ -1932,11 +1681,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DevTangemTestRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/demo/how-to': {
-      id: '/demo/how-to'
-      path: '/demo/how-to'
-      fullPath: '/demo/how-to'
-      preLoaderRoute: typeof DemoHowToRouteImport
+    '/compare_/bitpay-coingate-vs-nectar': {
+      id: '/compare_/bitpay-coingate-vs-nectar'
+      path: '/compare/bitpay-coingate-vs-nectar'
+      fullPath: '/compare/bitpay-coingate-vs-nectar'
+      preLoaderRoute: typeof CompareBitpayCoingateVsNectarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout/thanks': {
@@ -1979,13 +1728,6 @@ declare module '@tanstack/react-router' {
       path: '/billing'
       fullPath: '/billing'
       preLoaderRoute: typeof AuthenticatedBillingRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/affiliate': {
-      id: '/_authenticated/affiliate'
-      path: '/affiliate'
-      fullPath: '/affiliate'
-      preLoaderRoute: typeof AuthenticatedAffiliateRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/admin': {
@@ -2557,7 +2299,6 @@ const AuthenticatedStoresStoreIdRouteWithChildren =
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
-  AuthenticatedAffiliateRoute: typeof AuthenticatedAffiliateRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExportsRoute: typeof AuthenticatedExportsRoute
@@ -2572,7 +2313,6 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
-  AuthenticatedAffiliateRoute: AuthenticatedAffiliateRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExportsRoute: AuthenticatedExportsRoute,
@@ -2682,18 +2422,13 @@ const ApiPublicV1TerminalsInvoiceRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
-  AffiliatesRoute: AffiliatesRoute,
   AuthRoute: AuthRoute,
   BrandRoute: BrandRoute,
   CashOutRoute: CashOutRoute,
   CheckoutRoute: CheckoutRouteWithChildren,
   CompareRoute: CompareRoute,
-  ContactRoute: ContactRoute,
   DocsRoute: DocsRouteWithChildren,
-  FeesRoute: FeesRoute,
   HelpRoute: HelpRoute,
-  IntegrateRoute: IntegrateRoute,
-  InvestorsRoute: InvestorsRoute,
   KycRoute: KycRoute,
   LiveRoute: LiveRoute,
   MRoute: MRoute,
@@ -2703,16 +2438,11 @@ const rootRouteChildren: RootRouteChildren = {
   PosRoute: PosRouteWithChildren,
   PosApkRoute: PosApkRoute,
   PosBuildIdRoute: PosBuildIdRoute,
-  PriceRoute: PriceRoute,
-  PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
-  SetupRoute: SetupRoute,
-  SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StartRoute: StartRoute,
   TermsRoute: TermsRoute,
-  WhereRoute: WhereRoute,
-  DemoHowToRoute: DemoHowToRoute,
+  CompareBitpayCoingateVsNectarRoute: CompareBitpayCoingateVsNectarRoute,
   DevTangemTestRoute: DevTangemTestRoute,
   GoKitRoute: GoKitRoute,
   IInvoiceIdRoute: IInvoiceIdRoute,
@@ -2720,8 +2450,6 @@ const rootRouteChildren: RootRouteChildren = {
   IntegrationsWoocommerceRoute: IntegrationsWoocommerceRoute,
   PayInvoiceIdRoute: PayInvoiceIdRoute,
   SdkPayhmeDotjsRoute: SdkPayhmeDotjsRoute,
-  DemoIndexRoute: DemoIndexRoute,
-  IntegrationsIndexRoute: IntegrationsIndexRoute,
   ApiPublicAffiliateClickRoute: ApiPublicAffiliateClickRoute,
   ApiPublicAuthWalletCallbackRoute: ApiPublicAuthWalletCallbackRoute,
   ApiPublicAuthWalletChallengeRoute: ApiPublicAuthWalletChallengeRoute,

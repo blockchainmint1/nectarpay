@@ -12,7 +12,7 @@
 //       "payload": {
 //         "v": 1, "type": "hm-link-xpubs",
 //         "challenge_id": "...", "from": "nectar-pay.com",
-//         "callback_url": "https://nectar-pay.com/api/public/v1/wallet-link?token=...",
+//         "callback_url": "https://app.nectar-pay.com/api/public/v1/wallet-link?token=...",
 //         "chains": ["BTC","TXC","EVM","LTC","BCH","TRX"],
 //         "xpubs": { "BTC":"zpub...", "TXC":"xpub...", "EVM":"xpub...",
 //                    "LTC":"...", "BCH":"...", "TRX":"<hex pubkey>" },
@@ -97,17 +97,18 @@ function manifestResponse(manifest: unknown, accept: string, status = 200) {
 
 
 // Uppercase wire-protocol chain keys (wallet side).
-const WIRE_CHAINS = ["BTC", "TXC", "EVM", "LTC", "BCH", "DOGE", "TRX"] as const;
+const WIRE_CHAINS = ["BTC", "TXC", "EVM", "LTC", "BCH", "DOGE", "DASH", "TRX"] as const;
 type WireChain = (typeof WIRE_CHAINS)[number];
 
 // Map wire-protocol key → chain_configs.chain enum value (lowercase, EVM → eth).
-const WIRE_TO_DB: Record<WireChain, "btc" | "txc" | "eth" | "ltc" | "bch" | "doge" | "tron"> = {
+const WIRE_TO_DB: Record<WireChain, "btc" | "txc" | "eth" | "ltc" | "bch" | "doge" | "dash" | "tron"> = {
   BTC: "btc",
   TXC: "txc",
   EVM: "eth",
   LTC: "ltc",
   BCH: "bch",
   DOGE: "doge",
+  DASH: "dash",
   TRX: "tron",
 };
 
@@ -479,8 +480,10 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
               xpub: v,
               xpub_or_address: v,
               derivation_path: null,
-              enabled: existing?.enabled ?? false,
-              stables: existing?.stables ?? [],
+              // TEXITcoin ships on by default (Texas Stable Dollar rail).
+              enabled: existing?.enabled ?? dbChain === "txc",
+              stables: existing?.stables ?? (dbChain === "txc" ? ["TSD"] : []),
+
             };
 
             const { error: upErr } = await supabaseAdmin

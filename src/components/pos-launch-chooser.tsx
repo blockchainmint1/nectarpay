@@ -32,11 +32,17 @@ export function PosLaunchChooser({ onFallthrough }: { onFallthrough?: () => void
   const [state, setState] = useState<State>({ kind: "loading" });
 
   useEffect(() => {
-    if (!isNative()) {
+    // `?launch=1` forces the chooser in a normal browser so it can be
+    // previewed/tested without building the APK.
+    const forced =
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("launch") === "1";
+    if (!isNative() && !forced) {
       setState({ kind: "web" });
       onFallthrough?.();
       return;
     }
+
     // Once the merchant picks a tile in this session, don't nag them again
     // when they navigate back to `/` or `/start`.
     if (sessionStorage.getItem("pos.launch.chosen") === "1") {

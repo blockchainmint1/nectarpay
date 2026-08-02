@@ -5,6 +5,8 @@ import { LayoutDashboard, Store, BookOpen, LogOut, CreditCard, Bell, Download, S
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { MobileTabBar } from "@/components/mobile-tab-bar";
+
 import { readAffiliateSnapshot, clearAffiliateSnapshot } from "@/lib/affiliate";
 import { recordAffiliateAttribution } from "@/lib/affiliate.functions";
 import {
@@ -86,9 +88,6 @@ function AuthenticatedLayout() {
           <NavItem to="/billing" icon={<CreditCard className="h-4 w-4" />}>
             Billing
           </NavItem>
-          <NavItem to="/affiliate" icon={<Users className="h-4 w-4" />}>
-            Affiliate
-          </NavItem>
 
           <NavItem to="/notifications" icon={<Bell className="h-4 w-4" />}>
             Notifications
@@ -156,10 +155,26 @@ function AuthenticatedLayout() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <Outlet />
+        <div className="pb-[calc(64px+env(safe-area-inset-bottom))] md:pb-0">
+          <Outlet />
+        </div>
+        <MobileTabBar
+          items={[
+            { to: "/dashboard", label: "Overview", icon: <LayoutDashboard className="h-5 w-5" /> },
+            { to: "/stores", label: "Stores", icon: <Store className="h-5 w-5" /> },
+            { to: "/terminals", label: "Terminals", icon: <Smartphone className="h-5 w-5" /> },
+            { to: "/billing", label: "Billing", icon: <CreditCard className="h-5 w-5" /> },
+          ]}
+          more={[
+            { to: "/notifications", label: "Notifications", icon: <Bell className="h-4 w-4" /> },
+            { to: "/exports", label: "Exports", icon: <Download className="h-4 w-4" /> },
+            { to: "/docs", label: "Docs", icon: <BookOpen className="h-4 w-4" /> },
+          ]}
+        />
       </main>
     </div>
   );
+
 }
 
 function NavItem({

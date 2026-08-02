@@ -69,10 +69,7 @@ export function NectarWordmark() {
 /* ------------------------------------------------------------------ */
 
 const navLinks = [
-  { to: "/price", label: "Price" },
-  { to: "/fees", label: "Fees" },
-  { to: "/integrate", label: "Integrate" },
-  { to: "/investors", label: "Investors" },
+  { to: "/docs", label: "Docs" },
   { to: "/help", label: "Help" },
 ] as const;
 
@@ -149,13 +146,6 @@ export function MarketingNav() {
               >
                 Sign in
               </Link>
-              <Link
-                to="/signup"
-                className="np-btn np-btn-honey text-sm"
-                style={{ padding: "10px 18px" }}
-              >
-                Start free
-              </Link>
             </>
           )}
 
@@ -209,11 +199,6 @@ export function MarketingNav() {
                     <SheetClose asChild>
                       <Link to="/auth" className="np-btn np-btn-ghost text-sm">
                         Sign in
-                      </Link>
-                    </SheetClose>
-                    <SheetClose asChild>
-                      <Link to="/signup" className="np-btn np-btn-honey text-sm">
-                        Start free
                       </Link>
                     </SheetClose>
                   </>
@@ -302,11 +287,8 @@ export function MarketingFooter() {
           <FooterCol
             title="Product"
             items={[
-              { label: "Where", to: "/where" },
               { label: "POS terminal", to: "/pos" },
               { label: "Compare", to: "/compare" },
-              { label: "Pricing", to: "/pricing" },
-              { label: "Demo", to: "/demo" },
             ]}
           />
           <FooterCol
@@ -322,8 +304,6 @@ export function MarketingFooter() {
             items={[
               { label: "Manifesto", to: "/manifesto" },
               { label: "Investors", to: "/investors" },
-              { label: "Affiliates", to: "/affiliates" },
-              { label: "Contact", to: "/contact" },
               { label: "Brand", to: "/brand" },
             ]}
           />

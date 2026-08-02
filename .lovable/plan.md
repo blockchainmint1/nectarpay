@@ -1,74 +1,55 @@
-# Kit checkout on Nectar.Pay, BlockchainMint as fulfillment backend
+## Short answer
 
-Goal: sell the Terminal Kit ($499) + optional first-year fee ($228) from `/checkout` on nectar-pay.com, paid in crypto via our own invoice system. BlockchainMint (BM) receives the fulfillment order once the invoice is paid and ships the kit.
+Yes — all four are cheap to add because they're Bitcoin forks and reuse the exact BTC-like rail we already run for BTC and TEXITcoin: merchant supplies an xpub, we derive a fresh receive address per invoice, a watcher polls an indexer, mempool-accept + confirmations logic is shared. No new custody, no new key handling.
 
-## User flow
+The only real work is per-coin address parameters and one new indexer adapter.
 
-1. `/price` "Get the Kit" button → `/checkout`
-2. `/checkout` (single page):
-   - Line items: **Kit $499** (required) + **First year $228** (toggle, default on)
-   - Fields: email, full name, phone, shipping address (street/city/state/postal/country)
-   - Pay-with: BTC / TXC / USDC (uses our existing invoice creation)
-   - Submit → creates a `kit_orders` row + an invoice → redirects to our existing `/pay/{invoiceId}`
-3. Buyer pays. Our existing paid-invoice handler fires.
-4. New hook: if invoice is linked to a `kit_orders` row, POST the order to BM's fulfillment endpoint. Store returned `bm_order_id` and `bm_synced_at`.
-5. `/checkout/thanks?order=…` — shows order number, payment confirmation, "we've handed it off to fulfillment, expect a tracking email" copy.
+## What's already there vs. missing
 
-## Database
+- `chain_kind` in the database already includes `doge`, `ltc`, `bch` — **`dash` needs adding**.
+- `ChainKind` in code has `doge` but not `ltc`/`bch`/`dash`, and none of the four have a network definition, watcher wiring, POS/checkout entry, or a chain card in store setup.
 
-New table `public.kit_orders`:
+## Per-coin parameters
 
-- `id uuid pk`
-- `user_id uuid null` (if logged in)
-- `invoice_id uuid null references invoices(id)`
-- `email text`, `full_name text`, `phone text`
-- `ship_line1/line2/city/region/postal/country text`
-- `include_first_year boolean default true`
-- `subtotal_usd numeric`, `total_usd numeric`
-- `status text` — `pending_payment` | `paid` | `submitted_to_bm` | `bm_failed` | `shipped` | `canceled`
-- `bm_order_id text null`, `bm_synced_at timestamptz null`, `bm_last_error text null`
-- `created_at`, `updated_at`
+| Coin | SLIP-44 | P2PKH / P2SH | Address notes | Confirms |
+|---|---|---|---|---|
+| Litecoin | 2 | 0x30 / 0x32 | bech32 `ltc1`, use native segwit | 3 (~7 min) |
+| Dogecoin | 3 | 0x1e / 0x16 | legacy P2PKH only | 6 (~6 min) |
+| Bitcoin Cash | 145 | 0x00 / 0x05 | must emit **CashAddr** (`bitcoincash:q…`) in QR, not legacy | 2 (~20 min) |
+| Dash | 5 | 0x4c / 0x10 | legacy only; InstantSend allows near-instant accept | 2, or 1 + InstantSend lock |
 
-RLS: users see their own; anon can insert via server function only (no direct anon insert); service_role full.
+## The one real engineering item: indexers
 
-## Server functions (this project)
+Our watcher speaks Esplora. Coverage differs:
 
-- `src/lib/kit-checkout.functions.ts`
-  - `createKitCheckout({ email, shipping, includeFirstYear, payChain })` — validates with Zod, creates invoice, creates kit_orders row, returns `{ invoiceId, payUrl, orderId }`.
-  - `getKitOrder({ orderId })` — for thanks page.
-- Extend existing paid-invoice handler (wherever `invoices.status → paid` is written) with `maybeForwardToBm(invoiceId)`:
-  - Look up kit_orders by invoice_id. If exists and not yet submitted, POST to BM.
-  - Endpoint: `${BM_FULFILLMENT_URL}` with `Authorization: Bearer ${BM_FULFILLMENT_SECRET}`.
-  - Body: `{ external_order_id, email, shipping, line_items, paid_amount_usd, invoice_id, tx_ref }`.
-  - Timing-safe HMAC over body optional; token auth is fine for v1.
-  - On success: set `bm_order_id`, `bm_synced_at`, `status='submitted_to_bm'`.
-  - On failure: log to `bm_last_error`, `status='bm_failed'`; a small server function `retryKitOrderToBm(orderId)` for admin retry.
+- **Litecoin** — Esplora-compatible (`litecoinspace.org/api`). Drops in with zero adapter work.
+- **BCH / DOGE / DASH** — no reliable public Esplora. These need a **Blockbook adapter** (Trezor's public Blockbook nodes expose address UTXOs, txs, and mempool over a stable REST API). That's one new module implementing the same interface the Esplora client exposes, then each network declares which backend it uses.
 
-## Secrets (this project)
+Dash bonus: Blockbook surfaces InstantSend lock status, so Dash can settle in ~2 seconds — the best in-person UX of the four, worth marketing.
 
-- `BM_FULFILLMENT_URL` — full URL to BM intake endpoint (e.g. `https://blockchainmint.com/api/public/v1/external-orders`)
-- `BM_FULFILLMENT_SECRET` — bearer token BM will verify
+## Suggested build order
 
-Requested via `add_secret` after the pages exist.
+1. Add `dash` to the chain enum; extend `ChainKind` with `ltc`, `bch`, `dash`.
+2. Ship **Litecoin first** — Esplora path, proves the pattern end to end with no new backend code.
+3. Build the Blockbook adapter behind the existing indexer interface.
+4. Ship **Dash** (InstantSend), then **Dogecoin**, then **BCH** (CashAddr encoder is the extra piece).
+5. Rates: all four are on CoinMarketCap already — the existing rate cache covers them.
+6. Store setup: four new chain cards, native-only (no stables on these chains), off by default so merchants opt in.
+7. POS/checkout ordering: TSD stays pinned first; the new rails slot after the stablecoins.
 
-## Pages / components
+## Other communities worth courting
 
-- `src/routes/checkout.tsx` — kit checkout page (line items, shipping form, submit).
-- `src/routes/checkout.thanks.tsx` — post-payment confirmation, reads `?order=`.
-- `src/components/kit-checkout/*` — form pieces (line items, address form).
-- Update `/price` Terminal Kit CTA button to link to `/checkout`.
+Ranked by "hardcore supporters + real wallet adoption + low integration cost":
 
-## BlockchainMint side (separate project — I'll draft the endpoint spec)
+- **Monero (XMR)** — by far the most ideological, merchant-friendly community; famously loyal. Integration is heavier (view-key scanning, subaddresses, no xpub), but the goodwill payoff is the largest of any coin here.
+- **Zcash (ZEC)** — transparent addresses are a Bitcoin fork, so t-addr support is nearly free; the shielded side is a bigger lift. Well-funded, vocal community.
+- **Kaspa (KAS)** — extremely active, growth-minded community; 1-second blocks make it a great POS story. Needs its own node/API adapter.
+- **Nano (XNO)** — feeless, instant, purpose-built for point-of-sale; small but fiercely dedicated merchant-adoption crowd.
+- **DigiByte (DGB)** — Bitcoin fork, so nearly free to add once Blockbook exists; long-time loyalists.
+- **Pepecoin / meme rails** — same Dogecoin codebase, essentially free once DOGE ships; unpredictable but real spending communities.
 
-BM needs to build `POST /api/public/v1/external-orders`:
-- Header: `Authorization: Bearer ${BM_FULFILLMENT_SECRET}` (BM stores same secret).
-- Verify, then create an internal order in `orders` table with `source='nectarpay_external'`, `payment_status='paid'`, `payhme_invoice_id`, shipping, line items.
-- Return `{ order_id, order_number }`.
+Worth skipping for now: XRP and XLM (community is exchange-centric, less self-custody spending), and BSV.
 
-I'll ship the spec as `docs/BM_FULFILLMENT_ENDPOINT.md` in this project so it can be handed to BM. Actual BM implementation happens in the BlockchainMint.com project.
+## Technical notes
 
-## Out of scope (this pass)
-
-- Multi-item cart. Only Kit + optional first-year.
-- Tax / shipping quotes (kit ships flat; first-year is digital). If BM needs to compute shipping later, we add a `getShippingQuote` call before invoice creation.
-- Refund flow (BM's existing refund path handles it, we mirror status via a webhook back from BM in a later pass).
+New network definitions go in `src/lib/chains/networks.ts` as `BtcLikeNetwork` entries with an added `indexer: "esplora" | "blockbook"` discriminator; the Blockbook client lands next to the existing Esplora client and returns the same shapes so `watcher.functions.ts` needs no per-chain branching. CashAddr encoding lives in the address-derivation layer so QR and explorer links stay consistent. Adding `dash` to `chain_kind` is a database migration and must run before any code references it.

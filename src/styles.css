@@ -196,7 +196,31 @@
     font-family: var(--font-sans);
     font-feature-settings: "cv11", "ss01", "ss03";
     -webkit-font-smoothing: antialiased;
+    /* Touch / POS ergonomics: no rubber-band sideways scroll, no double-tap
+       zoom lag, no grey flash on tap, and text stays put on rotate. */
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
   }
+
+  button,
+  [role="button"],
+  a[href],
+  select,
+  summary {
+    touch-action: manipulation;
+  }
+
+  /* iOS zooms the page when focusing an input smaller than 16px. */
+  @media (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
+
 
   .font-mono,
   code,

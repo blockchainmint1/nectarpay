@@ -16,9 +16,9 @@ export const Route = createFileRoute("/cash-out")({
         content:
           "Crypto debit cards, self-custodial banking, peer-to-peer fiat, and CEX off-ramps — curated by chain and region. Skip the exchange when you can.",
       },
-          { property: "og:url", content: "https://nectar-pay.com/cash-out" },
+          { property: "og:url", content: "https://app.nectar-pay.com/cash-out" },
 ],
-    links: [{ rel: "canonical", href: "https://nectar-pay.com/cash-out" }],
+    links: [{ rel: "canonical", href: "https://app.nectar-pay.com/cash-out" }],
   }),
   component: CashOutPage,
 });
@@ -331,9 +331,6 @@ function CashOutPage() {
           </Link>
           <Link to="/docs" className="text-muted-foreground hover:text-foreground">
             Docs
-          </Link>
-          <Link to="/pricing" className="text-muted-foreground hover:text-foreground">
-            Pricing
           </Link>
         </div>
       </div>

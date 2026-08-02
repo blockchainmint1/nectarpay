@@ -10,9 +10,9 @@ export const Route = createFileRoute("/terms")({
         content:
           "The terms governing use of Nectar.Pay, a non-custodial crypto payment gateway built for the Honest Money Ecosystem.",
       },
-          { property: "og:url", content: "https://nectar-pay.com/terms" },
+          { property: "og:url", content: "https://app.nectar-pay.com/terms" },
 ],
-    links: [{ rel: "canonical", href: "https://nectar-pay.com/terms" }],
+    links: [{ rel: "canonical", href: "https://app.nectar-pay.com/terms" }],
   }),
   component: TermsPage,
 });
@@ -78,8 +78,8 @@ function TermsPage() {
 
         <h2>4. Fees and plans</h2>
         <p>
-          Current pricing is published on our{" "}
-          <Link to="/pricing">pricing page</Link>. We may change pricing
+          Current pricing is published in our{" "}
+          <Link to="/docs">docs</Link>. We may change pricing
           prospectively with reasonable notice. Because Nectar.Pay is
           non-custodial, we do not deduct fees from your settlements; plan
           fees are billed separately.
