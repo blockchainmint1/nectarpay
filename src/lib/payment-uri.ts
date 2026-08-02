@@ -21,14 +21,28 @@ function toBaseUnits(amount: number, decimals: number): string {
   return combined || "0";
 }
 
+/**
+ * Append a `label=<vendor name>` hint to a URI's query string.
+ * Wallets that support local vendor labelling (e.g. CryptoPOP) read this and
+ * name the transaction in history — nothing leaves the device, the chain and
+ * our backend still only ever see an address.
+ */
+function withLabel(uri: string, label?: string | null): string {
+  const name = label?.trim();
+  if (!name) return uri;
+  const sep = uri.includes("?") ? "&" : "?";
+  return `${uri}${sep}label=${encodeURIComponent(name)}`;
+}
+
 export function buildPaymentUri(
   chain: string,
   address: string,
   amount: number | null,
   tokenSymbol: string | null,
-  opts?: { multiChainEvm?: boolean },
+  opts?: { multiChainEvm?: boolean; label?: string | null },
 ): string {
-  if (chain === "btc") return `bitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
+  const label = opts?.label ?? null;
+  if (chain === "btc") return withLabel(`bitcoin:${address}${amount ? `?amount=${amount}` : ""}`, label);
   if (chain === "txc") {
     // Omni Layer token on TEXITcoin (e.g. Texas Stable Dollar, property #39):
     // BIP-21 style with an `omni` property hint; `amount` is the token amount.
@@ -38,9 +52,9 @@ export function buildPaymentUri(
       if (amount) params.set("amount", String(amount));
       params.set("omni", omni.address);
       params.set("token", omni.symbol);
-      return `texitcoin:${address}?${params.toString()}`;
+      return withLabel(`texitcoin:${address}?${params.toString()}`, label);
     }
-    return `texitcoin:${address}${amount ? `?amount=${amount}` : ""}`;
+    return withLabel(`texitcoin:${address}${amount ? `?amount=${amount}` : ""}`, label);
   }
   // Bitcoin forks that use plain BIP-21 with their own URI scheme.
   const BIP21_SCHEMES: Record<string, string> = {
@@ -49,13 +63,13 @@ export function buildPaymentUri(
     dash: "dash",
   };
   if (BIP21_SCHEMES[chain]) {
-    return `${BIP21_SCHEMES[chain]}:${address}${amount ? `?amount=${amount}` : ""}`;
+    return withLabel(`${BIP21_SCHEMES[chain]}:${address}${amount ? `?amount=${amount}` : ""}`, label);
   }
   if (chain === "bch") {
     // CashAddr strings already carry the "bitcoincash:" prefix, which is
     // itself the BIP-21 scheme — never prepend it twice.
     const base = address.includes(":") ? address : `bitcoincash:${address}`;
-    return `${base}${amount ? `?amount=${amount}` : ""}`;
+    return withLabel(`${base}${amount ? `?amount=${amount}` : ""}`, label);
   }
 
 
