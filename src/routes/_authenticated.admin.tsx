@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { MobileTabBar } from "@/components/mobile-tab-bar";
+
 
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async () => {
