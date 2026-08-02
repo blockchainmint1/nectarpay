@@ -92,7 +92,7 @@ export const notifyNewSignup = createServerFn({ method: "POST" })
       `Created: ${escapeHtml(u.created_at ?? "")}`,
     ].filter(Boolean);
     const text = rows.join("\n").replace(/<[^>]+>/g, "");
-    const html = wrap("New NectarPay signup", rows, "https://nectar-pay.com/admin", "Open admin");
+    const html = wrap("New NectarPay signup", rows, "https://app.nectar-pay.com/admin", "Open admin");
     await enqueueAdmin(
       supabaseAdmin,
       subject,
@@ -134,7 +134,7 @@ export const notifyNewStore = createServerFn({ method: "POST" })
     const html = wrap(
       "New merchant store created",
       rows,
-      `https://nectar-pay.com/admin/merchants`,
+      `https://app.nectar-pay.com/admin/merchants`,
       "Open merchants",
     );
     await enqueueAdmin(

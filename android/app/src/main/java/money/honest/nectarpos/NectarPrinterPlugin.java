@@ -37,7 +37,7 @@ import recieptservice.com.recieptservice.PrinterInterface;
  *       { divider: true },
  *       { text: "Total", right: "$7.50", bold: true, size: 32 }
  *     ],
- *     qr: "https://nectar-pay.com/i/abc123",
+ *     qr: "https://app.nectar-pay.com/i/abc123",
  *     footer: "Thanks — paid with USDC on Base"
  *   })
  */

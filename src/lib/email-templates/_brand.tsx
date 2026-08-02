@@ -191,15 +191,15 @@ export function EmailShell({
             <Text style={styles.footerTag}>{tagline}</Text>
             <Text style={styles.footerNote}>
               Sent by {siteName} ·{' '}
-              <Link href="https://nectar-pay.com" style={styles.footerLink}>
+              <Link href="https://app.nectar-pay.com" style={styles.footerLink}>
                 nectar-pay.com
               </Link>
               {' · '}
-              <Link href="https://nectar-pay.com/manifesto" style={styles.footerLink}>
+              <Link href="https://app.nectar-pay.com/manifesto" style={styles.footerLink}>
                 Manifesto
               </Link>
               {' · '}
-              <Link href="https://nectar-pay.com/privacy" style={styles.footerLink}>
+              <Link href="https://app.nectar-pay.com/privacy" style={styles.footerLink}>
                 Privacy
               </Link>
             </Text>

@@ -70,13 +70,13 @@ Thanks for reaching out to NectarPay. We got your request (${interest}) and a re
 If you need us sooner, just reply to this email.
 
 — The NectarPay team
-https://nectar-pay.com`;
+https://app.nectar-pay.com`;
   const html = `<!doctype html><html><body style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#0b0b0d;color:#eee;padding:32px;">
 <div style="max-width:520px;margin:0 auto;background:#141418;border:1px solid #2a2a30;border-radius:12px;padding:28px;">
   <h1 style="margin:0 0 12px;font-size:20px;color:#f5c542;">Got it, ${escapeHtml(first)}.</h1>
   <p style="line-height:1.55;color:#ddd;">Thanks for reaching out to NectarPay. We got your request (<strong>${escapeHtml(interest)}</strong>) and a real human will be in touch shortly to book time with you.</p>
   <p style="line-height:1.55;color:#ddd;">If you need us sooner, just reply to this email — it goes straight to the team.</p>
-  <p style="margin-top:24px;color:#888;font-size:13px;">— The NectarPay team<br/><a href="https://nectar-pay.com" style="color:#f5c542;">nectar-pay.com</a></p>
+  <p style="margin-top:24px;color:#888;font-size:13px;">— The NectarPay team<br/><a href="https://app.nectar-pay.com" style="color:#f5c542;">nectar-pay.com</a></p>
 </div></body></html>`;
   return { subject, html, text };
 }
@@ -104,7 +104,7 @@ function adminEmail(data: z.infer<typeof submitSchema>) {
 <div style="max-width:640px;margin:0 auto;background:#141418;border:1px solid #2a2a30;border-radius:12px;padding:24px;">
   <h1 style="margin:0 0 12px;font-size:18px;color:#f5c542;">New lead — ${escapeHtml(data.interest)}</h1>
   ${rows}
-  <p style="margin-top:20px;"><a href="https://nectar-pay.com/admin/crm/leads" style="color:#f5c542;">Open in admin →</a></p>
+  <p style="margin-top:20px;"><a href="https://app.nectar-pay.com/admin/crm/leads" style="color:#f5c542;">Open in admin →</a></p>
 </div></body></html>`;
   return { subject, html, text };
 }

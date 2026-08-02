@@ -10,7 +10,7 @@ Non-custodial crypto payments (BTC, TEXITcoin, stablecoins) for PrestaShop 8.0�
    - **API key** — from your NectarPay dashboard → API keys
    - **Store ID** — from your NectarPay dashboard → Stores
    - **Webhook secret** — from your NectarPay dashboard → API keys → Webhook secret
-   - **API base URL** — leave as `https://nectar-pay.com`
+   - **API base URL** — leave as `https://app.nectar-pay.com`
 
 ## Endpoints registered
 

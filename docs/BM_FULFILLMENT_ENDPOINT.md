@@ -208,7 +208,7 @@ export const Route = createFileRoute("/api/public/v1/external-orders")({
 ## Future: shipping status → back to Nectar.Pay
 
 Once BM ships, POST back to
-`https://nectar-pay.com/api/public/v1/hooks/kit-shipped` (not built yet)
+`https://app.nectar-pay.com/api/public/v1/hooks/kit-shipped` (not built yet)
 with `{ external_order_id, tracking_number, carrier }` so we can flip
 `kit_orders.status = 'shipped'` and email the buyer from our side too.
 Not required for v1 — BM's own shipping email is enough.

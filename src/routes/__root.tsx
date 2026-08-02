@@ -106,19 +106,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@graph": [
             {
               "@type": "Organization",
-              "@id": "https://nectar-pay.com/#organization",
+              "@id": "https://app.nectar-pay.com/#organization",
               name: "Nectar.Pay",
-              url: "https://nectar-pay.com",
+              url: "https://app.nectar-pay.com",
               description:
                 "Non-custodial crypto payment gateway for merchants — Bitcoin, TEXITcoin and stablecoins with zero percentage fees.",
               telephone: "+1-855-663-2827",
             },
             {
               "@type": "WebSite",
-              "@id": "https://nectar-pay.com/#website",
+              "@id": "https://app.nectar-pay.com/#website",
               name: "Nectar.Pay",
-              url: "https://nectar-pay.com",
-              publisher: { "@id": "https://nectar-pay.com/#organization" },
+              url: "https://app.nectar-pay.com",
+              publisher: { "@id": "https://app.nectar-pay.com/#organization" },
             },
           ],
         }),

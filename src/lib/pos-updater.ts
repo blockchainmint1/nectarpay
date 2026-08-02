@@ -46,7 +46,7 @@ export async function checkForUpdate(): Promise<UpdateStatus> {
 
     const latest = await getLatestPosRelease();
     const origin =
-      typeof window !== "undefined" ? window.location.origin : "https://nectar-pay.com";
+      typeof window !== "undefined" ? window.location.origin : "https://app.nectar-pay.com";
     const dl = latest.url ? new URL(latest.url, origin).toString() : null;
 
     return {

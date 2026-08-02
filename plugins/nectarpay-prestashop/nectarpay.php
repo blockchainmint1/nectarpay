@@ -47,7 +47,7 @@ class NectarPay extends PaymentModule
 
     public function install()
     {
-        Configuration::updateValue(self::CONFIG_API_BASE, 'https://nectar-pay.com');
+        Configuration::updateValue(self::CONFIG_API_BASE, 'https://app.nectar-pay.com');
 
         Db::getInstance()->execute(
             'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'nectarpay_invoice` (
@@ -104,7 +104,7 @@ class NectarPay extends PaymentModule
                 'input'  => [
                     ['type' => 'text', 'label' => $this->l('API key'),        'name' => 'api_key',        'size' => 60, 'required' => true, 'desc' => 'sk_live_… from Dashboard → API keys'],
                     ['type' => 'text', 'label' => $this->l('Webhook secret'), 'name' => 'webhook_secret', 'size' => 60, 'required' => true, 'desc' => 'Dashboard → Webhooks → Signing secret'],
-                    ['type' => 'text', 'label' => $this->l('API base URL'),   'name' => 'api_base',       'size' => 60, 'desc' => 'https://nectar-pay.com'],
+                    ['type' => 'text', 'label' => $this->l('API base URL'),   'name' => 'api_base',       'size' => 60, 'desc' => 'https://app.nectar-pay.com'],
                 ],
                 'submit' => ['title' => $this->l('Save'), 'class' => 'btn btn-default pull-right'],
             ],
@@ -120,7 +120,7 @@ class NectarPay extends PaymentModule
         $helper->fields_value = [
             'api_key'        => Configuration::get(self::CONFIG_API_KEY),
             'webhook_secret' => Configuration::get(self::CONFIG_WEBHOOK_SECRET),
-            'api_base'       => Configuration::get(self::CONFIG_API_BASE) ?: 'https://nectar-pay.com',
+            'api_base'       => Configuration::get(self::CONFIG_API_BASE) ?: 'https://app.nectar-pay.com',
         ];
 
         return $helper->generateForm([$fields_form]);

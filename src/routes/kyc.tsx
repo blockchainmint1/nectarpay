@@ -27,9 +27,9 @@ export const Route = createFileRoute("/kyc")({
         content:
           "No onboarding interrogation. We never touch your money. Turn buyer KYC on when you need to — off when you don't.",
       },
-      { property: "og:url", content: "https://nectar-pay.com/kyc" },
+      { property: "og:url", content: "https://app.nectar-pay.com/kyc" },
     ],
-    links: [{ rel: "canonical", href: "https://nectar-pay.com/kyc" }],
+    links: [{ rel: "canonical", href: "https://app.nectar-pay.com/kyc" }],
   }),
   component: KycPage,
 });

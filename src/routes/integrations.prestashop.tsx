@@ -19,9 +19,9 @@ export const Route = createFileRoute("/integrations/prestashop")({
         content:
           "Non-custodial crypto payments for PrestaShop 8.x. Ten-minute setup, no monthly fee.",
       },
-      { property: "og:url", content: "https://nectar-pay.com/integrations/prestashop" },
+      { property: "og:url", content: "https://app.nectar-pay.com/integrations/prestashop" },
     ],
-    links: [{ rel: "canonical", href: "https://nectar-pay.com/integrations/prestashop" }],
+    links: [{ rel: "canonical", href: "https://app.nectar-pay.com/integrations/prestashop" }],
   }),
   component: PrestaShopPage,
 });

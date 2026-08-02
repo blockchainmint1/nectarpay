@@ -17,9 +17,9 @@ export const Route = createFileRoute("/docs")({
         property: "og:description",
         content: "Quickstart, API reference, and webhook signing.",
       },
-          { property: "og:url", content: "https://nectar-pay.com/docs" },
+          { property: "og:url", content: "https://app.nectar-pay.com/docs" },
 ],
-    links: [{ rel: "canonical", href: "https://nectar-pay.com/docs" }],
+    links: [{ rel: "canonical", href: "https://app.nectar-pay.com/docs" }],
   }),
   component: DocsPage,
 });

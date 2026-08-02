@@ -113,7 +113,7 @@ public class MainActivity extends BridgeActivity {
                 runOnUiThread(() -> {
                     String origin = request.getOrigin() != null ? request.getOrigin().toString() : "";
                     // Only grant to our own origins.
-                    if (origin.startsWith("https://nectar-pay.com")
+                    if (origin.startsWith("https://app.nectar-pay.com")
                         || origin.startsWith("https://nectarpay.lovable.app")
                         || origin.startsWith("https://nectarpay.honest.money")
                         || origin.startsWith("https://nector-pay.com")) {
