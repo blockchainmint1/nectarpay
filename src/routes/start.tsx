@@ -688,9 +688,9 @@ function WalletLink({ storeId, onDone }: { storeId: string; onDone: () => void }
           <div className="mt-4 rounded-xl border border-primary/30 bg-primary/5 p-4">
             <p className="text-sm font-medium">Enable standard stablecoin settings</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              We&apos;ll turn on USDC, USDT &amp; PYUSD on the EVM chains (Ethereum, Base, BSC,
-              Polygon) plus USDT-TRC20 on Tron. You can get more complex later, when you&apos;re
-              ready.
+              We&apos;ll turn on Texas Stable Dollar (TSD) on TEXITcoin — your default, near-zero-fee
+              rail — plus USDC, USDT &amp; PYUSD on the EVM chains (Ethereum, Base, BSC, Polygon) and
+              USDT-TRC20 on Tron. You can get more complex later, when you&apos;re ready.
             </p>
             <Button
               size="sm"
