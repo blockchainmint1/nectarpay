@@ -114,9 +114,9 @@ public class MainActivity extends BridgeActivity {
                     String origin = request.getOrigin() != null ? request.getOrigin().toString() : "";
                     // Only grant to our own origins.
                     if (origin.startsWith("https://app.nectar-pay.com")
+                        || origin.startsWith("https://nectar-pay.com")
                         || origin.startsWith("https://nectarpay.lovable.app")
-                        || origin.startsWith("https://nectarpay.honest.money")
-                        || origin.startsWith("https://nector-pay.com")) {
+                        || origin.startsWith("https://nectarpay.honest.money")) {
                         request.grant(request.getResources());
                     } else {
                         request.deny();
