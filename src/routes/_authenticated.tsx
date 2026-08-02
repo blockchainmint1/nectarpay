@@ -5,6 +5,8 @@ import { LayoutDashboard, Store, BookOpen, LogOut, CreditCard, Bell, Download, S
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { MobileTabBar } from "@/components/mobile-tab-bar";
+
 import { readAffiliateSnapshot, clearAffiliateSnapshot } from "@/lib/affiliate";
 import { recordAffiliateAttribution } from "@/lib/affiliate.functions";
 import {
