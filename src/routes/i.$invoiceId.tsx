@@ -319,6 +319,7 @@ function CheckoutPage() {
                     requiredConfs={requiredConfs}
                     availableOptions={availableOptions}
                     canSwitchChain={inv.status === "pending" && txs.length === 0}
+                    storeName={store?.name ?? null}
                   />
 
                 )}
@@ -379,6 +380,7 @@ function PayingFrame({
   requiredConfs,
   availableOptions,
   canSwitchChain,
+  storeName,
 }: {
   inv: Invoice;
   memo: string | null;
@@ -388,6 +390,7 @@ function PayingFrame({
   requiredConfs: number;
   availableOptions: CheckoutPaymentOption[];
   canSwitchChain: boolean;
+  storeName?: string | null;
 }) {
   const isDetected = inv.status === "detected" || inv.status === "underpaid";
   const latestTx = txs[0];
