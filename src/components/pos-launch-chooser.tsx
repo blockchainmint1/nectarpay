@@ -66,6 +66,18 @@ export function PosLaunchChooser({ onFallthrough }: { onFallthrough?: () => void
 
   const { creds } = state;
 
+  // Dismiss the overlay and go where the merchant asked. Navigating to the
+  // route we're already on (e.g. "New merchant" while sitting on /start) is a
+  // no-op in the router, so we must also drop the overlay locally — otherwise
+  // the button appears dead.
+  const choose = (to: "/pos" | "/pos/pair-signin" | "/start") => {
+    sessionStorage.setItem("pos.launch.chosen", "1");
+    setState({ kind: "web" });
+    onFallthrough?.();
+    if (typeof window !== "undefined" && window.location.pathname === to) return;
+    navigate({ to, replace: true });
+  };
+
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-black text-white">
       <div className="flex flex-1 flex-col justify-center px-6 py-10">
@@ -87,31 +99,23 @@ export function PosLaunchChooser({ onFallthrough }: { onFallthrough?: () => void
                 icon={<Store className="h-6 w-6" />}
                 title="Return to POS"
                 subtitle="Resume this paired terminal"
-                onClick={() => {
-                  sessionStorage.setItem("pos.launch.chosen", "1");
-                  navigate({ to: "/pos", replace: true });
-                }}
+                onClick={() => choose("/pos")}
               />
             )}
             <Tile
               icon={<Smartphone className="h-6 w-6" />}
               title="New terminal"
               subtitle="Existing merchant · sign in to re-pair this device"
-              onClick={() => {
-                sessionStorage.setItem("pos.launch.chosen", "1");
-                navigate({ to: "/pos/pair-signin", replace: true });
-              }}
+              onClick={() => choose("/pos/pair-signin")}
             />
             <Tile
               icon={<UserPlus className="h-6 w-6" />}
               title="New merchant"
               subtitle="Set up a brand-new store from scratch"
-              onClick={() => {
-                sessionStorage.setItem("pos.launch.chosen", "1");
-                navigate({ to: "/start", replace: true });
-              }}
+              onClick={() => choose("/start")}
             />
           </div>
+
 
         </div>
       </div>
