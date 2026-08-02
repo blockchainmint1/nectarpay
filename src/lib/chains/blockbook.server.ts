@@ -53,11 +53,14 @@ const ENV_BASE_VAR: Record<string, string> = {
   ltc: "BLOCKBOOK_LTC_URL",
 };
 
+// NOWNodes serves Blockbook REST on dedicated "*book" hosts; the bare
+// <coin>.nownodes.io hosts are JSON-RPC nodes and reject these paths.
 const NOWNODES_HOST: Record<string, string> = {
-  doge: "https://doge.nownodes.io",
-  bch: "https://bch.nownodes.io",
-  dash: "https://dash.nownodes.io",
-  ltc: "https://ltc.nownodes.io",
+  doge: "https://dogebook.nownodes.io",
+  bch: "https://bchbook.nownodes.io",
+  dash: "https://dashbook.nownodes.io",
+  ltc: "https://ltcbook.nownodes.io",
+  btc: "https://btcbook.nownodes.io",
 };
 
 function resolveEndpoint(net: BtcLikeNetwork): { base: string; headers: Record<string, string> } {
