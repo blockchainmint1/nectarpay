@@ -14,6 +14,7 @@ import { Route as StartRouteImport } from './routes/start'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PosBuildIdRouteImport } from './routes/pos-build-id'
+import { Route as PosApkIpfsRouteImport } from './routes/pos-apk-ipfs'
 import { Route as PosApkRouteImport } from './routes/pos-apk'
 import { Route as PosRouteImport } from './routes/pos'
 import { Route as OnrampRouteImport } from './routes/onramp'
@@ -141,6 +142,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const PosBuildIdRoute = PosBuildIdRouteImport.update({
   id: '/pos-build-id',
   path: '/pos-build-id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PosApkIpfsRoute = PosApkIpfsRouteImport.update({
+  id: '/pos-apk-ipfs',
+  path: '/pos-apk-ipfs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PosApkRoute = PosApkRouteImport.update({
@@ -724,6 +730,7 @@ export interface FileRoutesByFullPath {
   '/onramp': typeof OnrampRoute
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
+  '/pos-apk-ipfs': typeof PosApkIpfsRoute
   '/pos-build-id': typeof PosBuildIdRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -832,6 +839,7 @@ export interface FileRoutesByTo {
   '/news': typeof NewsRoute
   '/onramp': typeof OnrampRoute
   '/pos-apk': typeof PosApkRoute
+  '/pos-apk-ipfs': typeof PosApkIpfsRoute
   '/pos-build-id': typeof PosBuildIdRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -939,6 +947,7 @@ export interface FileRoutesById {
   '/onramp': typeof OnrampRoute
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
+  '/pos-apk-ipfs': typeof PosApkIpfsRoute
   '/pos-build-id': typeof PosBuildIdRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -1050,6 +1059,7 @@ export interface FileRouteTypes {
     | '/onramp'
     | '/pos'
     | '/pos-apk'
+    | '/pos-apk-ipfs'
     | '/pos-build-id'
     | '/privacy'
     | '/sitemap.xml'
@@ -1158,6 +1168,7 @@ export interface FileRouteTypes {
     | '/news'
     | '/onramp'
     | '/pos-apk'
+    | '/pos-apk-ipfs'
     | '/pos-build-id'
     | '/privacy'
     | '/sitemap.xml'
@@ -1264,6 +1275,7 @@ export interface FileRouteTypes {
     | '/onramp'
     | '/pos'
     | '/pos-apk'
+    | '/pos-apk-ipfs'
     | '/pos-build-id'
     | '/privacy'
     | '/sitemap.xml'
@@ -1375,6 +1387,7 @@ export interface RootRouteChildren {
   OnrampRoute: typeof OnrampRoute
   PosRoute: typeof PosRouteWithChildren
   PosApkRoute: typeof PosApkRoute
+  PosApkIpfsRoute: typeof PosApkIpfsRoute
   PosBuildIdRoute: typeof PosBuildIdRoute
   PrivacyRoute: typeof PrivacyRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -1448,6 +1461,13 @@ declare module '@tanstack/react-router' {
       path: '/pos-build-id'
       fullPath: '/pos-build-id'
       preLoaderRoute: typeof PosBuildIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pos-apk-ipfs': {
+      id: '/pos-apk-ipfs'
+      path: '/pos-apk-ipfs'
+      fullPath: '/pos-apk-ipfs'
+      preLoaderRoute: typeof PosApkIpfsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pos-apk': {
@@ -2437,6 +2457,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnrampRoute: OnrampRoute,
   PosRoute: PosRouteWithChildren,
   PosApkRoute: PosApkRoute,
+  PosApkIpfsRoute: PosApkIpfsRoute,
   PosBuildIdRoute: PosBuildIdRoute,
   PrivacyRoute: PrivacyRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
@@ -2478,13 +2499,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
