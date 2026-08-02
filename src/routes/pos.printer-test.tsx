@@ -65,7 +65,7 @@ function PrinterTest() {
   const qrTest: ReceiptPayload = {
     header: "QR TEST",
     lines: [{ text: "Scan below" }],
-    qr: "https://nectar-pay.com/pos",
+    qr: "https://app.nectar-pay.com/pos",
     footer: "nectar-pay.com/pos",
   };
 
@@ -83,7 +83,7 @@ function PrinterTest() {
       { text: "Tax", right: "$0.62" },
       { text: "TOTAL", right: "$8.37", bold: true },
     ],
-    qr: "https://nectar-pay.com/i/test",
+    qr: "https://app.nectar-pay.com/i/test",
     footer: "Thanks — this is a test print",
   };
 

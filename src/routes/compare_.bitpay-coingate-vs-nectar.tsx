@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 const TITLE = "Crypto Payment Gateway Comparison: Nectar.Pay vs BitPay vs CoinGate";
 const DESCRIPTION =
   "An honest crypto payment gateway comparison: Nectar.Pay's non-custodial, flat-fee model versus BitPay and CoinGate's custodial accounts and percentage-based fees.";
-const URL = "https://nectar-pay.com/compare/bitpay-coingate-vs-nectar";
+const URL = "https://app.nectar-pay.com/compare/bitpay-coingate-vs-nectar";
 
 const FAQ = [
   {

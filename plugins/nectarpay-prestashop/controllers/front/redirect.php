@@ -20,7 +20,7 @@ class NectarPayRedirectModuleFrontController extends ModuleFrontController
             Tools::redirect('index.php?controller=order&step=1');
         }
 
-        $api_base   = rtrim(Configuration::get(NectarPay::CONFIG_API_BASE) ?: 'https://nectar-pay.com', '/');
+        $api_base   = rtrim(Configuration::get(NectarPay::CONFIG_API_BASE) ?: 'https://app.nectar-pay.com', '/');
         $api_key    = Configuration::get(NectarPay::CONFIG_API_KEY);
         $currency   = new Currency((int) $cart->id_currency);
         $total      = (float) $cart->getOrderTotal(true, Cart::BOTH);

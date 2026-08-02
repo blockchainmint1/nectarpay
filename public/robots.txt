@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://nectar-pay.com/sitemap.xml
+Sitemap: https://app.nectar-pay.com/sitemap.xml

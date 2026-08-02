@@ -16,9 +16,9 @@ export const Route = createFileRoute("/manifesto")({
         content:
           "A merchant payment rail for the Honest Money Ecosystem. Non-custodial, principled, and built to ignore the Fed.",
       },
-      { property: "og:url", content: "https://nectar-pay.com/manifesto" },
+      { property: "og:url", content: "https://app.nectar-pay.com/manifesto" },
     ],
-    links: [{ rel: "canonical", href: "https://nectar-pay.com/manifesto" }],
+    links: [{ rel: "canonical", href: "https://app.nectar-pay.com/manifesto" }],
     scripts: [
       {
         type: "application/ld+json",
@@ -28,8 +28,8 @@ export const Route = createFileRoute("/manifesto")({
           headline: "The Nectar.Pay Manifesto — Honest Money for the Marketplace",
           description:
             "Why Nectar.Pay exists: non-custodial crypto payments built on TEXITcoin. No middleman, no debasement, no permission.",
-          mainEntityOfPage: "https://nectar-pay.com/manifesto",
-          publisher: { "@type": "Organization", name: "Nectar.Pay", url: "https://nectar-pay.com" },
+          mainEntityOfPage: "https://app.nectar-pay.com/manifesto",
+          publisher: { "@type": "Organization", name: "Nectar.Pay", url: "https://app.nectar-pay.com" },
         }),
       },
     ],

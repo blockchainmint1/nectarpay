@@ -19,7 +19,7 @@ export const Route = createFileRoute("/news")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: "https://nectar-pay.com/news" }],
+    links: [{ rel: "canonical", href: "https://app.nectar-pay.com/news" }],
   }),
   component: NewsPage,
 });

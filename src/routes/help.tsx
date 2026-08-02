@@ -131,7 +131,7 @@ export const Route = createFileRoute("/help")({
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { rel: "canonical", href: "https://nectar-pay.com/help" },
+      { rel: "canonical", href: "https://app.nectar-pay.com/help" },
     ],
   }),
   component: HelpPage,

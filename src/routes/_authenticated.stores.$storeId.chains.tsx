@@ -736,7 +736,7 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
       // against a different host.
       const canonical =
         (import.meta.env.VITE_PUBLIC_SITE_URL as string | undefined)?.replace(/\/$/, "") ||
-        "https://nectar-pay.com";
+        "https://app.nectar-pay.com";
       const linkUrl = `${canonical}/api/public/v1/wallet-link?token=${encodeURIComponent(result.token)}`;
       const qr = await qrToDataURL(linkUrl, { width: 320, margin: 1 });
       setQrDataUrl(qr);

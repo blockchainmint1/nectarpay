@@ -12,7 +12,7 @@
 //       "payload": {
 //         "v": 1, "type": "hm-link-xpubs",
 //         "challenge_id": "...", "from": "nectar-pay.com",
-//         "callback_url": "https://nectar-pay.com/api/public/v1/wallet-link?token=...",
+//         "callback_url": "https://app.nectar-pay.com/api/public/v1/wallet-link?token=...",
 //         "chains": ["BTC","TXC","EVM","LTC","BCH","TRX"],
 //         "xpubs": { "BTC":"zpub...", "TXC":"xpub...", "EVM":"xpub...",
 //                    "LTC":"...", "BCH":"...", "TRX":"<hex pubkey>" },

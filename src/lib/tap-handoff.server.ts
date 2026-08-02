@@ -4,7 +4,7 @@
 // nonce. The terminal writes an NDEF tag (or pushes via HCE) containing:
 //
 //   nectar://pay?inv=<invoice_id>&t=<nonce>        (Android intent / deep link)
-//   https://nectar-pay.com/pay/<invoice_id>?t=<nonce>   (iOS universal-link fallback)
+//   https://app.nectar-pay.com/pay/<invoice_id>?t=<nonce>   (iOS universal-link fallback)
 //
 // The customer taps their phone → HME Mobile wallet opens and calls
 //   GET  /api/public/v1/pay/:invoiceId?t=<nonce>            (read)
@@ -17,7 +17,7 @@ import { randomBytes } from "crypto";
 export const TAP_NONCE_TTL_MS = 10 * 60 * 1000;
 
 const PUBLIC_ORIGIN =
-  process.env.PUBLIC_ORIGIN || "https://nectar-pay.com";
+  process.env.PUBLIC_ORIGIN || "https://app.nectar-pay.com";
 const APP_SCHEME = "nectar"; // Custom URI scheme handled by HME Mobile wallet
 
 export interface TapHandoff {
