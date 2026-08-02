@@ -90,12 +90,26 @@ function AdminLayout() {
             <ThemeToggle />
           </div>
         </div>
-        <div className="mx-auto max-w-7xl px-6 py-8">
+        <div className="mx-auto max-w-7xl px-4 py-6 pb-[calc(72px+env(safe-area-inset-bottom))] sm:px-6 md:py-8 md:pb-8">
           <Outlet />
         </div>
+        <MobileTabBar
+          items={[
+            { to: "/admin", label: "Overview", icon: <LayoutDashboard className="h-5 w-5" />, exact: true },
+            { to: "/admin/crm", label: "CRM", icon: <UsersRound className="h-5 w-5" /> },
+            { to: "/admin/merchants", label: "Merchants", icon: <StoreIcon className="h-5 w-5" /> },
+            { to: "/admin/invoices", label: "Invoices", icon: <Receipt className="h-5 w-5" /> },
+          ]}
+          more={[
+            { to: "/admin/updates", label: "POS Updates", icon: <Smartphone className="h-4 w-4" /> },
+            { to: "/admin/knowledge", label: "Knowledge", icon: <BookOpen className="h-4 w-4" /> },
+            { to: "/dashboard", label: "Merchant view", icon: <ArrowLeft className="h-4 w-4" /> },
+          ]}
+        />
       </main>
     </div>
   );
+
 }
 
 function NavItem({
