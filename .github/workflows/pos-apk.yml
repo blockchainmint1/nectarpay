@@ -32,14 +32,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
 
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
         with:
           packages: 'platforms;android-35 build-tools;35.0.0'
 
@@ -133,7 +133,7 @@ jobs:
              out/nectar-pos-${{ steps.ver.outputs.version }}.apk
           (cd out && sha256sum nectar-pos-*.apk > SHA256SUMS)
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: nectar-pos-${{ steps.ver.outputs.version }}
           path: out/*
