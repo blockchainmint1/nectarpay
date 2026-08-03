@@ -1,7 +1,7 @@
 # iOS Build Setup — NectarPay Merchant App
 
 Target: `capacitor.merchant.config.ts` (appId `money.honest.nectarpay`,
-live-loads `https://app.nectar-pay.com/m?mode=merchant`).
+live-loads `https://app.nectar-pay.com/start?mode=merchant`).
 
 iOS builds **require a Mac** (Apple Silicon strongly preferred). There is no
 supported way to build/sign an iOS app on Windows or Linux.
