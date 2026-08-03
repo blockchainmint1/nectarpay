@@ -1,5 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
+import merchantConfig from "./capacitor.merchant.config";
+
 /**
  * NectarPay POS — Capacitor config.
  *
@@ -16,10 +18,14 @@ import type { CapacitorConfig } from "@capacitor/cli";
  */
 const isTestBuild = process.env.NECTAR_TEST_URL === "1";
 
-const config: CapacitorConfig = {
+// Capacitor 8 removed the `--config` CLI flag, so the merchant app is
+// selected with NECTAR_APP=merchant (see the `*:merchant` package scripts).
+const isMerchant = process.env.NECTAR_APP === "merchant";
+
+const terminalConfig: CapacitorConfig = {
   appId: "money.honest.nectarpos",
   appName: isTestBuild ? "NectarPay TEST" : "NectarPay POS",
-  webDir: "dist",
+  webDir: ".output/public",
   server: {
     // Live-loaded UI. The terminal needs internet on boot.
     url: isTestBuild ? "https://httpbin.org/get" : "https://app.nectar-pay.com/start",
@@ -32,5 +38,7 @@ const config: CapacitorConfig = {
     webContentsDebuggingEnabled: true,
   },
 };
+
+const config: CapacitorConfig = isMerchant ? merchantConfig : terminalConfig;
 
 export default config;
