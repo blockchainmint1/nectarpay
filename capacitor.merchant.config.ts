@@ -20,7 +20,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 const config: CapacitorConfig = {
   appId: "money.honest.nectarpay",
   appName: "NectarPay POS",
-  webDir: "dist",
+  webDir: ".output/public",
   server: {
     // Live-loaded UI so store updates ship without a resubmit.
     url: "https://app.nectar-pay.com/m?mode=merchant",
