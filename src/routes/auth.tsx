@@ -14,6 +14,10 @@ import { qrToString } from "@/lib/qr";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
+  // Deep-link straight into a sign-in method (POS sends ?mode=wallet).
+  mode: z.enum(["choose", "wallet", "email"]).optional(),
+  // POS/terminal chrome: no marketing nav or footer.
+  pos: z.string().optional(),
 });
 
 export const Route = createFileRoute("/auth")({
@@ -53,7 +57,11 @@ function AuthPage() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const [mode, setMode] = useState<"choose" | "wallet" | "email">("choose");
+  const [mode, setMode] = useState<"choose" | "wallet" | "email">(search.mode ?? "choose");
+  // Terminal/onboarding flows get a bare screen — no marketing nav/footer.
+  const posChrome =
+    search.pos === "1" ||
+    Boolean(search.redirect && /^\/(start|pos)/.test(search.redirect));
   const [status, setStatus] = useState<Status>({ kind: "loading" });
   const [qrSvg, setQrSvg] = useState<string>("");
   const [remaining, setRemaining] = useState<number>(0);
@@ -220,7 +228,7 @@ function AuthPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <MarketingNav />
+      {!posChrome && <MarketingNav />}
       <div className="mx-auto flex max-w-lg flex-col px-4 py-16">
         <div className="rounded-xl border border-border bg-card/60 p-8">
           <div className="text-center">
@@ -343,7 +351,7 @@ function AuthPage() {
           )}
         </div>
       </div>
-      <MarketingFooter />
+      {!posChrome && <MarketingFooter />}
     </div>
   );
 }
