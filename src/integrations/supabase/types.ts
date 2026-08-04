@@ -1652,7 +1652,11 @@ export type Database = {
       }
       terminals: {
         Row: {
+          app_version: string | null
           created_at: string
+          device_android_id: string | null
+          device_model: string | null
+          device_serial: string | null
           geoip_updated_at: string | null
           hmac_secret_hash: string
           id: string
@@ -1667,7 +1671,11 @@ export type Database = {
           store_id: string
         }
         Insert: {
+          app_version?: string | null
           created_at?: string
+          device_android_id?: string | null
+          device_model?: string | null
+          device_serial?: string | null
           geoip_updated_at?: string | null
           hmac_secret_hash: string
           id?: string
@@ -1682,7 +1690,11 @@ export type Database = {
           store_id: string
         }
         Update: {
+          app_version?: string | null
           created_at?: string
+          device_android_id?: string | null
+          device_model?: string | null
+          device_serial?: string | null
           geoip_updated_at?: string | null
           hmac_secret_hash?: string
           id?: string
