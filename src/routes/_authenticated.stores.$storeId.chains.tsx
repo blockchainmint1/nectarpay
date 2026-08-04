@@ -308,7 +308,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("stores")
-        .select("default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, preferred_evm_chain")
+        .select("default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd, preferred_evm_chain")
         .eq("id", storeId)
         .single();
       if (error) throw error;
@@ -320,6 +320,8 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
   const [mempool, setMempool] = useState<string>("");
   const [fast, setFast] = useState<boolean>(false);
   const [slow, setSlow] = useState<boolean>(false);
+  const [tsdInstant, setTsdInstant] = useState<boolean>(true);
+  const [tsdCap, setTsdCap] = useState<string>("250");
   const [preferredEvm, setPreferredEvm] = useState<string>("base");
   const [saving, setSaving] = useState(false);
 
@@ -329,6 +331,11 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
     setMempool(data.mempool_max_usd == null ? "" : String(data.mempool_max_usd));
     setFast(!!data.mempool_accept_fast);
     setSlow(!!data.mempool_accept_slow);
+    setTsdInstant((data as { tsd_instant?: boolean | null }).tsd_instant ?? true);
+    {
+      const cap = (data as { tsd_instant_max_usd?: number | null }).tsd_instant_max_usd;
+      setTsdCap(cap == null ? "" : String(cap));
+    }
     setPreferredEvm(((data as { preferred_evm_chain?: string }).preferred_evm_chain) ?? "base");
   }, [data]);
 
@@ -349,6 +356,8 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
           mempool_max_usd: mNum,
           mempool_accept_fast: fast,
           mempool_accept_slow: slow,
+          tsd_instant: tsdInstant,
+          tsd_instant_max_usd: tsdCap.trim() === "" ? null : Number(tsdCap),
           preferred_evm_chain: preferredEvm,
         })
         .eq("id", storeId);
@@ -424,6 +433,30 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
             </p>
           </div>
         </label>
+      </div>
+
+      <div className="mt-5 grid gap-3 border-t border-primary/15 pt-4 sm:grid-cols-[1fr_180px] sm:items-start">
+        <label className="flex cursor-pointer items-start gap-3 rounded-md border border-primary/40 bg-primary/5 p-3 hover:bg-primary/10">
+          <Switch checked={tsdInstant} onCheckedChange={setTsdInstant} className="mt-0.5" />
+          <div className="min-w-0">
+            <div className="text-sm font-medium">TSD on TEXITcoin · instant accept</div>
+            <p className="text-xs text-muted-foreground">
+              On by default. Texas Stable Dollar payments settle the moment they hit the mempool —
+              typically under a second at the counter. Capped by the amount on the right.
+            </p>
+          </div>
+        </label>
+        <div>
+          <Label htmlFor="tsd-cap" className="text-xs">Instant TSD cap (USD)</Label>
+          <Input
+            id="tsd-cap"
+            inputMode="decimal"
+            placeholder="250"
+            value={tsdCap}
+            onChange={(e) => setTsdCap(e.target.value)}
+          />
+          <p className="mt-1 text-xs text-muted-foreground">Blank = no cap.</p>
+        </div>
       </div>
 
       <div className="mt-5 border-t border-primary/15 pt-4">
