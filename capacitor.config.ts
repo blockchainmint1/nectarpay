@@ -31,6 +31,21 @@ const terminalConfig: CapacitorConfig = {
     url: isTestBuild ? "https://httpbin.org/get" : "https://app.nectar-pay.com/start",
     androidScheme: "https",
     cleartext: false,
+    // Anything NOT in this list opens in the external browser. Older APKs
+    // booted from nectar-pay.com / nectarpay.lovable.app, so a redirect to
+    // app.nectar-pay.com was treated as "outbound" and kicked the merchant
+    // out to Chrome mid-pairing. Keep every historical origin here.
+    allowNavigation: [
+      "app.nectar-pay.com",
+      "nectar-pay.com",
+      "www.nectar-pay.com",
+      "nectarpay.honest.money",
+      "nectarpay.lovable.app",
+      "nectarpay-app.lovable.app",
+      "*.lovable.app",
+      "*.supabase.co",
+      "accounts.google.com",
+    ],
   },
   android: {
     allowMixedContent: false,

@@ -27,6 +27,15 @@ const config: CapacitorConfig = {
     androidScheme: "https",
     iosScheme: "https",
     cleartext: false,
+    allowNavigation: [
+      "app.nectar-pay.com",
+      "nectar-pay.com",
+      "www.nectar-pay.com",
+      "nectarpay.honest.money",
+      "*.lovable.app",
+      "*.supabase.co",
+      "accounts.google.com",
+    ],
   },
   ios: {
     contentInset: "always",
