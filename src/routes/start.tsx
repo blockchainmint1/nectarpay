@@ -1,20 +1,9 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import type React from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowRight, CheckCircle2, ExternalLink, Mail, Smartphone, Wallet } from "lucide-react";
-import { toast } from "sonner";
-import { useServerFn } from "@tanstack/react-start";
 
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth-context";
-import { Button } from "@/components/ui/button";
 import { NectarMark } from "@/components/marketing-shell";
-import { createWalletLinkCode } from "@/lib/wallet-link.functions";
-import { createPairingCode } from "@/lib/terminals.functions";
-import { getLatestPosRelease } from "@/lib/pos-releases.functions";
-import { saveCreds } from "@/lib/pos-client";
-import { qrToDataURL } from "@/lib/qr";
 import { PosLaunchChooser } from "@/components/pos-launch-chooser";
 import { Welcome, Business, WalletLink, TerminalDefaults, Done } from "@/components/onboarding/steps";
 
