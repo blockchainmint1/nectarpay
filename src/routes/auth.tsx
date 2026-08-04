@@ -351,7 +351,7 @@ function AuthPage() {
           )}
         </div>
       </div>
-      <MarketingFooter />
+      {!posChrome && <MarketingFooter />}
     </div>
   );
 }
