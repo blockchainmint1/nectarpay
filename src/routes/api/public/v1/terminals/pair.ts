@@ -69,6 +69,10 @@ export const Route = createFileRoute("/api/public/v1/terminals/pair")({
               label: codeRow.label,
               hmac_secret_hash: secret, // see comment in terminals.server.ts re: storage
               last_seen_at: new Date().toISOString(),
+              device_serial: parse.data.device_serial ?? null,
+              device_model: parse.data.device_model ?? null,
+              device_android_id: parse.data.device_android_id ?? null,
+              app_version: parse.data.app_version ?? null,
             })
             .select("id")
             .single();
