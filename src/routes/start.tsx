@@ -251,7 +251,7 @@ function Welcome({ signedIn }: { signedIn: boolean }) {
             </button>
             <Link
               to="/auth"
-              search={{ redirect: "/start" }}
+              search={{ redirect: "/start", mode: "wallet", pos: "1" }}
               className="flex h-14 w-full items-center justify-center gap-3 rounded-lg border border-primary/40 bg-primary/10 text-base font-medium text-primary transition hover:bg-primary/15"
             >
               <Wallet className="h-5 w-5" />
