@@ -14,6 +14,10 @@ import { qrToString } from "@/lib/qr";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
+  // Deep-link straight into a sign-in method (POS sends ?mode=wallet).
+  mode: z.enum(["choose", "wallet", "email"]).optional(),
+  // POS/terminal chrome: no marketing nav or footer.
+  pos: z.string().optional(),
 });
 
 export const Route = createFileRoute("/auth")({
