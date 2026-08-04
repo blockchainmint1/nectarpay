@@ -12,7 +12,7 @@ export const listTerminals = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase
       .from("terminals")
-      .select("id, label, last_seen_at, revoked_at, created_at")
+      .select("id, label, last_seen_at, revoked_at, created_at, device_serial, device_model, app_version")
       .eq("store_id", data.storeId)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);

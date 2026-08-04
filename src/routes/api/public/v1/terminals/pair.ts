@@ -17,7 +17,15 @@ function json(body: unknown, status = 200) {
   });
 }
 
-const Body = z.object({ code: z.string().min(4).max(16) });
+const Body = z.object({
+  code: z.string().min(4).max(16),
+  // Hardware identity reported by the native shell (APK 0.1.19+). Optional so
+  // older terminals and browser pairing keep working.
+  device_serial: z.string().max(120).nullish(),
+  device_model: z.string().max(120).nullish(),
+  device_android_id: z.string().max(120).nullish(),
+  app_version: z.string().max(40).nullish(),
+});
 
 export const Route = createFileRoute("/api/public/v1/terminals/pair")({
   server: {
