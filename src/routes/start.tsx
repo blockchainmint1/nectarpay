@@ -83,10 +83,18 @@ function StartPage() {
     <div className="min-h-[100dvh] bg-background flex flex-col">
 
       <header className="flex items-center justify-between px-5 pt-5">
-        <Link to="/" className="flex items-center gap-2">
+        {/* In the POS/APK shell the logo is the way back to the launch chooser. */}
+        <button
+          type="button"
+          onClick={() => {
+            try { sessionStorage.removeItem("pos.launch.chosen"); } catch { /* ignore */ }
+            window.location.href = "/start?launch=1";
+          }}
+          className="flex items-center gap-2"
+        >
           <NectarMark className="h-7 w-7" />
           <span className="text-sm font-semibold tracking-tight">Nectar-PAY</span>
-        </Link>
+        </button>
         <span className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
           Step {Math.max(1, stepIdx + 1)} / {STEPS.length}
         </span>
@@ -243,7 +251,7 @@ function Welcome({ signedIn }: { signedIn: boolean }) {
             </button>
             <Link
               to="/auth"
-              search={{ redirect: "/start" }}
+              search={{ redirect: "/start", mode: "wallet", pos: "1" }}
               className="flex h-14 w-full items-center justify-center gap-3 rounded-lg border border-primary/40 bg-primary/10 text-base font-medium text-primary transition hover:bg-primary/15"
             >
               <Wallet className="h-5 w-5" />
