@@ -30,3 +30,16 @@ set_bool UIRequiresFullScreen false
 
 echo "Patched $PLIST:"
 /usr/libexec/PlistBuddy -c "Print :NSCameraUsageDescription" "$PLIST"
+
+# --- App icon -------------------------------------------------------------
+# `cap add ios` scaffolds Capacitor's default grey icon. Copy the NectarPay
+# 1024x1024 (no alpha) mark over it so archives never ship the placeholder.
+ICON_SRC="assets/ios/AppIcon.appiconset"
+ICON_DEST="ios/App/App/Assets.xcassets/AppIcon.appiconset"
+if [ -d "$ICON_SRC" ] && [ -d "ios/App/App/Assets.xcassets" ]; then
+  rm -rf "$ICON_DEST"
+  cp -R "$ICON_SRC" "$ICON_DEST"
+  echo "Installed app icon -> $ICON_DEST"
+else
+  echo "Skipped app icon (missing $ICON_SRC or Xcode assets catalog)." >&2
+fi
