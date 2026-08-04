@@ -1247,6 +1247,8 @@ export type Database = {
           receipt_tax_id: string | null
           tax_bps: number
           tax_mode: string
+          tsd_instant: boolean
+          tsd_instant_max_usd: number | null
           updated_at: string
           usdc_payout_address_eth: string | null
           webhook_secret: string | null
@@ -1315,6 +1317,8 @@ export type Database = {
           receipt_tax_id?: string | null
           tax_bps?: number
           tax_mode?: string
+          tsd_instant?: boolean
+          tsd_instant_max_usd?: number | null
           updated_at?: string
           usdc_payout_address_eth?: string | null
           webhook_secret?: string | null
@@ -1383,6 +1387,8 @@ export type Database = {
           receipt_tax_id?: string | null
           tax_bps?: number
           tax_mode?: string
+          tsd_instant?: boolean
+          tsd_instant_max_usd?: number | null
           updated_at?: string
           usdc_payout_address_eth?: string | null
           webhook_secret?: string | null
