@@ -16,7 +16,7 @@ import { qrToDataURL } from "@/lib/qr";
 
 /* ---------------- Welcome / Choose sign-in ---------------- */
 
-export function Welcome({ signedIn }: { signedIn: boolean }) {
+export function Welcome({ signedIn, redirectTo = "/start" }: { signedIn: boolean; redirectTo?: string }) {
   const [mode, setMode] = useState<"choose" | "email">("choose");
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
@@ -51,7 +51,7 @@ export function Welcome({ signedIn }: { signedIn: boolean }) {
     setBusy(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: typeof window !== "undefined" ? `${window.location.origin}/start` : undefined,
+        redirect_uri: typeof window !== "undefined" ? `${window.location.origin}${redirectTo}` : undefined,
       });
       if (result.error) {
         toast.error(result.error.message || "Google sign-in failed");
@@ -75,7 +75,7 @@ export function Welcome({ signedIn }: { signedIn: boolean }) {
       const { error } = await supabase.auth.signInWithOtp({
         email: trimmed,
         options: {
-          emailRedirectTo: `${window.location.origin}/start`,
+          emailRedirectTo: `${window.location.origin}${redirectTo}`,
           shouldCreateUser: true,
         },
       });
@@ -123,7 +123,7 @@ export function Welcome({ signedIn }: { signedIn: boolean }) {
             </button>
             <Link
               to="/auth"
-              search={{ redirect: "/start", mode: "wallet", pos: "1" }}
+              search={{ redirect: redirectTo, mode: "wallet", pos: "1" }}
               className="flex h-14 w-full items-center justify-center gap-3 rounded-lg border border-primary/40 bg-primary/10 text-base font-medium text-primary transition hover:bg-primary/15"
             >
               <Wallet className="h-5 w-5" />
