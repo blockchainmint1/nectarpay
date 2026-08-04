@@ -228,7 +228,7 @@ function AuthPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <MarketingNav />
+      {!posChrome && <MarketingNav />}
       <div className="mx-auto flex max-w-lg flex-col px-4 py-16">
         <div className="rounded-xl border border-border bg-card/60 p-8">
           <div className="text-center">
