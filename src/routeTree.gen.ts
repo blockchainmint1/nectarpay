@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as StartRouteImport } from './routes/start'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PosBuildIdRouteImport } from './routes/pos-build-id'
 import { Route as PosApkIpfsRouteImport } from './routes/pos-apk-ipfs'
@@ -135,6 +136,11 @@ const StartRoute = StartRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -752,6 +758,7 @@ export interface FileRoutesByFullPath {
   '/pos-apk-ipfs': typeof PosApkIpfsRoute
   '/pos-build-id': typeof PosBuildIdRoute
   '/privacy': typeof PrivacyRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/start': typeof StartRoute
   '/terms': typeof TermsRoute
@@ -864,6 +871,7 @@ export interface FileRoutesByTo {
   '/pos-apk-ipfs': typeof PosApkIpfsRoute
   '/pos-build-id': typeof PosBuildIdRoute
   '/privacy': typeof PrivacyRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/start': typeof StartRoute
   '/terms': typeof TermsRoute
@@ -975,6 +983,7 @@ export interface FileRoutesById {
   '/pos-apk-ipfs': typeof PosApkIpfsRoute
   '/pos-build-id': typeof PosBuildIdRoute
   '/privacy': typeof PrivacyRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/start': typeof StartRoute
   '/terms': typeof TermsRoute
@@ -1090,6 +1099,7 @@ export interface FileRouteTypes {
     | '/pos-apk-ipfs'
     | '/pos-build-id'
     | '/privacy'
+    | '/signup'
     | '/sitemap.xml'
     | '/start'
     | '/terms'
@@ -1202,6 +1212,7 @@ export interface FileRouteTypes {
     | '/pos-apk-ipfs'
     | '/pos-build-id'
     | '/privacy'
+    | '/signup'
     | '/sitemap.xml'
     | '/start'
     | '/terms'
@@ -1312,6 +1323,7 @@ export interface FileRouteTypes {
     | '/pos-apk-ipfs'
     | '/pos-build-id'
     | '/privacy'
+    | '/signup'
     | '/sitemap.xml'
     | '/start'
     | '/terms'
@@ -1427,6 +1439,7 @@ export interface RootRouteChildren {
   PosApkIpfsRoute: typeof PosApkIpfsRoute
   PosBuildIdRoute: typeof PosBuildIdRoute
   PrivacyRoute: typeof PrivacyRoute
+  SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StartRoute: typeof StartRoute
   TermsRoute: typeof TermsRoute
@@ -1487,6 +1500,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -2521,6 +2541,7 @@ const rootRouteChildren: RootRouteChildren = {
   PosApkIpfsRoute: PosApkIpfsRoute,
   PosBuildIdRoute: PosBuildIdRoute,
   PrivacyRoute: PrivacyRoute,
+  SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StartRoute: StartRoute,
   TermsRoute: TermsRoute,
