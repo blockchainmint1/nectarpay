@@ -105,6 +105,7 @@ import { Route as AuthenticatedAdminCrmMarketsRouteImport } from './routes/_auth
 import { Route as AuthenticatedAdminCrmLeadsRouteImport } from './routes/_authenticated.admin.crm.leads'
 import { Route as ApiPublicV1TerminalsPairRouteImport } from './routes/api/public/v1/terminals/pair'
 import { Route as ApiPublicV1TerminalsOptionsRouteImport } from './routes/api/public/v1/terminals/options'
+import { Route as ApiPublicV1TerminalsInvoicesRouteImport } from './routes/api/public/v1/terminals/invoices'
 import { Route as ApiPublicV1TerminalsInvoiceRouteImport } from './routes/api/public/v1/terminals/invoice'
 import { Route as ApiPublicV1TerminalsHeartbeatRouteImport } from './routes/api/public/v1/terminals/heartbeat'
 import { Route as ApiPublicV1StatsLiveRouteImport } from './routes/api/public/v1/stats/live'
@@ -637,6 +638,12 @@ const ApiPublicV1TerminalsOptionsRoute =
     path: '/api/public/v1/terminals/options',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicV1TerminalsInvoicesRoute =
+  ApiPublicV1TerminalsInvoicesRouteImport.update({
+    id: '/api/public/v1/terminals/invoices',
+    path: '/api/public/v1/terminals/invoices',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicV1TerminalsInvoiceRoute =
   ApiPublicV1TerminalsInvoiceRouteImport.update({
     id: '/api/public/v1/terminals/invoice',
@@ -831,6 +838,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
+  '/api/public/v1/terminals/invoices': typeof ApiPublicV1TerminalsInvoicesRoute
   '/api/public/v1/terminals/options': typeof ApiPublicV1TerminalsOptionsRoute
   '/api/public/v1/terminals/pair': typeof ApiPublicV1TerminalsPairRoute
   '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
@@ -938,6 +946,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
+  '/api/public/v1/terminals/invoices': typeof ApiPublicV1TerminalsInvoicesRoute
   '/api/public/v1/terminals/options': typeof ApiPublicV1TerminalsOptionsRoute
   '/api/public/v1/terminals/pair': typeof ApiPublicV1TerminalsPairRoute
   '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
@@ -1052,6 +1061,7 @@ export interface FileRoutesById {
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
+  '/api/public/v1/terminals/invoices': typeof ApiPublicV1TerminalsInvoicesRoute
   '/api/public/v1/terminals/options': typeof ApiPublicV1TerminalsOptionsRoute
   '/api/public/v1/terminals/pair': typeof ApiPublicV1TerminalsPairRoute
   '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
@@ -1166,6 +1176,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/stats/live'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
+    | '/api/public/v1/terminals/invoices'
     | '/api/public/v1/terminals/options'
     | '/api/public/v1/terminals/pair'
     | '/api/public/v1/terminals/invoice/$id'
@@ -1273,6 +1284,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/stats/live'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
+    | '/api/public/v1/terminals/invoices'
     | '/api/public/v1/terminals/options'
     | '/api/public/v1/terminals/pair'
     | '/api/public/v1/terminals/invoice/$id'
@@ -1386,6 +1398,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/stats/live'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
+    | '/api/public/v1/terminals/invoices'
     | '/api/public/v1/terminals/options'
     | '/api/public/v1/terminals/pair'
     | '/api/public/v1/terminals/invoice/$id'
@@ -1448,6 +1461,7 @@ export interface RootRouteChildren {
   ApiPublicV1StatsLiveRoute: typeof ApiPublicV1StatsLiveRoute
   ApiPublicV1TerminalsHeartbeatRoute: typeof ApiPublicV1TerminalsHeartbeatRoute
   ApiPublicV1TerminalsInvoiceRoute: typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
+  ApiPublicV1TerminalsInvoicesRoute: typeof ApiPublicV1TerminalsInvoicesRoute
   ApiPublicV1TerminalsOptionsRoute: typeof ApiPublicV1TerminalsOptionsRoute
   ApiPublicV1TerminalsPairRoute: typeof ApiPublicV1TerminalsPairRoute
 }
@@ -2126,6 +2140,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1TerminalsOptionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/terminals/invoices': {
+      id: '/api/public/v1/terminals/invoices'
+      path: '/api/public/v1/terminals/invoices'
+      fullPath: '/api/public/v1/terminals/invoices'
+      preLoaderRoute: typeof ApiPublicV1TerminalsInvoicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/terminals/invoice': {
       id: '/api/public/v1/terminals/invoice'
       path: '/api/public/v1/terminals/invoice'
@@ -2535,6 +2556,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1TerminalsHeartbeatRoute: ApiPublicV1TerminalsHeartbeatRoute,
   ApiPublicV1TerminalsInvoiceRoute:
     ApiPublicV1TerminalsInvoiceRouteWithChildren,
+  ApiPublicV1TerminalsInvoicesRoute: ApiPublicV1TerminalsInvoicesRoute,
   ApiPublicV1TerminalsOptionsRoute: ApiPublicV1TerminalsOptionsRoute,
   ApiPublicV1TerminalsPairRoute: ApiPublicV1TerminalsPairRoute,
 }
