@@ -29,9 +29,10 @@ export interface WatcherResult {
  * Effective confirmations required for this credit. The merchant can opt into
  * mempool (0-conf) acceptance per finality tier — fast (Base/BSC/Sol/Tron) or
  * slow (BTC/ETH L1/TXC) — and `mempool_max_usd` caps which invoices qualify.
- * If the tier toggle is on AND the paid USD is ≤ the cap (or no cap is set),
- * treat 0-conf as good. Otherwise fall back to the merchant's configured
- * `default_confirmations_required`, then the network default.
+ *
+ * TSD on TEXITcoin is special-cased: instant (mempool) acceptance is ON by
+ * default, capped by `tsd_instant_max_usd` (default $250), because it's the
+ * flagship in-person rail. Merchants can turn it off per store.
  */
 function effectiveConfsRequired(
   store: {
@@ -39,11 +40,22 @@ function effectiveConfsRequired(
     mempool_max_usd?: number | null;
     mempool_accept_fast?: boolean | null;
     mempool_accept_slow?: boolean | null;
+    tsd_instant?: boolean | null;
+    tsd_instant_max_usd?: number | null;
   } | null | undefined,
   netDefault: number,
   paidUsd: number,
   chain: string,
+  tokenSymbol?: string | null,
 ): number {
+  // TSD on TXC → yolo the mempool by default.
+  if (chain === "txc" && (tokenSymbol ?? "").toUpperCase() === "TSD") {
+    const on = store?.tsd_instant ?? true;
+    if (on) {
+      const cap = store?.tsd_instant_max_usd == null ? 250 : Number(store.tsd_instant_max_usd);
+      if (!Number.isFinite(cap) || cap <= 0 || paidUsd <= cap) return 0;
+    }
+  }
   const tierOn = isFastFinality(chain)
     ? !!store?.mempool_accept_fast
     : !!store?.mempool_accept_slow;
@@ -53,6 +65,7 @@ function effectiveConfsRequired(
   }
   return store?.default_confirmations_required ?? netDefault;
 }
+
 
 async function markInvoiceDetected(invoiceId: string): Promise<boolean> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -276,7 +289,7 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
-    .select("id, store_id, chain, address, token_symbol, fiat_amount, status, rate, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow)")
+    .select("id, store_id, chain, address, token_symbol, fiat_amount, status, rate, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd)")
     .eq("id", invoiceId)
     .maybeSingle();
   if (!inv || !inv.address || !isBtcLikeChain(inv.chain)) return false;
@@ -305,7 +318,7 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
         ? lockedRate
         : await getUsdRate(chainKey);
     const paidUsd = paidCrypto * usdRate;
-    const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd, chainKey);
+    const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd, chainKey, inv.token_symbol);
     const isConfirmed = credit.confirmations >= required;
     await recordTransaction(inv.id, credit.txid, paidCrypto, credit.confirmations, null, isConfirmed);
     if (isConfirmed) {
@@ -364,7 +377,7 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
-    .select("id, store_id, chain, address, fiat_amount, status, rate, token_symbol, created_at, expires_at, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow)")
+    .select("id, store_id, chain, address, fiat_amount, status, rate, token_symbol, created_at, expires_at, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd)")
     .eq("id", invoiceId)
     .maybeSingle();
 
@@ -486,7 +499,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
 
   const { data: configs } = await supabaseAdmin
     .from("chain_configs")
-    .select("*, stores!inner(id, owner_id, default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow)")
+    .select("*, stores!inner(id, owner_id, default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd)")
     .not("xpub", "is", null)
     .eq("enabled", true);
 
@@ -558,7 +571,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
                 ? lockedRate
                 : await getUsdRate(chain);
             const paidUsd = paidCrypto * usdRate;
-            const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, paidUsd, chain);
+            const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, paidUsd, chain, inv.token_symbol);
             const isConfirmed = credit.confirmations >= required;
             await recordTransaction(
               inv.id,
