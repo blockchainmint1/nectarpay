@@ -123,7 +123,7 @@ export function Welcome({ signedIn, redirectTo = "/start" }: { signedIn: boolean
             </button>
             <Link
               to="/auth"
-              search={{ redirect: redirectTo, mode: "wallet", pos: "1" }}
+              search={{ redirect: redirectTo, mode: "wallet", ...(redirectTo === "/start" ? { pos: "1" } : {}) }}
               className="flex h-14 w-full items-center justify-center gap-3 rounded-lg border border-primary/40 bg-primary/10 text-base font-medium text-primary transition hover:bg-primary/15"
             >
               <Wallet className="h-5 w-5" />
