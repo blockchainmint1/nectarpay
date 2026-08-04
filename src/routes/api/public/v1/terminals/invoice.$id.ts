@@ -44,11 +44,21 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id")({
 
 
 
-          if (["pending", "detected", "underpaid"].includes(inv.status) && inv.chain && ["eth", "base", "bsc"].includes(inv.chain)) {
-            const { scanEvmInvoiceNow } = await import("@/lib/watcher.functions");
-            await scanEvmInvoiceNow(inv.id).catch((e) => {
-              console.error("[terminal-invoice] hot EVM scan failed:", e);
-            });
+          if (["pending", "detected", "underpaid"].includes(inv.status) && inv.chain) {
+            if (["eth", "base", "bsc"].includes(inv.chain)) {
+              const { scanEvmInvoiceNow } = await import("@/lib/watcher.functions");
+              await scanEvmInvoiceNow(inv.id).catch((e) => {
+                console.error("[terminal-invoice] hot EVM scan failed:", e);
+              });
+            } else {
+              const { isBtcLikeChain } = await import("@/lib/chains/networks");
+              if (isBtcLikeChain(inv.chain)) {
+                const { scanBtcLikeInvoiceNow } = await import("@/lib/watcher.functions");
+                await scanBtcLikeInvoiceNow(inv.id).catch((e) => {
+                  console.error("[terminal-invoice] hot UTXO scan failed:", e);
+                });
+              }
+            }
           }
 
           const { data: freshInv } = await supabaseAdmin

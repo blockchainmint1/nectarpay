@@ -57,10 +57,10 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
     if (!initialInv) return { found: false as const };
 
     let inv = initialInv;
+    const { isBtcLikeChain } = await import("@/lib/chains/networks");
     if (
       inv.address &&
-      !inv.token_symbol &&
-      (inv.chain === "btc" || inv.chain === "txc") &&
+      isBtcLikeChain(inv.chain) &&
       !["confirmed", "overpaid", "expired", "cancelled", "failed"].includes(inv.status)
     ) {
       const { scanBtcLikeInvoiceNow } = await import("@/lib/watcher.functions");
