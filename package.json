@@ -11,11 +11,12 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "sync:terminal": "cap sync",
-    "sync:merchant": "NECTAR_APP=merchant cap sync",
+    "sync:merchant": "NECTAR_APP=merchant cap sync && bash scripts/ios-prepare.sh || true",
     "ios:merchant:add": "NECTAR_APP=merchant cap add ios",
     "ios:merchant": "NECTAR_APP=merchant cap open ios",
     "android:merchant:add": "NECTAR_APP=merchant cap add android",
-    "android:merchant": "NECTAR_APP=merchant cap open android"
+    "android:merchant": "NECTAR_APP=merchant cap open android",
+    "ios:prepare": "bash scripts/ios-prepare.sh"
   },
   "dependencies": {
     "@aparajita/capacitor-biometric-auth": "^10.0.0",
@@ -84,6 +85,7 @@
     "embla-carousel-react": "^8.6.0",
     "ethers": "^6.17.0",
     "input-otp": "^1.4.2",
+    "jsqr": "^1.4.0",
     "leaflet": "^1.9.4",
     "leaflet.heat": "^0.2.0",
     "lucide-react": "^0.575.0",
