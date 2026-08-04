@@ -44,10 +44,18 @@ interface PairResponse {
 
 async function pairCall(code: string, apiBase: string): Promise<PairResponse> {
   const base = (apiBase || (typeof window !== "undefined" ? window.location.origin : "")).replace(/\/$/, "");
+  const { getDeviceInfo } = await import("@/lib/pos-device");
+  const dev = await getDeviceInfo();
   const res = await fetch(`${base}/api/public/v1/terminals/pair`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ code }),
+    body: JSON.stringify({
+      code,
+      device_serial: dev.serial,
+      device_model: dev.model,
+      device_android_id: dev.androidId,
+      app_version: dev.appVersion,
+    }),
   });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error((body as { error?: string })?.error ?? `pair failed (${res.status})`);

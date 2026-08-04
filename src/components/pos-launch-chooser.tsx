@@ -7,12 +7,14 @@
 //   • New merchant       — full onboarding from scratch
 //
 // Renders nothing on the web — browsers keep the normal marketing pages.
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Smartphone, Store, UserPlus } from "lucide-react";
+import { ArrowRight, Download, Loader2, RefreshCw, Smartphone, Store, UserPlus } from "lucide-react";
 
 import { isNative } from "@/lib/pos-native";
 import { loadCreds, type TerminalCreds } from "@/lib/pos-client";
+import { getDeviceInfo, type PosDeviceInfo } from "@/lib/pos-device";
+import { checkForUpdate, downloadUpdate, type UpdateStatus } from "@/lib/pos-updater";
 
 type State =
   | { kind: "loading" }
@@ -30,6 +32,10 @@ type State =
 export function PosLaunchChooser({ onFallthrough }: { onFallthrough?: () => void }) {
   const navigate = useNavigate();
   const [state, setState] = useState<State>({ kind: "loading" });
+  const [device, setDevice] = useState<PosDeviceInfo | null>(null);
+  const [update, setUpdate] = useState<UpdateStatus | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [installing, setInstalling] = useState(false);
 
   useEffect(() => {
     // `?launch=1` forces the chooser in a normal browser so it can be
@@ -51,8 +57,24 @@ export function PosLaunchChooser({ onFallthrough }: { onFallthrough?: () => void
       return;
     }
     setState({ kind: "native", creds: loadCreds() });
+    void getDeviceInfo().then(setDevice);
   }, [onFallthrough]);
 
+  // Auto-check once when the chooser appears, so a stale terminal is flagged
+  // before the merchant starts taking payments.
+  const runCheck = useCallback(async () => {
+    setChecking(true);
+    try {
+      setUpdate(await checkForUpdate());
+    } finally {
+      setChecking(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (state.kind !== "native") return;
+    void runCheck();
+  }, [state.kind, runCheck]);
 
   if (state.kind === "loading") {
     // Brief blank while we decide — prevents a flash of the web landing
@@ -66,8 +88,23 @@ export function PosLaunchChooser({ onFallthrough }: { onFallthrough?: () => void
 
   const { creds } = state;
 
+  // Dismiss the overlay and go where the merchant asked. Navigating to the
+  // route we're already on (e.g. "New merchant" while sitting on /start) is a
+  // no-op in the router, so we must also drop the overlay locally — otherwise
+  // the button appears dead.
+  const choose = (to: "/pos" | "/pos/pair-signin" | "/start") => {
+    sessionStorage.setItem("pos.launch.chosen", "1");
+    setState({ kind: "web" });
+    onFallthrough?.();
+    if (typeof window !== "undefined" && window.location.pathname === to) return;
+    navigate({ to, replace: true });
+  };
+
+  const installedVersion = update?.currentVersion ?? device?.appVersion ?? null;
+  const serial = device?.serial ?? device?.androidId ?? null;
+
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-black text-white">
+    <div className="fixed inset-0 z-[100] flex flex-col overflow-y-auto bg-black text-white">
       <div className="flex flex-1 flex-col justify-center px-6 py-10">
         <div className="mx-auto w-full max-w-sm">
           <p className="text-[10px] font-bold tracking-[0.3em] text-amber-300/80">
@@ -80,39 +117,98 @@ export function PosLaunchChooser({ onFallthrough }: { onFallthrough?: () => void
             Pick how you want to start this session.
           </p>
 
-          <div className="mt-8 flex flex-col gap-3">
+          {/* Version + update status, before anything else happens. */}
+          <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-[10px] font-bold tracking-[0.2em] text-white/40">
+                  APP VERSION
+                </div>
+                <div className="mt-1 font-mono text-sm font-bold">
+                  {installedVersion ? `v${installedVersion}` : "unknown"}
+                  {update?.latestVersion && (
+                    <span className="ml-2 text-[11px] font-normal text-white/40">
+                      latest v{update.latestVersion}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => void runCheck()}
+                disabled={checking}
+                className="flex shrink-0 items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[11px] font-bold tracking-widest text-white/80 active:scale-[0.98] disabled:opacity-50"
+              >
+                {checking ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-3.5 w-3.5" />
+                )}
+                CHECK
+              </button>
+            </div>
+
+            {update?.updateAvailable && update.downloadUrl && (
+              <button
+                onClick={async () => {
+                  setInstalling(true);
+                  try {
+                    await downloadUpdate(update.downloadUrl!);
+                  } finally {
+                    setInstalling(false);
+                  }
+                }}
+                disabled={installing}
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-amber-500 py-2.5 text-xs font-bold tracking-widest text-black active:scale-[0.98] disabled:opacity-60"
+              >
+                {installing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                UPDATE TO v{update.latestVersion}
+              </button>
+            )}
+            {update && !update.updateAvailable && !update.error && (
+              <p className="mt-2 text-[11px] text-emerald-400/80">You&apos;re on the latest build.</p>
+            )}
+            {update?.error && (
+              <p className="mt-2 text-[11px] text-red-400/80">Update check failed: {update.error}</p>
+            )}
+
+            {serial && (
+              <div className="mt-3 border-t border-white/10 pt-3">
+                <div className="text-[10px] font-bold tracking-[0.2em] text-white/40">
+                  TERMINAL SERIAL
+                </div>
+                <div className="mt-1 font-mono text-xs text-white/80">{serial}</div>
+                {device?.model && (
+                  <div className="text-[10px] text-white/40">
+                    {device.manufacturer} {device.model} · Android {device.androidVersion}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="mt-6 flex flex-col gap-3">
             {creds && (
               <Tile
                 primary
                 icon={<Store className="h-6 w-6" />}
                 title="Return to POS"
                 subtitle="Resume this paired terminal"
-                onClick={() => {
-                  sessionStorage.setItem("pos.launch.chosen", "1");
-                  navigate({ to: "/pos", replace: true });
-                }}
+                onClick={() => choose("/pos")}
               />
             )}
-            <Tile
-              icon={<Smartphone className="h-6 w-6" />}
-              title="New terminal"
-              subtitle="Existing merchant · sign in to re-pair this device"
-              onClick={() => {
-                sessionStorage.setItem("pos.launch.chosen", "1");
-                navigate({ to: "/pos/pair-signin", replace: true });
-              }}
-            />
             <Tile
               icon={<UserPlus className="h-6 w-6" />}
               title="New merchant"
               subtitle="Set up a brand-new store from scratch"
-              onClick={() => {
-                sessionStorage.setItem("pos.launch.chosen", "1");
-                navigate({ to: "/start", replace: true });
-              }}
+              onClick={() => choose("/start")}
+            />
+            <Tile
+              icon={<Smartphone className="h-6 w-6" />}
+              title="New terminal"
+              subtitle="Existing merchant · sign in to re-pair this device"
+              onClick={() => choose("/pos/pair-signin")}
             />
           </div>
-
         </div>
       </div>
       <div className="border-t border-white/10 px-6 py-4 text-center text-[10px] tracking-widest text-white/40">

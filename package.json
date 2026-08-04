@@ -10,12 +10,12 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "sync:terminal": "cap sync --config capacitor.config.ts",
-    "sync:merchant": "cap sync --config capacitor.merchant.config.ts",
-    "ios:merchant:add": "cap add ios --config capacitor.merchant.config.ts",
-    "ios:merchant": "cap open ios --config capacitor.merchant.config.ts",
-    "android:merchant:add": "cap add android --config capacitor.merchant.config.ts",
-    "android:merchant": "cap open android --config capacitor.merchant.config.ts"
+    "sync:terminal": "cap sync",
+    "sync:merchant": "NECTAR_APP=merchant cap sync",
+    "ios:merchant:add": "NECTAR_APP=merchant cap add ios",
+    "ios:merchant": "NECTAR_APP=merchant cap open ios",
+    "android:merchant:add": "NECTAR_APP=merchant cap add android",
+    "android:merchant": "NECTAR_APP=merchant cap open android"
   },
   "dependencies": {
     "@aparajita/capacitor-biometric-auth": "^10.0.0",
@@ -24,6 +24,7 @@
     "@capacitor/browser": "^8.0.3",
     "@capacitor/cli": "^8.4.1",
     "@capacitor/core": "^8.4.1",
+    "@capacitor/ios": "^8.4.1",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",

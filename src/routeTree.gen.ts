@@ -14,6 +14,7 @@ import { Route as StartRouteImport } from './routes/start'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PosBuildIdRouteImport } from './routes/pos-build-id'
+import { Route as PosApkIpfsRouteImport } from './routes/pos-apk-ipfs'
 import { Route as PosApkRouteImport } from './routes/pos-apk'
 import { Route as PosRouteImport } from './routes/pos'
 import { Route as OnrampRouteImport } from './routes/onramp'
@@ -74,6 +75,7 @@ import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/em
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as ApiPublicV1WalletLinkRouteImport } from './routes/api/public/v1/wallet-link'
 import { Route as ApiPublicV1MeRouteImport } from './routes/api/public/v1/me'
+import { Route as ApiPublicV1LiveStatsRouteImport } from './routes/api/public/v1/live-stats'
 import { Route as ApiPublicV1InvoicesRouteImport } from './routes/api.public.v1.invoices'
 import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
 import { Route as ApiPublicHooksAlchemyActivityRouteImport } from './routes/api/public/hooks/alchemy-activity'
@@ -105,6 +107,7 @@ import { Route as ApiPublicV1TerminalsPairRouteImport } from './routes/api/publi
 import { Route as ApiPublicV1TerminalsOptionsRouteImport } from './routes/api/public/v1/terminals/options'
 import { Route as ApiPublicV1TerminalsInvoiceRouteImport } from './routes/api/public/v1/terminals/invoice'
 import { Route as ApiPublicV1TerminalsHeartbeatRouteImport } from './routes/api/public/v1/terminals/heartbeat'
+import { Route as ApiPublicV1StatsLiveRouteImport } from './routes/api/public/v1/stats/live'
 import { Route as ApiPublicV1PayInvoiceIdRouteImport } from './routes/api/public/v1/pay/$invoiceId'
 import { Route as ApiPublicV1InvoicesIdRouteImport } from './routes/api.public.v1.invoices.$id'
 import { Route as ApiPublicV1HooksAffiliateSaleRouteImport } from './routes/api/public/v1/hooks/affiliate-sale'
@@ -141,6 +144,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const PosBuildIdRoute = PosBuildIdRouteImport.update({
   id: '/pos-build-id',
   path: '/pos-build-id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PosApkIpfsRoute = PosApkIpfsRouteImport.update({
+  id: '/pos-apk-ipfs',
+  path: '/pos-apk-ipfs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PosApkRoute = PosApkRouteImport.update({
@@ -455,6 +463,11 @@ const ApiPublicV1MeRoute = ApiPublicV1MeRouteImport.update({
   path: '/api/public/v1/me',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1LiveStatsRoute = ApiPublicV1LiveStatsRouteImport.update({
+  id: '/api/public/v1/live-stats',
+  path: '/api/public/v1/live-stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicV1InvoicesRoute = ApiPublicV1InvoicesRouteImport.update({
   id: '/api/public/v1/invoices',
   path: '/api/public/v1/invoices',
@@ -636,6 +649,11 @@ const ApiPublicV1TerminalsHeartbeatRoute =
     path: '/api/public/v1/terminals/heartbeat',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicV1StatsLiveRoute = ApiPublicV1StatsLiveRouteImport.update({
+  id: '/api/public/v1/stats/live',
+  path: '/api/public/v1/stats/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicV1PayInvoiceIdRoute = ApiPublicV1PayInvoiceIdRouteImport.update({
   id: '/api/public/v1/pay/$invoiceId',
   path: '/api/public/v1/pay/$invoiceId',
@@ -724,6 +742,7 @@ export interface FileRoutesByFullPath {
   '/onramp': typeof OnrampRoute
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
+  '/pos-apk-ipfs': typeof PosApkIpfsRoute
   '/pos-build-id': typeof PosBuildIdRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -791,6 +810,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
+  '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -808,6 +828,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/hooks/affiliate-sale': typeof ApiPublicV1HooksAffiliateSaleRoute
   '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
+  '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
   '/api/public/v1/terminals/options': typeof ApiPublicV1TerminalsOptionsRoute
@@ -832,6 +853,7 @@ export interface FileRoutesByTo {
   '/news': typeof NewsRoute
   '/onramp': typeof OnrampRoute
   '/pos-apk': typeof PosApkRoute
+  '/pos-apk-ipfs': typeof PosApkIpfsRoute
   '/pos-build-id': typeof PosBuildIdRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -895,6 +917,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
+  '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -912,6 +935,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/hooks/affiliate-sale': typeof ApiPublicV1HooksAffiliateSaleRoute
   '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
+  '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
   '/api/public/v1/terminals/options': typeof ApiPublicV1TerminalsOptionsRoute
@@ -939,6 +963,7 @@ export interface FileRoutesById {
   '/onramp': typeof OnrampRoute
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
+  '/pos-apk-ipfs': typeof PosApkIpfsRoute
   '/pos-build-id': typeof PosBuildIdRoute
   '/privacy': typeof PrivacyRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -1006,6 +1031,7 @@ export interface FileRoutesById {
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
+  '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -1023,6 +1049,7 @@ export interface FileRoutesById {
   '/api/public/v1/hooks/affiliate-sale': typeof ApiPublicV1HooksAffiliateSaleRoute
   '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
+  '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
   '/api/public/v1/terminals/options': typeof ApiPublicV1TerminalsOptionsRoute
@@ -1050,6 +1077,7 @@ export interface FileRouteTypes {
     | '/onramp'
     | '/pos'
     | '/pos-apk'
+    | '/pos-apk-ipfs'
     | '/pos-build-id'
     | '/privacy'
     | '/sitemap.xml'
@@ -1117,6 +1145,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/alchemy-activity'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
+    | '/api/public/v1/live-stats'
     | '/api/public/v1/me'
     | '/api/public/v1/wallet-link'
     | '/lovable/email/auth/preview'
@@ -1134,6 +1163,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/hooks/affiliate-sale'
     | '/api/public/v1/invoices/$id'
     | '/api/public/v1/pay/$invoiceId'
+    | '/api/public/v1/stats/live'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
     | '/api/public/v1/terminals/options'
@@ -1158,6 +1188,7 @@ export interface FileRouteTypes {
     | '/news'
     | '/onramp'
     | '/pos-apk'
+    | '/pos-apk-ipfs'
     | '/pos-build-id'
     | '/privacy'
     | '/sitemap.xml'
@@ -1221,6 +1252,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/alchemy-activity'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
+    | '/api/public/v1/live-stats'
     | '/api/public/v1/me'
     | '/api/public/v1/wallet-link'
     | '/lovable/email/auth/preview'
@@ -1238,6 +1270,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/hooks/affiliate-sale'
     | '/api/public/v1/invoices/$id'
     | '/api/public/v1/pay/$invoiceId'
+    | '/api/public/v1/stats/live'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
     | '/api/public/v1/terminals/options'
@@ -1264,6 +1297,7 @@ export interface FileRouteTypes {
     | '/onramp'
     | '/pos'
     | '/pos-apk'
+    | '/pos-apk-ipfs'
     | '/pos-build-id'
     | '/privacy'
     | '/sitemap.xml'
@@ -1331,6 +1365,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/alchemy-activity'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
+    | '/api/public/v1/live-stats'
     | '/api/public/v1/me'
     | '/api/public/v1/wallet-link'
     | '/lovable/email/auth/preview'
@@ -1348,6 +1383,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/hooks/affiliate-sale'
     | '/api/public/v1/invoices/$id'
     | '/api/public/v1/pay/$invoiceId'
+    | '/api/public/v1/stats/live'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
     | '/api/public/v1/terminals/options'
@@ -1375,6 +1411,7 @@ export interface RootRouteChildren {
   OnrampRoute: typeof OnrampRoute
   PosRoute: typeof PosRouteWithChildren
   PosApkRoute: typeof PosApkRoute
+  PosApkIpfsRoute: typeof PosApkIpfsRoute
   PosBuildIdRoute: typeof PosBuildIdRoute
   PrivacyRoute: typeof PrivacyRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -1400,6 +1437,7 @@ export interface RootRouteChildren {
   ApiPublicHooksAlchemyActivityRoute: typeof ApiPublicHooksAlchemyActivityRoute
   ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
   ApiPublicV1InvoicesRoute: typeof ApiPublicV1InvoicesRouteWithChildren
+  ApiPublicV1LiveStatsRoute: typeof ApiPublicV1LiveStatsRoute
   ApiPublicV1MeRoute: typeof ApiPublicV1MeRoute
   ApiPublicV1WalletLinkRoute: typeof ApiPublicV1WalletLinkRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -1407,6 +1445,7 @@ export interface RootRouteChildren {
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   ApiPublicV1HooksAffiliateSaleRoute: typeof ApiPublicV1HooksAffiliateSaleRoute
   ApiPublicV1PayInvoiceIdRoute: typeof ApiPublicV1PayInvoiceIdRoute
+  ApiPublicV1StatsLiveRoute: typeof ApiPublicV1StatsLiveRoute
   ApiPublicV1TerminalsHeartbeatRoute: typeof ApiPublicV1TerminalsHeartbeatRoute
   ApiPublicV1TerminalsInvoiceRoute: typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
   ApiPublicV1TerminalsOptionsRoute: typeof ApiPublicV1TerminalsOptionsRoute
@@ -1448,6 +1487,13 @@ declare module '@tanstack/react-router' {
       path: '/pos-build-id'
       fullPath: '/pos-build-id'
       preLoaderRoute: typeof PosBuildIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pos-apk-ipfs': {
+      id: '/pos-apk-ipfs'
+      path: '/pos-apk-ipfs'
+      fullPath: '/pos-apk-ipfs'
+      preLoaderRoute: typeof PosApkIpfsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pos-apk': {
@@ -1870,6 +1916,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1MeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/live-stats': {
+      id: '/api/public/v1/live-stats'
+      path: '/api/public/v1/live-stats'
+      fullPath: '/api/public/v1/live-stats'
+      preLoaderRoute: typeof ApiPublicV1LiveStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/invoices': {
       id: '/api/public/v1/invoices'
       path: '/api/public/v1/invoices'
@@ -2085,6 +2138,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/v1/terminals/heartbeat'
       fullPath: '/api/public/v1/terminals/heartbeat'
       preLoaderRoute: typeof ApiPublicV1TerminalsHeartbeatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/stats/live': {
+      id: '/api/public/v1/stats/live'
+      path: '/api/public/v1/stats/live'
+      fullPath: '/api/public/v1/stats/live'
+      preLoaderRoute: typeof ApiPublicV1StatsLiveRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/v1/pay/$invoiceId': {
@@ -2437,6 +2497,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnrampRoute: OnrampRoute,
   PosRoute: PosRouteWithChildren,
   PosApkRoute: PosApkRoute,
+  PosApkIpfsRoute: PosApkIpfsRoute,
   PosBuildIdRoute: PosBuildIdRoute,
   PrivacyRoute: PrivacyRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
@@ -2462,6 +2523,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksAlchemyActivityRoute: ApiPublicHooksAlchemyActivityRoute,
   ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
   ApiPublicV1InvoicesRoute: ApiPublicV1InvoicesRouteWithChildren,
+  ApiPublicV1LiveStatsRoute: ApiPublicV1LiveStatsRoute,
   ApiPublicV1MeRoute: ApiPublicV1MeRoute,
   ApiPublicV1WalletLinkRoute: ApiPublicV1WalletLinkRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
@@ -2469,6 +2531,7 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   ApiPublicV1HooksAffiliateSaleRoute: ApiPublicV1HooksAffiliateSaleRoute,
   ApiPublicV1PayInvoiceIdRoute: ApiPublicV1PayInvoiceIdRoute,
+  ApiPublicV1StatsLiveRoute: ApiPublicV1StatsLiveRoute,
   ApiPublicV1TerminalsHeartbeatRoute: ApiPublicV1TerminalsHeartbeatRoute,
   ApiPublicV1TerminalsInvoiceRoute:
     ApiPublicV1TerminalsInvoiceRouteWithChildren,

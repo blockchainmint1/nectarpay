@@ -20,13 +20,22 @@ import type { CapacitorConfig } from "@capacitor/cli";
 const config: CapacitorConfig = {
   appId: "money.honest.nectarpay",
   appName: "NectarPay POS",
-  webDir: "dist",
+  webDir: ".output/public",
   server: {
     // Live-loaded UI so store updates ship without a resubmit.
-    url: "https://app.nectar-pay.com/m?mode=merchant",
+    url: "https://app.nectar-pay.com/start?mode=merchant",
     androidScheme: "https",
     iosScheme: "https",
     cleartext: false,
+    allowNavigation: [
+      "app.nectar-pay.com",
+      "nectar-pay.com",
+      "www.nectar-pay.com",
+      "nectarpay.honest.money",
+      "*.lovable.app",
+      "*.supabase.co",
+      "accounts.google.com",
+    ],
   },
   ios: {
     contentInset: "always",

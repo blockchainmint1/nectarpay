@@ -211,7 +211,7 @@ const SelectSchema = z.object({
 });
 
 const VALID_CHAINS = new Set(["btc", "txc", "eth", "base", "bsc", "tron", "sol", "doge", "isk", "zcu"]);
-const VALID_STABLES = new Set(["USDC", "USDT", "PYUSD", "DAI"]);
+const VALID_STABLES = new Set(["USDC", "USDT", "PYUSD", "DAI", "TSD"]);
 
 export const selectInvoiceChain = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => SelectSchema.parse(d))
