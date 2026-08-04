@@ -7,12 +7,14 @@
 //   • New merchant       — full onboarding from scratch
 //
 // Renders nothing on the web — browsers keep the normal marketing pages.
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowRight, Smartphone, Store, UserPlus } from "lucide-react";
+import { ArrowRight, Download, Loader2, RefreshCw, Smartphone, Store, UserPlus } from "lucide-react";
 
 import { isNative } from "@/lib/pos-native";
 import { loadCreds, type TerminalCreds } from "@/lib/pos-client";
+import { getDeviceInfo, type PosDeviceInfo } from "@/lib/pos-device";
+import { checkForUpdate, downloadUpdate, type UpdateStatus } from "@/lib/pos-updater";
 
 type State =
   | { kind: "loading" }
