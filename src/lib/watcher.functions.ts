@@ -29,9 +29,10 @@ export interface WatcherResult {
  * Effective confirmations required for this credit. The merchant can opt into
  * mempool (0-conf) acceptance per finality tier — fast (Base/BSC/Sol/Tron) or
  * slow (BTC/ETH L1/TXC) — and `mempool_max_usd` caps which invoices qualify.
- * If the tier toggle is on AND the paid USD is ≤ the cap (or no cap is set),
- * treat 0-conf as good. Otherwise fall back to the merchant's configured
- * `default_confirmations_required`, then the network default.
+ *
+ * TSD on TEXITcoin is special-cased: instant (mempool) acceptance is ON by
+ * default, capped by `tsd_instant_max_usd` (default $250), because it's the
+ * flagship in-person rail. Merchants can turn it off per store.
  */
 function effectiveConfsRequired(
   store: {
@@ -39,11 +40,22 @@ function effectiveConfsRequired(
     mempool_max_usd?: number | null;
     mempool_accept_fast?: boolean | null;
     mempool_accept_slow?: boolean | null;
+    tsd_instant?: boolean | null;
+    tsd_instant_max_usd?: number | null;
   } | null | undefined,
   netDefault: number,
   paidUsd: number,
   chain: string,
+  tokenSymbol?: string | null,
 ): number {
+  // TSD on TXC → yolo the mempool by default.
+  if (chain === "txc" && (tokenSymbol ?? "").toUpperCase() === "TSD") {
+    const on = store?.tsd_instant ?? true;
+    if (on) {
+      const cap = store?.tsd_instant_max_usd == null ? 250 : Number(store.tsd_instant_max_usd);
+      if (!Number.isFinite(cap) || cap <= 0 || paidUsd <= cap) return 0;
+    }
+  }
   const tierOn = isFastFinality(chain)
     ? !!store?.mempool_accept_fast
     : !!store?.mempool_accept_slow;
@@ -53,6 +65,7 @@ function effectiveConfsRequired(
   }
   return store?.default_confirmations_required ?? netDefault;
 }
+
 
 async function markInvoiceDetected(invoiceId: string): Promise<boolean> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
