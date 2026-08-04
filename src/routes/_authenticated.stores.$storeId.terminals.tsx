@@ -110,6 +110,9 @@ function TerminalsPage() {
                 </div>
                 <div className="mt-0.5 font-mono text-[11px] text-muted-foreground">
                   {t.id.slice(0, 8)}…
+                  {t.device_serial && <> · SN {t.device_serial}</>}
+                  {t.device_model && <> · {t.device_model}</>}
+                  {t.app_version && <> · v{t.app_version}</>}
                   {t.last_seen_at && <> · last seen {new Date(t.last_seen_at).toLocaleString()}</>}
                 </div>
               </div>
