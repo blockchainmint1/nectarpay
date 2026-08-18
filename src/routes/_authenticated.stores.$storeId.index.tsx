@@ -99,10 +99,10 @@ function StoreDetailPage() {
         <CardLink
           icon={<Receipt className="h-4 w-4" />}
           title="Invoices"
-          body="Browse incoming payments and statuses."
+          body="Email payment requests, track opens, resend reminders, and review completed transactions."
           to={`/stores/${storeId}/invoices`}
-          comingSoon
         />
+
         <CardLink
           icon={<ShieldCheck className="h-4 w-4" />}
           title="Buyer verification (KYC)"

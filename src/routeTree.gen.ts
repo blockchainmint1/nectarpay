@@ -102,6 +102,7 @@ import { Route as AuthenticatedStoresStoreIdPosSettingsRouteImport } from './rou
 import { Route as AuthenticatedStoresStoreIdListingRouteImport } from './routes/_authenticated.stores.$storeId.listing'
 import { Route as AuthenticatedStoresStoreIdKycRouteImport } from './routes/_authenticated.stores.$storeId.kyc'
 import { Route as AuthenticatedStoresStoreIdKeysRouteImport } from './routes/_authenticated.stores.$storeId.keys'
+import { Route as AuthenticatedStoresStoreIdInvoicesRouteImport } from './routes/_authenticated.stores.$storeId.invoices'
 import { Route as AuthenticatedStoresStoreIdChainsRouteImport } from './routes/_authenticated.stores.$storeId.chains'
 import { Route as AuthenticatedAdminKnowledgeTermsRouteImport } from './routes/_authenticated.admin.knowledge.terms'
 import { Route as AuthenticatedAdminKnowledgePrivacyRouteImport } from './routes/_authenticated.admin.knowledge.privacy'
@@ -623,6 +624,12 @@ const AuthenticatedStoresStoreIdKeysRoute =
     path: '/keys',
     getParentRoute: () => AuthenticatedStoresStoreIdRoute,
   } as any)
+const AuthenticatedStoresStoreIdInvoicesRoute =
+  AuthenticatedStoresStoreIdInvoicesRouteImport.update({
+    id: '/invoices',
+    path: '/invoices',
+    getParentRoute: () => AuthenticatedStoresStoreIdRoute,
+  } as any)
 const AuthenticatedStoresStoreIdChainsRoute =
   AuthenticatedStoresStoreIdChainsRouteImport.update({
     id: '/chains',
@@ -855,6 +862,7 @@ export interface FileRoutesByFullPath {
   '/admin/knowledge/privacy': typeof AuthenticatedAdminKnowledgePrivacyRoute
   '/admin/knowledge/terms': typeof AuthenticatedAdminKnowledgeTermsRoute
   '/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
+  '/stores/$storeId/invoices': typeof AuthenticatedStoresStoreIdInvoicesRoute
   '/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/stores/$storeId/listing': typeof AuthenticatedStoresStoreIdListingRoute
@@ -971,6 +979,7 @@ export interface FileRoutesByTo {
   '/admin/knowledge/privacy': typeof AuthenticatedAdminKnowledgePrivacyRoute
   '/admin/knowledge/terms': typeof AuthenticatedAdminKnowledgeTermsRoute
   '/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
+  '/stores/$storeId/invoices': typeof AuthenticatedStoresStoreIdInvoicesRoute
   '/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/stores/$storeId/listing': typeof AuthenticatedStoresStoreIdListingRoute
@@ -1094,6 +1103,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/knowledge/privacy': typeof AuthenticatedAdminKnowledgePrivacyRoute
   '/_authenticated/admin/knowledge/terms': typeof AuthenticatedAdminKnowledgeTermsRoute
   '/_authenticated/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
+  '/_authenticated/stores/$storeId/invoices': typeof AuthenticatedStoresStoreIdInvoicesRoute
   '/_authenticated/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/_authenticated/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/_authenticated/stores/$storeId/listing': typeof AuthenticatedStoresStoreIdListingRoute
@@ -1217,6 +1227,7 @@ export interface FileRouteTypes {
     | '/admin/knowledge/privacy'
     | '/admin/knowledge/terms'
     | '/stores/$storeId/chains'
+    | '/stores/$storeId/invoices'
     | '/stores/$storeId/keys'
     | '/stores/$storeId/kyc'
     | '/stores/$storeId/listing'
@@ -1333,6 +1344,7 @@ export interface FileRouteTypes {
     | '/admin/knowledge/privacy'
     | '/admin/knowledge/terms'
     | '/stores/$storeId/chains'
+    | '/stores/$storeId/invoices'
     | '/stores/$storeId/keys'
     | '/stores/$storeId/kyc'
     | '/stores/$storeId/listing'
@@ -1455,6 +1467,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/knowledge/privacy'
     | '/_authenticated/admin/knowledge/terms'
     | '/_authenticated/stores/$storeId/chains'
+    | '/_authenticated/stores/$storeId/invoices'
     | '/_authenticated/stores/$storeId/keys'
     | '/_authenticated/stores/$storeId/kyc'
     | '/_authenticated/stores/$storeId/listing'
@@ -2225,6 +2238,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStoresStoreIdKeysRouteImport
       parentRoute: typeof AuthenticatedStoresStoreIdRoute
     }
+    '/_authenticated/stores/$storeId/invoices': {
+      id: '/_authenticated/stores/$storeId/invoices'
+      path: '/invoices'
+      fullPath: '/stores/$storeId/invoices'
+      preLoaderRoute: typeof AuthenticatedStoresStoreIdInvoicesRouteImport
+      parentRoute: typeof AuthenticatedStoresStoreIdRoute
+    }
     '/_authenticated/stores/$storeId/chains': {
       id: '/_authenticated/stores/$storeId/chains'
       path: '/chains'
@@ -2509,6 +2529,7 @@ const AuthenticatedAdminRouteWithChildren =
 
 interface AuthenticatedStoresStoreIdRouteChildren {
   AuthenticatedStoresStoreIdChainsRoute: typeof AuthenticatedStoresStoreIdChainsRoute
+  AuthenticatedStoresStoreIdInvoicesRoute: typeof AuthenticatedStoresStoreIdInvoicesRoute
   AuthenticatedStoresStoreIdKeysRoute: typeof AuthenticatedStoresStoreIdKeysRoute
   AuthenticatedStoresStoreIdKycRoute: typeof AuthenticatedStoresStoreIdKycRoute
   AuthenticatedStoresStoreIdListingRoute: typeof AuthenticatedStoresStoreIdListingRoute
@@ -2523,6 +2544,8 @@ const AuthenticatedStoresStoreIdRouteChildren: AuthenticatedStoresStoreIdRouteCh
   {
     AuthenticatedStoresStoreIdChainsRoute:
       AuthenticatedStoresStoreIdChainsRoute,
+    AuthenticatedStoresStoreIdInvoicesRoute:
+      AuthenticatedStoresStoreIdInvoicesRoute,
     AuthenticatedStoresStoreIdKeysRoute: AuthenticatedStoresStoreIdKeysRoute,
     AuthenticatedStoresStoreIdKycRoute: AuthenticatedStoresStoreIdKycRoute,
     AuthenticatedStoresStoreIdListingRoute:
