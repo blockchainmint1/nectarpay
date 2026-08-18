@@ -448,8 +448,9 @@ function PayingFrame({
     <div className="grid gap-0 md:grid-cols-[1fr_320px]">
       <h1 className="sr-only">Pay invoice</h1>
 
-      {/* left: amount + address */}
-      <div className="p-6 md:p-8">
+      {/* left: amount + address (QR comes first on narrow/terminal screens) */}
+      <div className="order-2 min-w-0 p-4 sm:p-6 md:order-none md:p-8">
+
         <div className="flex items-center justify-between">
           <StatusPill status={inv.status} />
           {countdown && (
