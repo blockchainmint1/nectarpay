@@ -5,12 +5,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { ChevronLeft, Copy, ExternalLink, Plus, QrCode, Trash2 } from "lucide-react";
+import { ChevronLeft, Copy, ExternalLink, ImageIcon, Plus, QrCode, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { qrToDataURL } from "@/lib/qr";
+import { ShareBannersDialog } from "@/components/share-banners-dialog";
 
 export const Route = createFileRoute("/_authenticated/stores/$storeId/share-links")({
   head: () => ({ meta: [{ title: "Share links · Nectar.Pay" }] }),
@@ -249,6 +250,7 @@ function LinkCard({
 }) {
   const [qr, setQr] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
+  const [banners, setBanners] = useState(false);
   const origin = typeof window === "undefined" ? "https://app.nectar-pay.com" : window.location.origin;
   const base = `${origin}/t/${row.slug}`;
   const url = amount ? `${base}?amount=${encodeURIComponent(amount)}` : base;
@@ -291,6 +293,9 @@ function LinkCard({
               <ExternalLink className="mr-1 h-3.5 w-3.5" /> Open
             </a>
           </Button>
+          <Button size="sm" variant="outline" onClick={() => setBanners(true)}>
+            <ImageIcon className="mr-1 h-3.5 w-3.5" /> Banners
+          </Button>
           <Button size="sm" variant="ghost" onClick={onToggle}>
             {row.active ? "Turn off" : "Turn on"}
           </Button>
@@ -322,6 +327,21 @@ function LinkCard({
           </div>
         )}
       </div>
+
+      <ShareBannersDialog
+        open={banners}
+        onOpenChange={setBanners}
+        title={row.title ?? row.slug}
+        subtitle={
+          row.subtitle ??
+          (row.is_donation
+            ? "Scan to donate — bitcoin, stablecoins, and Texas Stable Dollar."
+            : "Scan to pay — bitcoin, stablecoins, and Texas Stable Dollar.")
+        }
+        url={url}
+        donation={row.is_donation}
+        slug={row.slug}
+      />
     </div>
   );
 }
