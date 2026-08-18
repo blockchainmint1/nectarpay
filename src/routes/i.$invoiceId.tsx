@@ -162,14 +162,18 @@ function QrCanvas({ value, dark }: { value: string; dark: boolean }) {
     }).catch(() => {});
   }, [value, dark]);
   return (
-    <canvas
-      ref={ref}
-      className="h-auto w-[min(240px,60vw)] max-w-full md:w-[280px]"
-      aria-label="Payment QR code"
-    />
+    <div className="mx-auto w-[min(240px,60vw)] max-w-full md:w-[280px]">
+      <canvas
+        ref={ref}
+        width={280}
+        height={280}
+        className="block aspect-square h-auto w-full"
+        aria-label="Payment QR code"
+      />
+    </div>
   );
-
 }
+
 
 // ---------- page ----------
 
