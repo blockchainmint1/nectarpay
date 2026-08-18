@@ -127,10 +127,11 @@ function NotificationsPage() {
                     }}
                   />
                 </div>
-                <p className="text-xs text-amber-500/90">
-                  Email delivery turns on once your sender domain is configured. Ask in chat to enable
-                  it — Telegram works immediately.
+                <p className="text-xs text-muted-foreground">
+                  Alerts are sent from noreply@nectar-pay.com. Check spam on the first one and mark
+                  it as safe.
                 </p>
+
               </CardContent>
             </Card>
 
