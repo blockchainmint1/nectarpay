@@ -353,7 +353,7 @@ function drawTent(
   const footX = 540;
   ctx.fillStyle = INK;
   ctx.font = "800 44px system-ui, -apple-system, 'Segoe UI', sans-serif";
-  ctx.fillText(input.donation ? "Scan to donate" : "Scan to pay", footX, 960);
+  ctx.fillText(scanLine.charAt(0).toUpperCase() + scanLine.slice(1), footX, 960);
 
   ctx.fillStyle = HONEY_DEEP;
   ctx.font = "600 24px ui-monospace, SFMono-Regular, Menlo, monospace";
