@@ -190,7 +190,7 @@ export async function renderBanner(input: BannerInput): Promise<HTMLCanvasElemen
 
   if (input.id === "email") drawEmail(ctx, spec, input, qr, buzzy, verb);
   else if (input.id === "social") drawSocial(ctx, spec, input, qr, buzzy, kicker);
-  else drawTent(ctx, spec, input, qr, buzzy, kicker);
+  else drawTent(ctx, spec, input, qr, buzzy);
 
   return canvas;
 }
@@ -307,7 +307,6 @@ function drawTent(
   input: BannerInput,
   qr: HTMLImageElement | null,
   buzzy: HTMLImageElement | null,
-  kicker: string,
 ) {
   const { width: w, height: h } = spec;
   // Light "printable" variant: cream paper, honey banding.
@@ -342,23 +341,24 @@ function drawTent(
 
   if (qr) qrTile(ctx, qr, (w - 480) / 2, 410, 480);
 
+  const footX = 540;
   ctx.fillStyle = INK;
   ctx.font = "800 44px system-ui, -apple-system, 'Segoe UI', sans-serif";
-  ctx.fillText(kicker.replace("SCAN TO ", "Scan to "), w / 2, 960);
+  ctx.fillText(input.donation ? "Scan to donate" : "Scan to pay", footX, 960);
 
   ctx.fillStyle = HONEY_DEEP;
-  ctx.font = "600 26px ui-monospace, SFMono-Regular, Menlo, monospace";
-  ctx.fillText(input.url.replace(/^https?:\/\//, ""), w / 2, 1002);
+  ctx.font = "600 24px ui-monospace, SFMono-Regular, Menlo, monospace";
+  ctx.fillText(input.url.replace(/^https?:\/\//, ""), footX, 1002);
 
-  drawBuzzy(ctx, buzzy, 28, h - 300, 300);
+  drawBuzzy(ctx, buzzy, 40, h - 260, 250);
 
   ctx.textAlign = "right";
   ctx.fillStyle = INK;
-  ctx.font = "800 38px system-ui, -apple-system, 'Segoe UI', sans-serif";
-  ctx.fillText("Nectar.Pay", w - 50, h - 90);
+  ctx.font = "800 36px system-ui, -apple-system, 'Segoe UI', sans-serif";
+  ctx.fillText("Nectar.Pay", w - 50, h - 84);
   ctx.fillStyle = "rgba(11,15,28,0.6)";
-  ctx.font = "400 22px system-ui, -apple-system, 'Segoe UI', sans-serif";
-  ctx.fillText("Bitcoin · Stablecoins · Texas Stable Dollar", w - 50, h - 56);
+  ctx.font = "400 21px system-ui, -apple-system, 'Segoe UI', sans-serif";
+  ctx.fillText("Bitcoin · Stablecoins · Texas Stable Dollar", w - 50, h - 52);
   ctx.textAlign = "left";
 }
 
