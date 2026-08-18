@@ -89,7 +89,13 @@ function VirtualTerminalPage() {
     setBusy(true);
     try {
       const res = await charge({ data: { slug, amount: v, note: search.note } });
+      if (view === "full") {
+        // Full-site experience: go to the real checkout page.
+        void navigate({ to: "/i/$invoiceId", params: { invoiceId: res.id } });
+        return;
+      }
       setInvoiceId(res.id);
+
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not start payment");
     } finally {
