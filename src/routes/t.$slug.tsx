@@ -1,6 +1,5 @@
-// /t/$slug — the public "virtual terminal". A persistent, re-shareable
-// link that looks like a Senraise POS terminal and runs the real payment
-// flow against the merchant's linked wallets.
+// /t/$slug — public payment link. A persistent, re-shareable URL that runs
+// the real payment flow against the merchant's linked wallets.
 //
 //   /t/ron-paul-institute            → visitor picks an amount
 //   /t/ron-paul-institute?amount=50  → pre-filled charge
@@ -10,19 +9,19 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import { Loader2, Maximize2, ShieldCheck, Smartphone } from "lucide-react";
+import { Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { getPublicTerminal, createPublicTerminalInvoice } from "@/lib/public-terminal.functions";
-import { TerminalFrame } from "@/components/terminal-frame";
 import { Button } from "@/components/ui/button";
 
 const searchSchema = z.object({
   amount: z.coerce.number().positive().optional(),
   note: z.string().max(200).optional(),
-  /** "terminal" = POS bezel, "full" = normal responsive page. */
+  /** Legacy: kept so old links with ?view=terminal still resolve. */
   view: z.enum(["terminal", "full"]).optional(),
 });
+
 
 
 export const Route = createFileRoute("/t/$slug")({
