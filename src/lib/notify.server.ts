@@ -80,9 +80,17 @@ export async function notifyUser(
     }
   }
 
-  // Email — logged as skipped until Lovable Emails infrastructure is scaffolded
-  // (run email-domain setup; this dispatcher will be swapped to enqueue_email then).
+  // Email — enqueued onto the Lovable Emails queue.
   if (prefs?.email_enabled && prefs.email_address) {
+    const { enqueueAppEmail, renderAlertEmail } = await import("@/lib/email/enqueue.server");
+    const html = renderAlertEmail(payload.subject, payload.text.split("\n"));
+    const result = await enqueueAppEmail({
+      to: prefs.email_address,
+      subject: payload.subject,
+      html,
+      text: payload.text,
+      label: payload.event,
+    });
     await supabaseAdmin.from("notification_log").insert({
       user_id: userId,
       channel: "email",
@@ -90,11 +98,12 @@ export async function notifyUser(
       recipient: prefs.email_address,
       subject: payload.subject,
       body: payload.text,
-      status: "skipped",
-      error: "email provider not configured",
+      status: result.ok ? "sent" : result.error === "email_suppressed" ? "skipped" : "failed",
+      error: result.error ?? null,
       metadata: (payload.metadata ?? null) as never,
     });
   }
+
 }
 
 function escapeHtml(s: string): string {
