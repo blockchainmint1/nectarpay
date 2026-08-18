@@ -490,19 +490,20 @@ function PayingFrame({
         )}
 
         {/* address */}
-        <div className="mt-6 rounded-xl border border-border/60 bg-background/40 p-3">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs uppercase tracking-wider text-muted-foreground">
+        <div className="mt-6 min-w-0 rounded-xl border border-border/60 bg-background/40 p-3">
+          <div className="flex min-w-0 items-center justify-between gap-2">
+            <span className="min-w-0 truncate text-xs uppercase tracking-wider text-muted-foreground">
               {inv.tokenSymbol
                 ? `${inv.tokenSymbol} (${chainLabelFor(inv.chain, inv.tokenSymbol)}) address`
                 : `${chainLabelFor(inv.chain, inv.tokenSymbol)} address`}
             </span>
-            <CopyButton value={inv.address} />
+            <span className="shrink-0"><CopyButton value={inv.address} /></span>
           </div>
-          <p className="mt-2 break-all font-mono text-sm leading-relaxed text-foreground/90">
+          <p className="mt-2 break-all font-mono text-xs leading-relaxed text-foreground/90 sm:text-sm">
             {inv.address}
           </p>
         </div>
+
 
         {/* alternate payment options */}
         {showSwitch && (
