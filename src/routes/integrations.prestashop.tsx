@@ -49,7 +49,7 @@ function PrestaShopPage() {
             </a>
           </Button>
           <Button asChild variant="outline">
-            <Link to="/auth" search={{ mode: "signup" }}>
+            <Link to="/auth" search={{ mode: "choose" }}>
               Create an account first
             </Link>
           </Button>

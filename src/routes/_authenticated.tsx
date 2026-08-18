@@ -31,7 +31,7 @@ function AuthenticatedLayout() {
     if (!loading && !user) {
       navigate({
         to: "/auth",
-        search: { mode: "signin", redirect: router.state.location.pathname },
+        search: { mode: "choose", redirect: router.state.location.pathname },
       });
     }
   }, [user, loading, navigate, router]);

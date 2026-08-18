@@ -1164,6 +1164,74 @@ export type Database = {
         }
         Relationships: []
       }
+      public_terminals: {
+        Row: {
+          active: boolean
+          allow_custom_amount: boolean
+          created_at: string
+          created_by: string | null
+          cta_label: string | null
+          currency: string | null
+          id: string
+          is_donation: boolean
+          max_amount: number
+          min_amount: number
+          preset_amounts: number[]
+          slug: string
+          store_id: string
+          subtitle: string | null
+          title: string | null
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          active?: boolean
+          allow_custom_amount?: boolean
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          currency?: string | null
+          id?: string
+          is_donation?: boolean
+          max_amount?: number
+          min_amount?: number
+          preset_amounts?: number[]
+          slug: string
+          store_id: string
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          active?: boolean
+          allow_custom_amount?: boolean
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          currency?: string | null
+          id?: string
+          is_donation?: boolean
+          max_amount?: number
+          min_amount?: number
+          preset_amounts?: number[]
+          slug?: string
+          store_id?: string
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_terminals_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rates_cache: {
         Row: {
           chain: Database["public"]["Enums"]["chain_kind"]

@@ -34,6 +34,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PosIndexRouteImport } from './routes/pos.index'
+import { Route as TSlugRouteImport } from './routes/t.$slug'
 import { Route as SdkPayhmeDotjsRouteImport } from './routes/sdk.payhme[.]js'
 import { Route as PosSettingsRouteImport } from './routes/pos.settings'
 import { Route as PosPrinterTestRouteImport } from './routes/pos.printer-test'
@@ -91,6 +92,7 @@ import { Route as ApiPublicAuthWalletCallbackRouteImport } from './routes/api/pu
 import { Route as ApiPublicAffiliateClickRouteImport } from './routes/api/public/affiliate.click'
 import { Route as AuthenticatedStoresStoreIdTerminalsRouteImport } from './routes/_authenticated.stores.$storeId.terminals'
 import { Route as AuthenticatedStoresStoreIdTangemRouteImport } from './routes/_authenticated.stores.$storeId.tangem'
+import { Route as AuthenticatedStoresStoreIdShareLinksRouteImport } from './routes/_authenticated.stores.$storeId.share-links'
 import { Route as AuthenticatedStoresStoreIdPosSettingsRouteImport } from './routes/_authenticated.stores.$storeId.pos-settings'
 import { Route as AuthenticatedStoresStoreIdListingRouteImport } from './routes/_authenticated.stores.$storeId.listing'
 import { Route as AuthenticatedStoresStoreIdKycRouteImport } from './routes/_authenticated.stores.$storeId.kyc'
@@ -246,6 +248,11 @@ const PosIndexRoute = PosIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => PosRoute,
+} as any)
+const TSlugRoute = TSlugRouteImport.update({
+  id: '/t/$slug',
+  path: '/t/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const SdkPayhmeDotjsRoute = SdkPayhmeDotjsRouteImport.update({
   id: '/sdk/payhme.js',
@@ -554,6 +561,12 @@ const AuthenticatedStoresStoreIdTangemRoute =
     path: '/tangem',
     getParentRoute: () => AuthenticatedStoresStoreIdRoute,
   } as any)
+const AuthenticatedStoresStoreIdShareLinksRoute =
+  AuthenticatedStoresStoreIdShareLinksRouteImport.update({
+    id: '/share-links',
+    path: '/share-links',
+    getParentRoute: () => AuthenticatedStoresStoreIdRoute,
+  } as any)
 const AuthenticatedStoresStoreIdPosSettingsRoute =
   AuthenticatedStoresStoreIdPosSettingsRouteImport.update({
     id: '/pos-settings',
@@ -785,6 +798,7 @@ export interface FileRoutesByFullPath {
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
+  '/t/$slug': typeof TSlugRoute
   '/pos/': typeof PosIndexRoute
   '/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
@@ -810,6 +824,7 @@ export interface FileRoutesByFullPath {
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/stores/$storeId/listing': typeof AuthenticatedStoresStoreIdListingRoute
   '/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
+  '/stores/$storeId/share-links': typeof AuthenticatedStoresStoreIdShareLinksRoute
   '/stores/$storeId/tangem': typeof AuthenticatedStoresStoreIdTangemRoute
   '/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
   '/api/public/affiliate/click': typeof ApiPublicAffiliateClickRoute
@@ -897,6 +912,7 @@ export interface FileRoutesByTo {
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
+  '/t/$slug': typeof TSlugRoute
   '/pos': typeof PosIndexRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
@@ -919,6 +935,7 @@ export interface FileRoutesByTo {
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/stores/$storeId/listing': typeof AuthenticatedStoresStoreIdListingRoute
   '/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
+  '/stores/$storeId/share-links': typeof AuthenticatedStoresStoreIdShareLinksRoute
   '/stores/$storeId/tangem': typeof AuthenticatedStoresStoreIdTangemRoute
   '/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
   '/api/public/affiliate/click': typeof ApiPublicAffiliateClickRoute
@@ -1010,6 +1027,7 @@ export interface FileRoutesById {
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
+  '/t/$slug': typeof TSlugRoute
   '/pos/': typeof PosIndexRoute
   '/_authenticated/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
@@ -1035,6 +1053,7 @@ export interface FileRoutesById {
   '/_authenticated/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/_authenticated/stores/$storeId/listing': typeof AuthenticatedStoresStoreIdListingRoute
   '/_authenticated/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
+  '/_authenticated/stores/$storeId/share-links': typeof AuthenticatedStoresStoreIdShareLinksRoute
   '/_authenticated/stores/$storeId/tangem': typeof AuthenticatedStoresStoreIdTangemRoute
   '/_authenticated/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
   '/api/public/affiliate/click': typeof ApiPublicAffiliateClickRoute
@@ -1126,6 +1145,7 @@ export interface FileRouteTypes {
     | '/pos/printer-test'
     | '/pos/settings'
     | '/sdk/payhme.js'
+    | '/t/$slug'
     | '/pos/'
     | '/admin/crm'
     | '/admin/invoices'
@@ -1151,6 +1171,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId/kyc'
     | '/stores/$storeId/listing'
     | '/stores/$storeId/pos-settings'
+    | '/stores/$storeId/share-links'
     | '/stores/$storeId/tangem'
     | '/stores/$storeId/terminals'
     | '/api/public/affiliate/click'
@@ -1238,6 +1259,7 @@ export interface FileRouteTypes {
     | '/pos/printer-test'
     | '/pos/settings'
     | '/sdk/payhme.js'
+    | '/t/$slug'
     | '/pos'
     | '/admin/invoices'
     | '/admin/merchants'
@@ -1260,6 +1282,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId/kyc'
     | '/stores/$storeId/listing'
     | '/stores/$storeId/pos-settings'
+    | '/stores/$storeId/share-links'
     | '/stores/$storeId/tangem'
     | '/stores/$storeId/terminals'
     | '/api/public/affiliate/click'
@@ -1350,6 +1373,7 @@ export interface FileRouteTypes {
     | '/pos/printer-test'
     | '/pos/settings'
     | '/sdk/payhme.js'
+    | '/t/$slug'
     | '/pos/'
     | '/_authenticated/admin/crm'
     | '/_authenticated/admin/invoices'
@@ -1375,6 +1399,7 @@ export interface FileRouteTypes {
     | '/_authenticated/stores/$storeId/kyc'
     | '/_authenticated/stores/$storeId/listing'
     | '/_authenticated/stores/$storeId/pos-settings'
+    | '/_authenticated/stores/$storeId/share-links'
     | '/_authenticated/stores/$storeId/tangem'
     | '/_authenticated/stores/$storeId/terminals'
     | '/api/public/affiliate/click'
@@ -1451,6 +1476,7 @@ export interface RootRouteChildren {
   IntegrationsWoocommerceRoute: typeof IntegrationsWoocommerceRoute
   PayInvoiceIdRoute: typeof PayInvoiceIdRoute
   SdkPayhmeDotjsRoute: typeof SdkPayhmeDotjsRoute
+  TSlugRoute: typeof TSlugRoute
   ApiPublicAffiliateClickRoute: typeof ApiPublicAffiliateClickRoute
   ApiPublicAuthWalletCallbackRoute: typeof ApiPublicAuthWalletCallbackRoute
   ApiPublicAuthWalletChallengeRoute: typeof ApiPublicAuthWalletChallengeRoute
@@ -1655,6 +1681,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/pos/'
       preLoaderRoute: typeof PosIndexRouteImport
       parentRoute: typeof PosRoute
+    }
+    '/t/$slug': {
+      id: '/t/$slug'
+      path: '/t/$slug'
+      fullPath: '/t/$slug'
+      preLoaderRoute: typeof TSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/sdk/payhme.js': {
       id: '/sdk/payhme.js'
@@ -2055,6 +2088,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStoresStoreIdTangemRouteImport
       parentRoute: typeof AuthenticatedStoresStoreIdRoute
     }
+    '/_authenticated/stores/$storeId/share-links': {
+      id: '/_authenticated/stores/$storeId/share-links'
+      path: '/share-links'
+      fullPath: '/stores/$storeId/share-links'
+      preLoaderRoute: typeof AuthenticatedStoresStoreIdShareLinksRouteImport
+      parentRoute: typeof AuthenticatedStoresStoreIdRoute
+    }
     '/_authenticated/stores/$storeId/pos-settings': {
       id: '/_authenticated/stores/$storeId/pos-settings'
       path: '/pos-settings'
@@ -2371,6 +2411,7 @@ interface AuthenticatedStoresStoreIdRouteChildren {
   AuthenticatedStoresStoreIdKycRoute: typeof AuthenticatedStoresStoreIdKycRoute
   AuthenticatedStoresStoreIdListingRoute: typeof AuthenticatedStoresStoreIdListingRoute
   AuthenticatedStoresStoreIdPosSettingsRoute: typeof AuthenticatedStoresStoreIdPosSettingsRoute
+  AuthenticatedStoresStoreIdShareLinksRoute: typeof AuthenticatedStoresStoreIdShareLinksRoute
   AuthenticatedStoresStoreIdTangemRoute: typeof AuthenticatedStoresStoreIdTangemRoute
   AuthenticatedStoresStoreIdTerminalsRoute: typeof AuthenticatedStoresStoreIdTerminalsRoute
   AuthenticatedStoresStoreIdIndexRoute: typeof AuthenticatedStoresStoreIdIndexRoute
@@ -2386,6 +2427,8 @@ const AuthenticatedStoresStoreIdRouteChildren: AuthenticatedStoresStoreIdRouteCh
       AuthenticatedStoresStoreIdListingRoute,
     AuthenticatedStoresStoreIdPosSettingsRoute:
       AuthenticatedStoresStoreIdPosSettingsRoute,
+    AuthenticatedStoresStoreIdShareLinksRoute:
+      AuthenticatedStoresStoreIdShareLinksRoute,
     AuthenticatedStoresStoreIdTangemRoute:
       AuthenticatedStoresStoreIdTangemRoute,
     AuthenticatedStoresStoreIdTerminalsRoute:
@@ -2553,6 +2596,7 @@ const rootRouteChildren: RootRouteChildren = {
   IntegrationsWoocommerceRoute: IntegrationsWoocommerceRoute,
   PayInvoiceIdRoute: PayInvoiceIdRoute,
   SdkPayhmeDotjsRoute: SdkPayhmeDotjsRoute,
+  TSlugRoute: TSlugRoute,
   ApiPublicAffiliateClickRoute: ApiPublicAffiliateClickRoute,
   ApiPublicAuthWalletCallbackRoute: ApiPublicAuthWalletCallbackRoute,
   ApiPublicAuthWalletChallengeRoute: ApiPublicAuthWalletChallengeRoute,
@@ -2584,3 +2628,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

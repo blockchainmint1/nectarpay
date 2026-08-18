@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, KeyRound, Link2, MapPin, Receipt, Settings as SettingsIcon, ShieldCheck, Smartphone, Sliders } from "lucide-react";
+import { ChevronLeft, KeyRound, Link2, MapPin, Receipt, Settings as SettingsIcon, Share2, ShieldCheck, Smartphone, Sliders } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -77,6 +77,12 @@ function StoreDetailPage() {
           title="Terminals"
           body="Pair Senraise / Android POS devices. Each terminal gets its own credentials and a revocable lease."
           to={`/stores/${storeId}/terminals`}
+        />
+        <CardLink
+          icon={<Share2 className="h-4 w-4" />}
+          title="Share links (virtual terminal)"
+          body="A permanent URL that opens a POS terminal in any browser. Perfect for email signatures, donation buttons, and invoices — optional pre-filled amount."
+          to={`/stores/${storeId}/share-links`}
         />
         <CardLink
           icon={<Sliders className="h-4 w-4" />}

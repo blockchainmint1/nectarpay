@@ -48,7 +48,7 @@ function WooPage() {
             </a>
           </Button>
           <Button asChild variant="outline">
-            <Link to="/auth" search={{ mode: "signup" }}>Create an account first</Link>
+            <Link to="/auth" search={{ mode: "choose" }}>Create an account first</Link>
           </Button>
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
