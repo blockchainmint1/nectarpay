@@ -3,6 +3,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { VALID_CHAIN_SET } from "@/lib/chains/networks";
 
 const InputSchema = z.object({ id: z.string().min(4).max(64) });
 
