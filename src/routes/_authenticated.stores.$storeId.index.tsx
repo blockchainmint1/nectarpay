@@ -80,7 +80,7 @@ function StoreDetailPage() {
         />
         <CardLink
           icon={<Share2 className="h-4 w-4" />}
-          title="Share links (virtual terminal)"
+          title="Share links"
           body="A permanent URL that opens a POS terminal in any browser. Perfect for email signatures, donation buttons, and invoices — optional pre-filled amount."
           to={`/stores/${storeId}/share-links`}
         />
