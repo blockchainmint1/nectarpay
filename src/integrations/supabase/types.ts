@@ -560,14 +560,18 @@ export type Database = {
           customer_email: string | null
           derivation_index: number | null
           description: string | null
+          email_send_count: number
+          email_sent_at: string | null
           expires_at: string
           external_order_id: string | null
           fiat_amount: number
           fiat_currency: string
+          first_viewed_at: string | null
           id: string
           kyc_level_override: Database["public"]["Enums"]["kyc_level"] | null
           kyc_reference: string | null
           kyc_status: Database["public"]["Enums"]["kyc_status"]
+          last_viewed_at: string | null
           rate: number | null
           redirect_url: string | null
           signature_data_url: string | null
@@ -575,6 +579,7 @@ export type Database = {
           store_id: string
           token_symbol: string | null
           updated_at: string
+          view_count: number
         }
         Insert: {
           address?: string | null
@@ -586,14 +591,18 @@ export type Database = {
           customer_email?: string | null
           derivation_index?: number | null
           description?: string | null
+          email_send_count?: number
+          email_sent_at?: string | null
           expires_at: string
           external_order_id?: string | null
           fiat_amount: number
           fiat_currency: string
+          first_viewed_at?: string | null
           id?: string
           kyc_level_override?: Database["public"]["Enums"]["kyc_level"] | null
           kyc_reference?: string | null
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
+          last_viewed_at?: string | null
           rate?: number | null
           redirect_url?: string | null
           signature_data_url?: string | null
@@ -601,6 +610,7 @@ export type Database = {
           store_id: string
           token_symbol?: string | null
           updated_at?: string
+          view_count?: number
         }
         Update: {
           address?: string | null
@@ -612,14 +622,18 @@ export type Database = {
           customer_email?: string | null
           derivation_index?: number | null
           description?: string | null
+          email_send_count?: number
+          email_sent_at?: string | null
           expires_at?: string
           external_order_id?: string | null
           fiat_amount?: number
           fiat_currency?: string
+          first_viewed_at?: string | null
           id?: string
           kyc_level_override?: Database["public"]["Enums"]["kyc_level"] | null
           kyc_reference?: string | null
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
+          last_viewed_at?: string | null
           rate?: number | null
           redirect_url?: string | null
           signature_data_url?: string | null
@@ -627,6 +641,7 @@ export type Database = {
           store_id?: string
           token_symbol?: string | null
           updated_at?: string
+          view_count?: number
         }
         Relationships: [
           {
