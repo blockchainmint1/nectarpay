@@ -9,13 +9,16 @@ export function TerminalFrame({
   children,
   label,
   className,
+  scroll = true,
 }: {
   children: ReactNode;
   label?: string;
   className?: string;
+  /** Set false when the screen hosts something that scrolls itself (iframe). */
+  scroll?: boolean;
 }) {
   return (
-    <div className={cn("mx-auto w-full max-w-[380px]", className)}>
+    <div className={cn("mx-auto w-full max-w-[360px]", className)}>
       <div className="relative rounded-[2.6rem] bg-gradient-to-b from-zinc-700 via-zinc-900 to-black p-[10px] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.75)] ring-1 ring-white/10">
         {/* speaker + camera row */}
         <div className="flex items-center justify-center gap-2 py-2">
@@ -25,10 +28,18 @@ export function TerminalFrame({
 
         {/* screen */}
         <div className="relative overflow-hidden rounded-[1.9rem] bg-background ring-1 ring-black/40">
-          <div className="h-[600px] max-h-[70vh] overflow-y-auto overscroll-contain">
+          <div
+            className={cn(
+              "h-[min(620px,68dvh)]",
+              scroll
+                ? "overflow-y-auto overscroll-contain [scrollbar-width:thin]"
+                : "overflow-hidden",
+            )}
+          >
             {children}
           </div>
         </div>
+
 
         {/* card slot + brand chin */}
         <div className="flex items-center justify-between px-5 pb-3 pt-3">

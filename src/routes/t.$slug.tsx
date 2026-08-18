@@ -81,17 +81,21 @@ function VirtualTerminalPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-muted/40 to-background px-4 py-10">
-      <div className="mx-auto max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight">
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-4 overflow-hidden bg-gradient-to-b from-muted/40 to-background px-4 py-6">
+      <div className="mx-auto max-w-md shrink-0 text-center">
+        <h1 className="text-lg font-semibold tracking-tight">
           {terminal?.title ?? (isLoading ? "Loading…" : "Payment terminal")}
         </h1>
         {terminal?.subtitle && (
-          <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">{terminal.subtitle}</p>
+          <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">{terminal.subtitle}</p>
         )}
       </div>
 
-      <TerminalFrame className="mt-8" label={terminal?.store_name ?? "Nectar.Pay"}>
+      <TerminalFrame
+        className="shrink-0"
+        label={terminal?.store_name ?? "Nectar.Pay"}
+        scroll={!invoiceId}
+      >
         {isLoading ? (
           <div className="flex h-full items-center justify-center">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -104,12 +108,9 @@ function VirtualTerminalPage() {
             </p>
           </div>
         ) : invoiceId ? (
-          <iframe
-            title="Payment"
-            src={`/i/${invoiceId}`}
-            className="h-full min-h-[600px] w-full border-0"
-          />
+          <iframe title="Payment" src={`/i/${invoiceId}`} className="h-full w-full border-0" />
         ) : (
+
           <div className="flex h-full flex-col px-5 py-6">
             {terminal.logo_url && (
               <img
@@ -177,7 +178,7 @@ function VirtualTerminalPage() {
         )}
       </TerminalFrame>
 
-      <p className="mt-8 text-center text-xs text-muted-foreground">
+      <p className="shrink-0 text-center text-xs text-muted-foreground">
         Powered by{" "}
         <a href="https://nectar-pay.com" className="underline underline-offset-2">
           Nectar.Pay
