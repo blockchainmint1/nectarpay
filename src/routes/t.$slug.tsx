@@ -5,12 +5,12 @@
 //   /t/ron-paul-institute            → visitor picks an amount
 //   /t/ron-paul-institute?amount=50  → pre-filled charge
 
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import { Loader2, ShieldCheck } from "lucide-react";
+import { Loader2, Maximize2, ShieldCheck, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 
 import { getPublicTerminal, createPublicTerminalInvoice } from "@/lib/public-terminal.functions";
@@ -20,7 +20,10 @@ import { Button } from "@/components/ui/button";
 const searchSchema = z.object({
   amount: z.coerce.number().positive().optional(),
   note: z.string().max(200).optional(),
+  /** "terminal" = POS bezel, "full" = normal responsive page. */
+  view: z.enum(["terminal", "full"]).optional(),
 });
+
 
 export const Route = createFileRoute("/t/$slug")({
   validateSearch: searchSchema,
