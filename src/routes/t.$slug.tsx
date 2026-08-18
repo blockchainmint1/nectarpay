@@ -42,10 +42,10 @@ export const Route = createFileRoute("/t/$slug")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: VirtualTerminalPage,
+  component: PaymentLinkPage,
 });
 
-function VirtualTerminalPage() {
+function PaymentLinkPage() {
   const { slug } = Route.useParams();
   const search = Route.useSearch();
   const navigate = useNavigate();
@@ -59,24 +59,10 @@ function VirtualTerminalPage() {
 
   const [amount, setAmount] = useState<string>("");
   const [busy, setBusy] = useState(false);
-  const [invoiceId, setInvoiceId] = useState<string | null>(null);
-  // Phones get the real site by default; desktops get the fun POS bezel.
-  const [isPhone, setIsPhone] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 640px)");
-    const apply = () => setIsPhone(mq.matches);
-    apply();
-    mq.addEventListener("change", apply);
-    return () => mq.removeEventListener("change", apply);
-  }, []);
-
-  const view = search.view ?? (isPhone ? "full" : "terminal");
 
   useEffect(() => {
     if (search.amount) setAmount(String(search.amount));
   }, [search.amount]);
-
 
   const currency = terminal?.currency ?? "USD";
   const value = useMemo(() => Number(amount) || 0, [amount]);
@@ -88,19 +74,14 @@ function VirtualTerminalPage() {
     setBusy(true);
     try {
       const res = await charge({ data: { slug, amount: v, note: search.note } });
-      if (view === "full") {
-        // Full-site experience: go to the real checkout page.
-        void navigate({ to: "/i/$invoiceId", params: { invoiceId: res.id } });
-        return;
-      }
-      setInvoiceId(res.id);
-
+      void navigate({ to: "/i/$invoiceId", params: { invoiceId: res.id } });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not start payment");
     } finally {
       setBusy(false);
     }
   };
+
 
   const screen = isLoading ? (
     <div className="flex h-full items-center justify-center py-16">
