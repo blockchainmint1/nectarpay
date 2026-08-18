@@ -520,24 +520,25 @@ function PayingFrame({
                     type="button"
                     onClick={() => onSwitchTo(o.key)}
                     disabled={switching !== null}
-                    className="group flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-background/40 px-3 py-2 text-left transition hover:border-primary/50 hover:bg-primary/5 disabled:opacity-60"
+                    className="group flex min-w-0 items-center justify-between gap-2 rounded-lg border border-border/60 bg-background/40 px-3 py-2 text-left transition hover:border-primary/50 hover:bg-primary/5 disabled:opacity-60"
                   >
-                    <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <span className="flex min-w-0 flex-1 items-center gap-2 text-sm font-medium text-foreground">
                       <span
                         className={cn(
-                          "h-2 w-2 rounded-full bg-gradient-to-br",
+                          "h-2 w-2 shrink-0 rounded-full bg-gradient-to-br",
                           chainAccent(o.chain),
                         )}
                       />
-                      {o.label}
-                      <span className="text-[11px] font-normal uppercase tracking-wider text-muted-foreground">
+                      <span className="min-w-0 truncate">{o.label}</span>
+                      <span className="hidden shrink-0 text-[11px] font-normal uppercase tracking-wider text-muted-foreground sm:inline">
                         {o.tokenSymbol ? `${o.tokenSymbol}·${chainShortFor(o.chain, o.tokenSymbol)}` : o.chain}
                       </span>
                     </span>
-                    <span className="text-[11px] font-medium text-muted-foreground group-hover:text-primary">
+                    <span className="shrink-0 text-[11px] font-medium text-muted-foreground group-hover:text-primary">
                       {busy ? "Switching…" : "Use →"}
                     </span>
                   </button>
+
                 );
               })}
             </div>
