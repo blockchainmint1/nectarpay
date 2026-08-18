@@ -4,6 +4,7 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { VALID_CHAIN_SET } from "@/lib/chains/networks";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -28,7 +29,7 @@ const Body = z.object({
   option: z.string().min(2).max(32).optional().nullable(),
 });
 
-const VALID_CHAINS = new Set(["btc", "txc", "eth", "base", "bsc", "tron", "sol", "doge", "isk", "zcu"]);
+const VALID_CHAINS = VALID_CHAIN_SET;
 const VALID_STABLES = new Set(["USDC", "USDT", "PYUSD", "DAI", "TSD"]);
 
 export const Route = createFileRoute("/api/public/v1/terminals/invoice")({

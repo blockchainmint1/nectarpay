@@ -210,7 +210,7 @@ const SelectSchema = z.object({
   option: z.string().min(2).max(32),
 });
 
-const VALID_CHAINS = new Set(["btc", "txc", "eth", "base", "bsc", "tron", "sol", "doge", "isk", "zcu"]);
+const VALID_CHAINS = VALID_CHAIN_SET;
 const VALID_STABLES = new Set(["USDC", "USDT", "PYUSD", "DAI", "TSD"]);
 
 export const selectInvoiceChain = createServerFn({ method: "POST" })
