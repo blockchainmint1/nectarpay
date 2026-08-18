@@ -13,6 +13,16 @@ import { createPairingCode } from "@/lib/terminals.functions";
 import { getLatestPosRelease } from "@/lib/pos-releases.functions";
 import { saveCreds } from "@/lib/pos-client";
 import { qrToDataURL } from "@/lib/qr";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 /* ---------------- Welcome / Choose sign-in ---------------- */
 
