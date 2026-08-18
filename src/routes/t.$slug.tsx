@@ -49,6 +49,7 @@ export const Route = createFileRoute("/t/$slug")({
 function VirtualTerminalPage() {
   const { slug } = Route.useParams();
   const search = Route.useSearch();
+  const navigate = useNavigate();
   const load = useServerFn(getPublicTerminal);
   const charge = useServerFn(createPublicTerminalInvoice);
 
@@ -60,10 +61,23 @@ function VirtualTerminalPage() {
   const [amount, setAmount] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [invoiceId, setInvoiceId] = useState<string | null>(null);
+  // Phones get the real site by default; desktops get the fun POS bezel.
+  const [isPhone, setIsPhone] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const apply = () => setIsPhone(mq.matches);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
+  const view = search.view ?? (isPhone ? "full" : "terminal");
 
   useEffect(() => {
     if (search.amount) setAmount(String(search.amount));
   }, [search.amount]);
+
 
   const currency = terminal?.currency ?? "USD";
   const value = useMemo(() => Number(amount) || 0, [amount]);
