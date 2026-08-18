@@ -161,7 +161,14 @@ function QrCanvas({ value, dark }: { value: string; dark: boolean }) {
       },
     }).catch(() => {});
   }, [value, dark]);
-  return <canvas ref={ref} className="h-[280px] w-[280px]" aria-label="Payment QR code" />;
+  return (
+    <canvas
+      ref={ref}
+      className="h-auto w-[min(240px,60vw)] max-w-full md:w-[280px]"
+      aria-label="Payment QR code"
+    />
+  );
+
 }
 
 // ---------- page ----------
@@ -178,6 +185,16 @@ function CheckoutPage() {
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     return () => obs.disconnect();
   }, []);
+
+  // When rendered inside the virtual-terminal iframe, hide the inner scrollbar
+  // so the bezel doesn't show a second scroll track.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.self === window.top) return;
+    document.documentElement.classList.add("embedded-frame");
+    return () => document.documentElement.classList.remove("embedded-frame");
+  }, []);
+
 
   const { data, error, isLoading } = useQuery({
     queryKey: ["public-invoice", invoiceId],
@@ -225,7 +242,8 @@ function CheckoutPage() {
 
   // ----- frames -----
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
+    <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
+
       {/* ambient grid + glow */}
       <div className="pointer-events-none absolute inset-0 grid-bg opacity-40" />
       <div
@@ -448,8 +466,9 @@ function PayingFrame({
     <div className="grid gap-0 md:grid-cols-[1fr_320px]">
       <h1 className="sr-only">Pay invoice</h1>
 
-      {/* left: amount + address */}
-      <div className="p-6 md:p-8">
+      {/* left: amount + address (QR comes first on narrow/terminal screens) */}
+      <div className="order-2 min-w-0 p-4 sm:p-6 md:order-none md:p-8">
+
         <div className="flex items-center justify-between">
           <StatusPill status={inv.status} />
           {countdown && (
@@ -489,19 +508,20 @@ function PayingFrame({
         )}
 
         {/* address */}
-        <div className="mt-6 rounded-xl border border-border/60 bg-background/40 p-3">
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs uppercase tracking-wider text-muted-foreground">
+        <div className="mt-6 min-w-0 rounded-xl border border-border/60 bg-background/40 p-3">
+          <div className="flex min-w-0 items-center justify-between gap-2">
+            <span className="min-w-0 truncate text-xs uppercase tracking-wider text-muted-foreground">
               {inv.tokenSymbol
                 ? `${inv.tokenSymbol} (${chainLabelFor(inv.chain, inv.tokenSymbol)}) address`
                 : `${chainLabelFor(inv.chain, inv.tokenSymbol)} address`}
             </span>
-            <CopyButton value={inv.address} />
+            <span className="shrink-0"><CopyButton value={inv.address} /></span>
           </div>
-          <p className="mt-2 break-all font-mono text-sm leading-relaxed text-foreground/90">
+          <p className="mt-2 break-all font-mono text-xs leading-relaxed text-foreground/90 sm:text-sm">
             {inv.address}
           </p>
         </div>
+
 
         {/* alternate payment options */}
         {showSwitch && (
@@ -518,24 +538,25 @@ function PayingFrame({
                     type="button"
                     onClick={() => onSwitchTo(o.key)}
                     disabled={switching !== null}
-                    className="group flex items-center justify-between gap-3 rounded-lg border border-border/60 bg-background/40 px-3 py-2 text-left transition hover:border-primary/50 hover:bg-primary/5 disabled:opacity-60"
+                    className="group flex min-w-0 items-center justify-between gap-2 rounded-lg border border-border/60 bg-background/40 px-3 py-2 text-left transition hover:border-primary/50 hover:bg-primary/5 disabled:opacity-60"
                   >
-                    <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+                    <span className="flex min-w-0 flex-1 items-center gap-2 text-sm font-medium text-foreground">
                       <span
                         className={cn(
-                          "h-2 w-2 rounded-full bg-gradient-to-br",
+                          "h-2 w-2 shrink-0 rounded-full bg-gradient-to-br",
                           chainAccent(o.chain),
                         )}
                       />
-                      {o.label}
-                      <span className="text-[11px] font-normal uppercase tracking-wider text-muted-foreground">
+                      <span className="min-w-0 truncate">{o.label}</span>
+                      <span className="hidden shrink-0 text-[11px] font-normal uppercase tracking-wider text-muted-foreground sm:inline">
                         {o.tokenSymbol ? `${o.tokenSymbol}·${chainShortFor(o.chain, o.tokenSymbol)}` : o.chain}
                       </span>
                     </span>
-                    <span className="text-[11px] font-medium text-muted-foreground group-hover:text-primary">
+                    <span className="shrink-0 text-[11px] font-medium text-muted-foreground group-hover:text-primary">
                       {busy ? "Switching…" : "Use →"}
                     </span>
                   </button>
+
                 );
               })}
             </div>
@@ -581,11 +602,26 @@ function PayingFrame({
         )}
       </div>
 
-      {/* right: QR + open-in-wallet */}
-      <div className="flex flex-col items-center justify-center gap-4 border-t border-border/60 bg-background/30 p-6 md:border-l md:border-t-0 md:p-8">
+      {/* right (top on narrow): QR + open-in-wallet */}
+      <div className="order-1 flex min-w-0 flex-col items-center justify-center gap-3 border-b border-border/60 bg-background/30 p-4 sm:p-6 md:order-none md:gap-4 md:border-b-0 md:border-l md:p-8">
+        {/* compact amount header — terminal flow puts the ask above the QR */}
+        <div className="w-full text-center md:hidden">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Amount due</p>
+          <p className="mt-0.5 font-mono text-2xl font-semibold tracking-tight">
+            {inv.cryptoAmount != null ? inv.cryptoAmount : "—"}{" "}
+            <span className="text-sm font-medium text-muted-foreground">
+              {inv.tokenSymbol ? inv.tokenSymbol : inv.chain.toUpperCase()}
+            </span>
+          </p>
+          <p className="text-[11px] text-muted-foreground">
+            ≈ {inv.fiatAmount.toFixed(2)} {inv.fiatCurrency.toUpperCase()}
+          </p>
+        </div>
+
         <div className="rounded-2xl border border-border/60 bg-card p-3">
           <QrCanvas value={uri} dark={isDark} />
         </div>
+
         <a
           href={uri}
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-transform hover:translate-y-[-1px]"
@@ -763,7 +799,7 @@ function ChainPickerFrame({
             This merchant hasn't enabled any payment options yet.
           </div>
         ) : (
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="mt-4 grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:grid-cols-3 sm:gap-3">
             {availableOptions.map((o) => {
               const isLoading = picking === o.key;
               return (
@@ -773,16 +809,17 @@ function ChainPickerFrame({
                   disabled={picking !== null}
                   onClick={() => pick(o.key)}
                   className={cn(
-                    "group relative flex items-center justify-between rounded-xl border border-border/60 bg-background/40 p-4 text-left transition-all",
+                    "group relative flex min-w-0 items-center justify-between gap-2 rounded-xl border border-border/60 bg-background/40 p-3 text-left transition-all sm:p-4",
                     "hover:border-primary/60 hover:bg-card disabled:opacity-50",
                   )}
                 >
-                  <div>
-                    <p className="text-sm font-semibold">{o.label}</p>
-                    <p className="mt-0.5 text-[11px] uppercase tracking-wider text-muted-foreground">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">{o.label}</p>
+                    <p className="mt-0.5 truncate text-[11px] uppercase tracking-wider text-muted-foreground">
                       {o.tokenSymbol ? `${o.tokenSymbol} · ${chainShortFor(o.chain, o.tokenSymbol)}` : o.chain}
                     </p>
                   </div>
+
                   {isLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
                   ) : (
