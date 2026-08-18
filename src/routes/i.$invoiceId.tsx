@@ -584,11 +584,12 @@ function PayingFrame({
         )}
       </div>
 
-      {/* right: QR + open-in-wallet */}
-      <div className="flex flex-col items-center justify-center gap-4 border-t border-border/60 bg-background/30 p-6 md:border-l md:border-t-0 md:p-8">
+      {/* right (top on narrow): QR + open-in-wallet */}
+      <div className="order-1 flex min-w-0 flex-col items-center justify-center gap-4 border-b border-border/60 bg-background/30 p-4 sm:p-6 md:order-none md:border-b-0 md:border-l md:p-8">
         <div className="rounded-2xl border border-border/60 bg-card p-3">
           <QrCanvas value={uri} dark={isDark} />
         </div>
+
         <a
           href={uri}
           className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-transform hover:translate-y-[-1px]"
