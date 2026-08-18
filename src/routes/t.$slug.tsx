@@ -178,7 +178,7 @@ function VirtualTerminalPage() {
         )}
       </TerminalFrame>
 
-      <p className="mt-8 text-center text-xs text-muted-foreground">
+      <p className="shrink-0 text-center text-xs text-muted-foreground">
         Powered by{" "}
         <a href="https://nectar-pay.com" className="underline underline-offset-2">
           Nectar.Pay
