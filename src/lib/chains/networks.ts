@@ -454,3 +454,8 @@ export function getNetwork(chain: ChainKind) {
     chain
   ];
 }
+
+/** Every chain the platform can derive addresses for. Single source of truth
+ * for API/checkout chain validation — keep in sync with ALL_NETWORKS. */
+export const SUPPORTED_CHAINS = Object.keys(ALL_NETWORKS) as ChainKind[];
+export const VALID_CHAIN_SET: ReadonlySet<string> = new Set(SUPPORTED_CHAINS);

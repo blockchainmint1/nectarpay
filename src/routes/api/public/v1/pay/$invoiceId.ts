@@ -12,6 +12,7 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { VALID_CHAIN_SET } from "@/lib/chains/networks";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -26,7 +27,7 @@ function json(body: unknown, status = 200) {
   });
 }
 
-const VALID_CHAINS = new Set(["btc", "txc", "eth", "base", "bsc", "tron", "sol", "doge", "ltc", "bch", "dash", "isk", "zcu"]);
+const VALID_CHAINS = VALID_CHAIN_SET;
 const VALID_STABLES = new Set(["USDC", "USDT", "PYUSD", "DAI", "TSD"]);
 
 const SelectBody = z.object({
