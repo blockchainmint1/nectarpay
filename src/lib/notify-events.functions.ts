@@ -35,7 +35,6 @@ async function enqueueAdmin(
     const { error } = await supabase.rpc("enqueue_email", {
       queue_name: "transactional_emails",
       payload: {
-        run_id: messageId,
         message_id: messageId,
         idempotency_key: `${idempotencyKey}:${to}`,
         to,
