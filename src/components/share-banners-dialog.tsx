@@ -16,9 +16,12 @@ import { Button } from "@/components/ui/button";
 import {
   BANNERS,
   bannerDataUrl,
+  defaultVerb,
   downloadDataUrl,
   type BannerId,
 } from "@/lib/share-banners";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function ShareBannersDialog({
   open,
@@ -40,16 +43,21 @@ export function ShareBannersDialog({
   const [active, setActive] = useState<BannerId>("email");
   const [images, setImages] = useState<Partial<Record<BannerId, string>>>({});
   const [busy, setBusy] = useState(false);
+  const [verb, setVerb] = useState(defaultVerb(donation));
+
+  useEffect(() => {
+    setVerb(defaultVerb(donation));
+  }, [donation]);
 
   useEffect(() => {
     setImages({});
-  }, [url, title, subtitle, donation]);
+  }, [url, title, subtitle, donation, verb]);
 
   useEffect(() => {
     if (!open || images[active]) return;
     let cancelled = false;
     setBusy(true);
-    bannerDataUrl({ id: active, title, subtitle, url, donation })
+    bannerDataUrl({ id: active, title, subtitle, url, donation, verb })
       .then((d) => {
         if (!cancelled) setImages((prev) => ({ ...prev, [active]: d }));
       })
@@ -58,12 +66,13 @@ export function ShareBannersDialog({
     return () => {
       cancelled = true;
     };
-  }, [open, active, images, title, subtitle, url, donation]);
+  }, [open, active, images, title, subtitle, url, donation, verb]);
 
   const spec = BANNERS.find((b) => b.id === active)!;
   const src = images[active];
 
-  const embed = `<a href="${url}"><img src="YOUR-IMAGE-URL.png" alt="${donation ? "Donate" : "Pay"} with crypto — ${title}" width="${Math.min(spec.width, 600)}" style="max-width:100%;border:0;" /></a>`;
+  const word = verb.trim() || defaultVerb(donation);
+  const embed = `<a href="${url}"><img src="YOUR-IMAGE-URL.png" alt="${word} with crypto — ${title}" width="${Math.min(spec.width, 600)}" style="max-width:100%;border:0;" /></a>`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -91,6 +100,23 @@ export function ShareBannersDialog({
               {b.name.split(" — ")[0]}
             </button>
           ))}
+        </div>
+
+        <div className="max-w-xs">
+          <Label htmlFor="banner-verb" className="text-xs">
+            Action word
+          </Label>
+          <Input
+            id="banner-verb"
+            value={verb}
+            maxLength={16}
+            placeholder={defaultVerb(donation)}
+            onChange={(e) => setVerb(e.target.value)}
+            className="mt-1 h-9"
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            Reads &ldquo;{word} with crypto&rdquo; / &ldquo;Scan to {word.toLowerCase()}&rdquo;.
+          </p>
         </div>
 
         <div>
