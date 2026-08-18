@@ -161,79 +161,34 @@ function PaymentLinkPage() {
     </div>
   );
 
-  const heading = (
-    <div className="mx-auto max-w-md shrink-0 text-center">
-      <h1 className="text-lg font-semibold tracking-tight">
-        {terminal?.title ?? (isLoading ? "Loading…" : "Payment terminal")}
-      </h1>
-      {terminal?.subtitle && (
-        <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">{terminal.subtitle}</p>
-      )}
-    </div>
-  );
-
-  const footer = (
-    <p className="shrink-0 text-center text-xs text-muted-foreground">
-      Powered by{" "}
-      <a href="https://nectar-pay.com" className="underline underline-offset-2">
-        Nectar.Pay
-      </a>{" "}
-      · part of the{" "}
-      <a href="https://honest.money" className="underline underline-offset-2">
-        honest.money
-      </a>{" "}
-      ecosystem
-    </p>
-  );
-
-  const switchTo = (next: "full" | "terminal") =>
-    navigate({ to: "/t/$slug", params: { slug }, search: { ...search, view: next } });
-
-  // ---- Full-site experience (default on phones) -------------------------
-  if (view === "full") {
-    return (
-      <main className="min-h-dvh bg-gradient-to-b from-muted/40 to-background px-4 py-8">
-        <div className="mx-auto flex w-full max-w-md flex-col gap-5">
-          {heading}
-          <div className="rounded-3xl border border-border bg-card shadow-sm">{screen}</div>
-          <button
-            onClick={() => switchTo("terminal")}
-            className="mx-auto inline-flex items-center gap-1.5 text-xs text-muted-foreground underline underline-offset-4"
-          >
-            <Smartphone className="h-3.5 w-3.5" /> View as a POS terminal
-          </button>
-          {footer}
-        </div>
-      </main>
-    );
-  }
-
-  // ---- Terminal bezel experience ---------------------------------------
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-4 overflow-hidden bg-gradient-to-b from-muted/40 to-background px-4 py-6">
-      {heading}
+    <main className="min-h-dvh bg-gradient-to-b from-muted/40 to-background px-4 py-8 sm:py-12">
+      <div className="mx-auto flex w-full max-w-md flex-col gap-5">
+        <div className="text-center">
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+            {terminal?.title ?? (isLoading ? "Loading…" : "Payment link")}
+          </h1>
+          {terminal?.subtitle && (
+            <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">{terminal.subtitle}</p>
+          )}
+        </div>
 
-      <TerminalFrame
-        className="shrink-0"
-        label={terminal?.store_name ?? "Nectar.Pay"}
-        scroll={!invoiceId}
-      >
-        {invoiceId ? (
-          <iframe title="Payment" src={`/i/${invoiceId}`} className="h-full w-full border-0" />
-        ) : (
-          screen
-        )}
-      </TerminalFrame>
+        <div className="rounded-3xl border border-border bg-card shadow-sm">{screen}</div>
 
-      <button
-        onClick={() => switchTo("full")}
-        className="inline-flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground underline underline-offset-4"
-      >
-        <Maximize2 className="h-3.5 w-3.5" /> Open the full-screen experience
-      </button>
-
-      {footer}
+        <p className="text-center text-xs text-muted-foreground">
+          Powered by{" "}
+          <a href="https://nectar-pay.com" className="underline underline-offset-2">
+            Nectar.Pay
+          </a>{" "}
+          · part of the{" "}
+          <a href="https://honest.money" className="underline underline-offset-2">
+            honest.money
+          </a>{" "}
+          ecosystem
+        </p>
+      </div>
     </main>
   );
 }
+
 
