@@ -240,7 +240,7 @@ function CheckoutPage() {
       <header className="relative z-10 mx-auto grid max-w-3xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-4">
         <div className="flex min-w-0 items-center gap-2">
           <img
-            src={hiveMark}
+            src={hiveMark.url}
             alt="Nectar.Pay"
             className="h-6 w-6 shrink-0 rounded-md object-contain"
             width={24}
