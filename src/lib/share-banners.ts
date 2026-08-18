@@ -315,6 +315,7 @@ function drawTent(
   input: BannerInput,
   qr: HTMLImageElement | null,
   buzzy: HTMLImageElement | null,
+  scanLine: string,
 ) {
   const { width: w, height: h } = spec;
   // Light "printable" variant: cream paper, honey banding.
