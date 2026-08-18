@@ -688,7 +688,6 @@ interface TerminalDraft {
   pos_signature_enabled: boolean;
   pos_email_receipt_enabled: boolean;
   pos_require_cashier_pin: boolean;
-  pos_refund_enabled: boolean;
 }
 
 export function TerminalDefaults({ storeId, onDone }: { storeId: string; onDone: () => void }) {
@@ -700,7 +699,7 @@ export function TerminalDefaults({ storeId, onDone }: { storeId: string; onDone:
       const { data } = await supabase
         .from("stores")
         .select(
-          "pos_tip_enabled, pos_tip_presets_bps, tax_mode, tax_bps, pos_signature_enabled, pos_email_receipt_enabled, pos_require_cashier_pin, pos_refund_enabled",
+          "pos_tip_enabled, pos_tip_presets_bps, tax_mode, tax_bps, pos_signature_enabled, pos_email_receipt_enabled, pos_require_cashier_pin",
         )
         .eq("id", storeId)
         .maybeSingle();
@@ -712,7 +711,6 @@ export function TerminalDefaults({ storeId, onDone }: { storeId: string; onDone:
         pos_signature_enabled: (data?.pos_signature_enabled as boolean) ?? false,
         pos_email_receipt_enabled: (data?.pos_email_receipt_enabled as boolean) ?? true,
         pos_require_cashier_pin: (data?.pos_require_cashier_pin as boolean) ?? false,
-        pos_refund_enabled: (data?.pos_refund_enabled as boolean) ?? false,
       });
     })();
   }, [storeId]);
@@ -734,7 +732,7 @@ export function TerminalDefaults({ storeId, onDone }: { storeId: string; onDone:
           pos_signature_enabled: draft.pos_signature_enabled,
           pos_email_receipt_enabled: draft.pos_email_receipt_enabled,
           pos_require_cashier_pin: draft.pos_require_cashier_pin,
-          pos_refund_enabled: draft.pos_refund_enabled,
+          pos_refund_enabled: false,
         })
         .eq("id", storeId);
       if (error) throw error;
@@ -863,18 +861,13 @@ export function TerminalDefaults({ storeId, onDone }: { storeId: string; onDone:
             onChange={(v) => setDraft({ ...draft, pos_require_cashier_pin: v })}
           />
 
-          <ToggleCard
-            title="Refunds on terminal"
-            desc="Allow cashiers to refund a recent payment."
-            checked={draft.pos_refund_enabled}
-            onChange={(v) => setDraft({ ...draft, pos_refund_enabled: v })}
-          />
         </div>
 
         <p className="mt-4 text-[11px] text-muted-foreground">
           More options on desktop: quick items, custom tenders, end-of-day reports, reference
-          codes, refund reasons, receipt branding, void/hold, SMS receipts, idle-lock timeout.
+          codes, receipt branding, void/hold, SMS receipts, idle-lock timeout.
         </p>
+
       </div>
 
       <div className="sticky bottom-0 mt-8 space-y-2 bg-background pb-[env(safe-area-inset-bottom)] pt-4">
