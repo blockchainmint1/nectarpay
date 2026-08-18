@@ -168,6 +168,12 @@ export interface BannerInput {
   subtitle: string;
   url: string;
   donation: boolean;
+  /** Merchant-set action word, e.g. "Donate", "Pay", "Tip", "Give". */
+  verb?: string;
+}
+
+export function defaultVerb(donation: boolean) {
+  return donation ? "Donate" : "Pay";
 }
 
 export async function renderBanner(input: BannerInput): Promise<HTMLCanvasElement> {
@@ -185,12 +191,14 @@ export async function renderBanner(input: BannerInput): Promise<HTMLCanvasElemen
     loadBuzzy(),
   ]);
 
-  const verb = input.donation ? "Donate with crypto" : "Pay with crypto";
-  const kicker = input.donation ? "SCAN TO DONATE" : "SCAN TO PAY";
+  const word = (input.verb?.trim() || defaultVerb(input.donation)).slice(0, 16);
+  const verb = `${word} with crypto`;
+  const kicker = `SCAN TO ${word.toUpperCase()}`;
 
   if (input.id === "email") drawEmail(ctx, spec, input, qr, buzzy, verb);
   else if (input.id === "social") drawSocial(ctx, spec, input, qr, buzzy, kicker);
-  else drawTent(ctx, spec, input, qr, buzzy);
+  else drawTent(ctx, spec, input, qr, buzzy, `Scan to ${word.toLowerCase()}`);
+
 
   return canvas;
 }
@@ -307,6 +315,7 @@ function drawTent(
   input: BannerInput,
   qr: HTMLImageElement | null,
   buzzy: HTMLImageElement | null,
+  scanLine: string,
 ) {
   const { width: w, height: h } = spec;
   // Light "printable" variant: cream paper, honey banding.
@@ -344,7 +353,7 @@ function drawTent(
   const footX = 540;
   ctx.fillStyle = INK;
   ctx.font = "800 44px system-ui, -apple-system, 'Segoe UI', sans-serif";
-  ctx.fillText(input.donation ? "Scan to donate" : "Scan to pay", footX, 960);
+  ctx.fillText(scanLine.charAt(0).toUpperCase() + scanLine.slice(1), footX, 960);
 
   ctx.fillStyle = HONEY_DEEP;
   ctx.font = "600 24px ui-monospace, SFMono-Regular, Menlo, monospace";
