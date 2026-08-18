@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
+import { DashboardShell } from "@/components/dashboard-shell";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/docs")({
   head: () => ({
@@ -25,6 +27,17 @@ export const Route = createFileRoute("/docs")({
 });
 
 function DocsPage() {
+  const { user, loading } = useAuth();
+
+  // Signed-in merchants keep their dashboard navigation on /docs.
+  if (!loading && user) {
+    return (
+      <DashboardShell>
+        <DocsBody />
+      </DashboardShell>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <MarketingNav />
