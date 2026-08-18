@@ -486,6 +486,7 @@ export function WalletLink({ storeId, onDone }: { storeId: string; onDone: () =>
 
   const [enablingStables, setEnablingStables] = useState(false);
   const [stablesEnabled, setStablesEnabled] = useState(false);
+  const [showStablesPrompt, setShowStablesPrompt] = useState(false);
 
   async function enableStandardStables() {
     setEnablingStables(true);
