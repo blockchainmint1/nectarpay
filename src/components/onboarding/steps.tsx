@@ -13,6 +13,16 @@ import { createPairingCode } from "@/lib/terminals.functions";
 import { getLatestPosRelease } from "@/lib/pos-releases.functions";
 import { saveCreds } from "@/lib/pos-client";
 import { qrToDataURL } from "@/lib/qr";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 /* ---------------- Welcome / Choose sign-in ---------------- */
 
@@ -476,6 +486,7 @@ export function WalletLink({ storeId, onDone }: { storeId: string; onDone: () =>
 
   const [enablingStables, setEnablingStables] = useState(false);
   const [stablesEnabled, setStablesEnabled] = useState(false);
+  const [showStablesPrompt, setShowStablesPrompt] = useState(false);
 
   async function enableStandardStables() {
     setEnablingStables(true);
@@ -607,7 +618,13 @@ export function WalletLink({ storeId, onDone }: { storeId: string; onDone: () =>
       <div className="sticky bottom-0 mt-8 space-y-2 bg-background pb-[env(safe-area-inset-bottom)] pt-4">
         <Button
           size="lg"
-          onClick={onDone}
+          onClick={() => {
+            if (linked && !stablesEnabled) {
+              setShowStablesPrompt(true);
+              return;
+            }
+            onDone();
+          }}
           disabled={!linked}
           className="h-14 w-full text-base"
         >
@@ -624,6 +641,39 @@ export function WalletLink({ storeId, onDone }: { storeId: string; onDone: () =>
           </button>
         )}
       </div>
+
+      <AlertDialog open={showStablesPrompt} onOpenChange={setShowStablesPrompt}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Enable stablecoins first?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You haven&apos;t turned on the standard stablecoin settings yet. Without them your
+              terminal won&apos;t be able to accept Texas Stable Dollar (TSD) on TEXITcoin, USDC,
+              USDT or PYUSD — and you&apos;d have to configure each chain by hand later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setShowStablesPrompt(false);
+                onDone();
+              }}
+            >
+              Skip anyway
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async (e) => {
+                e.preventDefault();
+                await enableStandardStables();
+                setShowStablesPrompt(false);
+              }}
+              disabled={enablingStables}
+            >
+              {enablingStables ? "Enabling…" : "Enable stablecoins"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
