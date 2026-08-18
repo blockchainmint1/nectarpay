@@ -225,7 +225,8 @@ function CheckoutPage() {
 
   // ----- frames -----
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
+    <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
+
       {/* ambient grid + glow */}
       <div className="pointer-events-none absolute inset-0 grid-bg opacity-40" />
       <div
