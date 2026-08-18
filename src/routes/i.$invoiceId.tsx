@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import hiveMarkAsset from "@/assets/nectar-hive-mark.png.asset.json";
+import hiveMark from "@/assets/nectar-hive-mark.png.asset.json";
 
-const hiveMark = hiveMarkAsset.url;
 
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
