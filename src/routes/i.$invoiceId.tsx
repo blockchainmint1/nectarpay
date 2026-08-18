@@ -603,7 +603,21 @@ function PayingFrame({
       </div>
 
       {/* right (top on narrow): QR + open-in-wallet */}
-      <div className="order-1 flex min-w-0 flex-col items-center justify-center gap-4 border-b border-border/60 bg-background/30 p-4 sm:p-6 md:order-none md:border-b-0 md:border-l md:p-8">
+      <div className="order-1 flex min-w-0 flex-col items-center justify-center gap-3 border-b border-border/60 bg-background/30 p-4 sm:p-6 md:order-none md:gap-4 md:border-b-0 md:border-l md:p-8">
+        {/* compact amount header — terminal flow puts the ask above the QR */}
+        <div className="w-full text-center md:hidden">
+          <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Amount due</p>
+          <p className="mt-0.5 font-mono text-2xl font-semibold tracking-tight">
+            {inv.cryptoAmount != null ? inv.cryptoAmount : "—"}{" "}
+            <span className="text-sm font-medium text-muted-foreground">
+              {inv.tokenSymbol ? inv.tokenSymbol : inv.chain.toUpperCase()}
+            </span>
+          </p>
+          <p className="text-[11px] text-muted-foreground">
+            ≈ {inv.fiatAmount.toFixed(2)} {inv.fiatCurrency.toUpperCase()}
+          </p>
+        </div>
+
         <div className="rounded-2xl border border-border/60 bg-card p-3">
           <QrCanvas value={uri} dark={isDark} />
         </div>
