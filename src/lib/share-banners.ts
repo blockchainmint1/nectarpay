@@ -168,6 +168,12 @@ export interface BannerInput {
   subtitle: string;
   url: string;
   donation: boolean;
+  /** Merchant-set action word, e.g. "Donate", "Pay", "Tip", "Give". */
+  verb?: string;
+}
+
+export function defaultVerb(donation: boolean) {
+  return donation ? "Donate" : "Pay";
 }
 
 export async function renderBanner(input: BannerInput): Promise<HTMLCanvasElement> {
@@ -185,12 +191,14 @@ export async function renderBanner(input: BannerInput): Promise<HTMLCanvasElemen
     loadBuzzy(),
   ]);
 
-  const verb = input.donation ? "Donate with crypto" : "Pay with crypto";
-  const kicker = input.donation ? "SCAN TO DONATE" : "SCAN TO PAY";
+  const word = (input.verb?.trim() || defaultVerb(input.donation)).slice(0, 16);
+  const verb = `${word} with crypto`;
+  const kicker = `SCAN TO ${word.toUpperCase()}`;
 
   if (input.id === "email") drawEmail(ctx, spec, input, qr, buzzy, verb);
   else if (input.id === "social") drawSocial(ctx, spec, input, qr, buzzy, kicker);
-  else drawTent(ctx, spec, input, qr, buzzy);
+  else drawTent(ctx, spec, input, qr, buzzy, `Scan to ${word.toLowerCase()}`);
+
 
   return canvas;
 }
