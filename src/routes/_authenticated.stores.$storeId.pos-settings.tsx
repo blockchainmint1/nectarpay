@@ -59,12 +59,10 @@ interface Draft {
   receipt_sms_enabled: boolean;
   receipt_reprint_enabled: boolean;
   // money handling
-  pos_refund_enabled: boolean;
   pos_void_enabled: boolean;
   pos_hold_enabled: boolean;
   pos_other_tender_enabled: boolean;
   pos_eod_enabled: boolean;
-  pos_refund_reasons: string[];
   // fleet defaults
   default_allowed_chains: string[];
   default_display_currency: string;
@@ -78,7 +76,7 @@ const SELECT_COLS = [
   "tax_mode, tax_bps",
   "pos_require_cashier_pin, pos_quick_items, pos_custom_tenders",
   "receipt_email_enabled, receipt_sms_enabled, receipt_reprint_enabled",
-  "pos_refund_enabled, pos_void_enabled, pos_hold_enabled, pos_other_tender_enabled, pos_eod_enabled, pos_refund_reasons",
+  "pos_void_enabled, pos_hold_enabled, pos_other_tender_enabled, pos_eod_enabled",
   "default_allowed_chains, default_display_currency",
 ].join(", ");
 
@@ -126,12 +124,10 @@ function PosSettingsPage() {
       receipt_email_enabled: (s.receipt_email_enabled as boolean) ?? false,
       receipt_sms_enabled: (s.receipt_sms_enabled as boolean) ?? false,
       receipt_reprint_enabled: (s.receipt_reprint_enabled as boolean) ?? true,
-      pos_refund_enabled: (s.pos_refund_enabled as boolean) ?? false,
       pos_void_enabled: (s.pos_void_enabled as boolean) ?? false,
       pos_hold_enabled: (s.pos_hold_enabled as boolean) ?? false,
       pos_other_tender_enabled: (s.pos_other_tender_enabled as boolean) ?? false,
       pos_eod_enabled: (s.pos_eod_enabled as boolean) ?? false,
-      pos_refund_reasons: ((s.pos_refund_reasons as string[]) ?? []),
       default_allowed_chains: ((s.default_allowed_chains as string[]) ?? []),
       default_display_currency: (s.default_display_currency as string) ?? "",
     });
@@ -162,12 +158,11 @@ function PosSettingsPage() {
           receipt_email_enabled: next.receipt_email_enabled,
           receipt_sms_enabled: next.receipt_sms_enabled,
           receipt_reprint_enabled: next.receipt_reprint_enabled,
-          pos_refund_enabled: next.pos_refund_enabled,
+          pos_refund_enabled: false,
           pos_void_enabled: next.pos_void_enabled,
           pos_hold_enabled: next.pos_hold_enabled,
           pos_other_tender_enabled: next.pos_other_tender_enabled,
           pos_eod_enabled: next.pos_eod_enabled,
-          pos_refund_reasons: next.pos_refund_reasons,
           default_allowed_chains: next.default_allowed_chains.length
             ? next.default_allowed_chains
             : null,
@@ -480,16 +475,10 @@ function PosSettingsPage() {
               <AccordionTrigger className="px-3 text-sm font-semibold hover:no-underline">
                 Money handling
                 <span className="ml-auto mr-2 text-[10px] font-normal text-muted-foreground">
-                  Refund · void · hold · cash · EOD
+                  Void · hold · cash · EOD
                 </span>
               </AccordionTrigger>
               <AccordionContent className="px-3 pb-4 pt-1 space-y-4">
-                <ToggleRow
-                  label="Refunds"
-                  hint="Show 'Refund' on paid invoices. Records the request; on-chain payout is reviewed."
-                  checked={draft.pos_refund_enabled}
-                  onChange={(v) => update("pos_refund_enabled", v)}
-                />
                 <ToggleRow
                   label="Voids"
                   hint="Cancel an unpaid invoice from the cashier UI."
@@ -515,16 +504,6 @@ function PosSettingsPage() {
                   onChange={(v) => update("pos_eod_enabled", v)}
                 />
 
-                {draft.pos_refund_enabled && (
-                  <div className="border-t pt-3">
-                    <div className="text-xs font-medium text-muted-foreground">Refund reasons</div>
-                    <StringListEditor
-                      items={draft.pos_refund_reasons}
-                      onChange={(items) => update("pos_refund_reasons", items.filter(Boolean))}
-                      placeholder="Customer request"
-                    />
-                  </div>
-                )}
               </AccordionContent>
             </AccordionItem>
 
