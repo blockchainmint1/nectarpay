@@ -179,6 +179,16 @@ function CheckoutPage() {
     return () => obs.disconnect();
   }, []);
 
+  // When rendered inside the virtual-terminal iframe, hide the inner scrollbar
+  // so the bezel doesn't show a second scroll track.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.self === window.top) return;
+    document.documentElement.classList.add("embedded-frame");
+    return () => document.documentElement.classList.remove("embedded-frame");
+  }, []);
+
+
   const { data, error, isLoading } = useQuery({
     queryKey: ["public-invoice", invoiceId],
     queryFn: () => fetchInvoice({ data: { id: invoiceId } }),
