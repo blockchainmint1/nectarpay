@@ -145,7 +145,7 @@ function ShareLinksPage() {
         <ChevronLeft className="h-4 w-4" /> Back to store
       </Link>
 
-      <h1 className="mt-4 text-2xl font-semibold tracking-tight">Share links (virtual terminal)</h1>
+      <h1 className="mt-4 text-2xl font-semibold tracking-tight">Share links</h1>
       <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
         A permanent URL that opens a POS terminal in the browser — anyone can pay or donate to this
         store&apos;s wallets, no account needed. Drop it in email signatures, newsletters, or behind a

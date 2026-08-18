@@ -1,6 +1,5 @@
-// /t/$slug — the public "virtual terminal". A persistent, re-shareable
-// link that looks like a Senraise POS terminal and runs the real payment
-// flow against the merchant's linked wallets.
+// /t/$slug — public payment link. A persistent, re-shareable URL that runs
+// the real payment flow against the merchant's linked wallets.
 //
 //   /t/ron-paul-institute            → visitor picks an amount
 //   /t/ron-paul-institute?amount=50  → pre-filled charge
@@ -10,19 +9,19 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import { Loader2, Maximize2, ShieldCheck, Smartphone } from "lucide-react";
+import { Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { getPublicTerminal, createPublicTerminalInvoice } from "@/lib/public-terminal.functions";
-import { TerminalFrame } from "@/components/terminal-frame";
 import { Button } from "@/components/ui/button";
 
 const searchSchema = z.object({
   amount: z.coerce.number().positive().optional(),
   note: z.string().max(200).optional(),
-  /** "terminal" = POS bezel, "full" = normal responsive page. */
+  /** Legacy: kept so old links with ?view=terminal still resolve. */
   view: z.enum(["terminal", "full"]).optional(),
 });
+
 
 
 export const Route = createFileRoute("/t/$slug")({
@@ -43,10 +42,10 @@ export const Route = createFileRoute("/t/$slug")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: VirtualTerminalPage,
+  component: PaymentLinkPage,
 });
 
-function VirtualTerminalPage() {
+function PaymentLinkPage() {
   const { slug } = Route.useParams();
   const search = Route.useSearch();
   const navigate = useNavigate();
@@ -60,24 +59,10 @@ function VirtualTerminalPage() {
 
   const [amount, setAmount] = useState<string>("");
   const [busy, setBusy] = useState(false);
-  const [invoiceId, setInvoiceId] = useState<string | null>(null);
-  // Phones get the real site by default; desktops get the fun POS bezel.
-  const [isPhone, setIsPhone] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 640px)");
-    const apply = () => setIsPhone(mq.matches);
-    apply();
-    mq.addEventListener("change", apply);
-    return () => mq.removeEventListener("change", apply);
-  }, []);
-
-  const view = search.view ?? (isPhone ? "full" : "terminal");
 
   useEffect(() => {
     if (search.amount) setAmount(String(search.amount));
   }, [search.amount]);
-
 
   const currency = terminal?.currency ?? "USD";
   const value = useMemo(() => Number(amount) || 0, [amount]);
@@ -89,19 +74,14 @@ function VirtualTerminalPage() {
     setBusy(true);
     try {
       const res = await charge({ data: { slug, amount: v, note: search.note } });
-      if (view === "full") {
-        // Full-site experience: go to the real checkout page.
-        void navigate({ to: "/i/$invoiceId", params: { invoiceId: res.id } });
-        return;
-      }
-      setInvoiceId(res.id);
-
+      void navigate({ to: "/i/$invoiceId", params: { invoiceId: res.id } });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not start payment");
     } finally {
       setBusy(false);
     }
   };
+
 
   const screen = isLoading ? (
     <div className="flex h-full items-center justify-center py-16">
@@ -181,79 +161,34 @@ function VirtualTerminalPage() {
     </div>
   );
 
-  const heading = (
-    <div className="mx-auto max-w-md shrink-0 text-center">
-      <h1 className="text-lg font-semibold tracking-tight">
-        {terminal?.title ?? (isLoading ? "Loading…" : "Payment terminal")}
-      </h1>
-      {terminal?.subtitle && (
-        <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">{terminal.subtitle}</p>
-      )}
-    </div>
-  );
-
-  const footer = (
-    <p className="shrink-0 text-center text-xs text-muted-foreground">
-      Powered by{" "}
-      <a href="https://nectar-pay.com" className="underline underline-offset-2">
-        Nectar.Pay
-      </a>{" "}
-      · part of the{" "}
-      <a href="https://honest.money" className="underline underline-offset-2">
-        honest.money
-      </a>{" "}
-      ecosystem
-    </p>
-  );
-
-  const switchTo = (next: "full" | "terminal") =>
-    navigate({ to: "/t/$slug", params: { slug }, search: { ...search, view: next } });
-
-  // ---- Full-site experience (default on phones) -------------------------
-  if (view === "full") {
-    return (
-      <main className="min-h-dvh bg-gradient-to-b from-muted/40 to-background px-4 py-8">
-        <div className="mx-auto flex w-full max-w-md flex-col gap-5">
-          {heading}
-          <div className="rounded-3xl border border-border bg-card shadow-sm">{screen}</div>
-          <button
-            onClick={() => switchTo("terminal")}
-            className="mx-auto inline-flex items-center gap-1.5 text-xs text-muted-foreground underline underline-offset-4"
-          >
-            <Smartphone className="h-3.5 w-3.5" /> View as a POS terminal
-          </button>
-          {footer}
-        </div>
-      </main>
-    );
-  }
-
-  // ---- Terminal bezel experience ---------------------------------------
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-4 overflow-hidden bg-gradient-to-b from-muted/40 to-background px-4 py-6">
-      {heading}
+    <main className="min-h-dvh bg-gradient-to-b from-muted/40 to-background px-4 py-8 sm:py-12">
+      <div className="mx-auto flex w-full max-w-md flex-col gap-5">
+        <div className="text-center">
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+            {terminal?.title ?? (isLoading ? "Loading…" : "Payment link")}
+          </h1>
+          {terminal?.subtitle && (
+            <p className="mx-auto mt-1 max-w-sm text-sm text-muted-foreground">{terminal.subtitle}</p>
+          )}
+        </div>
 
-      <TerminalFrame
-        className="shrink-0"
-        label={terminal?.store_name ?? "Nectar.Pay"}
-        scroll={!invoiceId}
-      >
-        {invoiceId ? (
-          <iframe title="Payment" src={`/i/${invoiceId}`} className="h-full w-full border-0" />
-        ) : (
-          screen
-        )}
-      </TerminalFrame>
+        <div className="rounded-3xl border border-border bg-card shadow-sm">{screen}</div>
 
-      <button
-        onClick={() => switchTo("full")}
-        className="inline-flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground underline underline-offset-4"
-      >
-        <Maximize2 className="h-3.5 w-3.5" /> Open the full-screen experience
-      </button>
-
-      {footer}
+        <p className="text-center text-xs text-muted-foreground">
+          Powered by{" "}
+          <a href="https://nectar-pay.com" className="underline underline-offset-2">
+            Nectar.Pay
+          </a>{" "}
+          · part of the{" "}
+          <a href="https://honest.money" className="underline underline-offset-2">
+            honest.money
+          </a>{" "}
+          ecosystem
+        </p>
+      </div>
     </main>
   );
 }
+
 
