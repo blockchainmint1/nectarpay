@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import hiveMark from "@/assets/nectar-hive-mark.png.asset.json";
+
+
 import { createFileRoute, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -234,18 +237,27 @@ function CheckoutPage() {
       />
 
       {/* top bar */}
-      <header className="relative z-10 mx-auto flex max-w-3xl items-center justify-between px-4 py-5">
-        <div className="flex items-center gap-2 text-sm font-semibold tracking-tight">
-          <span className="inline-block h-2.5 w-2.5 rounded-sm bg-primary glow" />
-          Nectar<span className="text-primary">-PAY</span>
-          {store && (
-            <span className="ml-3 hidden text-muted-foreground sm:inline">
-              for <span className="text-foreground">{store.name}</span>
-            </span>
-          )}
+      <header className="relative z-10 mx-auto grid max-w-3xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-4">
+        <div className="flex min-w-0 items-center gap-2">
+          <img
+            src={hiveMark.url}
+            alt="Nectar.Pay"
+            className="h-6 w-6 shrink-0 rounded-md object-contain"
+            width={24}
+            height={24}
+          />
+          <span className="truncate text-sm font-semibold tracking-tight">
+            Nectar<span className="text-primary">.Pay</span>
+            {store && (
+              <span className="ml-2 hidden text-muted-foreground sm:inline">
+                for <span className="text-foreground">{store.name}</span>
+              </span>
+            )}
+          </span>
         </div>
         <ThemeToggle />
       </header>
+
 
       <main className="relative z-10 mx-auto max-w-3xl px-4 pb-16">
         {isLoading && (
