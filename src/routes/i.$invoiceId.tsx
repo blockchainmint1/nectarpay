@@ -778,7 +778,7 @@ function ChainPickerFrame({
             This merchant hasn't enabled any payment options yet.
           </div>
         ) : (
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="mt-4 grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:grid-cols-3 sm:gap-3">
             {availableOptions.map((o) => {
               const isLoading = picking === o.key;
               return (
@@ -788,16 +788,17 @@ function ChainPickerFrame({
                   disabled={picking !== null}
                   onClick={() => pick(o.key)}
                   className={cn(
-                    "group relative flex items-center justify-between rounded-xl border border-border/60 bg-background/40 p-4 text-left transition-all",
+                    "group relative flex min-w-0 items-center justify-between gap-2 rounded-xl border border-border/60 bg-background/40 p-3 text-left transition-all sm:p-4",
                     "hover:border-primary/60 hover:bg-card disabled:opacity-50",
                   )}
                 >
-                  <div>
-                    <p className="text-sm font-semibold">{o.label}</p>
-                    <p className="mt-0.5 text-[11px] uppercase tracking-wider text-muted-foreground">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">{o.label}</p>
+                    <p className="mt-0.5 truncate text-[11px] uppercase tracking-wider text-muted-foreground">
                       {o.tokenSymbol ? `${o.tokenSymbol} · ${chainShortFor(o.chain, o.tokenSymbol)}` : o.chain}
                     </p>
                   </div>
+
                   {isLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
                   ) : (
