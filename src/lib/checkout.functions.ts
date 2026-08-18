@@ -81,6 +81,18 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
       }
     }
 
+    // Track "opened?" for merchant-issued payment requests (best effort).
+    void supabaseAdmin
+      .from("invoices")
+      .update({
+        first_viewed_at: inv.created_at ? (initialInv as { first_viewed_at?: string | null }).first_viewed_at ?? new Date().toISOString() : new Date().toISOString(),
+        last_viewed_at: new Date().toISOString(),
+      })
+      .eq("id", inv.id)
+      .then(undefined, () => undefined);
+
+
+
     const { data: store } = await supabaseAdmin
       .from("stores")
       .select("name, website")
