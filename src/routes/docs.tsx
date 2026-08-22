@@ -121,7 +121,7 @@ if (!crypto.timingSafeEqual(Buffer.from(v1), Buffer.from(expected))) reject();`}
           One <code className="font-mono">&lt;script&gt;</code> tag and a button —
           crypto checkout opens in a modal, no redirect, works on any site.
         </p>
-        <Pre>{`<script src="https://pay.honest.money/sdk/payhme.js" defer></script>
+        <Pre>{`<script src="https://app.nectar-pay.com/sdk/payhme.js" defer></script>
 
 <button
   data-payhme
