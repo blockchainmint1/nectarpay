@@ -2,7 +2,7 @@
 // Kept as a single string so the route handler can ship it without a static-asset pipeline.
 
 export const PAYHME_SDK_SOURCE = `/*! payhme.js v0.1 — non-custodial crypto checkout button
- * https://pay.honest.money  ·  MIT
+ * https://app.nectar-pay.com  ·  MIT
  */
 (function (global) {
   "use strict";
@@ -13,7 +13,7 @@ export const PAYHME_SDK_SOURCE = `/*! payhme.js v0.1 — non-custodial crypto ch
       var s = document.currentScript;
       if (s && s.src) return new URL(s.src).origin;
     } catch (e) {}
-    return "https://pay.honest.money";
+    return "https://app.nectar-pay.com";
   })();
 
   var CSS = [
