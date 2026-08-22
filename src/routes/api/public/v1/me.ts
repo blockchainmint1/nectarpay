@@ -48,7 +48,7 @@ export const Route = createFileRoute("/api/public/v1/me")({
             .maybeSingle();
 
           if (!keyRow || keyRow.secret_hash !== keyHash) {
-            return json({ error: "Invalid API key." }, 401);
+            return json({ error: "Invalid API key. Keys authenticate only against https://app.nectar-pay.com — check your API base URL.", api_base: "https://app.nectar-pay.com" }, 401);
           }
           if (keyRow.revoked_at) {
             return json({ error: "API key has been revoked." }, 401);

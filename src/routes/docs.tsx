@@ -84,8 +84,27 @@ export function DocsBody() {
         </p>
       </Section>
 
+      <Section title="API base URL">
+        <p>
+          <strong>All API calls go to <span className="font-mono">https://app.nectar-pay.com</span></strong>.
+          Keys are issued and validated on this host only — sending a valid key to{" "}
+          <span className="font-mono">nectar-pay.com</span> (the marketing site) returns{" "}
+          <span className="font-mono">401 Invalid API key</span>.
+        </p>
+        <Pre>{`NECTARPAY_API_URL=https://app.nectar-pay.com
+
+# sanity-check your key before wiring anything else:
+curl -s https://app.nectar-pay.com/api/public/v1/me \\
+  -H "Authorization: Bearer sk_live_..."`}</Pre>
+        <p>
+          A <span className="font-mono">200</span> from{" "}
+          <span className="font-mono">/api/public/v1/me</span> confirms the key, the store it
+          belongs to, and the webhook URL currently configured.
+        </p>
+      </Section>
+
       <Section title="4. Create invoices">
-        <Pre>{`POST /api/public/v1/invoices
+        <Pre>{`POST https://app.nectar-pay.com/api/public/v1/invoices
 Authorization: Bearer sk_live_...
 Content-Type: application/json
 
@@ -121,7 +140,7 @@ if (!crypto.timingSafeEqual(Buffer.from(v1), Buffer.from(expected))) reject();`}
           One <code className="font-mono">&lt;script&gt;</code> tag and a button —
           crypto checkout opens in a modal, no redirect, works on any site.
         </p>
-        <Pre>{`<script src="https://pay.honest.money/sdk/payhme.js" defer></script>
+        <Pre>{`<script src="https://app.nectar-pay.com/sdk/payhme.js" defer></script>
 
 <button
   data-payhme

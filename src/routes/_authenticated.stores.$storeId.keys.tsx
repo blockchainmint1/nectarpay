@@ -71,6 +71,20 @@ function KeysPage() {
         hash — the full secret is shown once at creation.
       </p>
 
+      <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-4">
+        <div className="text-xs font-medium text-primary">API base URL</div>
+        <code className="mt-1 block break-all font-mono text-sm">https://app.nectar-pay.com</code>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Keys only authenticate against this host. Pointing them at{" "}
+          <code className="font-mono">nectar-pay.com</code> (the marketing site) returns{" "}
+          <code className="font-mono">401 Invalid API key</code>. Verify a key with:
+        </p>
+        <code className="mt-2 block overflow-x-auto whitespace-pre rounded-md border border-border bg-background/60 px-3 py-2 font-mono text-[11px]">
+{`curl -s https://app.nectar-pay.com/api/public/v1/me \\
+  -H "Authorization: Bearer sk_live_..."`}
+        </code>
+      </div>
+
       {/* Create */}
       <div className="mt-8 rounded-lg border border-border bg-card/60 p-5">
         <Label htmlFor="label" className="text-xs">

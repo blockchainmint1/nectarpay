@@ -62,7 +62,7 @@ export const Route = createFileRoute("/api/public/v1/invoices")({
             .eq("prefix", prefix)
             .maybeSingle();
           if (!keyRow || keyRow.revoked_at || keyRow.secret_hash !== keyHash) {
-            return json({ error: "Invalid API key." }, 401);
+            return json({ error: "Invalid API key. Keys authenticate only against https://app.nectar-pay.com — check your API base URL.", api_base: "https://app.nectar-pay.com" }, 401);
           }
 
           const raw = await request.json().catch(() => null);
