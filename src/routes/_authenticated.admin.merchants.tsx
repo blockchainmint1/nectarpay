@@ -306,7 +306,7 @@ function AdminMerchants() {
             })}
             {merchants.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-4 py-6 text-center text-muted-foreground">
+                <td colSpan={10} className="px-4 py-6 text-center text-muted-foreground">
                   No merchants found.
                 </td>
               </tr>
@@ -314,6 +314,71 @@ function AdminMerchants() {
           </tbody>
         </table>
       </div>
+
+      <Dialog open={!!target} onOpenChange={(o) => !o && setTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {target?.deactivated_at ? "Reactivate account" : "Deactivate account"}
+            </DialogTitle>
+            <DialogDescription>
+              {target?.deactivated_at ? (
+                <>
+                  Restores sign-in, re-links the email from their login record, and brings their
+                  stores back online. Wiped CRM notes are not restored.
+                </>
+              ) : (
+                <>
+                  Makes the account look deleted: sign-in is blocked, their name, email and avatar
+                  are wiped from our records, their email is suppressed so we never contact them
+                  again, CRM leads are scrubbed, and stores, terminals and API keys go offline.
+                  <strong className="block mt-2 text-foreground">
+                    All historical invoices and sales data are kept.
+                  </strong>
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <div className="rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
+              {target?.email ?? target?.display_name ?? target?.owner_id}
+              <span className="ml-2 text-xs text-muted-foreground">
+                {target?.store_count} stores · {target?.tx_count} tx
+              </span>
+            </div>
+            <Textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Internal reason (audit log only)…"
+              rows={3}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setTarget(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant={target?.deactivated_at ? "default" : "destructive"}
+              disabled={accountMut.isPending}
+              onClick={() =>
+                target &&
+                accountMut.mutate({
+                  user_id: target.owner_id,
+                  active: !!target.deactivated_at,
+                  reason,
+                })
+              }
+            >
+              {accountMut.isPending
+                ? "Working…"
+                : target?.deactivated_at
+                  ? "Reactivate"
+                  : "Deactivate & wipe info"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
+
 }
