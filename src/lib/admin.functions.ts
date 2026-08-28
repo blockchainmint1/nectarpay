@@ -166,7 +166,22 @@ export const updateAdminStore = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const setAccountActive = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { user_id: string; active: boolean; reason?: string | null }) => d)
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    if (data.user_id === context.userId) {
+      throw new Error("You cannot deactivate your own account.");
+    }
+    const mod = await import("@/lib/account-admin.server");
+    return data.active
+      ? await mod.reactivateAccount(data.user_id, data.reason ?? null, context.userId)
+      : await mod.deactivateAccount(data.user_id, data.reason ?? null, context.userId);
+  });
+
 export const listAdminMerchants = createServerFn({ method: "GET" })
+
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.userId);
