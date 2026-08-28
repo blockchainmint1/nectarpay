@@ -198,7 +198,10 @@ export const listAdminMerchants = createServerFn({ method: "GET" })
 
     const [profilesRes, subsRes, invoicesRes, rolesRes] = await Promise.all([
       ownerIds.length
-        ? supabaseAdmin.from("profiles").select("user_id, email, full_name, created_at").in("user_id", ownerIds)
+        ? supabaseAdmin
+            .from("profiles")
+            .select("user_id, email, full_name, created_at, deactivated_at, deactivated_reason")
+            .in("user_id", ownerIds)
         : Promise.resolve({ data: [] as any[] }),
       ownerIds.length
         ? supabaseAdmin
@@ -271,6 +274,8 @@ export const listAdminMerchants = createServerFn({ method: "GET" })
         owner_id,
         email: profile?.email ?? null,
         display_name: profile?.full_name ?? null,
+        deactivated_at: profile?.deactivated_at ?? null,
+        deactivated_reason: profile?.deactivated_reason ?? null,
         signed_up_at: profile?.created_at ?? stores[stores.length - 1]?.created_at ?? null,
         roles: rolesMap.get(owner_id) ?? [],
         plan_id: sub?.plan_id ?? "free",
