@@ -3,9 +3,19 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Check, X, ChevronRight, ChevronDown } from "lucide-react";
-import { listAdminMerchants, updateAdminStore } from "@/lib/admin.functions";
+import { listAdminMerchants, updateAdminStore, setAccountActive } from "@/lib/admin.functions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/merchants")({
   component: AdminMerchants,
@@ -30,6 +40,21 @@ function AdminMerchants() {
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<{ market: string; rep: string }>({ market: "", rep: "" });
   const [q, setQ] = useState("");
+  const [target, setTarget] = useState<Merchant | null>(null);
+  const [reason, setReason] = useState("");
+  const deactivateFn = useServerFn(setAccountActive);
+
+  const accountMut = useMutation({
+    mutationFn: (vars: { user_id: string; active: boolean; reason: string }) =>
+      deactivateFn({ data: vars }),
+    onSuccess: (_res, vars) => {
+      toast.success(vars.active ? "Account reactivated" : "Account deactivated and personal info wiped");
+      setTarget(null);
+      setReason("");
+      qc.invalidateQueries({ queryKey: ["admin-merchants"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   const { data, isLoading, error } = useQuery({ queryKey: ["admin-merchants"], queryFn: () => fn() });
 
@@ -101,6 +126,7 @@ function AdminMerchants() {
               <th className="px-3 py-2 text-right">Stores</th>
               <th className="px-3 py-2 text-right">Tx</th>
               <th className="px-3 py-2 text-right">Sales</th>
+              <th className="px-3 py-2" />
             </tr>
           </thead>
           <tbody>
@@ -118,6 +144,11 @@ function AdminMerchants() {
                     </td>
                     <td className="px-3 py-2">
                       <div className="font-medium">{m.email ?? m.display_name ?? m.owner_id.slice(0, 8) + "…"}</div>
+                      {m.deactivated_at && (
+                        <div className="mt-1 inline-block rounded bg-destructive/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-destructive">
+                          Deactivated {new Date(m.deactivated_at).toLocaleDateString()}
+                        </div>
+                      )}
                       {m.email && m.display_name && (
                         <div className="text-xs text-muted-foreground">{m.display_name}</div>
                       )}
@@ -160,11 +191,24 @@ function AdminMerchants() {
                     <td className="px-3 py-2 text-right tabular-nums whitespace-nowrap">
                       {fmtMoney(m.total_sales, m.primary_currency)}
                     </td>
+                    <td className="px-3 py-2 text-right" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        size="sm"
+                        variant={m.deactivated_at ? "outline" : "ghost"}
+                        className={m.deactivated_at ? "" : "text-destructive hover:text-destructive"}
+                        onClick={() => {
+                          setReason("");
+                          setTarget(m);
+                        }}
+                      >
+                        {m.deactivated_at ? "Reactivate" : "Deactivate"}
+                      </Button>
+                    </td>
                   </tr>
                   {open && (
                     <tr className="bg-muted/10">
                       <td />
-                      <td colSpan={8} className="px-3 py-3">
+                      <td colSpan={9} className="px-3 py-3">
                         <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">
                           Stores
                         </div>
