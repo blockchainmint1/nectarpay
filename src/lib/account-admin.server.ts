@@ -35,7 +35,11 @@ export async function deactivateAccount(
     await supabaseAdmin
       .from("suppressed_emails")
       .upsert(
-        { email: email.toLowerCase(), reason: "account_deactivated" },
+        {
+          email: email.toLowerCase(),
+          reason: "unsubscribe",
+          metadata: { source: "account_deactivated" },
+        },
         { onConflict: "email" },
       );
   }
