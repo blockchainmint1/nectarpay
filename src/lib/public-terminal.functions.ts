@@ -31,7 +31,7 @@ export const getPublicTerminal = createServerFn({ method: "GET" })
 
     const { data: store } = await supabaseAdmin
       .from("stores")
-      .select("name, fiat_currency, business_logo_url")
+      .select("name, fiat_currency, business_logo_url, deactivated_at")
       .eq("id", t.store_id)
       .maybeSingle();
 
@@ -78,10 +78,10 @@ export const createPublicTerminalInvoice = createServerFn({ method: "POST" })
 
     const { data: store } = await supabaseAdmin
       .from("stores")
-      .select("id, fiat_currency, invoice_ttl_seconds")
+      .select("id, fiat_currency, invoice_ttl_seconds, deactivated_at")
       .eq("id", t.store_id)
       .maybeSingle();
-    if (!store) throw new Error("Store unavailable.");
+    if (!store || store.deactivated_at) throw new Error("Store unavailable.");
 
     const ttl = store.invoice_ttl_seconds ?? 900;
     const expires_at = new Date(Date.now() + ttl * 1000).toISOString();
