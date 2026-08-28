@@ -34,6 +34,8 @@ export const getPublicTerminal = createServerFn({ method: "GET" })
       .select("name, fiat_currency, business_logo_url, deactivated_at")
       .eq("id", t.store_id)
       .maybeSingle();
+    if (store?.deactivated_at) return null;
+
 
     return {
       slug: t.slug,
