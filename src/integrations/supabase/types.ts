@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_deactivations: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          performed_by: string | null
+          reason: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          performed_by?: string | null
+          reason?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          performed_by?: string | null
+          reason?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       affiliate_attributions: {
         Row: {
           affiliate_id: string
@@ -1145,6 +1175,9 @@ export type Database = {
           affiliate_id: string | null
           avatar_url: string | null
           created_at: string
+          deactivated_at: string | null
+          deactivated_by: string | null
+          deactivated_reason: string | null
           email: string | null
           full_name: string | null
           onboarding_completed_at: string | null
@@ -1157,6 +1190,9 @@ export type Database = {
           affiliate_id?: string | null
           avatar_url?: string | null
           created_at?: string
+          deactivated_at?: string | null
+          deactivated_by?: string | null
+          deactivated_reason?: string | null
           email?: string | null
           full_name?: string | null
           onboarding_completed_at?: string | null
@@ -1169,6 +1205,9 @@ export type Database = {
           affiliate_id?: string | null
           avatar_url?: string | null
           created_at?: string
+          deactivated_at?: string | null
+          deactivated_by?: string | null
+          deactivated_reason?: string | null
           email?: string | null
           full_name?: string | null
           onboarding_completed_at?: string | null
@@ -1283,6 +1322,7 @@ export type Database = {
           business_logo_url: string | null
           business_region: string | null
           created_at: string
+          deactivated_at: string | null
           default_allowed_chains: string[] | null
           default_confirmations_required: number
           default_display_currency: string | null
@@ -1353,6 +1393,7 @@ export type Database = {
           business_logo_url?: string | null
           business_region?: string | null
           created_at?: string
+          deactivated_at?: string | null
           default_allowed_chains?: string[] | null
           default_confirmations_required?: number
           default_display_currency?: string | null
@@ -1423,6 +1464,7 @@ export type Database = {
           business_logo_url?: string | null
           business_region?: string | null
           created_at?: string
+          deactivated_at?: string | null
           default_allowed_chains?: string[] | null
           default_confirmations_required?: number
           default_display_currency?: string | null
