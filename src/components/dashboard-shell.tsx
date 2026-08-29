@@ -65,6 +65,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <NavItem to="/docs" icon={<BookOpen className="h-4 w-4" />}>
             Docs
           </NavItem>
+          <NavItem to="/account" icon={<UserRound className="h-4 w-4" />}>
+            Account
+          </NavItem>
+
         </nav>
 
         <div className="mt-auto border-t border-border/60 pt-4">

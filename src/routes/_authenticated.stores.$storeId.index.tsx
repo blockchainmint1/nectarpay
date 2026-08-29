@@ -117,6 +117,18 @@ function StoreDetailPage() {
           comingSoon
         />
       </div>
+
+      <div className="mt-8 rounded-lg border border-destructive/40 bg-destructive/5 p-5">
+        <div className="font-medium text-destructive">Close this store</div>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Switches off terminals, API keys, share links and payment rails for this store.
+          Past invoices and transactions are kept in your records.
+        </p>
+        <Button asChild variant="outline" size="sm" className="mt-3">
+          <Link to="/account">Go to account settings</Link>
+        </Button>
+      </div>
+
     </div>
   );
 }
