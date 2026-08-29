@@ -181,3 +181,65 @@ export async function listAccountDeactivationHistory(userId: string) {
     .order("created_at", { ascending: false });
   return data ?? [];
 }
+
+/**
+ * Merchant self-service: close one store.
+ * Takes the store offline (terminals, API keys, share links, chains) and
+ * clears its public listing / receipt branding. Invoices and transactions
+ * are left untouched for the records.
+ */
+export async function closeStoreForOwner(userId: string, storeId: string) {
+  const { data: store } = await supabaseAdmin
+    .from("stores")
+    .select("id, owner_id, deactivated_at")
+    .eq("id", storeId)
+    .maybeSingle();
+  if (!store || store.owner_id !== userId) throw new Error("Store not found.");
+  if (store.deactivated_at) return { ok: true as const, store_id: storeId, already_closed: true };
+
+  const now = new Date().toISOString();
+
+  await supabaseAdmin
+    .from("stores")
+    .update({
+      deactivated_at: now,
+      listing_visibility: "hidden",
+      webhook_url: null,
+      business_address: null,
+      business_lat: null,
+      business_lng: null,
+      business_description: null,
+      business_logo_url: null,
+      receipt_logo_url: null,
+      receipt_address: null,
+      receipt_footer: null,
+      receipt_tax_id: null,
+    })
+    .eq("id", storeId);
+
+  const [terms, keys] = await Promise.all([
+    supabaseAdmin
+      .from("terminals")
+      .update({ revoked_at: now })
+      .eq("store_id", storeId)
+      .is("revoked_at", null)
+      .select("id"),
+    supabaseAdmin
+      .from("api_keys")
+      .update({ revoked_at: now })
+      .eq("store_id", storeId)
+      .is("revoked_at", null)
+      .select("id"),
+  ]);
+
+  await supabaseAdmin.from("public_terminals").update({ active: false }).eq("store_id", storeId);
+  await supabaseAdmin.from("chain_configs").update({ enabled: false }).eq("store_id", storeId);
+
+  return {
+    ok: true as const,
+    store_id: storeId,
+    already_closed: false,
+    terminals_revoked: terms.data?.length ?? 0,
+    api_keys_revoked: keys.data?.length ?? 0,
+  };
+}
