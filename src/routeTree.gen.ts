@@ -113,6 +113,7 @@ import { Route as AuthenticatedAdminKnowledgeExecutiveSummaryRouteImport } from 
 import { Route as AuthenticatedAdminKnowledgeConvenienceDoctrineRouteImport } from './routes/_authenticated.admin.knowledge.convenience-doctrine'
 import { Route as AuthenticatedAdminCrmMarketsRouteImport } from './routes/_authenticated.admin.crm.markets'
 import { Route as AuthenticatedAdminCrmLeadsRouteImport } from './routes/_authenticated.admin.crm.leads'
+import { Route as ApiPublicV1WalletLinkStatusRouteImport } from './routes/api/public/v1/wallet-link/status'
 import { Route as ApiPublicV1TerminalsPairRouteImport } from './routes/api/public/v1/terminals/pair'
 import { Route as ApiPublicV1TerminalsOptionsRouteImport } from './routes/api/public/v1/terminals/options'
 import { Route as ApiPublicV1TerminalsInvoicesRouteImport } from './routes/api/public/v1/terminals/invoices'
@@ -690,6 +691,12 @@ const AuthenticatedAdminCrmLeadsRoute =
     path: '/leads',
     getParentRoute: () => AuthenticatedAdminCrmRoute,
   } as any)
+const ApiPublicV1WalletLinkStatusRoute =
+  ApiPublicV1WalletLinkStatusRouteImport.update({
+    id: '/status',
+    path: '/status',
+    getParentRoute: () => ApiPublicV1WalletLinkRoute,
+  } as any)
 const ApiPublicV1TerminalsPairRoute =
   ApiPublicV1TerminalsPairRouteImport.update({
     id: '/api/public/v1/terminals/pair',
@@ -891,7 +898,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
   '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
-  '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRoute
+  '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRouteWithChildren
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -915,6 +922,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/terminals/invoices': typeof ApiPublicV1TerminalsInvoicesRoute
   '/api/public/v1/terminals/options': typeof ApiPublicV1TerminalsOptionsRoute
   '/api/public/v1/terminals/pair': typeof ApiPublicV1TerminalsPairRoute
+  '/api/public/v1/wallet-link/status': typeof ApiPublicV1WalletLinkStatusRoute
   '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
   '/api/public/v1/terminals/invoice/$id/cancel': typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
   '/api/public/v1/terminals/invoice/$id/receipt': typeof ApiPublicV1TerminalsInvoiceIdReceiptRoute
@@ -1009,7 +1017,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
   '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
-  '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRoute
+  '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRouteWithChildren
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -1033,6 +1041,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/terminals/invoices': typeof ApiPublicV1TerminalsInvoicesRoute
   '/api/public/v1/terminals/options': typeof ApiPublicV1TerminalsOptionsRoute
   '/api/public/v1/terminals/pair': typeof ApiPublicV1TerminalsPairRoute
+  '/api/public/v1/wallet-link/status': typeof ApiPublicV1WalletLinkStatusRoute
   '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
   '/api/public/v1/terminals/invoice/$id/cancel': typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
   '/api/public/v1/terminals/invoice/$id/receipt': typeof ApiPublicV1TerminalsInvoiceIdReceiptRoute
@@ -1134,7 +1143,7 @@ export interface FileRoutesById {
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
   '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
-  '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRoute
+  '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRouteWithChildren
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
@@ -1158,6 +1167,7 @@ export interface FileRoutesById {
   '/api/public/v1/terminals/invoices': typeof ApiPublicV1TerminalsInvoicesRoute
   '/api/public/v1/terminals/options': typeof ApiPublicV1TerminalsOptionsRoute
   '/api/public/v1/terminals/pair': typeof ApiPublicV1TerminalsPairRoute
+  '/api/public/v1/wallet-link/status': typeof ApiPublicV1WalletLinkStatusRoute
   '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
   '/api/public/v1/terminals/invoice/$id/cancel': typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
   '/api/public/v1/terminals/invoice/$id/receipt': typeof ApiPublicV1TerminalsInvoiceIdReceiptRoute
@@ -1283,6 +1293,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/terminals/invoices'
     | '/api/public/v1/terminals/options'
     | '/api/public/v1/terminals/pair'
+    | '/api/public/v1/wallet-link/status'
     | '/api/public/v1/terminals/invoice/$id'
     | '/api/public/v1/terminals/invoice/$id/cancel'
     | '/api/public/v1/terminals/invoice/$id/receipt'
@@ -1401,6 +1412,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/terminals/invoices'
     | '/api/public/v1/terminals/options'
     | '/api/public/v1/terminals/pair'
+    | '/api/public/v1/wallet-link/status'
     | '/api/public/v1/terminals/invoice/$id'
     | '/api/public/v1/terminals/invoice/$id/cancel'
     | '/api/public/v1/terminals/invoice/$id/receipt'
@@ -1525,6 +1537,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/terminals/invoices'
     | '/api/public/v1/terminals/options'
     | '/api/public/v1/terminals/pair'
+    | '/api/public/v1/wallet-link/status'
     | '/api/public/v1/terminals/invoice/$id'
     | '/api/public/v1/terminals/invoice/$id/cancel'
     | '/api/public/v1/terminals/invoice/$id/receipt'
@@ -1581,7 +1594,7 @@ export interface RootRouteChildren {
   ApiPublicV1InvoicesRoute: typeof ApiPublicV1InvoicesRouteWithChildren
   ApiPublicV1LiveStatsRoute: typeof ApiPublicV1LiveStatsRoute
   ApiPublicV1MeRoute: typeof ApiPublicV1MeRoute
-  ApiPublicV1WalletLinkRoute: typeof ApiPublicV1WalletLinkRoute
+  ApiPublicV1WalletLinkRoute: typeof ApiPublicV1WalletLinkRouteWithChildren
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
@@ -2327,6 +2340,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCrmLeadsRouteImport
       parentRoute: typeof AuthenticatedAdminCrmRoute
     }
+    '/api/public/v1/wallet-link/status': {
+      id: '/api/public/v1/wallet-link/status'
+      path: '/status'
+      fullPath: '/api/public/v1/wallet-link/status'
+      preLoaderRoute: typeof ApiPublicV1WalletLinkStatusRouteImport
+      parentRoute: typeof ApiPublicV1WalletLinkRoute
+    }
     '/api/public/v1/terminals/pair': {
       id: '/api/public/v1/terminals/pair'
       path: '/api/public/v1/terminals/pair'
@@ -2676,6 +2696,19 @@ const ApiPublicV1InvoicesRouteChildren: ApiPublicV1InvoicesRouteChildren = {
 const ApiPublicV1InvoicesRouteWithChildren =
   ApiPublicV1InvoicesRoute._addFileChildren(ApiPublicV1InvoicesRouteChildren)
 
+interface ApiPublicV1WalletLinkRouteChildren {
+  ApiPublicV1WalletLinkStatusRoute: typeof ApiPublicV1WalletLinkStatusRoute
+}
+
+const ApiPublicV1WalletLinkRouteChildren: ApiPublicV1WalletLinkRouteChildren = {
+  ApiPublicV1WalletLinkStatusRoute: ApiPublicV1WalletLinkStatusRoute,
+}
+
+const ApiPublicV1WalletLinkRouteWithChildren =
+  ApiPublicV1WalletLinkRoute._addFileChildren(
+    ApiPublicV1WalletLinkRouteChildren,
+  )
+
 interface ApiPublicV1TerminalsInvoiceIdRouteChildren {
   ApiPublicV1TerminalsInvoiceIdCancelRoute: typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
   ApiPublicV1TerminalsInvoiceIdReceiptRoute: typeof ApiPublicV1TerminalsInvoiceIdReceiptRoute
@@ -2760,7 +2793,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1InvoicesRoute: ApiPublicV1InvoicesRouteWithChildren,
   ApiPublicV1LiveStatsRoute: ApiPublicV1LiveStatsRoute,
   ApiPublicV1MeRoute: ApiPublicV1MeRoute,
-  ApiPublicV1WalletLinkRoute: ApiPublicV1WalletLinkRoute,
+  ApiPublicV1WalletLinkRoute: ApiPublicV1WalletLinkRouteWithChildren,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
