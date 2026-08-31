@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { closeMyStore, closeMyAccount } from "@/lib/account-self.functions";
+import { AccountSecurity } from "@/components/account-security";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -102,6 +103,8 @@ function AccountPage() {
       <p className="mt-1 text-sm text-muted-foreground">
         Signed in as {user?.email ?? "your account"}.
       </p>
+
+      <AccountSecurity />
 
       <section className="mt-8 rounded-lg border border-border bg-card/50 p-5">
         <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">

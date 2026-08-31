@@ -55,6 +55,11 @@ function AuthenticatedLayout() {
       </div>
     );
   }
+  return <MfaGate><AuthenticatedShell /></MfaGate>;
+}
+
+function AuthenticatedShell() {
+  const router = useRouter();
   // The /m/* merchant mobile shell owns its own chrome (sticky mobile
   // header + bottom nav). Render it bare, without the desktop sidebar.
   const pathname = router.state.location.pathname;
