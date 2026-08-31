@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { DashboardShell } from "@/components/dashboard-shell";
+import { MfaGate } from "@/components/mfa-gate";
 
 import { readAffiliateSnapshot, clearAffiliateSnapshot } from "@/lib/affiliate";
 import { recordAffiliateAttribution } from "@/lib/affiliate.functions";
@@ -55,6 +56,11 @@ function AuthenticatedLayout() {
       </div>
     );
   }
+  return <MfaGate><AuthenticatedShell /></MfaGate>;
+}
+
+function AuthenticatedShell() {
+  const router = useRouter();
   // The /m/* merchant mobile shell owns its own chrome (sticky mobile
   // header + bottom nav). Render it bare, without the desktop sidebar.
   const pathname = router.state.location.pathname;
