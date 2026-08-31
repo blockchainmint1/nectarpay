@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { DashboardShell } from "@/components/dashboard-shell";
+import { MfaGate } from "@/components/mfa-gate";
 
 import { readAffiliateSnapshot, clearAffiliateSnapshot } from "@/lib/affiliate";
 import { recordAffiliateAttribution } from "@/lib/affiliate.functions";
