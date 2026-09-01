@@ -6,3 +6,7 @@
 - [x] MFA gate on the authenticated area (aal1 → aal2 challenge before dashboard renders)
 - [x] Display name edit (profiles.full_name)
 - [x] "Sign out of all devices" (global session revoke)
+
+## Crypto address / transaction verifier
+- [x] Admin verifier at /admin/verify (all stores, xpub scan, on-chain lookup)
+- [ ] Merchant "is this a good transaction?" verifier at /verify (scoped to own stores)
