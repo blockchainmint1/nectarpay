@@ -54,6 +54,7 @@ import { Route as DocsTapToPayTangemRouteImport } from './routes/docs.tap-to-pay
 import { Route as DevTangemTestRouteImport } from './routes/dev.tangem-test'
 import { Route as CompareBitpayCoingateVsNectarRouteImport } from './routes/compare_.bitpay-coingate-vs-nectar'
 import { Route as CheckoutThanksRouteImport } from './routes/checkout.thanks'
+import { Route as AuthenticatedVerifyRouteImport } from './routes/_authenticated.verify'
 import { Route as AuthenticatedTerminalsRouteImport } from './routes/_authenticated.terminals'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated.notifications'
 import { Route as AuthenticatedExportsRouteImport } from './routes/_authenticated.exports'
@@ -358,6 +359,11 @@ const CheckoutThanksRoute = CheckoutThanksRouteImport.update({
   id: '/thanks',
   path: '/thanks',
   getParentRoute: () => CheckoutRoute,
+} as any)
+const AuthenticatedVerifyRoute = AuthenticatedVerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTerminalsRoute = AuthenticatedTerminalsRouteImport.update({
   id: '/terminals',
@@ -842,6 +848,7 @@ export interface FileRoutesByFullPath {
   '/exports': typeof AuthenticatedExportsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/terminals': typeof AuthenticatedTerminalsRoute
+  '/verify': typeof AuthenticatedVerifyRoute
   '/checkout/thanks': typeof CheckoutThanksRoute
   '/compare/bitpay-coingate-vs-nectar': typeof CompareBitpayCoingateVsNectarRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
@@ -965,6 +972,7 @@ export interface FileRoutesByTo {
   '/exports': typeof AuthenticatedExportsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/terminals': typeof AuthenticatedTerminalsRoute
+  '/verify': typeof AuthenticatedVerifyRoute
   '/checkout/thanks': typeof CheckoutThanksRoute
   '/compare/bitpay-coingate-vs-nectar': typeof CompareBitpayCoingateVsNectarRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
@@ -1089,6 +1097,7 @@ export interface FileRoutesById {
   '/_authenticated/exports': typeof AuthenticatedExportsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/terminals': typeof AuthenticatedTerminalsRoute
+  '/_authenticated/verify': typeof AuthenticatedVerifyRoute
   '/checkout/thanks': typeof CheckoutThanksRoute
   '/compare_/bitpay-coingate-vs-nectar': typeof CompareBitpayCoingateVsNectarRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
@@ -1216,6 +1225,7 @@ export interface FileRouteTypes {
     | '/exports'
     | '/notifications'
     | '/terminals'
+    | '/verify'
     | '/checkout/thanks'
     | '/compare/bitpay-coingate-vs-nectar'
     | '/dev/tangem-test'
@@ -1339,6 +1349,7 @@ export interface FileRouteTypes {
     | '/exports'
     | '/notifications'
     | '/terminals'
+    | '/verify'
     | '/checkout/thanks'
     | '/compare/bitpay-coingate-vs-nectar'
     | '/dev/tangem-test'
@@ -1462,6 +1473,7 @@ export interface FileRouteTypes {
     | '/_authenticated/exports'
     | '/_authenticated/notifications'
     | '/_authenticated/terminals'
+    | '/_authenticated/verify'
     | '/checkout/thanks'
     | '/compare_/bitpay-coingate-vs-nectar'
     | '/dev/tangem-test'
@@ -1939,6 +1951,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/checkout/thanks'
       preLoaderRoute: typeof CheckoutThanksRouteImport
       parentRoute: typeof CheckoutRoute
+    }
+    '/_authenticated/verify': {
+      id: '/_authenticated/verify'
+      path: '/verify'
+      fullPath: '/verify'
+      preLoaderRoute: typeof AuthenticatedVerifyRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/terminals': {
       id: '/_authenticated/terminals'
@@ -2635,6 +2654,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedExportsRoute: typeof AuthenticatedExportsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedTerminalsRoute: typeof AuthenticatedTerminalsRoute
+  AuthenticatedVerifyRoute: typeof AuthenticatedVerifyRoute
   AuthenticatedMHomeRoute: typeof AuthenticatedMHomeRoute
   AuthenticatedMVirtualTerminalRoute: typeof AuthenticatedMVirtualTerminalRoute
   AuthenticatedStoresStoreIdRoute: typeof AuthenticatedStoresStoreIdRouteWithChildren
@@ -2650,6 +2670,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedExportsRoute: AuthenticatedExportsRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedTerminalsRoute: AuthenticatedTerminalsRoute,
+  AuthenticatedVerifyRoute: AuthenticatedVerifyRoute,
   AuthenticatedMHomeRoute: AuthenticatedMHomeRoute,
   AuthenticatedMVirtualTerminalRoute: AuthenticatedMVirtualTerminalRoute,
   AuthenticatedStoresStoreIdRoute: AuthenticatedStoresStoreIdRouteWithChildren,

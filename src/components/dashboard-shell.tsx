@@ -9,8 +9,7 @@ import {
   Bell,
   Download,
   Smartphone,
-  UserRound,
-} from "lucide-react";
+  UserRound,, SearchCheck } from "lucide-react";
 
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -61,6 +60,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           </NavItem>
           <NavItem to="/exports" icon={<Download className="h-4 w-4" />}>
             Exports
+          </NavItem>
+          <NavItem to="/verify" icon={<SearchCheck className="h-4 w-4" />}>
+            Verify payment
           </NavItem>
           <NavItem to="/docs" icon={<BookOpen className="h-4 w-4" />}>
             Docs
@@ -137,6 +139,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           more={[
             { to: "/notifications", label: "Notifications", icon: <Bell className="h-4 w-4" /> },
             { to: "/exports", label: "Exports", icon: <Download className="h-4 w-4" /> },
+            { to: "/verify", label: "Verify payment", icon: <SearchCheck className="h-4 w-4" /> },
             { to: "/docs", label: "Docs", icon: <BookOpen className="h-4 w-4" /> },
           ]}
         />
