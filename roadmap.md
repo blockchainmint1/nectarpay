@@ -9,4 +9,4 @@
 
 ## Crypto address / transaction verifier
 - [x] Admin verifier at /admin/verify (all stores, xpub scan, on-chain lookup)
-- [ ] Merchant "is this a good transaction?" verifier at /verify (scoped to own stores)
+- [x] Merchant "is this a good transaction?" verifier at /verify (scoped to own stores)
