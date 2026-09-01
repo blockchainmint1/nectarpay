@@ -9,7 +9,8 @@ import {
   Bell,
   Download,
   Smartphone,
-  UserRound,, SearchCheck } from "lucide-react";
+  UserRound,
+  SearchCheck,
 
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
