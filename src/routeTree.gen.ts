@@ -85,6 +85,7 @@ import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/em
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as ApiPublicV1WalletLinkRouteImport } from './routes/api/public/v1/wallet-link'
 import { Route as ApiPublicV1MeRouteImport } from './routes/api/public/v1/me'
+import { Route as ApiPublicV1LookupRouteImport } from './routes/api.public.v1.lookup'
 import { Route as ApiPublicV1LiveStatsRouteImport } from './routes/api/public/v1/live-stats'
 import { Route as ApiPublicV1InvoicesRouteImport } from './routes/api.public.v1.invoices'
 import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
@@ -530,6 +531,11 @@ const ApiPublicV1MeRoute = ApiPublicV1MeRouteImport.update({
   path: '/api/public/v1/me',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1LookupRoute = ApiPublicV1LookupRouteImport.update({
+  id: '/api/public/v1/lookup',
+  path: '/api/public/v1/lookup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicV1LiveStatsRoute = ApiPublicV1LiveStatsRouteImport.update({
   id: '/api/public/v1/live-stats',
   path: '/api/public/v1/live-stats',
@@ -912,6 +918,7 @@ export interface FileRoutesByFullPath {
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
   '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
+  '/api/public/v1/lookup': typeof ApiPublicV1LookupRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRouteWithChildren
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -1033,6 +1040,7 @@ export interface FileRoutesByTo {
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
   '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
+  '/api/public/v1/lookup': typeof ApiPublicV1LookupRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRouteWithChildren
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -1161,6 +1169,7 @@ export interface FileRoutesById {
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
   '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
+  '/api/public/v1/lookup': typeof ApiPublicV1LookupRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRouteWithChildren
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -1289,6 +1298,7 @@ export interface FileRouteTypes {
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
     | '/api/public/v1/live-stats'
+    | '/api/public/v1/lookup'
     | '/api/public/v1/me'
     | '/api/public/v1/wallet-link'
     | '/lovable/email/auth/preview'
@@ -1410,6 +1420,7 @@ export interface FileRouteTypes {
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
     | '/api/public/v1/live-stats'
+    | '/api/public/v1/lookup'
     | '/api/public/v1/me'
     | '/api/public/v1/wallet-link'
     | '/lovable/email/auth/preview'
@@ -1537,6 +1548,7 @@ export interface FileRouteTypes {
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
     | '/api/public/v1/live-stats'
+    | '/api/public/v1/lookup'
     | '/api/public/v1/me'
     | '/api/public/v1/wallet-link'
     | '/lovable/email/auth/preview'
@@ -1618,6 +1630,7 @@ export interface RootRouteChildren {
   ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
   ApiPublicV1InvoicesRoute: typeof ApiPublicV1InvoicesRouteWithChildren
   ApiPublicV1LiveStatsRoute: typeof ApiPublicV1LiveStatsRoute
+  ApiPublicV1LookupRoute: typeof ApiPublicV1LookupRoute
   ApiPublicV1MeRoute: typeof ApiPublicV1MeRoute
   ApiPublicV1WalletLinkRoute: typeof ApiPublicV1WalletLinkRouteWithChildren
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -2167,6 +2180,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/v1/me'
       fullPath: '/api/public/v1/me'
       preLoaderRoute: typeof ApiPublicV1MeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/lookup': {
+      id: '/api/public/v1/lookup'
+      path: '/api/public/v1/lookup'
+      fullPath: '/api/public/v1/lookup'
+      preLoaderRoute: typeof ApiPublicV1LookupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/v1/live-stats': {
@@ -2835,6 +2855,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
   ApiPublicV1InvoicesRoute: ApiPublicV1InvoicesRouteWithChildren,
   ApiPublicV1LiveStatsRoute: ApiPublicV1LiveStatsRoute,
+  ApiPublicV1LookupRoute: ApiPublicV1LookupRoute,
   ApiPublicV1MeRoute: ApiPublicV1MeRoute,
   ApiPublicV1WalletLinkRoute: ApiPublicV1WalletLinkRouteWithChildren,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
