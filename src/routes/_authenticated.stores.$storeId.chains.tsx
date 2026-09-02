@@ -535,6 +535,29 @@ function ChainCard({
 
   async function onSave() {
     const v = value.trim();
+
+    // Already saved and the address field isn't being edited: only the
+    // toggles changed, so update those in place and skip re-validating a
+    // value the merchant can't even see/edit (legacy formats would block it).
+    if (persisted && !showInput) {
+      setSaving(true);
+      try {
+        const { error } = await supabase
+          .from("chain_configs")
+          .update({ enabled: row.enabled, stables: row.stables })
+          .eq("id", row.id!);
+        if (error) throw new Error(error.message || error.details || error.hint || "Save failed.");
+        toast.success(`${meta.name} saved.`);
+        onSaved();
+      } catch (e) {
+        console.error("save chain failed", e);
+        toast.error(e instanceof Error ? e.message : "Save failed.");
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
+
     if (!v) {
       toast.error("Enter an xpub or address first.");
       return;
@@ -554,6 +577,7 @@ function ChainCard({
         enabled: row.enabled,
         stables: row.stables,
       };
+
 
       const { error } = await supabase
         .from("chain_configs")
