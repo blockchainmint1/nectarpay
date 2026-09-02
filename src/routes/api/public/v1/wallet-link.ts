@@ -121,10 +121,13 @@ const PayloadSchema = z.object({
   challenge_id: z.string().min(8).max(128),
   from: z.string().min(1).max(253),
   callback_url: z.string().url(),
-  chains: z.array(z.enum(WIRE_CHAINS)).min(1),
+  // Wallets may over-offer chains we don't support yet (e.g. ISK, ZCU).
+  // Accept any string key and ignore unknowns — never reject the whole
+  // payload just because the wallet is ahead of us.
+  chains: z.array(z.string().min(1).max(20)).min(1),
   // TRX may be an xpub or a T-address (34), SOL is a base58 pubkey (32-44),
   // others are xpub-like. Validate length loosely; per-chain shape below.
-  xpubs: z.record(z.enum(WIRE_CHAINS), z.string().min(26).max(200)),
+  xpubs: z.record(z.string().min(1).max(20), z.string().min(26).max(200)),
   exp: z.number().int().positive(), // unix SECONDS
   issued_at: z.string().min(10).max(40),
 });
