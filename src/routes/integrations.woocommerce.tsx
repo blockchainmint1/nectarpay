@@ -64,7 +64,7 @@ function WooPage() {
           <Step
             n={2}
             title="Paste your API key"
-            body="WooCommerce → Settings → Payments → Nectar.Pay. Paste the API key and webhook secret from your Nectar.Pay dashboard."
+            body="WooCommerce → Settings → Payments → NectarPay. Paste the API key and webhook secret from your NectarPay dashboard, then set your store's webhook URL to https://your-shop/?wc-api=nectarpay."
           />
           <Step
             n={3}
