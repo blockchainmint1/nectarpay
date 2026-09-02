@@ -536,10 +536,19 @@ function ChainCard({
   async function onSave() {
     const v = value.trim();
 
+    // Never configured and left disabled: nothing to persist. Without this,
+    // Save on an empty/never-saved chain card errors out.
+    if (!persisted && !row.enabled) {
+      toast.success(`${meta.name} is off.`);
+      onSaved();
+      return;
+    }
+
     // Already saved and the address field isn't being edited: only the
     // toggles changed, so update those in place and skip re-validating a
     // value the merchant can't even see/edit (legacy formats would block it).
-    if (persisted && !showInput) {
+    if (persisted && row.id && !showInput) {
+
       setSaving(true);
       try {
         const { error } = await supabase
