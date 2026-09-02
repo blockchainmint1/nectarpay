@@ -113,6 +113,42 @@ const PLUGINS: Plugin[] = [
       "Webhook URL: https://your-site/?nectarpay-webhook=1",
     ],
   },
+  {
+    name: "CS-Cart",
+    tag: "CS-Cart 4.x · Multi-Vendor",
+    blurb: "Marketplaces and multi-vendor setups — popular in RU/EU. Add-on + payment processor, same REST contract.",
+    zip: "/plugins/nectarpay-cscart.zip",
+    zipLabel: "Download add-on",
+    setup: [
+      "Copy app/addons/nectarpay into your CS-Cart root, then Admin → Add-ons → install NectarPay.",
+      "Administration → Payment methods → add a method with the NectarPay processor; paste API key and webhook secret.",
+      "Webhook URL: https://your-store.com/index.php?dispatch=payment_notification.process&payment=nectarpay",
+    ],
+  },
+  {
+    name: "Zen Cart",
+    tag: "Zen Cart 1.5.8+ / 2.x",
+    blurb: "The old workhorse still runs a lot of long-lived stores. Drop-in payment module, no core edits.",
+    zip: "/plugins/nectarpay-zencart.zip",
+    zipLabel: "Download module",
+    setup: [
+      "Copy includes/ and nectarpay_webhook.php into your Zen Cart root.",
+      "Admin → Modules → Payment → install NectarPay, paste API key and webhook secret.",
+      "Webhook URL: https://your-store.com/nectarpay_webhook.php",
+    ],
+  },
+  {
+    name: "Craft Commerce",
+    tag: "Craft CMS 4/5 · Commerce 4/5",
+    blurb: "Bespoke content-driven stores. A proper Yii2 gateway plugin with an offsite redirect flow.",
+    zip: "/plugins/nectarpay-craftcommerce.zip",
+    zipLabel: "Download plugin",
+    setup: [
+      "Install the plugin, then Commerce → Settings → Gateways → new NectarPay gateway (env-var API keys supported).",
+      "Pick NectarPay as a payment method in your checkout templates.",
+      "Webhook URL: https://your-site.com/actions/nectarpay/webhook",
+    ],
+  },
 ];
 
 function IntegrationsPage() {
@@ -175,6 +211,25 @@ function IntegrationsPage() {
             </div>
           ))}
         </div>
+
+        <h2 className="mt-12 text-xl font-semibold tracking-tight">No plugin? Use the payment button</h2>
+        <p className="mt-2 text-muted-foreground">
+          Any site that can render HTML can take crypto. Every store gets a hosted payment page at{" "}
+          <code className="rounded bg-muted px-1 py-0.5 text-xs">/t/your-store</code> — link it from
+          a button, an email, an invoice PDF, or a QR code:
+        </p>
+        <pre className="mt-4 overflow-x-auto rounded-lg border border-border bg-muted/40 p-4 text-xs">
+{`<a href="https://app.nectar-pay.com/t/your-store"
+   style="display:inline-block;padding:12px 24px;border-radius:8px;
+          background:#f5b301;color:#0d1b33;font-weight:600;text-decoration:none">
+  Pay with crypto
+</a>`}
+        </pre>
+        <p className="mt-2 text-sm text-muted-foreground">
+          No API key needed, no webhook to host — the customer pays, you get the on-chain settlement
+          and the dashboard/Telegram ping. Fixed-amount invoices, order metadata and webhooks are
+          there when you outgrow the button via the <Link to="/docs" className="underline">invoice API</Link>.
+        </p>
 
         <h2 className="mt-12 text-xl font-semibold tracking-tight">Closed platforms</h2>
         <p className="mt-2 text-muted-foreground">
