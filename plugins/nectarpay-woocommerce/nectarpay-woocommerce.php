@@ -40,8 +40,8 @@ function nectarpay_wc_init()
             $this->id                 = 'nectarpay';
             $this->icon               = '';
             $this->has_fields         = false;
-            $this->method_title       = __('NectarPay', 'nectarpay');
-            $this->method_description = __('Accept BTC, TEXITcoin and stablecoins. Non-custodial — funds settle straight to your wallet.', 'nectarpay');
+            $this->method_title       = __('NectarPay', 'nectarpay-woocommerce');
+            $this->method_description = __('Accept BTC, TEXITcoin and stablecoins. Non-custodial — funds settle straight to your wallet.', 'nectarpay-woocommerce');
 
             $this->init_form_fields();
             $this->init_settings();
@@ -56,39 +56,39 @@ function nectarpay_wc_init()
         {
             $this->form_fields = [
                 'enabled' => [
-                    'title'   => __('Enable/Disable', 'nectarpay'),
+                    'title'   => __('Enable/Disable', 'nectarpay-woocommerce'),
                     'type'    => 'checkbox',
-                    'label'   => __('Enable NectarPay crypto payments', 'nectarpay'),
+                    'label'   => __('Enable NectarPay crypto payments', 'nectarpay-woocommerce'),
                     'default' => 'no',
                 ],
                 'title' => [
-                    'title'   => __('Title', 'nectarpay'),
+                    'title'   => __('Title', 'nectarpay-woocommerce'),
                     'type'    => 'text',
-                    'default' => __('Pay with crypto (BTC, TXC, stablecoins)', 'nectarpay'),
+                    'default' => __('Pay with crypto (BTC, TXC, stablecoins)', 'nectarpay-woocommerce'),
                 ],
                 'description' => [
-                    'title'   => __('Description', 'nectarpay'),
+                    'title'   => __('Description', 'nectarpay-woocommerce'),
                     'type'    => 'textarea',
-                    'default' => __('You will be redirected to a secure NectarPay payment page.', 'nectarpay'),
+                    'default' => __('You will be redirected to a secure NectarPay payment page.', 'nectarpay-woocommerce'),
                 ],
                 'api_key' => [
-                    'title'       => __('API key', 'nectarpay'),
+                    'title'       => __('API key', 'nectarpay-woocommerce'),
                     'type'        => 'password',
-                    'description' => __('sk_live_… from NectarPay Dashboard → API keys', 'nectarpay'),
+                    'description' => __('sk_live_… from NectarPay Dashboard → API keys', 'nectarpay-woocommerce'),
                     'default'     => '',
                 ],
                 'webhook_secret' => [
-                    'title'       => __('Webhook secret', 'nectarpay'),
+                    'title'       => __('Webhook secret', 'nectarpay-woocommerce'),
                     'type'        => 'password',
                     'description' => sprintf(
                         /* translators: %s: webhook URL to paste into the NectarPay dashboard */
-                        __('NectarPay Dashboard → Webhooks → Signing secret. Set the webhook URL there to %s', 'nectarpay'),
+                        __('NectarPay Dashboard → Webhooks → Signing secret. Set the webhook URL there to %s', 'nectarpay-woocommerce'),
                         '<code>' . esc_html(home_url('/?wc-api=nectarpay')) . '</code>'
                     ),
                     'default'     => '',
                 ],
                 'api_base' => [
-                    'title'   => __('API base URL', 'nectarpay'),
+                    'title'   => __('API base URL', 'nectarpay-woocommerce'),
                     'type'    => 'text',
                     'default' => NECTARPAY_WC_DEFAULT_API_BASE,
                 ],
@@ -99,7 +99,7 @@ function nectarpay_wc_init()
         {
             $order = wc_get_order($order_id);
             if (!$order) {
-                wc_add_notice(__('Order not found.', 'nectarpay'), 'error');
+                wc_add_notice(__('Order not found.', 'nectarpay-woocommerce'), 'error');
                 return ['result' => 'failure'];
             }
 
@@ -128,7 +128,7 @@ function nectarpay_wc_init()
 
             if (is_wp_error($response)) {
                 wc_get_logger()->error('NectarPay invoice create failed: ' . $response->get_error_message(), ['source' => 'nectarpay']);
-                wc_add_notice(__('Could not start a crypto payment. Please try again or pick another method.', 'nectarpay'), 'error');
+                wc_add_notice(__('Could not start a crypto payment. Please try again or pick another method.', 'nectarpay-woocommerce'), 'error');
                 return ['result' => 'failure'];
             }
 
@@ -150,7 +150,7 @@ function nectarpay_wc_init()
             }
 
             wc_get_logger()->error('NectarPay invoice create failed [' . $status . '] ' . wp_remote_retrieve_body($response), ['source' => 'nectarpay']);
-            wc_add_notice(__('Could not start a crypto payment. Please try again or pick another method.', 'nectarpay'), 'error');
+            wc_add_notice(__('Could not start a crypto payment. Please try again or pick another method.', 'nectarpay-woocommerce'), 'error');
             return ['result' => 'failure'];
         }
     }
@@ -251,7 +251,7 @@ function nectarpay_wc_handle_webhook()
     $order->payment_complete($inv_id);
     $order->add_order_note(sprintf(
         /* translators: %s: NectarPay invoice ID */
-        __('NectarPay payment confirmed on-chain. Invoice %s', 'nectarpay'),
+        __('NectarPay payment confirmed on-chain. Invoice %s', 'nectarpay-woocommerce'),
         $inv_id
     ));
 
