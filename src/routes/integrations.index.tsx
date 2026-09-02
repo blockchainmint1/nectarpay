@@ -113,6 +113,42 @@ const PLUGINS: Plugin[] = [
       "Webhook URL: https://your-site/?nectarpay-webhook=1",
     ],
   },
+  {
+    name: "CS-Cart",
+    tag: "CS-Cart 4.x · Multi-Vendor",
+    blurb: "Marketplaces and multi-vendor setups — popular in RU/EU. Add-on + payment processor, same REST contract.",
+    zip: "/plugins/nectarpay-cscart.zip",
+    zipLabel: "Download add-on",
+    setup: [
+      "Copy app/addons/nectarpay into your CS-Cart root, then Admin → Add-ons → install NectarPay.",
+      "Administration → Payment methods → add a method with the NectarPay processor; paste API key and webhook secret.",
+      "Webhook URL: https://your-store.com/index.php?dispatch=payment_notification.process&payment=nectarpay",
+    ],
+  },
+  {
+    name: "Zen Cart",
+    tag: "Zen Cart 1.5.8+ / 2.x",
+    blurb: "The old workhorse still runs a lot of long-lived stores. Drop-in payment module, no core edits.",
+    zip: "/plugins/nectarpay-zencart.zip",
+    zipLabel: "Download module",
+    setup: [
+      "Copy includes/ and nectarpay_webhook.php into your Zen Cart root.",
+      "Admin → Modules → Payment → install NectarPay, paste API key and webhook secret.",
+      "Webhook URL: https://your-store.com/nectarpay_webhook.php",
+    ],
+  },
+  {
+    name: "Craft Commerce",
+    tag: "Craft CMS 4/5 · Commerce 4/5",
+    blurb: "Bespoke content-driven stores. A proper Yii2 gateway plugin with an offsite redirect flow.",
+    zip: "/plugins/nectarpay-craftcommerce.zip",
+    zipLabel: "Download plugin",
+    setup: [
+      "Install the plugin, then Commerce → Settings → Gateways → new NectarPay gateway (env-var API keys supported).",
+      "Pick NectarPay as a payment method in your checkout templates.",
+      "Webhook URL: https://your-site.com/actions/nectarpay/webhook",
+    ],
+  },
 ];
 
 function IntegrationsPage() {
