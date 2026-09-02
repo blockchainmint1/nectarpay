@@ -4,7 +4,11 @@
  * Description:       Non-custodial crypto payments (BTC, TEXITcoin, stablecoins). Creates a NectarPay invoice via REST and redirects the shopper to the hosted pay page. A signed webhook marks the order paid.
  * Version:           1.0.0
  * Author:            NectarPay
+ * Plugin URI:        https://app.nectar-pay.com/integrations/woocommerce
+ * Author URI:        https://nectar-pay.com
  * License:           MIT
+ * License URI:       https://opensource.org/licenses/MIT
+ * Text Domain:       nectarpay-woocommerce
  * Requires at least: 5.8
  * Requires PHP:      7.4
  * WC requires at least: 6.0
