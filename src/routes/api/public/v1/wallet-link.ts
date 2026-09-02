@@ -13,9 +13,11 @@
 //         "v": 1, "type": "hm-link-xpubs",
 //         "challenge_id": "...", "from": "nectar-pay.com",
 //         "callback_url": "https://app.nectar-pay.com/api/public/v1/wallet-link?token=...",
-//         "chains": ["BTC","TXC","EVM","LTC","BCH","TRX"],
+//         "chains": ["BTC","TXC","EVM","LTC","BCH","TRX","SOL"],
 //         "xpubs": { "BTC":"zpub...", "TXC":"xpub...", "EVM":"xpub...",
-//                    "LTC":"...", "BCH":"...", "TRX":"<hex pubkey>" },
+//                    "LTC":"...", "BCH":"...",
+//                    "TRX":"xpub... | T<base58 34>",   // xpub preferred
+//                    "SOL":"<base58 pubkey, 32-44>" }, // single shared address
 //         "exp": 1735689600,                         // unix SECONDS
 //         "issued_at": "2026-06-24T18:32:01.234Z"
 //       },
@@ -48,7 +50,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createHash } from "crypto";
 import { z } from "zod";
-import { isXpubLike } from "@/lib/chains/derive.server";
+import { isXpubLike, isSolanaAddressLike, isTronAddressLike } from "@/lib/chains/derive.server";
 import { verifyTxcSignature } from "@/lib/wallet-signature.server";
 
 const CORS = {
@@ -97,11 +99,11 @@ function manifestResponse(manifest: unknown, accept: string, status = 200) {
 
 
 // Uppercase wire-protocol chain keys (wallet side).
-const WIRE_CHAINS = ["BTC", "TXC", "EVM", "LTC", "BCH", "DOGE", "DASH", "TRX"] as const;
+const WIRE_CHAINS = ["BTC", "TXC", "EVM", "LTC", "BCH", "DOGE", "DASH", "TRX", "SOL"] as const;
 type WireChain = (typeof WIRE_CHAINS)[number];
 
 // Map wire-protocol key → chain_configs.chain enum value (lowercase, EVM → eth).
-const WIRE_TO_DB: Record<WireChain, "btc" | "txc" | "eth" | "ltc" | "bch" | "doge" | "dash" | "tron"> = {
+const WIRE_TO_DB: Record<WireChain, "btc" | "txc" | "eth" | "ltc" | "bch" | "doge" | "dash" | "tron" | "sol"> = {
   BTC: "btc",
   TXC: "txc",
   EVM: "eth",
@@ -110,6 +112,7 @@ const WIRE_TO_DB: Record<WireChain, "btc" | "txc" | "eth" | "ltc" | "bch" | "dog
   DOGE: "doge",
   DASH: "dash",
   TRX: "tron",
+  SOL: "sol",
 };
 
 const PayloadSchema = z.object({
@@ -119,9 +122,9 @@ const PayloadSchema = z.object({
   from: z.string().min(1).max(253),
   callback_url: z.string().url(),
   chains: z.array(z.enum(WIRE_CHAINS)).min(1),
-  // TRX is a hex pubkey, others are xpub-like strings. Validate length loosely;
-  // per-chain shape check happens below.
-  xpubs: z.record(z.enum(WIRE_CHAINS), z.string().min(40).max(200)),
+  // TRX may be an xpub or a T-address (34), SOL is a base58 pubkey (32-44),
+  // others are xpub-like. Validate length loosely; per-chain shape below.
+  xpubs: z.record(z.enum(WIRE_CHAINS), z.string().min(26).max(200)),
   exp: z.number().int().positive(), // unix SECONDS
   issued_at: z.string().min(10).max(40),
 });
@@ -147,11 +150,19 @@ function canonicalize(value: unknown): string {
   );
 }
 
-function isTrxPubkeyHex(s: string): boolean {
-  // Tron uses an uncompressed secp256k1 pubkey (65 bytes = 130 hex chars,
-  // optional 0x04 prefix), or a compressed 33-byte form (66 hex chars).
-  const v = s.trim().replace(/^0x/i, "");
-  return /^[0-9a-fA-F]+$/.test(v) && (v.length === 66 || v.length === 128 || v.length === 130);
+// TRX accepted key forms:
+//   1. account-level xpub  → unique per-invoice addresses (m/0/n)  [preferred]
+//   2. single T-address    → shared receiver, amount-nonce matching
+// A raw hex pubkey is NOT accepted: we cannot derive receive addresses from it.
+function isTrxKeyOk(s: string): boolean {
+  const v = s.trim();
+  return isXpubLike(v) || isTronAddressLike(v);
+}
+
+// SOL: single base58 pubkey (32 bytes). Solana is always shared-address mode;
+// invoices are disambiguated by amount nonce + SPL memo.
+function isSolKeyOk(s: string): boolean {
+  return isSolanaAddressLike(s.trim());
 }
 
 function extractTokenFromCallback(callbackUrl: string, expectedOrigin: string): string | null {
@@ -458,10 +469,21 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
             if (!xpub) continue;
             const v = xpub.trim();
 
-            // Per-chain shape check. TRX is a raw pubkey hex; others are xpub-like.
-            const shapeOk = wireKey === "TRX" ? isTrxPubkeyHex(v) : isXpubLike(v);
+            // Per-chain shape check.
+            const shapeOk =
+              wireKey === "TRX" ? isTrxKeyOk(v)
+              : wireKey === "SOL" ? isSolKeyOk(v)
+              : isXpubLike(v);
             if (!shapeOk) {
-              rejected.push({ chain: wireKey, reason: "Invalid key format." });
+              rejected.push({
+                chain: wireKey,
+                reason:
+                  wireKey === "TRX"
+                    ? "Invalid key format: send an account xpub or a base58 T-address (raw hex pubkeys are not supported)."
+                    : wireKey === "SOL"
+                      ? "Invalid key format: send a base58 Solana pubkey (32-44 chars)."
+                      : "Invalid key format.",
+              });
               continue;
             }
 
