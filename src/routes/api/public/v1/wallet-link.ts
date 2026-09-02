@@ -147,11 +147,19 @@ function canonicalize(value: unknown): string {
   );
 }
 
-function isTrxPubkeyHex(s: string): boolean {
-  // Tron uses an uncompressed secp256k1 pubkey (65 bytes = 130 hex chars,
-  // optional 0x04 prefix), or a compressed 33-byte form (66 hex chars).
-  const v = s.trim().replace(/^0x/i, "");
-  return /^[0-9a-fA-F]+$/.test(v) && (v.length === 66 || v.length === 128 || v.length === 130);
+// TRX accepted key forms:
+//   1. account-level xpub  → unique per-invoice addresses (m/0/n)  [preferred]
+//   2. single T-address    → shared receiver, amount-nonce matching
+// A raw hex pubkey is NOT accepted: we cannot derive receive addresses from it.
+function isTrxKeyOk(s: string): boolean {
+  const v = s.trim();
+  return isXpubLike(v) || isTronAddressLike(v);
+}
+
+// SOL: single base58 pubkey (32 bytes). Solana is always shared-address mode;
+// invoices are disambiguated by amount nonce + SPL memo.
+function isSolKeyOk(s: string): boolean {
+  return isSolanaAddressLike(s.trim());
 }
 
 function extractTokenFromCallback(callbackUrl: string, expectedOrigin: string): string | null {
