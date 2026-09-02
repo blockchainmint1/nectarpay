@@ -212,6 +212,25 @@ function IntegrationsPage() {
           ))}
         </div>
 
+        <h2 className="mt-12 text-xl font-semibold tracking-tight">No plugin? Use the payment button</h2>
+        <p className="mt-2 text-muted-foreground">
+          Any site that can render HTML can take crypto. Every store gets a hosted payment page at{" "}
+          <code className="rounded bg-muted px-1 py-0.5 text-xs">/t/your-store</code> — link it from
+          a button, an email, an invoice PDF, or a QR code:
+        </p>
+        <pre className="mt-4 overflow-x-auto rounded-lg border border-border bg-muted/40 p-4 text-xs">
+{`<a href="https://app.nectar-pay.com/t/your-store"
+   style="display:inline-block;padding:12px 24px;border-radius:8px;
+          background:#f5b301;color:#0d1b33;font-weight:600;text-decoration:none">
+  Pay with crypto
+</a>`}
+        </pre>
+        <p className="mt-2 text-sm text-muted-foreground">
+          No API key needed, no webhook to host — the customer pays, you get the on-chain settlement
+          and the dashboard/Telegram ping. Fixed-amount invoices, order metadata and webhooks are
+          there when you outgrow the button via the <Link to="/docs" className="underline">invoice API</Link>.
+        </p>
+
         <h2 className="mt-12 text-xl font-semibold tracking-tight">Closed platforms</h2>
         <p className="mt-2 text-muted-foreground">
           Shopify, BigCommerce, Wix and Squarespace lock their payment surfaces to approved
