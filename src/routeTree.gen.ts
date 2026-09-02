@@ -35,6 +35,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PosIndexRouteImport } from './routes/pos.index'
+import { Route as IntegrationsIndexRouteImport } from './routes/integrations.index'
 import { Route as TSlugRouteImport } from './routes/t.$slug'
 import { Route as SdkPayhmeDotjsRouteImport } from './routes/sdk.payhme[.]js'
 import { Route as PosSettingsRouteImport } from './routes/pos.settings'
@@ -264,6 +265,11 @@ const PosIndexRoute = PosIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => PosRoute,
+} as any)
+const IntegrationsIndexRoute = IntegrationsIndexRouteImport.update({
+  id: '/integrations/',
+  path: '/integrations/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const TSlugRoute = TSlugRouteImport.update({
   id: '/t/$slug',
@@ -874,6 +880,7 @@ export interface FileRoutesByFullPath {
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
   '/t/$slug': typeof TSlugRoute
+  '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
   '/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
@@ -999,6 +1006,7 @@ export interface FileRoutesByTo {
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
   '/t/$slug': typeof TSlugRoute
+  '/integrations': typeof IntegrationsIndexRoute
   '/pos': typeof PosIndexRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
@@ -1125,6 +1133,7 @@ export interface FileRoutesById {
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
   '/t/$slug': typeof TSlugRoute
+  '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
   '/_authenticated/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
@@ -1254,6 +1263,7 @@ export interface FileRouteTypes {
     | '/pos/settings'
     | '/sdk/payhme.js'
     | '/t/$slug'
+    | '/integrations/'
     | '/pos/'
     | '/admin/crm'
     | '/admin/invoices'
@@ -1379,6 +1389,7 @@ export interface FileRouteTypes {
     | '/pos/settings'
     | '/sdk/payhme.js'
     | '/t/$slug'
+    | '/integrations'
     | '/pos'
     | '/admin/invoices'
     | '/admin/merchants'
@@ -1504,6 +1515,7 @@ export interface FileRouteTypes {
     | '/pos/settings'
     | '/sdk/payhme.js'
     | '/t/$slug'
+    | '/integrations/'
     | '/pos/'
     | '/_authenticated/admin/crm'
     | '/_authenticated/admin/invoices'
@@ -1616,6 +1628,7 @@ export interface RootRouteChildren {
   PayInvoiceIdRoute: typeof PayInvoiceIdRoute
   SdkPayhmeDotjsRoute: typeof SdkPayhmeDotjsRoute
   TSlugRoute: typeof TSlugRoute
+  IntegrationsIndexRoute: typeof IntegrationsIndexRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicAffiliateClickRoute: typeof ApiPublicAffiliateClickRoute
   ApiPublicAuthWalletCallbackRoute: typeof ApiPublicAuthWalletCallbackRoute
@@ -1831,6 +1844,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/pos/'
       preLoaderRoute: typeof PosIndexRouteImport
       parentRoute: typeof PosRoute
+    }
+    '/integrations/': {
+      id: '/integrations/'
+      path: '/integrations'
+      fullPath: '/integrations/'
+      preLoaderRoute: typeof IntegrationsIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/t/$slug': {
       id: '/t/$slug'
@@ -2841,6 +2861,7 @@ const rootRouteChildren: RootRouteChildren = {
   PayInvoiceIdRoute: PayInvoiceIdRoute,
   SdkPayhmeDotjsRoute: SdkPayhmeDotjsRoute,
   TSlugRoute: TSlugRoute,
+  IntegrationsIndexRoute: IntegrationsIndexRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicAffiliateClickRoute: ApiPublicAffiliateClickRoute,
   ApiPublicAuthWalletCallbackRoute: ApiPublicAuthWalletCallbackRoute,
