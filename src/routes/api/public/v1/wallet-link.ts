@@ -13,9 +13,11 @@
 //         "v": 1, "type": "hm-link-xpubs",
 //         "challenge_id": "...", "from": "nectar-pay.com",
 //         "callback_url": "https://app.nectar-pay.com/api/public/v1/wallet-link?token=...",
-//         "chains": ["BTC","TXC","EVM","LTC","BCH","TRX"],
+//         "chains": ["BTC","TXC","EVM","LTC","BCH","TRX","SOL"],
 //         "xpubs": { "BTC":"zpub...", "TXC":"xpub...", "EVM":"xpub...",
-//                    "LTC":"...", "BCH":"...", "TRX":"<hex pubkey>" },
+//                    "LTC":"...", "BCH":"...",
+//                    "TRX":"xpub... | T<base58 34>",   // xpub preferred
+//                    "SOL":"<base58 pubkey, 32-44>" }, // single shared address
 //         "exp": 1735689600,                         // unix SECONDS
 //         "issued_at": "2026-06-24T18:32:01.234Z"
 //       },
