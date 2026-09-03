@@ -13,6 +13,7 @@ const KIND_LABEL: Record<string, string> = {
   static_config: "Wallet config",
   xpub_scan: "Wallet key match",
   transaction: "Recorded transaction",
+  cold_storage_coin: "Cold Storage Coin",
 };
 
 export function AddressVerifier({
