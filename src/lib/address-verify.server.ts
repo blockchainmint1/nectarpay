@@ -12,8 +12,47 @@
 const SCAN_LOOKAHEAD = 60;
 const SCAN_MAX = 400;
 
+/** Cold Storage Coins registry — public "verify a coin" endpoint (no auth). */
+const CSC_REGISTRY_URL = "https://coldstoragecoins-admin.lovable.app/api/public/v5/coin-details";
+
+interface CscCoin {
+  assetId: string;
+  publicKey: string;
+  blockchainCode: string | null;
+  blockchainName: string | null;
+  cryptoCurrency: string | null;
+  activationStatus: boolean;
+  stickerImgUrl: string | null;
+  displayValues: { fieldTitle: string; fieldValue: string; link?: string }[];
+}
+
+/** Look the query up in the Cold Storage Coins registry (by address or asset ID). */
+async function lookupColdStorageCoin(identifier: string): Promise<CscCoin | null> {
+  try {
+    const res = await fetch(CSC_REGISTRY_URL, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ publicKey: identifier }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (res.status === 404) return null;
+    if (!res.ok) return null;
+    const body = (await res.json()) as { coin?: CscCoin; displayValues?: CscCoin["displayValues"] };
+    if (!body?.coin) return null;
+    return { ...body.coin, displayValues: body.displayValues ?? [] };
+  } catch {
+    return null;
+  }
+}
+
 export interface VerifyMatch {
-  kind: "derived_address" | "invoice_address" | "static_config" | "xpub_scan" | "transaction";
+  kind:
+    | "derived_address"
+    | "invoice_address"
+    | "static_config"
+    | "xpub_scan"
+    | "transaction"
+    | "cold_storage_coin";
   chain: string | null;
   store_id: string | null;
   store_name: string | null;
@@ -358,6 +397,40 @@ export async function runVerify(
       explorers.push({ label: `${net.name} explorer`, url: net.explorerAddr(q) });
     } catch {
       /* ignore */
+    }
+  }
+
+  // ---------------- Cold Storage Coins registry ----------------
+  // Matches physical minted coins by public address, or by 6-digit asset ID.
+  const isAssetId = /^\d{4,8}$/.test(q);
+  if (queryType === "address" || isAssetId) {
+    const coin = await lookupColdStorageCoin(q);
+    if (coin) {
+      const dv = (t: string) =>
+        coin.displayValues.find((d) => d.fieldTitle.toLowerCase() === t)?.fieldValue;
+      const facts = [
+        dv("product"),
+        dv("denomination") ? `${dv("denomination")} ${coin.cryptoCurrency ?? ""}`.trim() : null,
+        dv("metal"),
+        dv("serial") ? `serial ${dv("serial")}` : null,
+        dv("minted") ? `minted ${dv("minted")}` : null,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+      matches.push({
+        kind: "cold_storage_coin",
+        chain: coin.blockchainCode,
+        store_id: null,
+        store_name: null,
+        owner_email: null,
+        address: coin.publicKey,
+        detail: `Cold Storage Coin asset ${coin.assetId}${facts ? ` — ${facts}` : ""} · ${coin.activationStatus ? "activated" : "not activated"}`,
+      });
+      notes.push(
+        "This address is printed on a physical Cold Storage Coin — it is that coin's receive address, not an invoice address.",
+      );
+    } else if (isAssetId) {
+      notes.push("No Cold Storage Coin is registered under that asset ID.");
     }
   }
 
