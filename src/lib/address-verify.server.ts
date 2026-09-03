@@ -400,6 +400,40 @@ export async function runVerify(
     }
   }
 
+  // ---------------- Cold Storage Coins registry ----------------
+  // Matches physical minted coins by public address, or by 6-digit asset ID.
+  const isAssetId = /^\d{4,8}$/.test(q);
+  if (queryType === "address" || isAssetId) {
+    const coin = await lookupColdStorageCoin(q);
+    if (coin) {
+      const dv = (t: string) =>
+        coin.displayValues.find((d) => d.fieldTitle.toLowerCase() === t)?.fieldValue;
+      const facts = [
+        dv("product"),
+        dv("denomination") ? `${dv("denomination")} ${coin.cryptoCurrency ?? ""}`.trim() : null,
+        dv("metal"),
+        dv("serial") ? `serial ${dv("serial")}` : null,
+        dv("minted") ? `minted ${dv("minted")}` : null,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+      matches.push({
+        kind: "cold_storage_coin",
+        chain: coin.blockchainCode,
+        store_id: null,
+        store_name: null,
+        owner_email: null,
+        address: coin.publicKey,
+        detail: `Cold Storage Coin asset ${coin.assetId}${facts ? ` — ${facts}` : ""} · ${coin.activationStatus ? "activated" : "not activated"}`,
+      });
+      notes.push(
+        "This address is printed on a physical Cold Storage Coin — it is that coin's receive address, not an invoice address.",
+      );
+    } else if (isAssetId) {
+      notes.push("No Cold Storage Coin is registered under that asset ID.");
+    }
+  }
+
   if (matches.length === 0) {
     notes.push(
       scoped
