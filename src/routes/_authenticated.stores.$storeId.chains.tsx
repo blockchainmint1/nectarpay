@@ -1101,7 +1101,8 @@ function WalletLinkedCard({
               Re-link Beekeeper wallet?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Replacing xpubs requires a fresh signature from your Beekeeper wallet. Anyone
+              Replacing xpubs requires a 6-digit code emailed to you, plus a fresh signature
+              from your Beekeeper wallet. Anyone
               scanning the next QR can overwrite the xpubs on this store, so only generate it
               when you're ready to scan from the wallet that owns the funds.
             </AlertDialogDescription>
