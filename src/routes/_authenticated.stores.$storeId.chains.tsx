@@ -21,7 +21,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { createWalletLinkCode } from "@/lib/wallet-link.functions";
+import { createWalletLinkCode, requestWalletLinkVerification } from "@/lib/wallet-link.functions";
 import { qrToDataURL } from "@/lib/qr";
 // Inlined client-safe validators (mirror src/lib/chains/derive.server.ts).
 function isXpubLike(s: string): boolean {
@@ -795,11 +795,24 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
     return () => clearInterval(i);
   }, [token, expired, linked, storeId, onLinked]);
 
+  async function onSendVerification() {
+    setSendingCode(true);
+    try {
+      const res = await requestVerification({ data: { storeId } });
+      setSentTo(res.sent_to);
+      toast.success(`Confirmation code sent to ${res.sent_to}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not send the confirmation code.");
+    } finally {
+      setSendingCode(false);
+    }
+  }
+
   async function onGenerate() {
     setBusy(true);
     setLinked(false);
     try {
-      const result = await createCode({ data: { storeId, allowNewWallet } });
+      const result = await createCode({ data: { storeId, allowNewWallet, verificationCode } });
       // QR ALWAYS points at the canonical production host. Beekeeper
       // allowlists nectar-pay.com — a preview/staging origin would be
       // rejected as "Bad manifest" even though our payload is well-formed.
@@ -825,6 +838,8 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
     setExpiresAt(null);
     setQrDataUrl(null);
     setLinked(false);
+    setSentTo(null);
+    setVerificationCode("");
   }
 
   return (
@@ -857,10 +872,59 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
                   register this wallet to your account on first use.
                 </span>
               </label>
-              <Button className="mt-3" onClick={onGenerate} disabled={busy}>
-                <Smartphone className="mr-2 h-4 w-4" />
-                {busy ? "Generating…" : "Generate link code"}
-              </Button>
+              <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
+                <div className="flex items-center gap-2 text-xs font-medium">
+                  <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                  Email confirmation required
+                </div>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Changing the wallet keys on a store moves where your money lands, so we email
+                  you a 6-digit code first. It expires in 10 minutes.
+                </p>
+
+                {!sentTo ? (
+                  <Button
+                    className="mt-3"
+                    variant="outline"
+                    size="sm"
+                    onClick={onSendVerification}
+                    disabled={sendingCode}
+                  >
+                    {sendingCode ? "Sending…" : "Email me a confirmation code"}
+                  </Button>
+                ) : (
+                  <>
+                    <div className="mt-2 text-[11px] text-muted-foreground">
+                      Code sent to <span className="text-foreground">{sentTo}</span>.
+                    </div>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <Input
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        maxLength={6}
+                        value={verificationCode}
+                        onChange={(e) =>
+                          setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                        }
+                        placeholder="123456"
+                        className="h-9 w-32 text-center font-mono tracking-[0.3em]"
+                      />
+                      <Button onClick={onGenerate} disabled={busy || verificationCode.length !== 6}>
+                        <Smartphone className="mr-2 h-4 w-4" />
+                        {busy ? "Generating…" : "Confirm & generate link code"}
+                      </Button>
+                      <button
+                        type="button"
+                        onClick={onSendVerification}
+                        disabled={sendingCode}
+                        className="text-[11px] text-muted-foreground underline"
+                      >
+                        Resend
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </>
           )}
 
