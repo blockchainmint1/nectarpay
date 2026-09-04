@@ -75,7 +75,14 @@ export function DocsBody() {
             Step-by-step wallet setup guide for every supported chain →
           </Link>
         </p>
+        <p>
+          Wondering whether each invoice gets its own address?{" "}
+          <Link to="/docs/address-rotation" className="text-primary underline">
+            Address derivation &amp; rotation policy →
+          </Link>
+        </p>
       </Section>
+
 
       <Section title="3. Get your API key">
         <p>
