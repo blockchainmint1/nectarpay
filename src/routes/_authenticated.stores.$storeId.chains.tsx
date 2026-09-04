@@ -752,6 +752,7 @@ function ChainCard({
 
 function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () => void }) {
   const createCode = useServerFn(createWalletLinkCode);
+  const requestVerification = useServerFn(requestWalletLinkVerification);
   const [token, setToken] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
@@ -759,6 +760,10 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
   const [busy, setBusy] = useState(false);
   const [linked, setLinked] = useState(false);
   const [allowNewWallet, setAllowNewWallet] = useState(false);
+  const [sendingCode, setSendingCode] = useState(false);
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [verificationCode, setVerificationCode] = useState("");
+
 
   // Tick once a second for countdown.
   useEffect(() => {
