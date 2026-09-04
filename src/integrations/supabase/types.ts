@@ -1307,6 +1307,50 @@ export type Database = {
         }
         Relationships: []
       }
+      sensitive_action_codes: {
+        Row: {
+          action: string
+          attempts: number
+          code_hash: string
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          store_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          attempts?: number
+          code_hash: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          store_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          attempts?: number
+          code_hash?: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          store_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sensitive_action_codes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stores: {
         Row: {
           admin_market: string | null
