@@ -246,8 +246,12 @@ function ChainsPage() {
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
         Configure how each chain receives payments. We never hold keys — you provide an xpub (for
-        unique per-invoice addresses) or a single static receive address.
+        unique per-invoice addresses) or a single static receive address.{" "}
+        <a href="/docs/address-rotation" className="text-primary underline">
+          How address derivation &amp; rotation works →
+        </a>
       </p>
+
 
       {isLinked ? (
         <WalletLinkedCard
