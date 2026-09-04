@@ -52,6 +52,7 @@ import { Route as GoKitRouteImport } from './routes/go.kit'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DocsWalletSetupRouteImport } from './routes/docs.wallet-setup'
 import { Route as DocsTapToPayTangemRouteImport } from './routes/docs.tap-to-pay-tangem'
+import { Route as DocsAddressRotationRouteImport } from './routes/docs.address-rotation'
 import { Route as DevTangemTestRouteImport } from './routes/dev.tangem-test'
 import { Route as CompareBitpayCoingateVsNectarRouteImport } from './routes/compare_.bitpay-coingate-vs-nectar'
 import { Route as CheckoutThanksRouteImport } from './routes/checkout.thanks'
@@ -350,6 +351,11 @@ const DocsWalletSetupRoute = DocsWalletSetupRouteImport.update({
 const DocsTapToPayTangemRoute = DocsTapToPayTangemRouteImport.update({
   id: '/tap-to-pay-tangem',
   path: '/tap-to-pay-tangem',
+  getParentRoute: () => DocsRoute,
+} as any)
+const DocsAddressRotationRoute = DocsAddressRotationRouteImport.update({
+  id: '/address-rotation',
+  path: '/address-rotation',
   getParentRoute: () => DocsRoute,
 } as any)
 const DevTangemTestRoute = DevTangemTestRouteImport.update({
@@ -871,6 +877,7 @@ export interface FileRoutesByFullPath {
   '/checkout/thanks': typeof CheckoutThanksRoute
   '/compare/bitpay-coingate-vs-nectar': typeof CompareBitpayCoingateVsNectarRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
+  '/docs/address-rotation': typeof DocsAddressRotationRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -998,6 +1005,7 @@ export interface FileRoutesByTo {
   '/checkout/thanks': typeof CheckoutThanksRoute
   '/compare/bitpay-coingate-vs-nectar': typeof CompareBitpayCoingateVsNectarRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
+  '/docs/address-rotation': typeof DocsAddressRotationRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -1126,6 +1134,7 @@ export interface FileRoutesById {
   '/checkout/thanks': typeof CheckoutThanksRoute
   '/compare_/bitpay-coingate-vs-nectar': typeof CompareBitpayCoingateVsNectarRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
+  '/docs/address-rotation': typeof DocsAddressRotationRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
@@ -1257,6 +1266,7 @@ export interface FileRouteTypes {
     | '/checkout/thanks'
     | '/compare/bitpay-coingate-vs-nectar'
     | '/dev/tangem-test'
+    | '/docs/address-rotation'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
     | '/email/unsubscribe'
@@ -1384,6 +1394,7 @@ export interface FileRouteTypes {
     | '/checkout/thanks'
     | '/compare/bitpay-coingate-vs-nectar'
     | '/dev/tangem-test'
+    | '/docs/address-rotation'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
     | '/email/unsubscribe'
@@ -1511,6 +1522,7 @@ export interface FileRouteTypes {
     | '/checkout/thanks'
     | '/compare_/bitpay-coingate-vs-nectar'
     | '/dev/tangem-test'
+    | '/docs/address-rotation'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
     | '/email/unsubscribe'
@@ -1975,6 +1987,13 @@ declare module '@tanstack/react-router' {
       path: '/tap-to-pay-tangem'
       fullPath: '/docs/tap-to-pay-tangem'
       preLoaderRoute: typeof DocsTapToPayTangemRouteImport
+      parentRoute: typeof DocsRoute
+    }
+    '/docs/address-rotation': {
+      id: '/docs/address-rotation'
+      path: '/address-rotation'
+      fullPath: '/docs/address-rotation'
+      preLoaderRoute: typeof DocsAddressRotationRouteImport
       parentRoute: typeof DocsRoute
     }
     '/dev/tangem-test': {
@@ -2757,11 +2776,13 @@ const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
 )
 
 interface DocsRouteChildren {
+  DocsAddressRotationRoute: typeof DocsAddressRotationRoute
   DocsTapToPayTangemRoute: typeof DocsTapToPayTangemRoute
   DocsWalletSetupRoute: typeof DocsWalletSetupRoute
 }
 
 const DocsRouteChildren: DocsRouteChildren = {
+  DocsAddressRotationRoute: DocsAddressRotationRoute,
   DocsTapToPayTangemRoute: DocsTapToPayTangemRoute,
   DocsWalletSetupRoute: DocsWalletSetupRoute,
 }
