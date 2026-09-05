@@ -518,6 +518,7 @@ function ChainCard({
   onChange,
   onSaved,
   xpubLocked = false,
+  lightning,
 }: {
   meta: ChainMeta;
   row: Row;
@@ -525,6 +526,7 @@ function ChainCard({
   onChange: (r: Row) => void;
   onSaved: () => void;
   xpubLocked?: boolean;
+  lightning?: { row: Row; onChange: (r: Row) => void };
 }) {
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -533,6 +535,7 @@ function ChainCard({
   const showInput = !xpubLocked && (!persisted || editing);
 
   const value = meta.inputKind === "xpub" ? row.xpub ?? "" : row.xpub_or_address;
+
 
   const validation = useMemo(() => {
     const v = value.trim();
