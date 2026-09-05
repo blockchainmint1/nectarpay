@@ -101,6 +101,7 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice")({
                 chain as never,
                 fiatAmount,
                 tokenSymbol,
+                inserted.id,
               );
               const { error: updErr } = await supabaseAdmin
                 .from("invoices")

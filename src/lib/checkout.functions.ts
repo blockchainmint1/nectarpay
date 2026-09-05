@@ -275,6 +275,7 @@ export const selectInvoiceChain = createServerFn({ method: "POST" })
       chain as never,
       Number(inv.fiat_amount),
       tokenSymbol,
+      inv.id,
     );
 
     const { error: updErr } = await supabaseAdmin

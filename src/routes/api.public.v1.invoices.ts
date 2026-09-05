@@ -26,7 +26,7 @@ function json(body: unknown, status = 200, extra: Record<string, string> = {}) {
 }
 
 const Body = z.object({
-  chain: z.enum(["btc", "txc", "eth", "base", "tron", "sol", "doge", "ltc", "bch", "dash", "isk", "zcu"]).optional().nullable(),
+  chain: z.enum(["btc", "txc", "eth", "base", "tron", "sol", "doge", "ltc", "bch", "dash", "isk", "zcu", "lightning"]).optional().nullable(),
   amount: z.number().positive().max(1_000_000),
   currency: z.string().min(3).max(8).default("USD"),
   order_id: z.string().max(128).nullable().optional(),
@@ -155,6 +155,11 @@ export const Route = createFileRoute("/api/public/v1/invoices")({
             .select("id")
             .single();
           if (insErr || !inserted) return json({ error: insErr?.message ?? "Insert failed." }, 500);
+
+          if (body.chain === "lightning") {
+            const { linkLightningInvoice } = await import("@/lib/lightning.server");
+            await linkLightningInvoice(derived.address, inserted.id).catch(() => undefined);
+          }
 
           await supabaseAdmin.from("api_keys").update({ last_used_at: new Date().toISOString() }).eq("id", keyRow.id);
 
