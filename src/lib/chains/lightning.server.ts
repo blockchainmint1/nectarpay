@@ -135,3 +135,138 @@ export async function lndSendCoins(
   });
   return res.txid;
 }
+
+// ---------------------------------------------------------------------------
+// Node operations (admin console)
+// ---------------------------------------------------------------------------
+
+export interface LndNodeInfo {
+  alias: string;
+  identityPubkey: string;
+  version: string;
+  syncedToChain: boolean;
+  syncedToGraph: boolean;
+  blockHeight: number;
+  numActiveChannels: number;
+  numPendingChannels: number;
+  numInactiveChannels: number;
+  numPeers: number;
+  uris: string[];
+}
+
+export async function lndGetInfo(): Promise<LndNodeInfo> {
+  const res = await lnd<Record<string, unknown>>("/v1/getinfo");
+  return {
+    alias: String(res["alias"] ?? ""),
+    identityPubkey: String(res["identity_pubkey"] ?? ""),
+    version: String(res["version"] ?? ""),
+    syncedToChain: Boolean(res["synced_to_chain"]),
+    syncedToGraph: Boolean(res["synced_to_graph"]),
+    blockHeight: Number(res["block_height"] ?? 0),
+    numActiveChannels: Number(res["num_active_channels"] ?? 0),
+    numPendingChannels: Number(res["num_pending_channels"] ?? 0),
+    numInactiveChannels: Number(res["num_inactive_channels"] ?? 0),
+    numPeers: Number(res["num_peers"] ?? 0),
+    uris: (res["uris"] as string[] | undefined) ?? [],
+  };
+}
+
+export interface LndBalances {
+  onchainConfirmedSats: number;
+  onchainUnconfirmedSats: number;
+  localSats: number;
+  remoteSats: number;
+  pendingOpenLocalSats: number;
+}
+
+export async function lndBalances(): Promise<LndBalances> {
+  const [chain, chan] = await Promise.all([
+    lnd<Record<string, string>>("/v1/balance/blockchain"),
+    lnd<Record<string, unknown>>("/v1/balance/channels"),
+  ]);
+  const amt = (v: unknown) =>
+    Number((v as { sat?: string } | undefined)?.sat ?? 0);
+  return {
+    onchainConfirmedSats: Number(chain["confirmed_balance"] ?? 0),
+    onchainUnconfirmedSats: Number(chain["unconfirmed_balance"] ?? 0),
+    localSats: amt(chan["local_balance"]),
+    remoteSats: amt(chan["remote_balance"]),
+    pendingOpenLocalSats: amt(chan["pending_open_local_balance"]),
+  };
+}
+
+export interface LndChannelSummary {
+  channelPoint: string;
+  remotePubkey: string;
+  active: boolean;
+  capacitySats: number;
+  localSats: number;
+  remoteSats: number;
+  private: boolean;
+}
+
+export async function lndListChannels(): Promise<LndChannelSummary[]> {
+  const res = await lnd<{ channels?: Record<string, unknown>[] }>("/v1/channels");
+  return (res.channels ?? []).map((c) => ({
+    channelPoint: String(c["channel_point"] ?? ""),
+    remotePubkey: String(c["remote_pubkey"] ?? ""),
+    active: Boolean(c["active"]),
+    capacitySats: Number(c["capacity"] ?? 0),
+    localSats: Number(c["local_balance"] ?? 0),
+    remoteSats: Number(c["remote_balance"] ?? 0),
+    private: Boolean(c["private"]),
+  }));
+}
+
+export async function lndPendingChannelCount(): Promise<number> {
+  const res = await lnd<Record<string, unknown[]>>("/v1/channels/pending");
+  return (
+    (res["pending_open_channels"]?.length ?? 0) +
+    (res["pending_force_closing_channels"]?.length ?? 0) +
+    (res["waiting_close_channels"]?.length ?? 0)
+  );
+}
+
+/** Fresh p2wkh deposit address for funding the node's on-chain wallet. */
+export async function lndNewAddress(): Promise<string> {
+  const res = await lnd<{ address: string }>("/v1/newaddress?type=0");
+  return res.address;
+}
+
+export async function lndConnectPeer(pubkey: string, host: string): Promise<void> {
+  try {
+    await lnd("/v1/peers", {
+      method: "POST",
+      body: JSON.stringify({ addr: { pubkey, host }, perm: true }),
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (!/already connected/i.test(msg)) throw e;
+  }
+}
+
+export async function lndOpenChannel(
+  pubkeyHex: string,
+  amountSats: number,
+  satPerVbyte = 2,
+): Promise<string> {
+  const res = await lnd<{ funding_txid_str?: string; funding_txid_bytes?: string }>(
+    "/v1/channels",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        node_pubkey_string: pubkeyHex,
+        local_funding_amount: String(Math.round(amountSats)),
+        sat_per_vbyte: String(satPerVbyte),
+        private: false,
+      }),
+    },
+  );
+  if (res.funding_txid_str) return res.funding_txid_str;
+  if (res.funding_txid_bytes) {
+    // returned little-endian base64
+    const hex = base64ToHex(res.funding_txid_bytes);
+    return (hex.match(/../g) ?? []).reverse().join("");
+  }
+  return "";
+}
