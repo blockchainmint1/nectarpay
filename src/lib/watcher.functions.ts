@@ -542,7 +542,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             cfg.store_id,
             cfg.xpub,
             (i) => deriveBtcLikeAddress(cfg.xpub!, net, i),
-            0,
+            1,
             (cfg.next_address_index ?? 0) + ADDRESS_WINDOW,
           );
         }
@@ -630,7 +630,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             cfg.store_id,
             cfg.xpub,
             (i) => deriveEvmAddress(cfg.xpub!, ETH_NETWORK, i),
-            0,
+            1,
             (cfg.next_address_index ?? 0) + ADDRESS_WINDOW,
           );
         }
@@ -725,7 +725,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               cfg.store_id,
               cfg.xpub,
               (i) => deriveTronAddress(cfg.xpub!, i),
-              0,
+              1,
               (cfg.next_address_index ?? 0) + ADDRESS_WINDOW,
             );
           } else if (cfg.xpub_or_address) {
