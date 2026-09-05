@@ -1,7 +1,9 @@
-// Server-side helper for enqueuing pre-rendered app emails onto the Lovable
-// Emails queue. The queue processor (/lovable/email/queue/process) sends them.
-// NOTE: never include a `run_id` in the payload — the send API rejects
-// caller-invented run ids with 404 run_not_found.
+// Server-side helper for sending app emails through Lovable's managed email
+// API. Delivery, retries, suppression and unsubscribe handling are enforced by
+// Lovable server-side; we keep writing our own email_send_log rows so the app's
+// reporting keeps working.
+
+import { EmailAPIError, sendLovableEmail } from "@lovable.dev/email-js";
 
 const SITE_NAME = "NectarPay";
 const SENDER_DOMAIN = "notify.nectar-pay.com";
@@ -24,84 +26,67 @@ export async function enqueueAppEmail(
   const messageId = crypto.randomUUID();
   const to = args.to.trim();
 
-  // Respect the suppression list (bounces / complaints / unsubscribes).
-  const { data: suppressed } = await supabaseAdmin
-    .from("suppressed_emails")
-    .select("id")
-    .eq("email", to.toLowerCase())
-    .maybeSingle();
-
-  if (suppressed) {
-    await supabaseAdmin.from("email_send_log").insert({
-      message_id: messageId,
-      template_name: args.label,
-      recipient_email: to,
-      status: "suppressed",
-    });
-    return { ok: false, error: "email_suppressed" };
-  }
-
-  // Every app email must carry an unsubscribe token (the API rejects sends without one).
-  const normalized = to.toLowerCase();
-  let unsubscribeToken: string | null = null;
-  const { data: existingToken } = await supabaseAdmin
-    .from("email_unsubscribe_tokens")
-    .select("token")
-    .eq("email", normalized)
-    .maybeSingle();
-
-  if (existingToken?.token) {
-    unsubscribeToken = existingToken.token;
-  } else {
-    const newToken = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
-    await supabaseAdmin
-      .from("email_unsubscribe_tokens")
-      .upsert({ token: newToken, email: normalized }, { onConflict: "email", ignoreDuplicates: true });
-    const { data: stored } = await supabaseAdmin
-      .from("email_unsubscribe_tokens")
-      .select("token")
-      .eq("email", normalized)
-      .maybeSingle();
-    unsubscribeToken = stored?.token ?? newToken;
-  }
-
-  await supabaseAdmin.from("email_send_log").insert({
-    message_id: messageId,
-    template_name: args.label,
-    recipient_email: to,
-    status: "pending",
-  });
-
-  const { error } = await supabaseAdmin.rpc("enqueue_email", {
-    queue_name: "transactional_emails",
-    payload: {
-      message_id: messageId,
-      idempotency_key: args.idempotencyKey ?? messageId,
-      to,
-      from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
-      sender_domain: SENDER_DOMAIN,
-      subject: args.subject,
-      html: args.html,
-      text: args.text,
-      purpose: "transactional",
-      label: args.label,
-      unsubscribe_token: unsubscribeToken,
-      queued_at: new Date().toISOString(),
-    } as never,
-  });
-
-
-  if (error) {
-    console.error("[email] enqueue failed", { label: args.label, error });
-    await supabaseAdmin.from("email_send_log").insert({
+  const apiKey = process.env["LOVABLE_API_KEY"];
+  if (!apiKey) {
+    console.error("[email] LOVABLE_API_KEY is not configured", { label: args.label });
+    const { error } = await supabaseAdmin.from("email_send_log").insert({
       message_id: messageId,
       template_name: args.label,
       recipient_email: to,
       status: "failed",
-      error_message: error.message?.slice(0, 500) ?? "enqueue failed",
+      error_message: "LOVABLE_API_KEY is not configured",
     });
-    return { ok: false, error: error.message };
+    if (error) console.error("[email] send log insert failed", { code: error.code, message: error.message });
+    return { ok: false, error: "email_not_configured" };
   }
+
+  try {
+    await sendLovableEmail(
+      {
+        to,
+        from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+        sender_domain: SENDER_DOMAIN,
+        subject: args.subject,
+        html: args.html,
+        text: args.text,
+        purpose: "transactional",
+        label: args.label,
+        idempotency_key: args.idempotencyKey ?? messageId,
+      },
+      { apiKey, sendUrl: process.env["LOVABLE_SEND_URL"] },
+    );
+  } catch (err) {
+    if (err instanceof EmailAPIError && err.code === "recipient_suppressed") {
+      const { error } = await supabaseAdmin.from("email_send_log").insert({
+        message_id: messageId,
+        template_name: args.label,
+        recipient_email: to,
+        status: "suppressed",
+      });
+      if (error) console.error("[email] send log insert failed", { code: error.code, message: error.message });
+      return { ok: false, error: "email_suppressed" };
+    }
+
+    const message = err instanceof Error ? err.message : "send failed";
+    console.error("[email] send failed", { label: args.label, message });
+    const { error } = await supabaseAdmin.from("email_send_log").insert({
+      message_id: messageId,
+      template_name: args.label,
+      recipient_email: to,
+      status: "failed",
+      error_message: message.slice(0, 500),
+    });
+    if (error) console.error("[email] send log insert failed", { code: error.code, message: error.message });
+    return { ok: false, error: message };
+  }
+
+  const { error } = await supabaseAdmin.from("email_send_log").insert({
+    message_id: messageId,
+    template_name: args.label,
+    recipient_email: to,
+    status: "sent",
+  });
+  if (error) console.error("[email] send log insert failed", { code: error.code, message: error.message });
 
   return { ok: true };
 }
