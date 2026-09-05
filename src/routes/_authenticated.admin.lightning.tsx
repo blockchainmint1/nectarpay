@@ -49,6 +49,8 @@ function AdminLightning() {
   const status = useServerFn(getLightningAdminStatus);
   const depositAddress = useServerFn(getLightningDepositAddress);
   const openChannel = useServerFn(openLightningChannel);
+  const watcher = useServerFn(runLightningWatcher);
+  const sweep = useServerFn(runLightningSweep);
   const qc = useQueryClient();
 
   const [address, setAddress] = useState<string | null>(null);
@@ -74,6 +76,24 @@ function AdminLightning() {
     onSuccess: (r) => {
       toast.success(r.txid ? `Channel opening — funding tx ${r.txid.slice(0, 16)}…` : "Channel opening");
       setUri("");
+      void qc.invalidateQueries({ queryKey: ["admin-lightning"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const watcherMut = useMutation({
+    mutationFn: () => watcher({}),
+    onSuccess: (r) => {
+      toast.success(`Watcher tick: checked ${r.checked}, settled ${r.settled}, cancelled ${r.cancelled}`);
+      void qc.invalidateQueries({ queryKey: ["admin-lightning"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const sweepMut = useMutation({
+    mutationFn: () => sweep({}),
+    onSuccess: (r) => {
+      toast.success(`Sweep tick: ${r.swept} store(s) paid, ${r.totalSats.toLocaleString()} sats total`);
       void qc.invalidateQueries({ queryKey: ["admin-lightning"] });
     },
     onError: (e: Error) => toast.error(e.message),
