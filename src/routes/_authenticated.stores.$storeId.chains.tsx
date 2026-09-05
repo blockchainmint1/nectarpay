@@ -123,8 +123,8 @@ const CHAINS: ChainMeta[] = [
     key: "lightning",
     name: "Bitcoin Lightning",
     inputKind: "btc-address",
-    placeholder: "bc1q… payout address",
-    hint: "Instant, near-zero-fee Bitcoin. Payments arrive on the Nectar.Pay node and are automatically paid out on-chain to the Bitcoin address you enter here once your balance crosses your payout threshold.",
+    placeholder: "bc1q… payout address (optional)",
+    hint: "Instant, near-zero-fee Bitcoin. Payments arrive on the Nectar.Pay node and are paid out on-chain once your balance crosses your payout threshold. Leave the address blank to have each payout sent to a fresh address from your linked Bitcoin wallet above — or enter a fixed bc1q… address to override.",
   },
 ];
 
@@ -577,6 +577,35 @@ function ChainCard({
           .eq("id", row.id!);
         if (error) throw new Error(error.message || error.details || error.hint || "Save failed.");
         toast.success(`${meta.name} saved.`);
+        onSaved();
+      } catch (e) {
+        console.error("save chain failed", e);
+        toast.error(e instanceof Error ? e.message : "Save failed.");
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
+
+    // Lightning payout address is OPTIONAL: blank means "derive a fresh
+    // payout address from my linked Bitcoin xpub at each sweep."
+    if (!v && meta.inputKind === "btc-address") {
+      setSaving(true);
+      try {
+        const payload = {
+          store_id: storeId,
+          chain: meta.key,
+          network: "mainnet",
+          xpub: null,
+          xpub_or_address: "",
+          enabled: row.enabled,
+          stables: row.stables,
+        };
+        const { error } = await supabase
+          .from("chain_configs")
+          .upsert(payload, { onConflict: "store_id,chain" });
+        if (error) throw new Error(error.message || "Save failed.");
+        toast.success(`${meta.name} saved — payouts will go to fresh addresses from your linked Bitcoin wallet.`);
         onSaved();
       } catch (e) {
         console.error("save chain failed", e);
