@@ -238,8 +238,14 @@ export async function runLightningSweepTick(): Promise<LightningSweepResult> {
       .eq("store_id", storeId)
       .eq("chain", "lightning")
       .maybeSingle();
-    const payoutAddress = cfg?.xpub_or_address?.trim();
-    if (!cfg?.enabled || !payoutAddress) continue;
+    if (!cfg?.enabled) continue;
+
+    // Payout target: prefer a FRESH address derived from the merchant's
+    // linked Bitcoin xpub (the same wallet Beekeeper handed us — nothing for
+    // the merchant to copy/paste). Fall back to the fixed payout address on
+    // the Lightning config when no BTC xpub is linked.
+    const payoutAddress = await resolveSweepAddress(supabaseAdmin, storeId, cfg.xpub_or_address);
+    if (!payoutAddress) continue;
 
     if (nodeBalance - SWEEP_RESERVE_SATS < agg.sats) {
       console.warn(`[lightning] node balance too low to sweep store ${storeId}`);
