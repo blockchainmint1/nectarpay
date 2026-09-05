@@ -587,6 +587,35 @@ function ChainCard({
       return;
     }
 
+    // Lightning payout address is OPTIONAL: blank means "derive a fresh
+    // payout address from my linked Bitcoin xpub at each sweep."
+    if (!v && meta.inputKind === "btc-address") {
+      setSaving(true);
+      try {
+        const payload = {
+          store_id: storeId,
+          chain: meta.key,
+          network: "mainnet",
+          xpub: null,
+          xpub_or_address: "",
+          enabled: row.enabled,
+          stables: row.stables,
+        };
+        const { error } = await supabase
+          .from("chain_configs")
+          .upsert(payload, { onConflict: "store_id,chain" });
+        if (error) throw new Error(error.message || "Save failed.");
+        toast.success(`${meta.name} saved — payouts will go to fresh addresses from your linked Bitcoin wallet.`);
+        onSaved();
+      } catch (e) {
+        console.error("save chain failed", e);
+        toast.error(e instanceof Error ? e.message : "Save failed.");
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
+
     if (!v) {
       toast.error("Enter an xpub or address first.");
       return;
