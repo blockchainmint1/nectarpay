@@ -77,7 +77,10 @@ export async function deriveInvoiceAddress(
   }
 
   let address: string;
-  let index = cfg.next_address_index ?? 0;
+  // Index 0 is never handed out or monitored — it's the account's "public"
+  // address (payout hints, wallet UIs, manual sends), so derivation for
+  // invoices always starts at 1.
+  let index = Math.max(1, cfg.next_address_index ?? 0);
   let recycledEvmAddress = false;
   const xpub = cfg.xpub ?? cfg.xpub_or_address;
 
@@ -275,6 +278,7 @@ async function findRecyclableEvmAddress(
     .eq("store_id", storeId)
     .eq("chain", chain)
     .not("address", "is", null)
+    .gte("address_index", 1) // index 0 is never handed out
     .lt("created_at", cutoffIso)
     .order("created_at", { ascending: true })
     .limit(100);
@@ -294,6 +298,9 @@ async function findRecyclableEvmAddress(
   for (const c of (candidates ?? []) as Array<{ address: string; address_index: number | null }>) {
     if (seen.has(c.address)) continue;
     seen.add(c.address);
+
+    // Never recycle index 0.
+    if ((c.address_index ?? 0) < 1) continue;
 
     // Must be derivable from the current xpub.
     if (!validAddresses.has(c.address.toLowerCase())) continue;

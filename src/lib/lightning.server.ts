@@ -221,7 +221,7 @@ async function resolveSweepAddress(
       const { getNetwork } = await import("@/lib/chains/networks");
       const net = getNetwork("btc");
       if (!net || net.kind !== "btc-like") throw new Error("btc network missing");
-      const index = Number(btcCfg.next_address_index ?? 0);
+      const index = Math.max(1, Number(btcCfg.next_address_index ?? 0));
       const address = deriveBtcLikeAddress(xpub, net, index);
       await supabaseAdmin
         .from("chain_configs")

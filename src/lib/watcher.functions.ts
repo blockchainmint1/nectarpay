@@ -462,6 +462,8 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
  * payment activity — `underpaid` invoices keep their lock because real
  * money landed on that address.
  */
+const UNDERPAID_CUTOFF_MS = 24 * 60 * 60 * 1000;
+
 async function expireStaleInvoices(): Promise<number> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const nowIso = new Date().toISOString();
@@ -475,7 +477,19 @@ async function expireStaleInvoices(): Promise<number> {
     console.error("[watcher] expireStaleInvoices failed:", error);
     return 0;
   }
-  return data?.length ?? 0;
+
+  // Hard 24h cutoff for underpaid invoices: after that they stop absorbing
+  // later on-chain funds (sweeps, re-used addresses, late partial payments).
+  const cutoffIso = new Date(Date.now() - UNDERPAID_CUTOFF_MS).toISOString();
+  const { data: stale, error: staleErr } = await supabaseAdmin
+    .from("invoices")
+    .update({ status: "expired" })
+    .eq("status", "underpaid")
+    .lt("updated_at", cutoffIso)
+    .select("id");
+  if (staleErr) console.error("[watcher] underpaid cutoff failed:", staleErr);
+
+  return (data?.length ?? 0) + (stale?.length ?? 0);
 }
 
 export async function runWatcherTick(): Promise<WatcherResult[]> {
@@ -542,7 +556,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             cfg.store_id,
             cfg.xpub,
             (i) => deriveBtcLikeAddress(cfg.xpub!, net, i),
-            0,
+            1,
             (cfg.next_address_index ?? 0) + ADDRESS_WINDOW,
           );
         }
@@ -630,7 +644,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             cfg.store_id,
             cfg.xpub,
             (i) => deriveEvmAddress(cfg.xpub!, ETH_NETWORK, i),
-            0,
+            1,
             (cfg.next_address_index ?? 0) + ADDRESS_WINDOW,
           );
         }
@@ -725,7 +739,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               cfg.store_id,
               cfg.xpub,
               (i) => deriveTronAddress(cfg.xpub!, i),
-              0,
+              1,
               (cfg.next_address_index ?? 0) + ADDRESS_WINDOW,
             );
           } else if (cfg.xpub_or_address) {
