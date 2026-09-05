@@ -2409,15 +2409,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      delete_email: {
-        Args: { message_id: number; queue_name: string }
-        Returns: boolean
-      }
-      email_queue_dispatch: { Args: never; Returns: undefined }
-      enqueue_email: {
-        Args: { payload: Json; queue_name: string }
-        Returns: number
-      }
       get_merchant_map_pins: {
         Args: never
         Returns: {
@@ -2444,26 +2435,9 @@ export type Database = {
       }
       increment_affiliate_click: { Args: { _code: string }; Returns: undefined }
       is_subscription_active: { Args: { _user_id: string }; Returns: boolean }
-      move_to_dlq: {
-        Args: {
-          dlq_name: string
-          message_id: number
-          payload: Json
-          source_queue: string
-        }
-        Returns: number
-      }
       next_txc_deposit_index: { Args: never; Returns: number }
       owns_store: { Args: { _store_id: string }; Returns: boolean }
       purge_expired_wallet_challenges: { Args: never; Returns: undefined }
-      read_email_batch: {
-        Args: { batch_size: number; queue_name: string; vt: number }
-        Returns: {
-          message: Json
-          msg_id: number
-          read_ct: number
-        }[]
-      }
       txc_balance: { Args: { _user_id: string }; Returns: number }
     }
     Enums: {
