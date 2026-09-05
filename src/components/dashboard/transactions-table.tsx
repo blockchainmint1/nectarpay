@@ -260,6 +260,9 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
                       <td className="px-4 py-2.5 font-mono text-xs">
                         <span title={r.tx_hash}>{r.tx_hash.slice(0, 10)}…{r.tx_hash.slice(-6)}</span>
                       </td>
+                      <td className="px-4 py-2.5 whitespace-nowrap text-muted-foreground">
+                        {chainLabel}
+                      </td>
                       <td className="px-4 py-2.5 text-right font-mono tabular-nums whitespace-nowrap">
                         <span title={String(r.amount)}>{formatCryptoAmount(r.amount, symbol)}</span>
                         {symbol ? <span className="ml-1 text-xs text-muted-foreground">{symbol}</span> : null}
