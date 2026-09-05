@@ -235,7 +235,7 @@ function CheckoutPage() {
 
   const countdown = useCountdown(inv?.expiresAt ?? null);
   const network = inv?.chain
-    ? (ALL_NETWORKS as Record<string, { confirmationsRequired: number }>)[inv.chain]
+    ? (ALL_NETWORKS as unknown as Record<string, { confirmationsRequired?: number }>)[inv.chain]
     : null;
   const requiredConfs = network?.confirmationsRequired ?? 1;
 
