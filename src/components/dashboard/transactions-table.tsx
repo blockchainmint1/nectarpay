@@ -206,6 +206,7 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
               <th className="px-4 py-2.5">Store</th>
               <th className="px-4 py-2.5">Order ID</th>
               <th className="px-4 py-2.5">Tx hash</th>
+              <th className="px-4 py-2.5">Chain</th>
               <th className="px-4 py-2.5 text-right"><SortHead k="amount" align="right">Amount</SortHead></th>
               <th className="px-4 py-2.5 text-right">Value</th>
               <th className="px-4 py-2.5 text-right"><SortHead k="confirmations" align="right">Conf.</SortHead></th>
