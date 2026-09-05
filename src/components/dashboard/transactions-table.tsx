@@ -1,7 +1,7 @@
 import { Fragment, useState, useEffect } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { ArrowUpDown, ArrowUp, ArrowDown, Search, ChevronLeft, ChevronRight, ExternalLink, Store, ChevronDown, ChevronRight as ChevronRightIcon } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, Search, ChevronLeft, ChevronRight, ExternalLink, Store, ChevronDown, ChevronRight as ChevronRightIcon, Link2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { ALL_NETWORKS, type ChainKind } from "@/lib/chains/networks";
 
 type SortKey = "first_seen_at" | "amount" | "confirmations";
 type SortDir = "asc" | "desc";
