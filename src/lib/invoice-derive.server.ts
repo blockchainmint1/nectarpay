@@ -28,8 +28,29 @@ export async function deriveInvoiceAddress(
   chain: ChainKind,
   fiatAmount: number,
   tokenSymbol: string | null = null,
+  invoiceId: string | null = null,
 ): Promise<DeriveResult> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  // Lightning has no derived address — we ask the shared node for a BOLT-11
+  // payment request and store that string where an address would go.
+  if (chain === "lightning") {
+    const { createLightningInvoice } = await import("@/lib/lightning.server");
+    const ln = await createLightningInvoice(storeId, fiatAmount, invoiceId);
+    const { data: lnCfg } = await supabaseAdmin
+      .from("chain_configs")
+      .select("id")
+      .eq("store_id", storeId)
+      .eq("chain", "lightning")
+      .maybeSingle();
+    return {
+      address: ln.paymentRequest,
+      cryptoAmount: ln.btcAmount,
+      rate: ln.rate,
+      index: 0,
+      chainConfigId: lnCfg?.id ?? "",
+    };
+  }
 
   const { data: cfg } = await supabaseAdmin
     .from("chain_configs")
