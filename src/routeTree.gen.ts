@@ -49,7 +49,6 @@ import { Route as IntegrationsWoocommerceRouteImport } from './routes/integratio
 import { Route as IntegrationsPrestashopRouteImport } from './routes/integrations.prestashop'
 import { Route as IInvoiceIdRouteImport } from './routes/i.$invoiceId'
 import { Route as GoKitRouteImport } from './routes/go.kit'
-import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as DocsWalletSetupRouteImport } from './routes/docs.wallet-setup'
 import { Route as DocsTapToPayTangemRouteImport } from './routes/docs.tap-to-pay-tangem'
 import { Route as DocsAddressRotationRouteImport } from './routes/docs.address-rotation'
@@ -66,7 +65,6 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated.account'
 import { Route as AuthenticatedStoresIndexRouteImport } from './routes/_authenticated.stores.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated.admin.index'
-import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as LovableEmailEventsRouteImport } from './routes/lovable/email/events'
 import { Route as AuthenticatedStoresNewRouteImport } from './routes/_authenticated.stores.new'
 import { Route as AuthenticatedStoresStoreIdRouteImport } from './routes/_authenticated.stores.$storeId'
@@ -83,9 +81,7 @@ import { Route as AuthenticatedAdminCrmRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedStoresStoreIdIndexRouteImport } from './routes/_authenticated.stores.$storeId.index'
 import { Route as AuthenticatedAdminKnowledgeIndexRouteImport } from './routes/_authenticated.admin.knowledge.index'
 import { Route as AuthenticatedAdminCrmIndexRouteImport } from './routes/_authenticated.admin.crm.index'
-import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
-import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as ApiPublicV1WalletLinkRouteImport } from './routes/api/public/v1/wallet-link'
@@ -341,11 +337,6 @@ const GoKitRoute = GoKitRouteImport.update({
   path: '/go/kit',
   getParentRoute: () => rootRouteImport,
 } as any)
-const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
-  id: '/email/unsubscribe',
-  path: '/email/unsubscribe',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DocsWalletSetupRoute = DocsWalletSetupRouteImport.update({
   id: '/wallet-setup',
   path: '/wallet-setup',
@@ -428,11 +419,6 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
-} as any)
-const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
-  id: '/lovable/email/suppression',
-  path: '/lovable/email/suppression',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const LovableEmailEventsRoute = LovableEmailEventsRouteImport.update({
   id: '/lovable/email/events',
@@ -526,22 +512,10 @@ const AuthenticatedAdminCrmIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedAdminCrmRoute,
   } as any)
-const LovableEmailTransactionalSendRoute =
-  LovableEmailTransactionalSendRouteImport.update({
-    id: '/lovable/email/transactional/send',
-    path: '/lovable/email/transactional/send',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const LovableEmailTransactionalPreviewRoute =
   LovableEmailTransactionalPreviewRouteImport.update({
     id: '/lovable/email/transactional/preview',
     path: '/lovable/email/transactional/preview',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const LovableEmailQueueProcessRoute =
-  LovableEmailQueueProcessRouteImport.update({
-    id: '/lovable/email/queue/process',
-    path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
 const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
@@ -899,7 +873,6 @@ export interface FileRoutesByFullPath {
   '/docs/address-rotation': typeof DocsAddressRotationRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
-  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/go/kit': typeof GoKitRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/prestashop': typeof IntegrationsPrestashopRoute
@@ -928,7 +901,6 @@ export interface FileRoutesByFullPath {
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
-  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/stores/': typeof AuthenticatedStoresIndexRoute
   '/admin/crm/leads': typeof AuthenticatedAdminCrmLeadsRoute
@@ -967,9 +939,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRouteWithChildren
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
-  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/admin/crm/': typeof AuthenticatedAdminCrmIndexRoute
   '/admin/knowledge/': typeof AuthenticatedAdminKnowledgeIndexRoute
   '/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
@@ -1030,7 +1000,6 @@ export interface FileRoutesByTo {
   '/docs/address-rotation': typeof DocsAddressRotationRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
-  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/go/kit': typeof GoKitRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/prestashop': typeof IntegrationsPrestashopRoute
@@ -1056,7 +1025,6 @@ export interface FileRoutesByTo {
   '/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
-  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/stores': typeof AuthenticatedStoresIndexRoute
   '/admin/crm/leads': typeof AuthenticatedAdminCrmLeadsRoute
@@ -1095,9 +1063,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRouteWithChildren
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
-  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/admin/crm': typeof AuthenticatedAdminCrmIndexRoute
   '/admin/knowledge': typeof AuthenticatedAdminKnowledgeIndexRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdIndexRoute
@@ -1162,7 +1128,6 @@ export interface FileRoutesById {
   '/docs/address-rotation': typeof DocsAddressRotationRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
-  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/go/kit': typeof GoKitRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/prestashop': typeof IntegrationsPrestashopRoute
@@ -1191,7 +1156,6 @@ export interface FileRoutesById {
   '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/_authenticated/stores/new': typeof AuthenticatedStoresNewRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
-  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/stores/': typeof AuthenticatedStoresIndexRoute
   '/_authenticated/admin/crm/leads': typeof AuthenticatedAdminCrmLeadsRoute
@@ -1230,9 +1194,7 @@ export interface FileRoutesById {
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRouteWithChildren
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
-  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
-  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/_authenticated/admin/crm/': typeof AuthenticatedAdminCrmIndexRoute
   '/_authenticated/admin/knowledge/': typeof AuthenticatedAdminKnowledgeIndexRoute
   '/_authenticated/stores/$storeId/': typeof AuthenticatedStoresStoreIdIndexRoute
@@ -1297,7 +1259,6 @@ export interface FileRouteTypes {
     | '/docs/address-rotation'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
-    | '/email/unsubscribe'
     | '/go/kit'
     | '/i/$invoiceId'
     | '/integrations/prestashop'
@@ -1326,7 +1287,6 @@ export interface FileRouteTypes {
     | '/stores/$storeId'
     | '/stores/new'
     | '/lovable/email/events'
-    | '/lovable/email/suppression'
     | '/admin/'
     | '/stores/'
     | '/admin/crm/leads'
@@ -1365,9 +1325,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/wallet-link'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
-    | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
-    | '/lovable/email/transactional/send'
     | '/admin/crm/'
     | '/admin/knowledge/'
     | '/stores/$storeId/'
@@ -1428,7 +1386,6 @@ export interface FileRouteTypes {
     | '/docs/address-rotation'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
-    | '/email/unsubscribe'
     | '/go/kit'
     | '/i/$invoiceId'
     | '/integrations/prestashop'
@@ -1454,7 +1411,6 @@ export interface FileRouteTypes {
     | '/m/virtual-terminal'
     | '/stores/new'
     | '/lovable/email/events'
-    | '/lovable/email/suppression'
     | '/admin'
     | '/stores'
     | '/admin/crm/leads'
@@ -1493,9 +1449,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/wallet-link'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
-    | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
-    | '/lovable/email/transactional/send'
     | '/admin/crm'
     | '/admin/knowledge'
     | '/stores/$storeId'
@@ -1559,7 +1513,6 @@ export interface FileRouteTypes {
     | '/docs/address-rotation'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
-    | '/email/unsubscribe'
     | '/go/kit'
     | '/i/$invoiceId'
     | '/integrations/prestashop'
@@ -1588,7 +1541,6 @@ export interface FileRouteTypes {
     | '/_authenticated/stores/$storeId'
     | '/_authenticated/stores/new'
     | '/lovable/email/events'
-    | '/lovable/email/suppression'
     | '/_authenticated/admin/'
     | '/_authenticated/stores/'
     | '/_authenticated/admin/crm/leads'
@@ -1627,9 +1579,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/wallet-link'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
-    | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
-    | '/lovable/email/transactional/send'
     | '/_authenticated/admin/crm/'
     | '/_authenticated/admin/knowledge/'
     | '/_authenticated/stores/$storeId/'
@@ -1682,7 +1632,6 @@ export interface RootRouteChildren {
   UnsubscribeRoute: typeof UnsubscribeRoute
   CompareBitpayCoingateVsNectarRoute: typeof CompareBitpayCoingateVsNectarRoute
   DevTangemTestRoute: typeof DevTangemTestRoute
-  EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   GoKitRoute: typeof GoKitRoute
   IInvoiceIdRoute: typeof IInvoiceIdRoute
   IntegrationsPrestashopRoute: typeof IntegrationsPrestashopRoute
@@ -1692,7 +1641,6 @@ export interface RootRouteChildren {
   TSlugRoute: typeof TSlugRoute
   IntegrationsIndexRoute: typeof IntegrationsIndexRoute
   LovableEmailEventsRoute: typeof LovableEmailEventsRoute
-  LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicAffiliateClickRoute: typeof ApiPublicAffiliateClickRoute
   ApiPublicAuthWalletCallbackRoute: typeof ApiPublicAuthWalletCallbackRoute
   ApiPublicAuthWalletChallengeRoute: typeof ApiPublicAuthWalletChallengeRoute
@@ -1712,9 +1660,7 @@ export interface RootRouteChildren {
   ApiPublicV1WalletLinkRoute: typeof ApiPublicV1WalletLinkRouteWithChildren
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
-  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
-  LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
   ApiPublicV1HooksAffiliateSaleRoute: typeof ApiPublicV1HooksAffiliateSaleRoute
   ApiPublicV1PayInvoiceIdRoute: typeof ApiPublicV1PayInvoiceIdRoute
   ApiPublicV1StatsLiveRoute: typeof ApiPublicV1StatsLiveRoute
@@ -2007,13 +1953,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GoKitRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/email/unsubscribe': {
-      id: '/email/unsubscribe'
-      path: '/email/unsubscribe'
-      fullPath: '/email/unsubscribe'
-      preLoaderRoute: typeof EmailUnsubscribeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/docs/wallet-setup': {
       id: '/docs/wallet-setup'
       path: '/wallet-setup'
@@ -2125,13 +2064,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
-    }
-    '/lovable/email/suppression': {
-      id: '/lovable/email/suppression'
-      path: '/lovable/email/suppression'
-      fullPath: '/lovable/email/suppression'
-      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/lovable/email/events': {
       id: '/lovable/email/events'
@@ -2245,25 +2177,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCrmIndexRouteImport
       parentRoute: typeof AuthenticatedAdminCrmRoute
     }
-    '/lovable/email/transactional/send': {
-      id: '/lovable/email/transactional/send'
-      path: '/lovable/email/transactional/send'
-      fullPath: '/lovable/email/transactional/send'
-      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/lovable/email/transactional/preview': {
       id: '/lovable/email/transactional/preview'
       path: '/lovable/email/transactional/preview'
       fullPath: '/lovable/email/transactional/preview'
       preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lovable/email/queue/process': {
-      id: '/lovable/email/queue/process'
-      path: '/lovable/email/queue/process'
-      fullPath: '/lovable/email/queue/process'
-      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lovable/email/auth/webhook': {
@@ -2958,7 +2876,6 @@ const rootRouteChildren: RootRouteChildren = {
   UnsubscribeRoute: UnsubscribeRoute,
   CompareBitpayCoingateVsNectarRoute: CompareBitpayCoingateVsNectarRoute,
   DevTangemTestRoute: DevTangemTestRoute,
-  EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   GoKitRoute: GoKitRoute,
   IInvoiceIdRoute: IInvoiceIdRoute,
   IntegrationsPrestashopRoute: IntegrationsPrestashopRoute,
@@ -2968,7 +2885,6 @@ const rootRouteChildren: RootRouteChildren = {
   TSlugRoute: TSlugRoute,
   IntegrationsIndexRoute: IntegrationsIndexRoute,
   LovableEmailEventsRoute: LovableEmailEventsRoute,
-  LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicAffiliateClickRoute: ApiPublicAffiliateClickRoute,
   ApiPublicAuthWalletCallbackRoute: ApiPublicAuthWalletCallbackRoute,
   ApiPublicAuthWalletChallengeRoute: ApiPublicAuthWalletChallengeRoute,
@@ -2988,9 +2904,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1WalletLinkRoute: ApiPublicV1WalletLinkRouteWithChildren,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
-  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
-  LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
   ApiPublicV1HooksAffiliateSaleRoute: ApiPublicV1HooksAffiliateSaleRoute,
   ApiPublicV1PayInvoiceIdRoute: ApiPublicV1PayInvoiceIdRoute,
   ApiPublicV1StatsLiveRoute: ApiPublicV1StatsLiveRoute,
