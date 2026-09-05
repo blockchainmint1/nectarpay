@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { createWalletLinkCode, requestWalletLinkVerification } from "@/lib/wallet-link.functions";
+import { getStoreBtcPayoutAddress } from "@/lib/chain-payout.functions";
 import { qrToDataURL } from "@/lib/qr";
 // Inlined client-safe validators (mirror src/lib/chains/derive.server.ts).
 function isXpubLike(s: string): boolean {
@@ -299,7 +300,7 @@ function ChainsPage() {
         <div className="mt-8 text-sm text-muted-foreground">Loading…</div>
       ) : (
         <div className="mt-6 space-y-4">
-          {CHAINS.map((meta) => (
+          {CHAINS.filter((c) => c.key !== "lightning").map((meta) => (
             <ChainCard
               key={meta.key}
               meta={meta}
@@ -308,8 +309,17 @@ function ChainsPage() {
               onChange={(r) => setRows((prev) => ({ ...prev, [meta.key]: r }))}
               onSaved={() => refetch()}
               xpubLocked={isLinked}
+              lightning={
+                meta.key === "btc"
+                  ? {
+                      row: rows.lightning,
+                      onChange: (r: Row) => setRows((prev) => ({ ...prev, lightning: r })),
+                    }
+                  : undefined
+              }
             />
           ))}
+
         </div>
 
       )}
@@ -509,6 +519,7 @@ function ChainCard({
   onChange,
   onSaved,
   xpubLocked = false,
+  lightning,
 }: {
   meta: ChainMeta;
   row: Row;
@@ -516,6 +527,7 @@ function ChainCard({
   onChange: (r: Row) => void;
   onSaved: () => void;
   xpubLocked?: boolean;
+  lightning?: { row: Row; onChange: (r: Row) => void };
 }) {
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -524,6 +536,7 @@ function ChainCard({
   const showInput = !xpubLocked && (!persisted || editing);
 
   const value = meta.inputKind === "xpub" ? row.xpub ?? "" : row.xpub_or_address;
+
 
   const validation = useMemo(() => {
     const v = value.trim();
@@ -797,9 +810,165 @@ function ChainCard({
           </p>
         </div>
       )}
+
+      {lightning && (
+        <LightningSection
+          storeId={storeId}
+          row={lightning.row}
+          onChange={lightning.onChange}
+          onSaved={onSaved}
+          btcXpub={meta.inputKind === "xpub" ? row.xpub ?? row.xpub_or_address ?? "" : ""}
+        />
+      )}
     </div>
   );
 }
+
+function LightningSection({
+  storeId,
+  row,
+  onChange,
+  onSaved,
+  btcXpub,
+}: {
+  storeId: string;
+  row: Row;
+  onChange: (r: Row) => void;
+  onSaved: () => void;
+  btcXpub: string;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [prefilling, setPrefilling] = useState(false);
+  const derive = useServerFn(getStoreBtcPayoutAddress);
+  const address = row.xpub_or_address ?? "";
+  const valid = !address.trim() || isBtcAddressLike(address);
+
+  async function prefill() {
+    setPrefilling(true);
+    try {
+      const res = await derive({ data: { storeId } });
+      if (!res.address) {
+        toast.error("Save a Bitcoin xpub above first — we derive the payout address from it.");
+        return;
+      }
+      onChange({ ...row, xpub_or_address: res.address, xpub: null });
+      toast.success("Filled with your first Bitcoin address (m/0/0).");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not derive an address.");
+    } finally {
+      setPrefilling(false);
+    }
+  }
+
+  // Auto-prefill once: Lightning on, no address saved yet, BTC xpub present.
+  const [autoTried, setAutoTried] = useState(false);
+  useEffect(() => {
+    if (autoTried) return;
+    if (!btcXpub || address.trim()) return;
+    setAutoTried(true);
+    derive({ data: { storeId } })
+      .then((res) => {
+        if (res.address) onChange({ ...row, xpub_or_address: res.address, xpub: null });
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [btcXpub, address, autoTried]);
+
+  async function save() {
+    const v = address.trim();
+    if (v && !isBtcAddressLike(v)) {
+      toast.error("Not a valid Bitcoin address.");
+      return;
+    }
+    setSaving(true);
+    try {
+      if (row.id) {
+        const { error } = await supabase
+          .from("chain_configs")
+          .update({ enabled: row.enabled, xpub_or_address: v, xpub: null })
+          .eq("id", row.id);
+        if (error) throw new Error(error.message);
+      } else {
+        const { error } = await supabase.from("chain_configs").upsert(
+          {
+            store_id: storeId,
+            chain: "lightning",
+            network: "mainnet",
+            xpub: null,
+            xpub_or_address: v,
+            enabled: row.enabled,
+            stables: row.stables,
+          },
+          { onConflict: "store_id,chain" },
+        );
+        if (error) throw new Error(error.message);
+      }
+      toast.success("Lightning settings saved.");
+      onSaved();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Save failed.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="mt-4 rounded-md border border-primary/30 bg-primary/5 p-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <Sparkles className="h-3.5 w-3.5 text-primary" /> Bitcoin Lightning
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Instant, near-zero-fee Bitcoin. Payments arrive on the Nectar.Pay node and are paid out
+            on-chain once your balance crosses the payout threshold.
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <Label htmlFor="enabled-lightning" className="text-xs text-muted-foreground">
+            Accept Lightning
+          </Label>
+          <Switch
+            id="enabled-lightning"
+            checked={row.enabled}
+            onCheckedChange={(checked) => onChange({ ...row, enabled: checked })}
+          />
+        </div>
+      </div>
+
+      <div className="mt-3 grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-end">
+        <div>
+          <Label htmlFor="ln-payout" className="text-xs">
+            Bitcoin payout address
+          </Label>
+          <Input
+            id="ln-payout"
+            value={address}
+            onChange={(e) => onChange({ ...row, xpub_or_address: e.target.value, xpub: null })}
+            placeholder="bc1q… (pre-filled from your Bitcoin xpub)"
+            spellCheck={false}
+            autoComplete="off"
+            className="font-mono text-xs"
+          />
+          {!valid && <p className="mt-1 text-xs text-destructive">Not a valid Bitcoin address.</p>}
+        </div>
+        <Button type="button" variant="outline" onClick={prefill} disabled={prefilling}>
+          <RefreshCw className={cn("mr-2 h-4 w-4", prefilling && "animate-spin")} />
+          Use my Bitcoin address
+        </Button>
+        <Button type="button" onClick={save} disabled={saving}>
+          <Save className="mr-2 h-4 w-4" />
+          {saving ? "Saving…" : "Save"}
+        </Button>
+      </div>
+      <p className="mt-2 text-[11px] text-muted-foreground">
+        Pre-filled with address #0 derived from your Bitcoin xpub above. Change it to any bc1q…
+        address you control.
+      </p>
+    </div>
+  );
+}
+
 
 function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () => void }) {
   const createCode = useServerFn(createWalletLinkCode);
