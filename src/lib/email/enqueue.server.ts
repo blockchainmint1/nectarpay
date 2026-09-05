@@ -41,6 +41,30 @@ export async function enqueueAppEmail(
     return { ok: false, error: "email_suppressed" };
   }
 
+  // Every app email must carry an unsubscribe token (the API rejects sends without one).
+  const normalized = to.toLowerCase();
+  let unsubscribeToken: string | null = null;
+  const { data: existingToken } = await supabaseAdmin
+    .from("email_unsubscribe_tokens")
+    .select("token")
+    .eq("email", normalized)
+    .maybeSingle();
+
+  if (existingToken?.token) {
+    unsubscribeToken = existingToken.token;
+  } else {
+    const newToken = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+    await supabaseAdmin
+      .from("email_unsubscribe_tokens")
+      .upsert({ token: newToken, email: normalized }, { onConflict: "email", ignoreDuplicates: true });
+    const { data: stored } = await supabaseAdmin
+      .from("email_unsubscribe_tokens")
+      .select("token")
+      .eq("email", normalized)
+      .maybeSingle();
+    unsubscribeToken = stored?.token ?? newToken;
+  }
+
   await supabaseAdmin.from("email_send_log").insert({
     message_id: messageId,
     template_name: args.label,
@@ -61,9 +85,11 @@ export async function enqueueAppEmail(
       text: args.text,
       purpose: "transactional",
       label: args.label,
+      unsubscribe_token: unsubscribeToken,
       queued_at: new Date().toISOString(),
     } as never,
   });
+
 
   if (error) {
     console.error("[email] enqueue failed", { label: args.label, error });
