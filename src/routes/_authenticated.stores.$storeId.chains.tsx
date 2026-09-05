@@ -45,12 +45,12 @@ export const Route = createFileRoute("/_authenticated/stores/$storeId/chains")({
   component: ChainsPage,
 });
 
-type ChainKey = "btc" | "txc" | "eth" | "ltc" | "bch" | "doge" | "dash" | "tron" | "sol";
+type ChainKey = "btc" | "txc" | "eth" | "ltc" | "bch" | "doge" | "dash" | "tron" | "sol" | "lightning";
 
 type ChainMeta = {
   key: ChainKey;
   name: string;
-  inputKind: "xpub" | "xpub-or-address" | "address";
+  inputKind: "xpub" | "xpub-or-address" | "address" | "btc-address";
   placeholder?: string;
   hint: string;
 };
@@ -119,7 +119,18 @@ const CHAINS: ChainMeta[] = [
     placeholder: "Solana public key (base58)",
     hint: "Single static receive address. Ed25519 + rent-exempt accounts make per-invoice derivation impractical; reconcile via order_id.",
   },
+  {
+    key: "lightning",
+    name: "Bitcoin Lightning",
+    inputKind: "btc-address",
+    placeholder: "bc1q… payout address",
+    hint: "Instant, near-zero-fee Bitcoin. Payments arrive on the Nectar.Pay node and are automatically paid out on-chain to the Bitcoin address you enter here once your balance crosses your payout threshold.",
+  },
 ];
+
+function isBtcAddressLike(v: string): boolean {
+  return /^(bc1[a-z0-9]{25,87}|[13][a-km-zA-HJ-NP-Z1-9]{25,39})$/.test(v.trim());
+}
 
 
 
@@ -520,6 +531,11 @@ function ChainCard({
     if (meta.inputKind === "xpub") {
       return isXpubLike(v) ? { ok: true, msg: "" } : { ok: false, msg: "Doesn't look like an xpub." };
     }
+    if (meta.inputKind === "btc-address") {
+      return isBtcAddressLike(v)
+        ? { ok: true, msg: "" }
+        : { ok: false, msg: "Not a valid Bitcoin address." };
+    }
     if (meta.inputKind === "address") {
       return isSolanaAddressLike(v)
         ? { ok: true, msg: "" }
@@ -585,7 +601,7 @@ function ChainCard({
         store_id: storeId,
         chain: meta.key,
         network: "mainnet",
-        xpub: meta.inputKind === "address" ? null : (isXpubLike(v) ? v : null),
+        xpub: meta.inputKind === "address" || meta.inputKind === "btc-address" ? null : (isXpubLike(v) ? v : null),
         xpub_or_address: v,
         enabled: row.enabled,
         stables: row.stables,
@@ -635,7 +651,9 @@ function ChainCard({
 
           <div>
             <Label htmlFor={`val-${meta.key}`} className="text-xs">
-              {meta.inputKind === "address"
+              {meta.inputKind === "btc-address"
+                ? "Bitcoin payout address"
+                : meta.inputKind === "address"
                 ? "Receive address"
                 : meta.inputKind === "xpub"
                 ? "Extended public key (xpub)"
@@ -657,7 +675,7 @@ function ChainCard({
         ) : (
           <div>
             <Label className="text-xs">
-              {meta.inputKind === "address" ? "Receive address" : "Saved"}
+              {meta.inputKind === "btc-address" ? "Bitcoin payout address" : meta.inputKind === "address" ? "Receive address" : "Saved"}
             </Label>
             <div className="flex items-center gap-2 rounded-md border border-border bg-background/40 px-3 py-2">
               <code className="flex-1 truncate font-mono text-xs text-muted-foreground">

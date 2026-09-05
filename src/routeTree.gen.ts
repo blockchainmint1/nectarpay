@@ -95,6 +95,7 @@ import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/publi
 import { Route as ApiPublicHooksAlchemyActivityRouteImport } from './routes/api/public/hooks/alchemy-activity'
 import { Route as ApiPublicCronWatcherRouteImport } from './routes/api/public/cron/watcher'
 import { Route as ApiPublicCronRatesRouteImport } from './routes/api/public/cron/rates'
+import { Route as ApiPublicCronLightningRouteImport } from './routes/api/public/cron/lightning'
 import { Route as ApiPublicCronBillingRouteImport } from './routes/api/public/cron/billing'
 import { Route as ApiPublicCronAlchemySyncRouteImport } from './routes/api/public/cron/alchemy-sync'
 import { Route as ApiPublicAuthWalletStatusRouteImport } from './routes/api/public/auth/wallet-status'
@@ -587,6 +588,11 @@ const ApiPublicCronRatesRoute = ApiPublicCronRatesRouteImport.update({
   path: '/api/public/cron/rates',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronLightningRoute = ApiPublicCronLightningRouteImport.update({
+  id: '/api/public/cron/lightning',
+  path: '/api/public/cron/lightning',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCronBillingRoute = ApiPublicCronBillingRouteImport.update({
   id: '/api/public/cron/billing',
   path: '/api/public/cron/billing',
@@ -934,6 +940,7 @@ export interface FileRoutesByFullPath {
   '/api/public/auth/wallet-status': typeof ApiPublicAuthWalletStatusRoute
   '/api/public/cron/alchemy-sync': typeof ApiPublicCronAlchemySyncRoute
   '/api/public/cron/billing': typeof ApiPublicCronBillingRoute
+  '/api/public/cron/lightning': typeof ApiPublicCronLightningRoute
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
@@ -1059,6 +1066,7 @@ export interface FileRoutesByTo {
   '/api/public/auth/wallet-status': typeof ApiPublicAuthWalletStatusRoute
   '/api/public/cron/alchemy-sync': typeof ApiPublicCronAlchemySyncRoute
   '/api/public/cron/billing': typeof ApiPublicCronBillingRoute
+  '/api/public/cron/lightning': typeof ApiPublicCronLightningRoute
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
@@ -1191,6 +1199,7 @@ export interface FileRoutesById {
   '/api/public/auth/wallet-status': typeof ApiPublicAuthWalletStatusRoute
   '/api/public/cron/alchemy-sync': typeof ApiPublicCronAlchemySyncRoute
   '/api/public/cron/billing': typeof ApiPublicCronBillingRoute
+  '/api/public/cron/lightning': typeof ApiPublicCronLightningRoute
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
@@ -1323,6 +1332,7 @@ export interface FileRouteTypes {
     | '/api/public/auth/wallet-status'
     | '/api/public/cron/alchemy-sync'
     | '/api/public/cron/billing'
+    | '/api/public/cron/lightning'
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
     | '/api/public/hooks/alchemy-activity'
@@ -1448,6 +1458,7 @@ export interface FileRouteTypes {
     | '/api/public/auth/wallet-status'
     | '/api/public/cron/alchemy-sync'
     | '/api/public/cron/billing'
+    | '/api/public/cron/lightning'
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
     | '/api/public/hooks/alchemy-activity'
@@ -1579,6 +1590,7 @@ export interface FileRouteTypes {
     | '/api/public/auth/wallet-status'
     | '/api/public/cron/alchemy-sync'
     | '/api/public/cron/billing'
+    | '/api/public/cron/lightning'
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
     | '/api/public/hooks/alchemy-activity'
@@ -1662,6 +1674,7 @@ export interface RootRouteChildren {
   ApiPublicAuthWalletStatusRoute: typeof ApiPublicAuthWalletStatusRoute
   ApiPublicCronAlchemySyncRoute: typeof ApiPublicCronAlchemySyncRoute
   ApiPublicCronBillingRoute: typeof ApiPublicCronBillingRoute
+  ApiPublicCronLightningRoute: typeof ApiPublicCronLightningRoute
   ApiPublicCronRatesRoute: typeof ApiPublicCronRatesRoute
   ApiPublicCronWatcherRoute: typeof ApiPublicCronWatcherRoute
   ApiPublicHooksAlchemyActivityRoute: typeof ApiPublicHooksAlchemyActivityRoute
@@ -2290,6 +2303,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronRatesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/lightning': {
+      id: '/api/public/cron/lightning'
+      path: '/api/public/cron/lightning'
+      fullPath: '/api/public/cron/lightning'
+      preLoaderRoute: typeof ApiPublicCronLightningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/billing': {
       id: '/api/public/cron/billing'
       path: '/api/public/cron/billing'
@@ -2913,6 +2933,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAuthWalletStatusRoute: ApiPublicAuthWalletStatusRoute,
   ApiPublicCronAlchemySyncRoute: ApiPublicCronAlchemySyncRoute,
   ApiPublicCronBillingRoute: ApiPublicCronBillingRoute,
+  ApiPublicCronLightningRoute: ApiPublicCronLightningRoute,
   ApiPublicCronRatesRoute: ApiPublicCronRatesRoute,
   ApiPublicCronWatcherRoute: ApiPublicCronWatcherRoute,
   ApiPublicHooksAlchemyActivityRoute: ApiPublicHooksAlchemyActivityRoute,

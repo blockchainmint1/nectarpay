@@ -132,6 +132,7 @@ export const getPublicInvoice = createServerFn({ method: "GET" })
       dash: "Dash",
       isk: "Iskander",
       zcu: "ZCU",
+      lightning: "Bitcoin Lightning",
     };
     const { data: cfgs } = await supabaseAdmin
       .from("chain_configs")
@@ -274,6 +275,7 @@ export const selectInvoiceChain = createServerFn({ method: "POST" })
       chain as never,
       Number(inv.fiat_amount),
       tokenSymbol,
+      inv.id,
     );
 
     const { error: updErr } = await supabaseAdmin

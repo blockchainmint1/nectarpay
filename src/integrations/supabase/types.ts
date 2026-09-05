@@ -909,6 +909,169 @@ export type Database = {
         }
         Relationships: []
       }
+      lightning_credits: {
+        Row: {
+          amount_sats: number
+          created_at: string
+          id: string
+          invoice_id: string | null
+          lightning_invoice_id: string | null
+          store_id: string
+          sweep_id: string | null
+        }
+        Insert: {
+          amount_sats: number
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          lightning_invoice_id?: string | null
+          store_id: string
+          sweep_id?: string | null
+        }
+        Update: {
+          amount_sats?: number
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          lightning_invoice_id?: string | null
+          store_id?: string
+          sweep_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lightning_credits_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lightning_credits_lightning_invoice_id_fkey"
+            columns: ["lightning_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "lightning_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lightning_credits_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lightning_credits_sweep_id_fkey"
+            columns: ["sweep_id"]
+            isOneToOne: false
+            referencedRelation: "lightning_sweeps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lightning_invoices: {
+        Row: {
+          amount_paid_sats: number
+          amount_sats: number
+          created_at: string
+          expires_at: string | null
+          id: string
+          invoice_id: string | null
+          payment_hash: string
+          payment_request: string
+          settled_at: string | null
+          state: string
+          store_id: string
+        }
+        Insert: {
+          amount_paid_sats?: number
+          amount_sats: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          invoice_id?: string | null
+          payment_hash: string
+          payment_request: string
+          settled_at?: string | null
+          state?: string
+          store_id: string
+        }
+        Update: {
+          amount_paid_sats?: number
+          amount_sats?: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          invoice_id?: string | null
+          payment_hash?: string
+          payment_request?: string
+          settled_at?: string | null
+          state?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lightning_invoices_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lightning_invoices_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lightning_sweeps: {
+        Row: {
+          address: string
+          amount_sats: number
+          completed_at: string | null
+          created_at: string
+          error: string | null
+          fee_sats: number | null
+          id: string
+          status: string
+          store_id: string
+          txid: string | null
+        }
+        Insert: {
+          address: string
+          amount_sats: number
+          completed_at?: string | null
+          created_at?: string
+          error?: string | null
+          fee_sats?: number | null
+          id?: string
+          status?: string
+          store_id: string
+          txid?: string | null
+        }
+        Update: {
+          address?: string
+          amount_sats?: number
+          completed_at?: string | null
+          created_at?: string
+          error?: string | null
+          fee_sats?: number | null
+          id?: string
+          status?: string
+          store_id?: string
+          txid?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lightning_sweeps_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       markets: {
         Row: {
           active: boolean
@@ -1385,6 +1548,7 @@ export type Database = {
           kyc_level: Database["public"]["Enums"]["kyc_level"]
           kyc_threshold_usd: number | null
           listing_visibility: string
+          ln_sweep_threshold_sats: number
           mempool_accept_fast: boolean
           mempool_accept_slow: boolean
           mempool_max_usd: number | null
@@ -1456,6 +1620,7 @@ export type Database = {
           kyc_level?: Database["public"]["Enums"]["kyc_level"]
           kyc_threshold_usd?: number | null
           listing_visibility?: string
+          ln_sweep_threshold_sats?: number
           mempool_accept_fast?: boolean
           mempool_accept_slow?: boolean
           mempool_max_usd?: number | null
@@ -1527,6 +1692,7 @@ export type Database = {
           kyc_level?: Database["public"]["Enums"]["kyc_level"]
           kyc_threshold_usd?: number | null
           listing_visibility?: string
+          ln_sweep_threshold_sats?: number
           mempool_accept_fast?: boolean
           mempool_accept_slow?: boolean
           mempool_max_usd?: number | null
@@ -2316,6 +2482,7 @@ export type Database = {
         | "ltc"
         | "bch"
         | "dash"
+        | "lightning"
       invoice_status:
         | "pending"
         | "detected"
@@ -2478,6 +2645,7 @@ export const Constants = {
         "ltc",
         "bch",
         "dash",
+        "lightning",
       ],
       invoice_status: [
         "pending",
