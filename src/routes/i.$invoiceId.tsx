@@ -680,7 +680,10 @@ function SuccessFrame({ inv, txs, store }: { inv: Invoice; txs: Tx[]; store: { n
         <div className="rounded-xl border border-border/60 bg-background/40 p-3">
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground">Paid</p>
           <p className="mt-1 font-mono text-lg font-semibold">
-            {inv.cryptoAmount} <span className="text-sm text-muted-foreground">{inv.chain.toUpperCase()}</span>
+            {inv.cryptoAmount}{" "}
+            <span className="text-sm text-muted-foreground">
+              {inv.tokenSymbol ? inv.tokenSymbol : inv.chain.toUpperCase()}
+            </span>
           </p>
         </div>
         <div className="rounded-xl border border-border/60 bg-background/40 p-3">
