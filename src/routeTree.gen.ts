@@ -75,6 +75,7 @@ import { Route as AuthenticatedAdminVerifyRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminUpdatesRouteImport } from './routes/_authenticated.admin.updates'
 import { Route as AuthenticatedAdminProspectorRouteImport } from './routes/_authenticated.admin.prospector'
 import { Route as AuthenticatedAdminMerchantsRouteImport } from './routes/_authenticated.admin.merchants'
+import { Route as AuthenticatedAdminLightningRouteImport } from './routes/_authenticated.admin.lightning'
 import { Route as AuthenticatedAdminKnowledgeRouteImport } from './routes/_authenticated.admin.knowledge'
 import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated.admin.invoices'
 import { Route as AuthenticatedAdminCrmRouteImport } from './routes/_authenticated.admin.crm'
@@ -476,6 +477,12 @@ const AuthenticatedAdminMerchantsRoute =
   AuthenticatedAdminMerchantsRouteImport.update({
     id: '/merchants',
     path: '/merchants',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminLightningRoute =
+  AuthenticatedAdminLightningRouteImport.update({
+    id: '/lightning',
+    path: '/lightning',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminKnowledgeRoute =
@@ -905,6 +912,7 @@ export interface FileRoutesByFullPath {
   '/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
+  '/admin/lightning': typeof AuthenticatedAdminLightningRoute
   '/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
   '/admin/prospector': typeof AuthenticatedAdminProspectorRoute
   '/admin/updates': typeof AuthenticatedAdminUpdatesRoute
@@ -1032,6 +1040,7 @@ export interface FileRoutesByTo {
   '/integrations': typeof IntegrationsIndexRoute
   '/pos': typeof PosIndexRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
+  '/admin/lightning': typeof AuthenticatedAdminLightningRoute
   '/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
   '/admin/prospector': typeof AuthenticatedAdminProspectorRoute
   '/admin/updates': typeof AuthenticatedAdminUpdatesRoute
@@ -1164,6 +1173,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/_authenticated/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
+  '/_authenticated/admin/lightning': typeof AuthenticatedAdminLightningRoute
   '/_authenticated/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
   '/_authenticated/admin/prospector': typeof AuthenticatedAdminProspectorRoute
   '/_authenticated/admin/updates': typeof AuthenticatedAdminUpdatesRoute
@@ -1297,6 +1307,7 @@ export interface FileRouteTypes {
     | '/admin/crm'
     | '/admin/invoices'
     | '/admin/knowledge'
+    | '/admin/lightning'
     | '/admin/merchants'
     | '/admin/prospector'
     | '/admin/updates'
@@ -1424,6 +1435,7 @@ export interface FileRouteTypes {
     | '/integrations'
     | '/pos'
     | '/admin/invoices'
+    | '/admin/lightning'
     | '/admin/merchants'
     | '/admin/prospector'
     | '/admin/updates'
@@ -1555,6 +1567,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/crm'
     | '/_authenticated/admin/invoices'
     | '/_authenticated/admin/knowledge'
+    | '/_authenticated/admin/lightning'
     | '/_authenticated/admin/merchants'
     | '/_authenticated/admin/prospector'
     | '/_authenticated/admin/updates'
@@ -2163,6 +2176,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminMerchantsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/lightning': {
+      id: '/_authenticated/admin/lightning'
+      path: '/lightning'
+      fullPath: '/admin/lightning'
+      preLoaderRoute: typeof AuthenticatedAdminLightningRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/knowledge': {
       id: '/_authenticated/admin/knowledge'
       path: '/knowledge'
@@ -2686,6 +2706,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminCrmRoute: typeof AuthenticatedAdminCrmRouteWithChildren
   AuthenticatedAdminInvoicesRoute: typeof AuthenticatedAdminInvoicesRoute
   AuthenticatedAdminKnowledgeRoute: typeof AuthenticatedAdminKnowledgeRouteWithChildren
+  AuthenticatedAdminLightningRoute: typeof AuthenticatedAdminLightningRoute
   AuthenticatedAdminMerchantsRoute: typeof AuthenticatedAdminMerchantsRoute
   AuthenticatedAdminProspectorRoute: typeof AuthenticatedAdminProspectorRoute
   AuthenticatedAdminUpdatesRoute: typeof AuthenticatedAdminUpdatesRoute
@@ -2698,6 +2719,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminInvoicesRoute: AuthenticatedAdminInvoicesRoute,
   AuthenticatedAdminKnowledgeRoute:
     AuthenticatedAdminKnowledgeRouteWithChildren,
+  AuthenticatedAdminLightningRoute: AuthenticatedAdminLightningRoute,
   AuthenticatedAdminMerchantsRoute: AuthenticatedAdminMerchantsRoute,
   AuthenticatedAdminProspectorRoute: AuthenticatedAdminProspectorRoute,
   AuthenticatedAdminUpdatesRoute: AuthenticatedAdminUpdatesRoute,
