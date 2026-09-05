@@ -15,7 +15,8 @@ export type ChainKind =
   | "isk"
   | "zcu"
   | "tron"
-  | "sol";
+  | "sol"
+  | "lightning";
 
 /** Omni Layer token issued on a BTC-like chain (Class C / OP_RETURN sends). */
 export interface OmniToken {
@@ -435,6 +436,23 @@ export function getStable(chain: ChainKind, symbol: string): StableMeta | null {
 }
 
 
+export interface LightningNetwork {
+  kind: "lightning";
+  symbol: ChainKind;
+  name: string;
+  decimals: number;
+}
+
+/** Shared-node Lightning. No per-merchant address derivation: each invoice is
+ * a BOLT-11 payment request issued by the Nectar.Pay node, and settled sats
+ * are swept on-chain to the merchant's own Bitcoin address. */
+export const LIGHTNING_NETWORK: LightningNetwork = {
+  kind: "lightning",
+  symbol: "lightning",
+  name: "Bitcoin Lightning",
+  decimals: 8,
+};
+
 export const ALL_NETWORKS = {
   btc: BTC_NETWORK,
   txc: TXC_NETWORK,
@@ -447,10 +465,11 @@ export const ALL_NETWORKS = {
   bsc: BSC_NETWORK,
   tron: TRON_NETWORK,
   sol: SOL_NETWORK,
+  lightning: LIGHTNING_NETWORK,
 } as const;
 
 export function getNetwork(chain: ChainKind) {
-  return (ALL_NETWORKS as Record<string, BtcLikeNetwork | EvmNetwork | TronNetwork | SolanaNetwork>)[
+  return (ALL_NETWORKS as Record<string, BtcLikeNetwork | EvmNetwork | TronNetwork | SolanaNetwork | LightningNetwork>)[
     chain
   ];
 }

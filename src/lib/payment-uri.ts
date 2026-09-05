@@ -42,6 +42,9 @@ export function buildPaymentUri(
   opts?: { multiChainEvm?: boolean; label?: string | null },
 ): string {
   const label = opts?.label ?? null;
+  // Lightning: `address` holds the BOLT-11 payment request; the amount is
+  // already baked into the invoice, so no query params.
+  if (chain === "lightning") return `lightning:${address}`;
   if (chain === "btc") return withLabel(`bitcoin:${address}${amount ? `?amount=${amount}` : ""}`, label);
   if (chain === "txc") {
     // Omni Layer token on TEXITcoin (e.g. Texas Stable Dollar, property #39):
