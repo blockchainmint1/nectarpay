@@ -43,13 +43,14 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounced(searchInput, 300);
   const [storeFilter, setStoreFilter] = useState<string>("all");
+  const [chainFilter, setChainFilter] = useState<string>("all");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
 
   const storeList = stores ?? [];
 
   const query = useQuery({
-    queryKey: ["dashboard-transactions", userId, page, pageSize, sortKey, sortDir, search, storeFilter],
+    queryKey: ["dashboard-transactions", userId, page, pageSize, sortKey, sortDir, search, storeFilter, chainFilter],
     queryFn: async () => {
       const from = page * pageSize;
       const to = from + pageSize - 1;
