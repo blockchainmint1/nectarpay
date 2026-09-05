@@ -29,7 +29,7 @@ export const getStoreBtcPayoutAddress = createServerFn({ method: "POST" })
     if (!isXpubLike(xpub)) return { address: null };
     const { BTC_NETWORK } = await import("./chains/networks");
     try {
-      return { address: deriveBtcLikeAddress(xpub, BTC_NETWORK, 0) };
+      return { address: deriveBtcLikeAddress(xpub, BTC_NETWORK, 1) };
     } catch {
       return { address: null };
     }
