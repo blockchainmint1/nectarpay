@@ -153,6 +153,26 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
               </SelectContent>
             </Select>
           )}
+          <Select
+            value={chainFilter}
+            onValueChange={(v) => {
+              setChainFilter(v);
+              setPage(0);
+            }}
+          >
+            <SelectTrigger className="h-9 w-[180px]">
+              <Link2 className="mr-1 h-3.5 w-3.5 text-muted-foreground" />
+              <SelectValue placeholder="All chains" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All chains</SelectItem>
+              {(Object.keys(ALL_NETWORKS) as ChainKind[]).map((k) => (
+                <SelectItem key={k} value={k}>
+                  {ALL_NETWORKS[k].name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>Rows per page</span>
