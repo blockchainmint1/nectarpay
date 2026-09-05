@@ -164,14 +164,14 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
               <Link2 className="mr-1 h-3.5 w-3.5 text-muted-foreground" />
               <SelectValue placeholder="All chains" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All chains</SelectItem>
-              {(Object.keys(ALL_NETWORKS) as ChainKind[]).map((k) => (
-                <SelectItem key={k} value={k}>
-                  {ALL_NETWORKS[k].name}
-                </SelectItem>
-              ))}
-            </SelectContent>
+              <SelectContent>
+                <SelectItem value="all">All chains</SelectItem>
+                {Object.entries(ALL_NETWORKS).map(([k, net]) => (
+                  <SelectItem key={k} value={k}>
+                    {net.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
           </Select>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
