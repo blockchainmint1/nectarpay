@@ -224,7 +224,8 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
               query.data!.rows.map((r: any) => {
                 const inv = Array.isArray(r.invoice) ? r.invoice[0] : r.invoice;
                 const store = inv ? (Array.isArray(inv.store) ? inv.store[0] : inv.store) : null;
-                const symbol = r.token_symbol || tickerForChain(inv?.chain);
+                const symbol = r.token_symbol || inv?.token_symbol || tickerForChain(inv?.chain);
+                const chainLabel = inv?.chain ? (ALL_NETWORKS[inv.chain as keyof typeof ALL_NETWORKS]?.name ?? inv.chain.toUpperCase()) : "—";
                 const fiatCurrency = inv?.fiat_currency || "USD";
                 const fiatVal = inv?.fiat_amount != null ? Number(inv.fiat_amount) : null;
                 const isOpen = expanded.has(r.id);
