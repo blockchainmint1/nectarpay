@@ -194,6 +194,50 @@ export interface LightningSweepResult {
 }
 
 /**
+ * Resolve where a store's sweep should go.
+ * 1. If the merchant linked a Bitcoin xpub (via Beekeeper / wallet-link or
+ *    manual entry), derive a FRESH address from it per sweep and advance the
+ *    index — same rotation policy as regular BTC invoices.
+ * 2. Otherwise fall back to the fixed payout address on the Lightning config.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function resolveSweepAddress(
+  supabaseAdmin: any,
+  storeId: string,
+  manualAddress: string | null | undefined,
+): Promise<string | null> {
+  const { data: btcCfg } = await supabaseAdmin
+    .from("chain_configs")
+    .select("id, xpub, xpub_or_address, next_address_index")
+    .eq("store_id", storeId)
+    .eq("chain", "btc")
+    .eq("enabled", true)
+    .maybeSingle();
+
+  const xpub: string | null = btcCfg?.xpub ?? btcCfg?.xpub_or_address ?? null;
+  if (btcCfg && xpub && /^(xpub|ypub|zpub|vpub|tpub)/.test(xpub)) {
+    try {
+      const { deriveBtcLikeAddress } = await import("@/lib/chains/derive.server");
+      const { getNetwork } = await import("@/lib/chains/networks");
+      const net = getNetwork("btc");
+      if (!net) throw new Error("btc network missing");
+      const index = Number(btcCfg.next_address_index ?? 0);
+      const address = deriveBtcLikeAddress(xpub, net, index);
+      await supabaseAdmin
+        .from("chain_configs")
+        .update({ next_address_index: index + 1, next_derivation_index: index + 1 })
+        .eq("id", btcCfg.id);
+      return address;
+    } catch (e) {
+      console.warn(`[lightning] BTC xpub derivation failed for store ${storeId}, falling back to manual address:`, (e as Error).message);
+    }
+  }
+
+  const manual = manualAddress?.trim();
+  return manual || null;
+}
+
+/**
  * Pay each merchant their unswept Lightning sats on-chain, from the node's
  * wallet, once they cross their own threshold. Credits are marked with the
  * sweep id so a retry never pays twice.
