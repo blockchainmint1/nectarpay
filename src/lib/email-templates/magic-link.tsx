@@ -1,100 +1,79 @@
 import * as React from 'react'
-import { Button, Img, Section, Text } from '@react-email/components'
-import { EmailShell, EmailHr, styles, BRAND } from './_brand'
+
+import {
+  Body,
+  Button,
+  Container,
+  Head,
+  Heading,
+  Html,
+  Preview,
+  Text,
+} from '@react-email/components'
 
 interface MagicLinkEmailProps {
   siteName: string
   confirmationUrl: string
-  token?: string
-  qrDataUrl?: string
 }
 
 export const MagicLinkEmail = ({
   siteName,
   confirmationUrl,
-  token,
-  qrDataUrl,
-}: MagicLinkEmailProps) => {
-  const codeDisplay = token ? formatCode(token) : null
-  return (
-    <EmailShell
-      preview={`Your sign-in code for ${siteName}`}
-      siteName={siteName}
-    >
-      <Text style={styles.h1}>Sign in to {siteName}</Text>
-      <Text style={styles.text}>
-        Here's your one-time sign-in code. It expires in a few minutes.
-      </Text>
-
-      {codeDisplay && (
-        <Section style={styles.codeBox}>
-          <Text style={styles.codeLabel}>Sign-in code</Text>
-          <Text style={styles.codeText}>{codeDisplay}</Text>
-          <Text style={styles.codeHint}>
-            Type this into the sign-in screen or POS terminal.
-          </Text>
-        </Section>
-      )}
-
-      <Text style={styles.text}>Signing in on this device? Tap the button:</Text>
-      <Section style={styles.buttonWrap}>
-        <Button style={styles.button} href={confirmationUrl}>
-          Sign in to {siteName}
+}: MagicLinkEmailProps) => (
+  <Html lang="en" dir="ltr">
+    <Head>
+      <style>{darkModeCss}</style>
+    </Head>
+    <Preview>Your login link for {siteName}</Preview>
+    <Body style={main}>
+      <Container style={container}>
+        <Heading style={h1}>Your login link</Heading>
+        <Text style={text}>
+          Click the button below to log in to {siteName}. This link will expire
+          shortly.
+        </Text>
+        <Button className="dm-btn" style={button} href={confirmationUrl}>
+          Log In
         </Button>
-      </Section>
-
-      {qrDataUrl && (
-        <>
-          <EmailHr style={styles.hr} />
-          <Section style={{ textAlign: 'center' }}>
-            <Text
-              style={{
-                ...styles.codeLabel,
-                color: BRAND.slate,
-                margin: '0 0 12px',
-              }}
-            >
-              Or scan with your POS terminal
-            </Text>
-            <Img
-              src={qrDataUrl}
-              alt="Sign-in QR code"
-              width="220"
-              height="220"
-              style={{ margin: '0 auto', display: 'block', borderRadius: '12px' }}
-            />
-            <Text style={styles.codeHint}>
-              Point the terminal camera at this code to sign in instantly.
-            </Text>
-          </Section>
-        </>
-      )}
-
-      <EmailHr style={styles.hr} />
-      <Text style={styles.small}>
-        Didn't request this? You can safely ignore this email — nobody can sign
-        in without the code above.
-      </Text>
-    </EmailShell>
-  )
-}
+        <Text style={footer}>
+          If you didn't request this link, you can safely ignore this email.
+        </Text>
+      </Container>
+    </Body>
+  </Html>
+)
 
 export default MagicLinkEmail
 
-function formatCode(token: string): string {
-  const clean = token.trim()
-  const mid = Math.ceil(clean.length / 2)
-  return `${clean.slice(0, mid)} ${clean.slice(mid)}`.trim()
+const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
+const container = { padding: '20px 25px' }
+const h1 = {
+  fontSize: '22px',
+  fontWeight: 'bold' as const,
+  color: '#000000',
+  margin: '0 0 20px',
 }
-
-export function buildQrImageUrl(url: string): string {
-  const encoded = encodeURIComponent(url)
-  return `https://api.qrserver.com/v1/create-qr-code/?size=440x440&margin=10&format=png&data=${encoded}`
+const text = {
+  fontSize: '14px',
+  color: '#55575d',
+  lineHeight: '1.5',
+  margin: '0 0 25px',
 }
-
-/**
- * @deprecated Use buildQrImageUrl - returns an absolute https URL that email clients reliably render.
- */
-export async function buildQrDataUrl(url: string): Promise<string | undefined> {
-  return buildQrImageUrl(url)
+const button = {
+  backgroundColor: '#000000',
+  color: '#ffffff',
+  fontSize: '14px',
+  border: '1px solid #000000',
+  borderRadius: '8px',
+  padding: '12px 20px',
+  textDecoration: 'none',
 }
+const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+// Rendered as a text child, which React may HTML-escape: keep this CSS free of >, &, and quotes.
+const darkModeCss = `
+  @media (prefers-color-scheme: dark) {
+    .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
+  }
+  [data-ogsc] .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
+  [data-ogsb] .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
+`
