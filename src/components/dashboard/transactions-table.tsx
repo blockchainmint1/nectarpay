@@ -74,6 +74,10 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
         q = q.eq("invoice.store_id", storeFilter);
       }
 
+      if (chainFilter !== "all") {
+        q = q.eq("invoice.chain", chainFilter);
+      }
+
       const { data, error, count } = await q;
       if (error) throw error;
       return { rows: data ?? [], count: count ?? 0 };
