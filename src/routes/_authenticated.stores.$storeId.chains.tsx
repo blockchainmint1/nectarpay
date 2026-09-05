@@ -299,7 +299,7 @@ function ChainsPage() {
         <div className="mt-8 text-sm text-muted-foreground">Loading…</div>
       ) : (
         <div className="mt-6 space-y-4">
-          {CHAINS.map((meta) => (
+          {CHAINS.filter((c) => c.key !== "lightning").map((meta) => (
             <ChainCard
               key={meta.key}
               meta={meta}
@@ -308,8 +308,17 @@ function ChainsPage() {
               onChange={(r) => setRows((prev) => ({ ...prev, [meta.key]: r }))}
               onSaved={() => refetch()}
               xpubLocked={isLinked}
+              lightning={
+                meta.key === "btc"
+                  ? {
+                      row: rows.lightning,
+                      onChange: (r: Row) => setRows((prev) => ({ ...prev, lightning: r })),
+                    }
+                  : undefined
+              }
             />
           ))}
+
         </div>
 
       )}
