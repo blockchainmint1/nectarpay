@@ -14,6 +14,8 @@ import {
   getLightningAdminStatus,
   getLightningDepositAddress,
   openLightningChannel,
+  runLightningSweep,
+  runLightningWatcher,
 } from "@/lib/lightning-admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/lightning")({
@@ -47,6 +49,8 @@ function AdminLightning() {
   const status = useServerFn(getLightningAdminStatus);
   const depositAddress = useServerFn(getLightningDepositAddress);
   const openChannel = useServerFn(openLightningChannel);
+  const watcher = useServerFn(runLightningWatcher);
+  const sweep = useServerFn(runLightningSweep);
   const qc = useQueryClient();
 
   const [address, setAddress] = useState<string | null>(null);
@@ -77,6 +81,24 @@ function AdminLightning() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const watcherMut = useMutation({
+    mutationFn: () => watcher({}),
+    onSuccess: (r) => {
+      toast.success(`Watcher tick: checked ${r.checked}, settled ${r.settled}, cancelled ${r.cancelled}`);
+      void qc.invalidateQueries({ queryKey: ["admin-lightning"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const sweepMut = useMutation({
+    mutationFn: () => sweep({}),
+    onSuccess: (r) => {
+      toast.success(`Sweep tick: ${r.swept} store(s) paid, ${r.totalSats.toLocaleString()} sats total`);
+      void qc.invalidateQueries({ queryKey: ["admin-lightning"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const d = q.data;
   const usd = (sats: number) => (d?.btcUsd ? `$${((sats / SATS) * d.btcUsd).toLocaleString(undefined, { maximumFractionDigits: 2 })}` : null);
 
@@ -100,9 +122,35 @@ function AdminLightning() {
             customer payments can reach us, then sweep the proceeds out to merchants.
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => q.refetch()} disabled={q.isFetching}>
-          <RefreshCw className={`mr-2 h-4 w-4 ${q.isFetching ? "animate-spin" : ""}`} /> Refresh
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => watcherMut.mutate()}
+            disabled={watcherMut.isPending || !d?.configured}
+          >
+            {watcherMut.isPending ? (
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Zap className="mr-2 h-4 w-4" />
+            )}
+            Check payments
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => sweepMut.mutate()}
+            disabled={sweepMut.isPending || !d?.configured}
+          >
+            {sweepMut.isPending ? (
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+            ) : null}
+            Sweep now
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => q.refetch()} disabled={q.isFetching}>
+            <RefreshCw className={`mr-2 h-4 w-4 ${q.isFetching ? "animate-spin" : ""}`} /> Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Plain-English health banner */}

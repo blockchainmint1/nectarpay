@@ -222,3 +222,21 @@ export const openLightningChannel = createServerFn({ method: "POST" })
     const txid = await ln.lndOpenChannel(data.pubkey, data.amountSats, data.satPerVbyte);
     return { txid };
   });
+
+/** Manually poll open Lightning invoices and settle any that have been paid. */
+export const runLightningWatcher = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    const { runLightningWatcherTick } = await import("@/lib/lightning.server");
+    return runLightningWatcherTick();
+  });
+
+/** Manually sweep merchant Lightning balances that have crossed their threshold. */
+export const runLightningSweep = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    const { runLightningSweepTick } = await import("@/lib/lightning.server");
+    return runLightningSweepTick();
+  });
