@@ -14,6 +14,8 @@ import {
   getLightningAdminStatus,
   getLightningDepositAddress,
   openLightningChannel,
+  runLightningSweep,
+  runLightningWatcher,
 } from "@/lib/lightning-admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/lightning")({
