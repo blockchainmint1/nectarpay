@@ -122,9 +122,35 @@ function AdminLightning() {
             customer payments can reach us, then sweep the proceeds out to merchants.
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => q.refetch()} disabled={q.isFetching}>
-          <RefreshCw className={`mr-2 h-4 w-4 ${q.isFetching ? "animate-spin" : ""}`} /> Refresh
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => watcherMut.mutate()}
+            disabled={watcherMut.isPending || !d?.configured}
+          >
+            {watcherMut.isPending ? (
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Zap className="mr-2 h-4 w-4" />
+            )}
+            Check payments
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => sweepMut.mutate()}
+            disabled={sweepMut.isPending || !d?.configured}
+          >
+            {sweepMut.isPending ? (
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+            ) : null}
+            Sweep now
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => q.refetch()} disabled={q.isFetching}>
+            <RefreshCw className={`mr-2 h-4 w-4 ${q.isFetching ? "animate-spin" : ""}`} /> Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Plain-English health banner */}
