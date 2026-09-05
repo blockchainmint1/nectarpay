@@ -123,8 +123,8 @@ const CHAINS: ChainMeta[] = [
     key: "lightning",
     name: "Bitcoin Lightning",
     inputKind: "btc-address",
-    placeholder: "bc1q… payout address",
-    hint: "Instant, near-zero-fee Bitcoin. Payments arrive on the Nectar.Pay node and are automatically paid out on-chain to the Bitcoin address you enter here once your balance crosses your payout threshold.",
+    placeholder: "bc1q… payout address (optional)",
+    hint: "Instant, near-zero-fee Bitcoin. Payments arrive on the Nectar.Pay node and are paid out on-chain once your balance crosses your payout threshold. Leave the address blank to have each payout sent to a fresh address from your linked Bitcoin wallet above — or enter a fixed bc1q… address to override.",
   },
 ];
 
