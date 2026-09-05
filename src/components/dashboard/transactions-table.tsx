@@ -14,7 +14,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ALL_NETWORKS, type ChainKind } from "@/lib/chains/networks";
+import { ALL_NETWORKS } from "@/lib/chains/networks";
 
 type SortKey = "first_seen_at" | "amount" | "confirmations";
 type SortDir = "asc" | "desc";
