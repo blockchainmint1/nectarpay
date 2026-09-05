@@ -77,7 +77,10 @@ export async function deriveInvoiceAddress(
   }
 
   let address: string;
-  let index = cfg.next_address_index ?? 0;
+  // Index 0 is never handed out or monitored — it's the account's "public"
+  // address (payout hints, wallet UIs, manual sends), so derivation for
+  // invoices always starts at 1.
+  let index = Math.max(1, cfg.next_address_index ?? 0);
   let recycledEvmAddress = false;
   const xpub = cfg.xpub ?? cfg.xpub_or_address;
 
