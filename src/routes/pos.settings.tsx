@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { loadSettings, saveSettings, sha256, type PosSettings } from "@/lib/pos-settings";
 import { clearCreds } from "@/lib/pos-client";
+import { supabase } from "@/integrations/supabase/client";
 import { checkForUpdate, downloadUpdate, type UpdateStatus } from "@/lib/pos-updater";
 import { openPosDebugLog } from "@/lib/pos-debug-log";
 import { Tangem, isNative } from "@/lib/pos-native";
@@ -92,10 +93,19 @@ function SettingsPage() {
     setTimeout(() => setSaved(false), 1500);
   };
 
-  const unpair = () => {
-    if (!confirm("Unpair this device? You'll need a new pairing code to use it again.")) return;
+  // Full reset: drop the terminal credentials AND the merchant session, then
+  // hard-reload into the launch chooser. Leaving the session behind is what
+  // made "New merchant" resume the previous store instead of starting over.
+  const unpair = async () => {
+    if (!confirm("Unpair this device? This signs out the merchant and you'll need a new pairing code to use it again.")) return;
     clearCreds();
-    navigate({ to: "/pos/pair" });
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch {
+      /* already signed out */
+    }
+    try { sessionStorage.removeItem("pos.launch.chosen"); } catch { /* ignore */ }
+    window.location.href = "/start?launch=1";
   };
 
   return (
