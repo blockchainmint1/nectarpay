@@ -92,10 +92,19 @@ function SettingsPage() {
     setTimeout(() => setSaved(false), 1500);
   };
 
-  const unpair = () => {
-    if (!confirm("Unpair this device? You'll need a new pairing code to use it again.")) return;
+  // Full reset: drop the terminal credentials AND the merchant session, then
+  // hard-reload into the launch chooser. Leaving the session behind is what
+  // made "New merchant" resume the previous store instead of starting over.
+  const unpair = async () => {
+    if (!confirm("Unpair this device? This signs out the merchant and you'll need a new pairing code to use it again.")) return;
     clearCreds();
-    navigate({ to: "/pos/pair" });
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch {
+      /* already signed out */
+    }
+    try { sessionStorage.removeItem("pos.launch.chosen"); } catch { /* ignore */ }
+    window.location.href = "/start?launch=1";
   };
 
   return (
