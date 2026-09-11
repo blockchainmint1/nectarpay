@@ -92,8 +92,24 @@ export function PosLaunchChooser({ onFallthrough }: { onFallthrough?: () => void
   // route we're already on (e.g. "New merchant" while sitting on /start) is a
   // no-op in the router, so we must also drop the overlay locally — otherwise
   // the button appears dead.
-  const choose = (to: "/pos" | "/pos/pair-signin" | "/start") => {
+  const choose = async (to: "/pos" | "/pos/pair-signin" | "/start") => {
     sessionStorage.setItem("pos.launch.chosen", "1");
+
+    // "New merchant" means a genuinely clean slate: any leftover session from
+    // the previous merchant would make /start resume THEIR store (and show the
+    // "wallet already linked" step) instead of restarting onboarding.
+    if (to === "/start") {
+      clearCreds();
+      try {
+        await supabase.auth.signOut({ scope: "local" });
+      } catch {
+        /* already signed out */
+      }
+      // Full reload so every cached query / auth context starts empty.
+      window.location.href = "/start";
+      return;
+    }
+
     setState({ kind: "web" });
     onFallthrough?.();
     if (typeof window !== "undefined" && window.location.pathname === to) return;
