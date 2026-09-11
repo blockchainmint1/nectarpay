@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { loadSettings, saveSettings, sha256, type PosSettings } from "@/lib/pos-settings";
 import { clearCreds } from "@/lib/pos-client";
+import { supabase } from "@/integrations/supabase/client";
 import { checkForUpdate, downloadUpdate, type UpdateStatus } from "@/lib/pos-updater";
 import { openPosDebugLog } from "@/lib/pos-debug-log";
 import { Tangem, isNative } from "@/lib/pos-native";
