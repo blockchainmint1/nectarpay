@@ -12,7 +12,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Download, Loader2, RefreshCw, Smartphone, Store, UserPlus } from "lucide-react";
 
 import { isNative } from "@/lib/pos-native";
-import { loadCreds, type TerminalCreds } from "@/lib/pos-client";
+import { clearCreds, loadCreds, type TerminalCreds } from "@/lib/pos-client";
+import { supabase } from "@/integrations/supabase/client";
 import { getDeviceInfo, type PosDeviceInfo } from "@/lib/pos-device";
 import { checkForUpdate, downloadUpdate, type UpdateStatus } from "@/lib/pos-updater";
 
