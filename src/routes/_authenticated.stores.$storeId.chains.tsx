@@ -333,7 +333,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("stores")
-        .select("default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd, preferred_evm_chain")
+        .select("default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd, preferred_evm_chain, evm_address_rotation")
         .eq("id", storeId)
         .single();
       if (error) throw error;
@@ -348,6 +348,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
   const [tsdInstant, setTsdInstant] = useState<boolean>(true);
   const [tsdCap, setTsdCap] = useState<string>("250");
   const [preferredEvm, setPreferredEvm] = useState<string>("base");
+  const [evmRotation, setEvmRotation] = useState<boolean>(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
