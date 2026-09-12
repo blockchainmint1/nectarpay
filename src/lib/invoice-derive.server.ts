@@ -86,6 +86,14 @@ export async function deriveInvoiceAddress(
 
   if (net.kind === "btc-like") {
     address = deriveBtcLikeAddress(xpub, net, index);
+  } else if (net.kind === "evm" && !(await evmRotationEnabled(supabaseAdmin, storeId))) {
+    // Rotation switched off by the merchant: every EVM invoice is paid to the
+    // single first receive address (index 1). Cheaper to sweep (one address,
+    // one gas payment), at the cost of address privacy. Concurrent invoices are
+    // told apart by the amount nonce below, same as Solana.
+    index = 1;
+    address = deriveEvmAddress(xpub, net, 1);
+    evmSharedAddress = true;
   } else if (net.kind === "evm") {
     // EVM is account-based — each derived address must be swept individually
     // (gas per address per token). When an invoice expires unpaid, the index
