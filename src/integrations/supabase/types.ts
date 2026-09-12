@@ -1533,6 +1533,7 @@ export type Database = {
           default_allowed_chains: string[] | null
           default_confirmations_required: number
           default_display_currency: string | null
+          evm_address_rotation: boolean
           ext_ref_label: string | null
           ext_ref_mode: string
           ext_ref_required: boolean
@@ -1605,6 +1606,7 @@ export type Database = {
           default_allowed_chains?: string[] | null
           default_confirmations_required?: number
           default_display_currency?: string | null
+          evm_address_rotation?: boolean
           ext_ref_label?: string | null
           ext_ref_mode?: string
           ext_ref_required?: boolean
@@ -1677,6 +1679,7 @@ export type Database = {
           default_allowed_chains?: string[] | null
           default_confirmations_required?: number
           default_display_currency?: string | null
+          evm_address_rotation?: boolean
           ext_ref_label?: string | null
           ext_ref_mode?: string
           ext_ref_required?: boolean

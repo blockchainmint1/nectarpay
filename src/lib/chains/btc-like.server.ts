@@ -35,6 +35,29 @@ export async function getTipHeight(net: BtcLikeNetwork): Promise<number> {
   return Number(await res.text());
 }
 
+/**
+ * Confirmed + unconfirmed balance of an address, in base units (sats).
+ * Esplora exposes funded/spent sums; Blockbook exposes balances directly.
+ */
+export async function getAddressBalanceSats(
+  net: BtcLikeNetwork,
+  address: string,
+): Promise<{ confirmed: number; unconfirmed: number }> {
+  if (net.indexer === "blockbook") {
+    const { getBlockbookAddressBalance } = await import("./blockbook.server");
+    return getBlockbookAddressBalance(net, address);
+  }
+  const json = await fetchJson<{
+    chain_stats: { funded_txo_sum: number; spent_txo_sum: number };
+    mempool_stats: { funded_txo_sum: number; spent_txo_sum: number };
+  }>(`${net.esploraBase}/address/${encodeURIComponent(address)}`);
+  return {
+    confirmed: (json.chain_stats?.funded_txo_sum ?? 0) - (json.chain_stats?.spent_txo_sum ?? 0),
+    unconfirmed:
+      (json.mempool_stats?.funded_txo_sum ?? 0) - (json.mempool_stats?.spent_txo_sum ?? 0),
+  };
+}
+
 export async function getAddressTxs(net: BtcLikeNetwork, address: string): Promise<EsploraTx[]> {
   if (net.indexer === "blockbook") {
     const { getBlockbookAddressTxs } = await import("./blockbook.server");
