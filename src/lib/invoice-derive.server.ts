@@ -137,7 +137,7 @@ export async function deriveInvoiceAddress(
   // in decimal places 3–5 (e.g. 69.65 USDT → 69.65042 USDT) so the watcher can
   // match incoming payments by (address, token, amount±tolerance).
   const isSharedAddress =
-    net.kind === "solana" || (net.kind === "tron" && xpub.startsWith("T"));
+    net.kind === "solana" || (net.kind === "tron" && xpub.startsWith("T")) || evmSharedAddress;
   let cryptoAmount: number;
   if (isSharedAddress) {
     cryptoAmount = await applyAmountNonce(
@@ -156,7 +156,7 @@ export async function deriveInvoiceAddress(
   //   - recycled EVM addresses (counter already advanced when first derived;
   //     derived_addresses row already exists)
   const isStaticShared =
-    net.kind === "solana" || (net.kind === "tron" && xpub.startsWith("T"));
+    net.kind === "solana" || (net.kind === "tron" && xpub.startsWith("T")) || evmSharedAddress;
   if (!isStaticShared && !recycledEvmAddress) {
     await supabaseAdmin
       .from("chain_configs")
