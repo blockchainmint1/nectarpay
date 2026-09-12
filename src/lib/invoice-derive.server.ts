@@ -82,6 +82,7 @@ export async function deriveInvoiceAddress(
   // invoices always starts at 1.
   let index = Math.max(1, cfg.next_address_index ?? 0);
   let recycledEvmAddress = false;
+  let evmSharedAddress = false;
   const xpub = cfg.xpub ?? cfg.xpub_or_address;
 
   if (net.kind === "btc-like") {
