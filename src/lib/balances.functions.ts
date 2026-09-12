@@ -30,10 +30,10 @@ export const listBalanceChains = createServerFn({ method: "POST" })
       .eq("enabled", true);
     if (error) throw new Error(error.message);
 
-    const { getNetwork, type ChainKind } = await import("./chains/networks").then((m) => ({
-      getNetwork: m.getNetwork,
-      type: null as unknown as { ChainKind: never },
-    })) as unknown as { getNetwork: (c: string) => { kind: string; name: string } | undefined };
+    const netModule = await import("./chains/networks");
+    const getNetwork = netModule.getNetwork as unknown as (
+      c: string,
+    ) => { kind: string; name: string } | undefined;
 
     const chains: BalanceChainSummary[] = [];
     for (const r of rows ?? []) {
