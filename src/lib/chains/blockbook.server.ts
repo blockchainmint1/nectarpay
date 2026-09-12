@@ -122,6 +122,21 @@ function toEsploraTx(tx: BlockbookTx): EsploraTx {
  * Confirmed + mempool transactions touching `address`. Blockbook returns both
  * in one call (unconfirmed entries carry confirmations: 0).
  */
+/** Confirmed + unconfirmed balance in base units. */
+export async function getBlockbookAddressBalance(
+  net: BtcLikeNetwork,
+  address: string,
+): Promise<{ confirmed: number; unconfirmed: number }> {
+  const json = await fetchJson<{ balance?: string; unconfirmedBalance?: string }>(
+    net,
+    `/api/v2/address/${encodeURIComponent(address)}?details=basic`,
+  );
+  return {
+    confirmed: Number(json.balance ?? 0),
+    unconfirmed: Number(json.unconfirmedBalance ?? 0),
+  };
+}
+
 export async function getBlockbookAddressTxs(
   net: BtcLikeNetwork,
   address: string,

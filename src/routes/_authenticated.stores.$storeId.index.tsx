@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, KeyRound, Link2, MapPin, Receipt, Settings as SettingsIcon, Share2, ShieldCheck, Smartphone, Sliders } from "lucide-react";
+import { ChevronLeft, KeyRound, Link2, MapPin, Receipt, Settings as SettingsIcon, Share2, ShieldCheck, Smartphone, Sliders, Wallet } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -65,6 +65,12 @@ function StoreDetailPage() {
           title="Wallets & Chains"
           body="Configure xpubs and addresses per chain."
           to={`/stores/${storeId}/chains`}
+        />
+        <CardLink
+          icon={<Wallet className="h-4 w-4" />}
+          title="Balances"
+          body="Live balances for every linked wallet, broken down address by address."
+          to={`/stores/${storeId}/balances`}
         />
         <CardLink
           icon={<KeyRound className="h-4 w-4" />}

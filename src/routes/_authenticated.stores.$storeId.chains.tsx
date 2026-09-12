@@ -333,7 +333,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("stores")
-        .select("default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd, preferred_evm_chain")
+        .select("default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd, preferred_evm_chain, evm_address_rotation")
         .eq("id", storeId)
         .single();
       if (error) throw error;
@@ -348,6 +348,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
   const [tsdInstant, setTsdInstant] = useState<boolean>(true);
   const [tsdCap, setTsdCap] = useState<string>("250");
   const [preferredEvm, setPreferredEvm] = useState<string>("base");
+  const [evmRotation, setEvmRotation] = useState<boolean>(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -362,6 +363,9 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
       setTsdCap(cap == null ? "" : String(cap));
     }
     setPreferredEvm(((data as { preferred_evm_chain?: string }).preferred_evm_chain) ?? "base");
+    setEvmRotation(
+      (data as { evm_address_rotation?: boolean | null }).evm_address_rotation !== false,
+    );
   }, [data]);
 
 
@@ -384,6 +388,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
           tsd_instant: tsdInstant,
           tsd_instant_max_usd: tsdCap.trim() === "" ? null : Number(tsdCap),
           preferred_evm_chain: preferredEvm,
+          evm_address_rotation: evmRotation,
         })
         .eq("id", storeId);
       if (error) throw error;
@@ -506,6 +511,22 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
         <p className="mt-2 text-xs text-muted-foreground">
           When a customer scans the QR, their wallet auto-fills the token and amount for this chain (one-tap pay). The same address still works on the other EVM chains — customers on those chains just pick their network in-wallet.
         </p>
+      </div>
+
+      <div className="mt-5 border-t border-primary/15 pt-4">
+        <label className="flex items-start gap-3">
+          <Switch checked={evmRotation} onCheckedChange={setEvmRotation} className="mt-0.5" />
+          <div>
+            <div className="text-sm font-medium">Rotate EVM receive addresses</div>
+            <p className="text-xs text-muted-foreground">
+              On: every Ethereum / Base / BSC order gets its own address — best privacy, but each
+              one has to be moved to your main address separately (a network fee per address).
+              Off: all EVM orders are paid to your first address, so everything pools in one place
+              and you pay one fee to move it. We tell overlapping orders apart by a tiny unique
+              amount adjustment. Leave it on if you take a lot of orders at once.
+            </p>
+          </div>
+        </label>
       </div>
     </div>
   );

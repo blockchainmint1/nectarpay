@@ -82,10 +82,19 @@ export async function deriveInvoiceAddress(
   // invoices always starts at 1.
   let index = Math.max(1, cfg.next_address_index ?? 0);
   let recycledEvmAddress = false;
+  let evmSharedAddress = false;
   const xpub = cfg.xpub ?? cfg.xpub_or_address;
 
   if (net.kind === "btc-like") {
     address = deriveBtcLikeAddress(xpub, net, index);
+  } else if (net.kind === "evm" && !(await evmRotationEnabled(supabaseAdmin, storeId))) {
+    // Rotation switched off by the merchant: every EVM invoice is paid to the
+    // single first receive address (index 1). Cheaper to sweep (one address,
+    // one gas payment), at the cost of address privacy. Concurrent invoices are
+    // told apart by the amount nonce below, same as Solana.
+    index = 1;
+    address = deriveEvmAddress(xpub, net, 1);
+    evmSharedAddress = true;
   } else if (net.kind === "evm") {
     // EVM is account-based — each derived address must be swept individually
     // (gas per address per token). When an invoice expires unpaid, the index
@@ -128,7 +137,7 @@ export async function deriveInvoiceAddress(
   // in decimal places 3–5 (e.g. 69.65 USDT → 69.65042 USDT) so the watcher can
   // match incoming payments by (address, token, amount±tolerance).
   const isSharedAddress =
-    net.kind === "solana" || (net.kind === "tron" && xpub.startsWith("T"));
+    net.kind === "solana" || (net.kind === "tron" && xpub.startsWith("T")) || evmSharedAddress;
   let cryptoAmount: number;
   if (isSharedAddress) {
     cryptoAmount = await applyAmountNonce(
@@ -147,7 +156,19 @@ export async function deriveInvoiceAddress(
   //   - recycled EVM addresses (counter already advanced when first derived;
   //     derived_addresses row already exists)
   const isStaticShared =
-    net.kind === "solana" || (net.kind === "tron" && xpub.startsWith("T"));
+    net.kind === "solana" || (net.kind === "tron" && xpub.startsWith("T")) || evmSharedAddress;
+  if (evmSharedAddress) {
+    // No counter bump, but the shared address must still be registered so the
+    // watcher and Alchemy webhooks cover it.
+    await supabaseAdmin
+      .from("derived_addresses")
+      .upsert({
+        chain_config_id: cfg.id,
+        store_id: storeId,
+        address,
+        address_index: index,
+      }, { onConflict: "chain_config_id,address_index" });
+  }
   if (!isStaticShared && !recycledEvmAddress) {
     await supabaseAdmin
       .from("chain_configs")
@@ -328,3 +349,19 @@ async function findRecyclableEvmAddress(
 
 
 
+
+/**
+ * Per-store switch: when off, EVM invoices all use the first receive address
+ * (index 1) instead of rotating through derived addresses. Defaults to on.
+ */
+async function evmRotationEnabled(
+  admin: { from: (t: string) => any },
+  storeId: string,
+): Promise<boolean> {
+  const { data } = await admin
+    .from("stores")
+    .select("evm_address_rotation")
+    .eq("id", storeId)
+    .maybeSingle();
+  return (data as { evm_address_rotation?: boolean } | null)?.evm_address_rotation !== false;
+}
