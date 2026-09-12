@@ -157,6 +157,18 @@ export async function deriveInvoiceAddress(
   //     derived_addresses row already exists)
   const isStaticShared =
     net.kind === "solana" || (net.kind === "tron" && xpub.startsWith("T")) || evmSharedAddress;
+  if (evmSharedAddress) {
+    // No counter bump, but the shared address must still be registered so the
+    // watcher and Alchemy webhooks cover it.
+    await supabaseAdmin
+      .from("derived_addresses")
+      .upsert({
+        chain_config_id: cfg.id,
+        store_id: storeId,
+        address,
+        address_index: index,
+      }, { onConflict: "chain_config_id,address_index" });
+  }
   if (!isStaticShared && !recycledEvmAddress) {
     await supabaseAdmin
       .from("chain_configs")
