@@ -363,6 +363,9 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
       setTsdCap(cap == null ? "" : String(cap));
     }
     setPreferredEvm(((data as { preferred_evm_chain?: string }).preferred_evm_chain) ?? "base");
+    setEvmRotation(
+      (data as { evm_address_rotation?: boolean | null }).evm_address_rotation !== false,
+    );
   }, [data]);
 
 
@@ -385,6 +388,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
           tsd_instant: tsdInstant,
           tsd_instant_max_usd: tsdCap.trim() === "" ? null : Number(tsdCap),
           preferred_evm_chain: preferredEvm,
+          evm_address_rotation: evmRotation,
         })
         .eq("id", storeId);
       if (error) throw error;
