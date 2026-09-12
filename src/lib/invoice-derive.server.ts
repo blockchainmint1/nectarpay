@@ -337,3 +337,19 @@ async function findRecyclableEvmAddress(
 
 
 
+
+/**
+ * Per-store switch: when off, EVM invoices all use the first receive address
+ * (index 1) instead of rotating through derived addresses. Defaults to on.
+ */
+async function evmRotationEnabled(
+  admin: { from: (t: string) => any },
+  storeId: string,
+): Promise<boolean> {
+  const { data } = await admin
+    .from("stores")
+    .select("evm_address_rotation")
+    .eq("id", storeId)
+    .maybeSingle();
+  return (data as { evm_address_rotation?: boolean } | null)?.evm_address_rotation !== false;
+}
