@@ -165,7 +165,8 @@ export async function getAddressBalance(
     nativePending: 0,
     tokens: [],
     usd: 0,
-    explorerUrl: net.explorerAddr(address),
+    explorerUrl:
+      "explorerAddr" in net ? (net as { explorerAddr: (a: string) => string }).explorerAddr(address) : "",
   };
 
   try {
