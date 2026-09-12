@@ -77,7 +77,7 @@ export const getChainBalances = createServerFn({ method: "POST" })
         .from("chain_configs")
         .select("chain, xpub, xpub_or_address, stables")
         .eq("store_id", data.storeId)
-        .eq("chain", data.chain)
+        .eq("chain", data.chain as never)
         .maybeSingle();
       if (error) throw new Error(error.message);
       if (!cfg) throw new Error("Chain not configured for this store.");
