@@ -19,6 +19,8 @@ export interface NotifyPayload {
   event: NotifyEvent;
   subject: string;
   text: string;
+  /** When set, a per-store override (if any) replaces account-level prefs. */
+  storeId?: string;
   metadata?: Record<string, unknown>;
 }
 
