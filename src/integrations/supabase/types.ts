@@ -1602,6 +1602,56 @@ export type Database = {
           },
         ]
       }
+      store_notification_prefs: {
+        Row: {
+          created_at: string
+          email_address: string | null
+          email_enabled: boolean
+          enabled: boolean
+          events: Json
+          id: string
+          store_id: string
+          telegram_chat_id: string | null
+          telegram_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_address?: string | null
+          email_enabled?: boolean
+          enabled?: boolean
+          events?: Json
+          id?: string
+          store_id: string
+          telegram_chat_id?: string | null
+          telegram_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_address?: string | null
+          email_enabled?: boolean
+          enabled?: boolean
+          events?: Json
+          id?: string
+          store_id?: string
+          telegram_chat_id?: string | null
+          telegram_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_notification_prefs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stores: {
         Row: {
           admin_market: string | null
