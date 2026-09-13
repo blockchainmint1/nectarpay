@@ -15,3 +15,5 @@
 - [x] Invite people by email to a single store with View only / Manager / Full access
 - [x] Accept flow at /invite/<token>, change level or remove access, cancel pending invites
 - [x] Access rules enforced in the database (owner-only: wallet setup, billing, closing a store)
+
+- [x] Merchant reports suite at /reports (summary, sales, methods, stores & devices, customers & invoices, settlement & fees, tax)
