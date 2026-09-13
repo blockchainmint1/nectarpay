@@ -108,6 +108,19 @@ function AccountPage() {
 
       <section className="mt-8 rounded-lg border border-border bg-card/50 p-5">
         <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+          Authorized users
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Give your bookkeeper, accountant or manager their own sign-in with limited access to
+          one of your stores.
+        </p>
+        <Button asChild variant="outline" className="mt-4">
+          <Link to="/account/users">Manage authorized users</Link>
+        </Button>
+      </section>
+
+      <section className="mt-8 rounded-lg border border-border bg-card/50 p-5">
+        <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
           Your stores
         </h2>
         <ul className="mt-3 divide-y divide-border">
