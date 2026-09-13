@@ -48,7 +48,6 @@ export const createStoreInvoice = createServerFn({ method: "POST" })
       .from("stores")
       .select("id, name, fiat_currency")
       .eq("id", data.store_id)
-      .eq("owner_id", userId)
       .maybeSingle();
     if (storeErr) throw new Error(storeErr.message);
     if (!store) throw new Error("Store not found or not yours.");
@@ -120,7 +119,7 @@ export const resendStoreInvoice = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw new Error(error.message);
     const store = (inv as unknown as { stores: { name: string; owner_id: string } } | null)?.stores;
-    if (!inv || !store || store.owner_id !== userId) throw new Error("Invoice not found.");
+    if (!inv || !store) throw new Error("Invoice not found.");
     if (["confirmed", "overpaid", "cancelled"].includes(inv.status)) {
       throw new Error("This invoice is already closed.");
     }
@@ -170,8 +169,7 @@ export const cancelStoreInvoice = createServerFn({ method: "POST" })
       .select("id, status, stores!inner(owner_id)")
       .eq("id", data.invoice_id)
       .maybeSingle();
-    const owner = (inv as unknown as { stores: { owner_id: string } } | null)?.stores.owner_id;
-    if (!inv || owner !== userId) throw new Error("Invoice not found.");
+    if (!inv) throw new Error("Invoice not found.");
     if (["confirmed", "overpaid"].includes(inv.status)) {
       throw new Error("Paid invoices cannot be cancelled.");
     }
