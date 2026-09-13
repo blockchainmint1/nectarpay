@@ -23,6 +23,12 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
 import {
+  listStoreNotificationPrefs,
+  saveStoreNotificationPrefs,
+  clearStoreNotificationPrefs,
+  type StoreNotificationPref,
+} from "@/lib/notify-store.functions";
+import {
   getNotificationPrefs,
   saveNotificationPrefs,
   createTelegramBindCode,
@@ -221,6 +227,8 @@ function NotificationsPage() {
               ))}
             </CardContent>
           </Card>
+
+          <StoreOverrides accountEmail={prefs.email_address} telegramReady={!!prefs.telegram_chat_id} />
 
           {/* Recent log */}
           <Card>
