@@ -61,21 +61,9 @@ function BalancesPage() {
 
       {isLoading ? (
         <div className="mt-8 text-sm text-muted-foreground">Loading…</div>
-      ) : !data?.chains.length ? (
-        <div className="mt-8 rounded-lg border border-dashed border-border bg-card/30 p-10 text-center text-sm text-muted-foreground">
-          No wallets linked yet.{" "}
-          <Link
-            to="/stores/$storeId/chains"
-            params={{ storeId }}
-            className="text-primary hover:underline"
-          >
-            Add one
-          </Link>
-          .
-        </div>
       ) : (
         <div className="mt-8 space-y-4">
-          {data.chains.map((c) => (
+          {(data?.chains ?? []).map((c) => (
             <ChainBalanceCard
               key={c.chain}
               storeId={storeId}
@@ -83,6 +71,8 @@ function BalancesPage() {
               name={c.name}
               derived={c.derived}
               nextIndex={c.nextIndex}
+              configured={c.configured}
+              sourceChain={c.sourceChain}
             />
           ))}
         </div>
@@ -97,12 +87,16 @@ function ChainBalanceCard({
   name,
   derived,
   nextIndex,
+  configured,
+  sourceChain,
 }: {
   storeId: string;
   chain: string;
   name: string;
   derived: boolean;
   nextIndex: number;
+  configured: boolean;
+  sourceChain: string;
 }) {
   const [open, setOpen] = useState(false);
   const [start, setStart] = useState(1);
