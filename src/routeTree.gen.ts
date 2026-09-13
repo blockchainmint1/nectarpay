@@ -45,6 +45,7 @@ import { Route as PosPairRouteImport } from './routes/pos.pair'
 import { Route as PosNfcInspectRouteImport } from './routes/pos.nfc-inspect'
 import { Route as PosHistoryRouteImport } from './routes/pos.history'
 import { Route as PayInvoiceIdRouteImport } from './routes/pay.$invoiceId'
+import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as IntegrationsWoocommerceRouteImport } from './routes/integrations.woocommerce'
 import { Route as IntegrationsPrestashopRouteImport } from './routes/integrations.prestashop'
 import { Route as IInvoiceIdRouteImport } from './routes/i.$invoiceId'
@@ -78,6 +79,7 @@ import { Route as AuthenticatedAdminLightningRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminKnowledgeRouteImport } from './routes/_authenticated.admin.knowledge'
 import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated.admin.invoices'
 import { Route as AuthenticatedAdminCrmRouteImport } from './routes/_authenticated.admin.crm'
+import { Route as AuthenticatedAccountUsersRouteImport } from './routes/_authenticated.account.users'
 import { Route as AuthenticatedStoresStoreIdIndexRouteImport } from './routes/_authenticated.stores.$storeId.index'
 import { Route as AuthenticatedAdminKnowledgeIndexRouteImport } from './routes/_authenticated.admin.knowledge.index'
 import { Route as AuthenticatedAdminCrmIndexRouteImport } from './routes/_authenticated.admin.crm.index'
@@ -318,6 +320,11 @@ const PayInvoiceIdRoute = PayInvoiceIdRouteImport.update({
   path: '/pay/$invoiceId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InviteTokenRoute = InviteTokenRouteImport.update({
+  id: '/invite/$token',
+  path: '/invite/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IntegrationsWoocommerceRoute = IntegrationsWoocommerceRouteImport.update({
   id: '/integrations/woocommerce',
   path: '/integrations/woocommerce',
@@ -496,6 +503,12 @@ const AuthenticatedAdminCrmRoute = AuthenticatedAdminCrmRouteImport.update({
   path: '/crm',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAccountUsersRoute =
+  AuthenticatedAccountUsersRouteImport.update({
+    id: '/account/users',
+    path: '/account/users',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedStoresStoreIdIndexRoute =
   AuthenticatedStoresStoreIdIndexRouteImport.update({
     id: '/',
@@ -884,6 +897,7 @@ export interface FileRoutesByFullPath {
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/prestashop': typeof IntegrationsPrestashopRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
   '/pos/history': typeof PosHistoryRoute
   '/pos/nfc-inspect': typeof PosNfcInspectRoute
@@ -895,6 +909,7 @@ export interface FileRoutesByFullPath {
   '/t/$slug': typeof TSlugRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
+  '/account/users': typeof AuthenticatedAccountUsersRoute
   '/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
@@ -1012,6 +1027,7 @@ export interface FileRoutesByTo {
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/prestashop': typeof IntegrationsPrestashopRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
   '/pos/history': typeof PosHistoryRoute
   '/pos/nfc-inspect': typeof PosNfcInspectRoute
@@ -1023,6 +1039,7 @@ export interface FileRoutesByTo {
   '/t/$slug': typeof TSlugRoute
   '/integrations': typeof IntegrationsIndexRoute
   '/pos': typeof PosIndexRoute
+  '/account/users': typeof AuthenticatedAccountUsersRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/lightning': typeof AuthenticatedAdminLightningRoute
   '/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
@@ -1141,6 +1158,7 @@ export interface FileRoutesById {
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/prestashop': typeof IntegrationsPrestashopRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
   '/pos/history': typeof PosHistoryRoute
   '/pos/nfc-inspect': typeof PosNfcInspectRoute
@@ -1152,6 +1170,7 @@ export interface FileRoutesById {
   '/t/$slug': typeof TSlugRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
+  '/_authenticated/account/users': typeof AuthenticatedAccountUsersRoute
   '/_authenticated/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/_authenticated/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
@@ -1273,6 +1292,7 @@ export interface FileRouteTypes {
     | '/i/$invoiceId'
     | '/integrations/prestashop'
     | '/integrations/woocommerce'
+    | '/invite/$token'
     | '/pay/$invoiceId'
     | '/pos/history'
     | '/pos/nfc-inspect'
@@ -1284,6 +1304,7 @@ export interface FileRouteTypes {
     | '/t/$slug'
     | '/integrations/'
     | '/pos/'
+    | '/account/users'
     | '/admin/crm'
     | '/admin/invoices'
     | '/admin/knowledge'
@@ -1401,6 +1422,7 @@ export interface FileRouteTypes {
     | '/i/$invoiceId'
     | '/integrations/prestashop'
     | '/integrations/woocommerce'
+    | '/invite/$token'
     | '/pay/$invoiceId'
     | '/pos/history'
     | '/pos/nfc-inspect'
@@ -1412,6 +1434,7 @@ export interface FileRouteTypes {
     | '/t/$slug'
     | '/integrations'
     | '/pos'
+    | '/account/users'
     | '/admin/invoices'
     | '/admin/lightning'
     | '/admin/merchants'
@@ -1529,6 +1552,7 @@ export interface FileRouteTypes {
     | '/i/$invoiceId'
     | '/integrations/prestashop'
     | '/integrations/woocommerce'
+    | '/invite/$token'
     | '/pay/$invoiceId'
     | '/pos/history'
     | '/pos/nfc-inspect'
@@ -1540,6 +1564,7 @@ export interface FileRouteTypes {
     | '/t/$slug'
     | '/integrations/'
     | '/pos/'
+    | '/_authenticated/account/users'
     | '/_authenticated/admin/crm'
     | '/_authenticated/admin/invoices'
     | '/_authenticated/admin/knowledge'
@@ -1650,6 +1675,7 @@ export interface RootRouteChildren {
   IInvoiceIdRoute: typeof IInvoiceIdRoute
   IntegrationsPrestashopRoute: typeof IntegrationsPrestashopRoute
   IntegrationsWoocommerceRoute: typeof IntegrationsWoocommerceRoute
+  InviteTokenRoute: typeof InviteTokenRoute
   PayInvoiceIdRoute: typeof PayInvoiceIdRoute
   SdkPayhmeDotjsRoute: typeof SdkPayhmeDotjsRoute
   TSlugRoute: typeof TSlugRoute
@@ -1939,6 +1965,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PayInvoiceIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/invite/$token': {
+      id: '/invite/$token'
+      path: '/invite/$token'
+      fullPath: '/invite/$token'
+      preLoaderRoute: typeof InviteTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/integrations/woocommerce': {
       id: '/integrations/woocommerce'
       path: '/integrations/woocommerce'
@@ -2169,6 +2202,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/crm'
       preLoaderRoute: typeof AuthenticatedAdminCrmRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/account/users': {
+      id: '/_authenticated/account/users'
+      path: '/account/users'
+      fullPath: '/account/users'
+      preLoaderRoute: typeof AuthenticatedAccountUsersRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/stores/$storeId/': {
       id: '/_authenticated/stores/$storeId/'
@@ -2739,6 +2779,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedTerminalsRoute: typeof AuthenticatedTerminalsRoute
   AuthenticatedVerifyRoute: typeof AuthenticatedVerifyRoute
+  AuthenticatedAccountUsersRoute: typeof AuthenticatedAccountUsersRoute
   AuthenticatedMHomeRoute: typeof AuthenticatedMHomeRoute
   AuthenticatedMVirtualTerminalRoute: typeof AuthenticatedMVirtualTerminalRoute
   AuthenticatedStoresStoreIdRoute: typeof AuthenticatedStoresStoreIdRouteWithChildren
@@ -2755,6 +2796,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedTerminalsRoute: AuthenticatedTerminalsRoute,
   AuthenticatedVerifyRoute: AuthenticatedVerifyRoute,
+  AuthenticatedAccountUsersRoute: AuthenticatedAccountUsersRoute,
   AuthenticatedMHomeRoute: AuthenticatedMHomeRoute,
   AuthenticatedMVirtualTerminalRoute: AuthenticatedMVirtualTerminalRoute,
   AuthenticatedStoresStoreIdRoute: AuthenticatedStoresStoreIdRouteWithChildren,
@@ -2904,6 +2946,7 @@ const rootRouteChildren: RootRouteChildren = {
   IInvoiceIdRoute: IInvoiceIdRoute,
   IntegrationsPrestashopRoute: IntegrationsPrestashopRoute,
   IntegrationsWoocommerceRoute: IntegrationsWoocommerceRoute,
+  InviteTokenRoute: InviteTokenRoute,
   PayInvoiceIdRoute: PayInvoiceIdRoute,
   SdkPayhmeDotjsRoute: SdkPayhmeDotjsRoute,
   TSlugRoute: TSlugRoute,
