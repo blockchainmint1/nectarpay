@@ -53,11 +53,49 @@ export async function notifyUser(
   payload: NotifyPayload,
 ): Promise<void> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data: prefs } = await supabaseAdmin
+  const { data: accountPrefs } = await supabaseAdmin
     .from("notification_prefs")
     .select("*")
     .eq("user_id", userId)
     .maybeSingle();
+
+  // Per-store override, when the event belongs to a store.
+  let override: {
+    enabled: boolean;
+    email_enabled: boolean;
+    email_address: string | null;
+    telegram_enabled: boolean;
+    events: Record<string, boolean>;
+  } | null = null;
+  if (payload.storeId) {
+    const { data: row } = await supabaseAdmin
+      .from("store_notification_prefs")
+      .select("enabled, email_enabled, email_address, telegram_enabled, events")
+      .eq("user_id", userId)
+      .eq("store_id", payload.storeId)
+      .maybeSingle();
+    if (row) {
+      override = {
+        enabled: row.enabled,
+        email_enabled: row.email_enabled,
+        email_address: row.email_address,
+        telegram_enabled: row.telegram_enabled,
+        events: (row.events as Record<string, boolean>) ?? {},
+      };
+    }
+  }
+
+  if (override && !override.enabled) return;
+
+  const prefs = override
+    ? {
+        email_enabled: override.email_enabled,
+        email_address: override.email_address ?? accountPrefs?.email_address ?? null,
+        telegram_enabled: override.telegram_enabled,
+        telegram_chat_id: accountPrefs?.telegram_chat_id ?? null,
+        events: override.events,
+      }
+    : accountPrefs;
 
   const events = (prefs?.events as Record<string, boolean>) ?? {};
   if (events[payload.event] === false) return;
