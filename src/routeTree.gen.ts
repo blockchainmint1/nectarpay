@@ -71,6 +71,12 @@ import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authent
 import { Route as LovableEmailEventsRouteImport } from './routes/lovable/email/events'
 import { Route as AuthenticatedStoresNewRouteImport } from './routes/_authenticated.stores.new'
 import { Route as AuthenticatedStoresStoreIdRouteImport } from './routes/_authenticated.stores.$storeId'
+import { Route as AuthenticatedReportsTaxRouteImport } from './routes/_authenticated.reports.tax'
+import { Route as AuthenticatedReportsSettlementRouteImport } from './routes/_authenticated.reports.settlement'
+import { Route as AuthenticatedReportsSalesRouteImport } from './routes/_authenticated.reports.sales'
+import { Route as AuthenticatedReportsMethodsRouteImport } from './routes/_authenticated.reports.methods'
+import { Route as AuthenticatedReportsLocationsRouteImport } from './routes/_authenticated.reports.locations'
+import { Route as AuthenticatedReportsInvoicesRouteImport } from './routes/_authenticated.reports.invoices'
 import { Route as AuthenticatedMVirtualTerminalRouteImport } from './routes/_authenticated.m.virtual-terminal'
 import { Route as AuthenticatedMHomeRouteImport } from './routes/_authenticated.m.home'
 import { Route as AuthenticatedAdminVerifyRouteImport } from './routes/_authenticated.admin.verify'
@@ -457,6 +463,41 @@ const AuthenticatedStoresStoreIdRoute =
     id: '/stores/$storeId',
     path: '/stores/$storeId',
     getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedReportsTaxRoute = AuthenticatedReportsTaxRouteImport.update({
+  id: '/tax',
+  path: '/tax',
+  getParentRoute: () => AuthenticatedReportsRoute,
+} as any)
+const AuthenticatedReportsSettlementRoute =
+  AuthenticatedReportsSettlementRouteImport.update({
+    id: '/settlement',
+    path: '/settlement',
+    getParentRoute: () => AuthenticatedReportsRoute,
+  } as any)
+const AuthenticatedReportsSalesRoute =
+  AuthenticatedReportsSalesRouteImport.update({
+    id: '/sales',
+    path: '/sales',
+    getParentRoute: () => AuthenticatedReportsRoute,
+  } as any)
+const AuthenticatedReportsMethodsRoute =
+  AuthenticatedReportsMethodsRouteImport.update({
+    id: '/methods',
+    path: '/methods',
+    getParentRoute: () => AuthenticatedReportsRoute,
+  } as any)
+const AuthenticatedReportsLocationsRoute =
+  AuthenticatedReportsLocationsRouteImport.update({
+    id: '/locations',
+    path: '/locations',
+    getParentRoute: () => AuthenticatedReportsRoute,
+  } as any)
+const AuthenticatedReportsInvoicesRoute =
+  AuthenticatedReportsInvoicesRouteImport.update({
+    id: '/invoices',
+    path: '/invoices',
+    getParentRoute: () => AuthenticatedReportsRoute,
   } as any)
 const AuthenticatedMVirtualTerminalRoute =
   AuthenticatedMVirtualTerminalRouteImport.update({
@@ -934,6 +975,12 @@ export interface FileRoutesByFullPath {
   '/admin/verify': typeof AuthenticatedAdminVerifyRoute
   '/m/home': typeof AuthenticatedMHomeRoute
   '/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
+  '/reports/invoices': typeof AuthenticatedReportsInvoicesRoute
+  '/reports/locations': typeof AuthenticatedReportsLocationsRoute
+  '/reports/methods': typeof AuthenticatedReportsMethodsRoute
+  '/reports/sales': typeof AuthenticatedReportsSalesRoute
+  '/reports/settlement': typeof AuthenticatedReportsSettlementRoute
+  '/reports/tax': typeof AuthenticatedReportsTaxRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
@@ -1063,6 +1110,12 @@ export interface FileRoutesByTo {
   '/admin/verify': typeof AuthenticatedAdminVerifyRoute
   '/m/home': typeof AuthenticatedMHomeRoute
   '/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
+  '/reports/invoices': typeof AuthenticatedReportsInvoicesRoute
+  '/reports/locations': typeof AuthenticatedReportsLocationsRoute
+  '/reports/methods': typeof AuthenticatedReportsMethodsRoute
+  '/reports/sales': typeof AuthenticatedReportsSalesRoute
+  '/reports/settlement': typeof AuthenticatedReportsSettlementRoute
+  '/reports/tax': typeof AuthenticatedReportsTaxRoute
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
   '/account': typeof AuthenticatedAccountIndexRoute
@@ -1198,6 +1251,12 @@ export interface FileRoutesById {
   '/_authenticated/admin/verify': typeof AuthenticatedAdminVerifyRoute
   '/_authenticated/m/home': typeof AuthenticatedMHomeRoute
   '/_authenticated/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
+  '/_authenticated/reports/invoices': typeof AuthenticatedReportsInvoicesRoute
+  '/_authenticated/reports/locations': typeof AuthenticatedReportsLocationsRoute
+  '/_authenticated/reports/methods': typeof AuthenticatedReportsMethodsRoute
+  '/_authenticated/reports/sales': typeof AuthenticatedReportsSalesRoute
+  '/_authenticated/reports/settlement': typeof AuthenticatedReportsSettlementRoute
+  '/_authenticated/reports/tax': typeof AuthenticatedReportsTaxRoute
   '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/_authenticated/stores/new': typeof AuthenticatedStoresNewRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
@@ -1334,6 +1393,12 @@ export interface FileRouteTypes {
     | '/admin/verify'
     | '/m/home'
     | '/m/virtual-terminal'
+    | '/reports/invoices'
+    | '/reports/locations'
+    | '/reports/methods'
+    | '/reports/sales'
+    | '/reports/settlement'
+    | '/reports/tax'
     | '/stores/$storeId'
     | '/stores/new'
     | '/lovable/email/events'
@@ -1463,6 +1528,12 @@ export interface FileRouteTypes {
     | '/admin/verify'
     | '/m/home'
     | '/m/virtual-terminal'
+    | '/reports/invoices'
+    | '/reports/locations'
+    | '/reports/methods'
+    | '/reports/sales'
+    | '/reports/settlement'
+    | '/reports/tax'
     | '/stores/new'
     | '/lovable/email/events'
     | '/account'
@@ -1597,6 +1668,12 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/verify'
     | '/_authenticated/m/home'
     | '/_authenticated/m/virtual-terminal'
+    | '/_authenticated/reports/invoices'
+    | '/_authenticated/reports/locations'
+    | '/_authenticated/reports/methods'
+    | '/_authenticated/reports/sales'
+    | '/_authenticated/reports/settlement'
+    | '/_authenticated/reports/tax'
     | '/_authenticated/stores/$storeId'
     | '/_authenticated/stores/new'
     | '/lovable/email/events'
@@ -2169,6 +2246,48 @@ declare module '@tanstack/react-router' {
       fullPath: '/stores/$storeId'
       preLoaderRoute: typeof AuthenticatedStoresStoreIdRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/reports/tax': {
+      id: '/_authenticated/reports/tax'
+      path: '/tax'
+      fullPath: '/reports/tax'
+      preLoaderRoute: typeof AuthenticatedReportsTaxRouteImport
+      parentRoute: typeof AuthenticatedReportsRoute
+    }
+    '/_authenticated/reports/settlement': {
+      id: '/_authenticated/reports/settlement'
+      path: '/settlement'
+      fullPath: '/reports/settlement'
+      preLoaderRoute: typeof AuthenticatedReportsSettlementRouteImport
+      parentRoute: typeof AuthenticatedReportsRoute
+    }
+    '/_authenticated/reports/sales': {
+      id: '/_authenticated/reports/sales'
+      path: '/sales'
+      fullPath: '/reports/sales'
+      preLoaderRoute: typeof AuthenticatedReportsSalesRouteImport
+      parentRoute: typeof AuthenticatedReportsRoute
+    }
+    '/_authenticated/reports/methods': {
+      id: '/_authenticated/reports/methods'
+      path: '/methods'
+      fullPath: '/reports/methods'
+      preLoaderRoute: typeof AuthenticatedReportsMethodsRouteImport
+      parentRoute: typeof AuthenticatedReportsRoute
+    }
+    '/_authenticated/reports/locations': {
+      id: '/_authenticated/reports/locations'
+      path: '/locations'
+      fullPath: '/reports/locations'
+      preLoaderRoute: typeof AuthenticatedReportsLocationsRouteImport
+      parentRoute: typeof AuthenticatedReportsRoute
+    }
+    '/_authenticated/reports/invoices': {
+      id: '/_authenticated/reports/invoices'
+      path: '/invoices'
+      fullPath: '/reports/invoices'
+      preLoaderRoute: typeof AuthenticatedReportsInvoicesRouteImport
+      parentRoute: typeof AuthenticatedReportsRoute
     }
     '/_authenticated/m/virtual-terminal': {
       id: '/_authenticated/m/virtual-terminal'
@@ -2767,10 +2886,22 @@ const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
 interface AuthenticatedReportsRouteChildren {
+  AuthenticatedReportsInvoicesRoute: typeof AuthenticatedReportsInvoicesRoute
+  AuthenticatedReportsLocationsRoute: typeof AuthenticatedReportsLocationsRoute
+  AuthenticatedReportsMethodsRoute: typeof AuthenticatedReportsMethodsRoute
+  AuthenticatedReportsSalesRoute: typeof AuthenticatedReportsSalesRoute
+  AuthenticatedReportsSettlementRoute: typeof AuthenticatedReportsSettlementRoute
+  AuthenticatedReportsTaxRoute: typeof AuthenticatedReportsTaxRoute
   AuthenticatedReportsIndexRoute: typeof AuthenticatedReportsIndexRoute
 }
 
 const AuthenticatedReportsRouteChildren: AuthenticatedReportsRouteChildren = {
+  AuthenticatedReportsInvoicesRoute: AuthenticatedReportsInvoicesRoute,
+  AuthenticatedReportsLocationsRoute: AuthenticatedReportsLocationsRoute,
+  AuthenticatedReportsMethodsRoute: AuthenticatedReportsMethodsRoute,
+  AuthenticatedReportsSalesRoute: AuthenticatedReportsSalesRoute,
+  AuthenticatedReportsSettlementRoute: AuthenticatedReportsSettlementRoute,
+  AuthenticatedReportsTaxRoute: AuthenticatedReportsTaxRoute,
   AuthenticatedReportsIndexRoute: AuthenticatedReportsIndexRoute,
 }
 
