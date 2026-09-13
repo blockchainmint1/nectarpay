@@ -114,6 +114,27 @@ function ChainBalanceCard({
 
   const highestUsed = Math.max(1, nextIndex - 1);
 
+  if (!configured) {
+    return (
+      <div className="flex items-center justify-between rounded-lg border border-dashed border-border bg-card/30 px-5 py-4">
+        <div>
+          <div className="font-medium text-muted-foreground">{name}</div>
+          <div className="text-xs text-muted-foreground">No wallet linked for this chain</div>
+        </div>
+        <Link
+          to="/stores/$storeId/chains"
+          params={{ storeId }}
+          className="text-xs text-primary hover:underline"
+        >
+          Add wallet
+        </Link>
+      </div>
+    );
+  }
+
+  const sharedEvm =
+    ["eth", "base", "bsc"].includes(chain) && sourceChain !== chain;
+
   return (
     <div className="rounded-lg border border-border bg-card/60">
       <button
@@ -127,6 +148,7 @@ function ChainBalanceCard({
             {derived
               ? `Derived addresses · latest issued index ${highestUsed}`
               : "Single static receive address"}
+            {sharedEvm && ` · shares your ${sourceChain.toUpperCase()} wallet`}
           </div>
         </div>
         <div className="text-right">
