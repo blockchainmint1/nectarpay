@@ -1,55 +1,67 @@
-## Short answer
+# Merchant reports suite (/reports)
 
-Yes — all four are cheap to add because they're Bitcoin forks and reuse the exact BTC-like rail we already run for BTC and TEXITcoin: merchant supplies an xpub, we derive a fresh receive address per invoice, a watcher polls an indexer, mempool-accept + confirmations logic is shared. No new custody, no new key handling.
+A new "Reports" section in the merchant dashboard that turns raw payment data into
+answers: what sold, when, how people paid, and what it's worth.
 
-The only real work is per-coin address parameters and one new indexer adapter.
+## The page
 
-## What's already there vs. missing
+New nav item **Reports** (sidebar + mobile "more" menu), landing at `/reports`.
 
-- `chain_kind` in the database already includes `doge`, `ltc`, `bch` — **`dash` needs adding**.
-- `ChainKind` in code has `doge` but not `ltc`/`bch`/`dash`, and none of the four have a network definition, watcher wiring, POS/checkout entry, or a chain card in store setup.
+Shared controls at the top of every report:
+- Date range (Today, 7d, 30d, 90d, Year to date, Custom)
+- Store filter (all stores you can see, respecting team access)
+- Chain / coin filter
+- Compare to previous period (on by default)
+- Download this report as CSV
 
-## Per-coin parameters
+## The reports
 
-| Coin | SLIP-44 | P2PKH / P2SH | Address notes | Confirms |
-|---|---|---|---|---|
-| Litecoin | 2 | 0x30 / 0x32 | bech32 `ltc1`, use native segwit | 3 (~7 min) |
-| Dogecoin | 3 | 0x1e / 0x16 | legacy P2PKH only | 6 (~6 min) |
-| Bitcoin Cash | 145 | 0x00 / 0x05 | must emit **CashAddr** (`bitcoincash:q…`) in QR, not legacy | 2 (~20 min) |
-| Dash | 5 | 0x4c / 0x10 | legacy only; InstantSend allows near-instant accept | 2, or 1 + InstantSend lock |
+1. **Summary** (`/reports`)
+   - Headline tiles: gross paid volume, payment count, average payment, unpaid /
+     expired value, and % change vs the previous period.
+   - Revenue over time chart (daily or monthly depending on range).
+   - Quick links to every other report.
 
-## The one real engineering item: indexers
+2. **Sales over time** (`/reports/sales`)
+   - Day / week / month bars with paid volume and count, plus a running total.
+   - Best day, best week, and busiest hour callouts.
 
-Our watcher speaks Esplora. Coverage differs:
+3. **Payment methods** (`/reports/methods`)
+   - Breakdown by chain and by coin (BTC, TXC, TSD, USDC, Lightning, etc.):
+     share of volume, count, average ticket.
+   - Stablecoin vs volatile-coin split.
 
-- **Litecoin** — Esplora-compatible (`litecoinspace.org/api`). Drops in with zero adapter work.
-- **BCH / DOGE / DASH** — no reliable public Esplora. These need a **Blockbook adapter** (Trezor's public Blockbook nodes expose address UTXOs, txs, and mempool over a stable REST API). That's one new module implementing the same interface the Esplora client exposes, then each network declares which backend it uses.
+4. **Stores & terminals** (`/reports/locations`)
+   - Volume and count per store, per terminal, and per share link.
+   - Terminal last-seen and city so quiet devices stand out.
 
-Dash bonus: Blockbook surfaces InstantSend lock status, so Dash can settle in ~2 seconds — the best in-person UX of the four, worth marketing.
+5. **Customers & invoices** (`/reports/invoices`)
+   - Emailed payment requests: sent, opened, paid, expired, and average time to pay.
+   - Repeat payers by email where we have one.
 
-## Suggested build order
+6. **Settlement & fees** (`/reports/settlement`)
+   - What landed per chain in coin terms and in dollars.
+   - Estimated savings versus a 2.9% + 30c card rate, cumulative and for the period.
 
-1. Add `dash` to the chain enum; extend `ChainKind` with `ltc`, `bch`, `dash`.
-2. Ship **Litecoin first** — Esplora path, proves the pattern end to end with no new backend code.
-3. Build the Blockbook adapter behind the existing indexer interface.
-4. Ship **Dash** (InstantSend), then **Dogecoin**, then **BCH** (CashAddr encoder is the extra piece).
-5. Rates: all four are on CoinMarketCap already — the existing rate cache covers them.
-6. Store setup: four new chain cards, native-only (no stables on these chains), off by default so merchants opt in.
-7. POS/checkout ordering: TSD stays pinned first; the new rails slot after the stablecoins.
-
-## Other communities worth courting
-
-Ranked by "hardcore supporters + real wallet adoption + low integration cost":
-
-- **Monero (XMR)** — by far the most ideological, merchant-friendly community; famously loyal. Integration is heavier (view-key scanning, subaddresses, no xpub), but the goodwill payoff is the largest of any coin here.
-- **Zcash (ZEC)** — transparent addresses are a Bitcoin fork, so t-addr support is nearly free; the shielded side is a bigger lift. Well-funded, vocal community.
-- **Kaspa (KAS)** — extremely active, growth-minded community; 1-second blocks make it a great POS story. Needs its own node/API adapter.
-- **Nano (XNO)** — feeless, instant, purpose-built for point-of-sale; small but fiercely dedicated merchant-adoption crowd.
-- **DigiByte (DGB)** — Bitcoin fork, so nearly free to add once Blockbook exists; long-time loyalists.
-- **Pepecoin / meme rails** — same Dogecoin codebase, essentially free once DOGE ships; unpredictable but real spending communities.
-
-Worth skipping for now: XRP and XLM (community is exchange-centric, less self-custody spending), and BSV.
+7. **Tax & accounting** (`/reports/tax`)
+   - Monthly totals by currency with tax collected (from the store's tax setting).
+   - Year-to-date table built for handing to a bookkeeper, plus QuickBooks CSV.
 
 ## Technical notes
 
-New network definitions go in `src/lib/chains/networks.ts` as `BtcLikeNetwork` entries with an added `indexer: "esplora" | "blockbook"` discriminator; the Blockbook client lands next to the existing Esplora client and returns the same shapes so `watcher.functions.ts` needs no per-chain branching. CashAddr encoding lives in the address-derivation layer so QR and explorer links stay consistent. Adding `dash` to `chain_kind` is a database migration and must run before any code references it.
+- Data comes from a new `src/lib/reports.functions.ts` with authenticated server
+  functions (`requireSupabaseAuth`), one per report, each taking
+  `{ storeIds, chains, from, to }` and returning already-aggregated rows so the
+  browser never pulls raw invoice lists. Aggregation logic lives in
+  `src/lib/reports.server.ts`.
+- Queries read `invoices` + `transactions` (+ `terminals`, `public_terminals`,
+  `stores`) through the caller's Supabase client, so existing RLS and the new
+  store-team access levels apply with no extra checks. Viewer-level members see
+  reports; wallet data stays out of this section.
+- Routes are `src/routes/_authenticated.reports.tsx` (layout with the filter bar +
+  sub-tabs) and one leaf per report; filters live in the URL search params so a
+  report can be bookmarked and shared.
+- Charts use `recharts` (already in the shadcn stack) via `@/components/ui/chart`.
+- CSV download reuses the existing export helper pattern; each report exposes its
+  own column set.
+- Empty/loading states on every report, and dollar formatting per store currency.
