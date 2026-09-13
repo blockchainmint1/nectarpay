@@ -17,6 +17,26 @@ export interface BalanceChainSummary {
   derived: boolean;
   nextIndex: number;
   stables: string[];
+  /** False when the store hasn't linked a wallet for this chain yet. */
+  configured: boolean;
+  /** Which chain_config row actually holds the key (EVM shares one xpub). */
+  sourceChain: string;
+}
+
+const EVM_SHARED = ["eth", "base", "bsc"] as const;
+
+/** Pick the chain_config row that carries a usable key for a chain, with the
+ * EVM chains falling back to each other (one xpub covers all three). */
+function pickConfigRow(
+  rows: { chain: string; xpub: string | null; xpub_or_address: string | null; enabled: boolean; next_address_index: number | null; stables: unknown }[],
+  chain: string,
+) {
+  const direct = rows.find((r) => r.chain === chain);
+  if (direct) return direct;
+  if ((EVM_SHARED as readonly string[]).includes(chain)) {
+    return rows.find((r) => (EVM_SHARED as readonly string[]).includes(r.chain));
+  }
+  return undefined;
 }
 
 export const listBalanceChains = createServerFn({ method: "POST" })
@@ -31,28 +51,30 @@ export const listBalanceChains = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     const netModule = await import("./chains/networks");
-    const getNetwork = netModule.getNetwork as unknown as (
-      c: string,
-    ) => { kind: string; name: string } | undefined;
+    const allNetworks = netModule.ALL_NETWORKS as Record<
+      string,
+      { kind: string; name: string }
+    >;
 
     const chains: BalanceChainSummary[] = [];
-    for (const r of rows ?? []) {
-      if (r.chain === "lightning") continue;
-      const key = (r.xpub || r.xpub_or_address || "").trim();
-      if (!key) continue;
-      const net = getNetwork(r.chain as string);
-      if (!net) continue;
+    for (const [chain, net] of Object.entries(allNetworks)) {
+      if (chain === "lightning") continue;
+      const row = pickConfigRow(rows ?? [], chain);
+      const key = (row?.xpub || row?.xpub_or_address || "").trim();
+      const configured = !!key;
       const derived =
         net.kind === "btc-like" ||
         net.kind === "evm" ||
-        (net.kind === "tron" && !key.startsWith("T"));
+        (net.kind === "tron" && !key.startsWith("T") && configured);
       chains.push({
-        chain: r.chain as string,
+        chain,
         name: net.name,
         kind: net.kind,
-        derived,
-        nextIndex: r.next_address_index ?? 1,
-        stables: ((r.stables ?? []) as string[]).map((s) => s.toUpperCase()),
+        derived: configured ? derived : net.kind !== "solana" && net.kind !== "tron",
+        nextIndex: row?.next_address_index ?? 1,
+        stables: configured ? ((row?.stables ?? []) as string[]).map((s) => s.toUpperCase()) : [],
+        configured,
+        sourceChain: row?.chain ?? chain,
       });
     }
     return { chains };
@@ -73,13 +95,21 @@ export const getChainBalances = createServerFn({ method: "POST" })
       data,
       context,
     }): Promise<{ addresses: AddressBalance[]; derived: boolean; totalUsd: number }> => {
-      const { data: cfg, error } = await context.supabase
+      const isEvm = (EVM_SHARED as readonly string[]).includes(data.chain);
+      let query = context.supabase
         .from("chain_configs")
         .select("chain, xpub, xpub_or_address, stables")
         .eq("store_id", data.storeId)
-        .eq("chain", data.chain as never)
-        .maybeSingle();
+        .eq("enabled", true)
+        .limit(5);
+      query = isEvm
+        ? query.in("chain", EVM_SHARED as unknown as never[])
+        : query.eq("chain", data.chain as never);
+      const { data: cfgs, error } = await query;
       if (error) throw new Error(error.message);
+      const cfg =
+        (cfgs ?? []).find((c) => c.chain === data.chain) ??
+        (cfgs ?? []).find((c) => (c.xpub || c.xpub_or_address || "").trim());
       if (!cfg) throw new Error("Chain not configured for this store.");
 
       const key = (cfg.xpub || cfg.xpub_or_address || "").trim();
