@@ -86,7 +86,10 @@ async function evmAddressBalance(
 
 // ---------- Solana ----------
 
-async function solanaBalance(address: string, key: string): Promise<{ native: number; tokens: TokenBalance[] }> {
+async function solanaBalance(
+  address: string,
+  key: string,
+): Promise<{ native: number; tokens: TokenBalance[] }> {
   const net = getNetwork("sol" as ChainKind) as { rpcUrl: (k: string) => string };
   const url = net.rpcUrl(key);
   const call = async <T>(method: string, params: unknown[]): Promise<T> =>
@@ -152,7 +155,9 @@ export async function getAddressBalance(
     tokens: [],
     usd: 0,
     explorerUrl:
-      "explorerAddr" in net ? (net as { explorerAddr: (a: string) => string }).explorerAddr(address) : "",
+      "explorerAddr" in net
+        ? (net as { explorerAddr: (a: string) => string }).explorerAddr(address)
+        : "",
   };
 
   try {
@@ -162,7 +167,12 @@ export async function getAddressBalance(
       row.nativePending = b.unconfirmed / 10 ** net.decimals;
     } else if (net.kind === "evm") {
       row.nativeSymbol = chain === "bsc" ? "BNB" : "ETH";
-      const { native, tokens } = await evmAddressBalance(chain, address, enabledStables, alchemyKey);
+      const { native, tokens } = await evmAddressBalance(
+        chain,
+        address,
+        enabledStables,
+        alchemyKey,
+      );
       row.native = native;
       row.tokens = tokens;
     } else if (net.kind === "solana") {

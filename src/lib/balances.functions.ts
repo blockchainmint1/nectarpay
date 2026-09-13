@@ -26,7 +26,14 @@ const EVM_SHARED = ["eth", "base", "bsc"] as const;
 /** Pick the chain_config row that carries a usable key for a chain, with the
  * EVM chains falling back to each other (one xpub covers all three). */
 function pickConfigRow(
-  rows: { chain: string; xpub: string | null; xpub_or_address: string | null; enabled: boolean; next_address_index: number | null; stables: unknown }[],
+  rows: {
+    chain: string;
+    xpub: string | null;
+    xpub_or_address: string | null;
+    enabled: boolean;
+    next_address_index: number | null;
+    stables: unknown;
+  }[],
   chain: string,
 ) {
   const direct = rows.find((r) => r.chain === chain);
@@ -48,10 +55,7 @@ export const listBalanceChains = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     const netModule = await import("./chains/networks");
-    const allNetworks = netModule.ALL_NETWORKS as Record<
-      string,
-      { kind: string; name: string }
-    >;
+    const allNetworks = netModule.ALL_NETWORKS as Record<string, { kind: string; name: string }>;
 
     const chains: BalanceChainSummary[] = [];
     for (const [chain, net] of Object.entries(allNetworks)) {
@@ -114,9 +118,8 @@ export const getChainBalances = createServerFn({ method: "POST" })
       const net = getNetwork(data.chain as never);
       if (!net) throw new Error("Unsupported chain.");
 
-      const { deriveBtcLikeAddress, deriveEvmAddress, deriveTronAddress } = await import(
-        "./chains/derive.server"
-      );
+      const { deriveBtcLikeAddress, deriveEvmAddress, deriveTronAddress } =
+        await import("./chains/derive.server");
       const { getAddressBalance, loadRates } = await import("./balances.server");
 
       const stables = ((cfg.stables ?? []) as string[]).map((s) => s.toUpperCase());
@@ -144,7 +147,13 @@ export const getChainBalances = createServerFn({ method: "POST" })
       }
 
       const nativeSymbol =
-        net.kind === "evm" ? "ETH" : net.kind === "solana" ? "SOL" : net.kind === "tron" ? "TRX" : data.chain;
+        net.kind === "evm"
+          ? "ETH"
+          : net.kind === "solana"
+            ? "SOL"
+            : net.kind === "tron"
+              ? "TRX"
+              : data.chain;
       const rates = await loadRates([nativeSymbol, "BNB", ...stables]);
 
       const addresses: AddressBalance[] = [];

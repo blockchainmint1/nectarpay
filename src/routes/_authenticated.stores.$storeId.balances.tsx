@@ -151,7 +151,9 @@ function ChainBalanceCard({
               <span className="ml-1 text-xs font-normal text-muted-foreground">on this page</span>
             </div>
           ) : (
-            <span className="text-xs text-muted-foreground">{open ? "Loading…" : "Show detail"}</span>
+            <span className="text-xs text-muted-foreground">
+              {open ? "Loading…" : "Show detail"}
+            </span>
           )}
         </div>
       </button>
@@ -214,12 +216,7 @@ function ChainBalanceCard({
               </ul>
 
               <div className="mt-3 flex items-center justify-between">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => refetch()}
-                  disabled={isFetching}
-                >
+                <Button variant="ghost" size="sm" onClick={() => refetch()} disabled={isFetching}>
                   <RefreshCw className={cn("mr-1 h-3 w-3", isFetching && "animate-spin")} />
                   Refresh
                 </Button>
