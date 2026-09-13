@@ -1514,6 +1514,94 @@ export type Database = {
           },
         ]
       }
+      store_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string | null
+          role: Database["public"]["Enums"]["store_member_role"]
+          store_id: string
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["store_member_role"]
+          store_id: string
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["store_member_role"]
+          store_id?: string
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_invites_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_members: {
+        Row: {
+          created_at: string
+          id: string
+          invited_by: string | null
+          role: Database["public"]["Enums"]["store_member_role"]
+          store_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["store_member_role"]
+          store_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["store_member_role"]
+          store_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_members_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stores: {
         Row: {
           admin_market: string | null
@@ -2441,6 +2529,7 @@ export type Database = {
       next_txc_deposit_index: { Args: never; Returns: number }
       owns_store: { Args: { _store_id: string }; Returns: boolean }
       purge_expired_wallet_challenges: { Args: never; Returns: undefined }
+      store_access_level: { Args: { _store_id: string }; Returns: number }
       txc_balance: { Args: { _user_id: string }; Returns: number }
     }
     Enums: {
@@ -2472,6 +2561,7 @@ export type Database = {
       kyc_level: "none" | "basic" | "advanced"
       kyc_provider: "none" | "sumsub" | "persona" | "didit" | "veriff"
       kyc_status: "not_required" | "pending" | "passed" | "failed"
+      store_member_role: "viewer" | "manager" | "admin"
       tangem_pay_intent_status:
         | "pending"
         | "signed"
@@ -2637,6 +2727,7 @@ export const Constants = {
       kyc_level: ["none", "basic", "advanced"],
       kyc_provider: ["none", "sumsub", "persona", "didit", "veriff"],
       kyc_status: ["not_required", "pending", "passed", "failed"],
+      store_member_role: ["viewer", "manager", "admin"],
       tangem_pay_intent_status: [
         "pending",
         "signed",
