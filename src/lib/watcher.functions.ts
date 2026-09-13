@@ -237,6 +237,7 @@ export async function settleInvoice(
       text: isPaid
         ? `Invoice ${invoiceId.slice(0, 8)} was paid in full ($${paidAmountUsd.toFixed(2)} of $${amountDueUsd.toFixed(2)}).`
         : `Invoice ${invoiceId.slice(0, 8)} received only $${paidAmountUsd.toFixed(2)} of $${amountDueUsd.toFixed(2)}.`,
+      storeId: inv.store_id,
       metadata: { invoiceId },
     });
   }
