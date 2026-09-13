@@ -6,8 +6,6 @@
 
 import {
   getNetwork,
-  EVM_CHAIN_KEYS,
-  EVM_CHAIN_LABEL,
   type ChainKind,
   type BtcLikeNetwork,
   type EvmNetwork,
@@ -56,45 +54,33 @@ function balanceOfCalldata(address: string): string {
 }
 
 async function evmAddressBalance(
+  chain: ChainKind,
   address: string,
   enabledStables: string[],
   key: string,
 ): Promise<{ native: number; tokens: TokenBalance[] }> {
   const tokens: TokenBalance[] = [];
-  let native = 0;
+  const net = getNetwork(chain) as EvmNetwork;
+  const url = net.rpcUrl(key);
+  const nativeHex = await evmRpc<string>(url, "eth_getBalance", [address, "latest"]);
+  const native = Number(BigInt(nativeHex)) / 1e18;
 
-  for (const chainKey of EVM_CHAIN_KEYS) {
-    const net = getNetwork(chainKey as ChainKind) as EvmNetwork;
-    const url = net.rpcUrl(key);
+  for (const stable of net.stables) {
+    if (!enabledStables.includes(stable.symbol.toUpperCase())) continue;
     try {
-      const hex = await evmRpc<string>(url, "eth_getBalance", [address, "latest"]);
-      const amount = Number(BigInt(hex)) / 1e18;
+      const hex = await evmRpc<string>(url, "eth_call", [
+        { to: stable.address, data: balanceOfCalldata(address) },
+        "latest",
+      ]);
+      if (!hex || hex === "0x") continue;
+      const amount = Number(BigInt(hex)) / 10 ** stable.decimals;
       if (amount > 0) {
-        native += amount;
-        tokens.push({ symbol: net.symbol === "bsc" ? "BNB" : "ETH", amount, network: EVM_CHAIN_LABEL[chainKey] });
+        tokens.push({ symbol: stable.symbol, amount });
       }
     } catch {
-      /* one chain down shouldn't blank the row */
-    }
-    for (const stable of net.stables) {
-      if (!enabledStables.includes(stable.symbol.toUpperCase())) continue;
-      try {
-        const hex = await evmRpc<string>(url, "eth_call", [
-          { to: stable.address, data: balanceOfCalldata(address) },
-          "latest",
-        ]);
-        if (!hex || hex === "0x") continue;
-        const amount = Number(BigInt(hex)) / 10 ** stable.decimals;
-        if (amount > 0) {
-          tokens.push({ symbol: stable.symbol, amount, network: EVM_CHAIN_LABEL[chainKey] });
-        }
-      } catch {
-        /* skip */
-      }
+      /* one unavailable token contract shouldn't blank the address */
     }
   }
-  // Native rows are emitted as tokens (per network); keep `native` as the sum
-  // only for display fallback.
   return { native, tokens };
 }
 
@@ -175,8 +161,9 @@ export async function getAddressBalance(
       row.native = b.confirmed / 10 ** net.decimals;
       row.nativePending = b.unconfirmed / 10 ** net.decimals;
     } else if (net.kind === "evm") {
-      row.nativeSymbol = "ETH";
-      const { tokens } = await evmAddressBalance(address, enabledStables, alchemyKey);
+      row.nativeSymbol = chain === "bsc" ? "BNB" : "ETH";
+      const { native, tokens } = await evmAddressBalance(chain, address, enabledStables, alchemyKey);
+      row.native = native;
       row.tokens = tokens;
     } else if (net.kind === "solana") {
       row.nativeSymbol = "SOL";

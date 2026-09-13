@@ -72,7 +72,6 @@ function BalancesPage() {
               derived={c.derived}
               nextIndex={c.nextIndex}
               configured={c.configured}
-              sourceChain={c.sourceChain}
             />
           ))}
         </div>
@@ -88,7 +87,6 @@ function ChainBalanceCard({
   derived,
   nextIndex,
   configured,
-  sourceChain,
 }: {
   storeId: string;
   chain: string;
@@ -96,7 +94,6 @@ function ChainBalanceCard({
   derived: boolean;
   nextIndex: number;
   configured: boolean;
-  sourceChain: string;
 }) {
   const [open, setOpen] = useState(false);
   const [start, setStart] = useState(1);
@@ -132,9 +129,6 @@ function ChainBalanceCard({
     );
   }
 
-  const sharedEvm =
-    ["eth", "base", "bsc"].includes(chain) && sourceChain !== chain;
-
   return (
     <div className="rounded-lg border border-border bg-card/60">
       <button
@@ -148,7 +142,6 @@ function ChainBalanceCard({
             {derived
               ? `Derived addresses · latest issued index ${highestUsed}`
               : "Single static receive address"}
-            {sharedEvm && ` · shares your ${sourceChain.toUpperCase()} wallet`}
           </div>
         </div>
         <div className="text-right">

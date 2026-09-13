@@ -19,8 +19,6 @@ export interface BalanceChainSummary {
   stables: string[];
   /** False when the store hasn't linked a wallet for this chain yet. */
   configured: boolean;
-  /** Which chain_config row actually holds the key (EVM shares one xpub). */
-  sourceChain: string;
 }
 
 const EVM_SHARED = ["eth", "base", "bsc"] as const;
@@ -46,8 +44,7 @@ export const listBalanceChains = createServerFn({ method: "POST" })
     const { data: rows, error } = await context.supabase
       .from("chain_configs")
       .select("chain, xpub, xpub_or_address, enabled, next_address_index, stables")
-      .eq("store_id", data.storeId)
-      .eq("enabled", true);
+      .eq("store_id", data.storeId);
     if (error) throw new Error(error.message);
 
     const netModule = await import("./chains/networks");
@@ -74,7 +71,6 @@ export const listBalanceChains = createServerFn({ method: "POST" })
         nextIndex: row?.next_address_index ?? 1,
         stables: configured ? ((row?.stables ?? []) as string[]).map((s) => s.toUpperCase()) : [],
         configured,
-        sourceChain: row?.chain ?? chain,
       });
     }
     return { chains };
@@ -100,7 +96,6 @@ export const getChainBalances = createServerFn({ method: "POST" })
         .from("chain_configs")
         .select("chain, xpub, xpub_or_address, stables")
         .eq("store_id", data.storeId)
-        .eq("enabled", true)
         .limit(5);
       query = isEvm
         ? query.in("chain", EVM_SHARED as unknown as never[])
