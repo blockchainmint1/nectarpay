@@ -45,6 +45,7 @@ import { Route as PosPairRouteImport } from './routes/pos.pair'
 import { Route as PosNfcInspectRouteImport } from './routes/pos.nfc-inspect'
 import { Route as PosHistoryRouteImport } from './routes/pos.history'
 import { Route as PayInvoiceIdRouteImport } from './routes/pay.$invoiceId'
+import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as IntegrationsWoocommerceRouteImport } from './routes/integrations.woocommerce'
 import { Route as IntegrationsPrestashopRouteImport } from './routes/integrations.prestashop'
 import { Route as IInvoiceIdRouteImport } from './routes/i.$invoiceId'
@@ -62,9 +63,9 @@ import { Route as AuthenticatedExportsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated.billing'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
-import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated.account'
 import { Route as AuthenticatedStoresIndexRouteImport } from './routes/_authenticated.stores.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated.admin.index'
+import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authenticated.account.index'
 import { Route as LovableEmailEventsRouteImport } from './routes/lovable/email/events'
 import { Route as AuthenticatedStoresNewRouteImport } from './routes/_authenticated.stores.new'
 import { Route as AuthenticatedStoresStoreIdRouteImport } from './routes/_authenticated.stores.$storeId'
@@ -78,6 +79,7 @@ import { Route as AuthenticatedAdminLightningRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminKnowledgeRouteImport } from './routes/_authenticated.admin.knowledge'
 import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated.admin.invoices'
 import { Route as AuthenticatedAdminCrmRouteImport } from './routes/_authenticated.admin.crm'
+import { Route as AuthenticatedAccountUsersRouteImport } from './routes/_authenticated.account.users'
 import { Route as AuthenticatedStoresStoreIdIndexRouteImport } from './routes/_authenticated.stores.$storeId.index'
 import { Route as AuthenticatedAdminKnowledgeIndexRouteImport } from './routes/_authenticated.admin.knowledge.index'
 import { Route as AuthenticatedAdminCrmIndexRouteImport } from './routes/_authenticated.admin.crm.index'
@@ -318,6 +320,11 @@ const PayInvoiceIdRoute = PayInvoiceIdRouteImport.update({
   path: '/pay/$invoiceId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InviteTokenRoute = InviteTokenRouteImport.update({
+  id: '/invite/$token',
+  path: '/invite/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IntegrationsWoocommerceRoute = IntegrationsWoocommerceRouteImport.update({
   id: '/integrations/woocommerce',
   path: '/integrations/woocommerce',
@@ -405,11 +412,6 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
-  id: '/account',
-  path: '/account',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedStoresIndexRoute =
   AuthenticatedStoresIndexRouteImport.update({
     id: '/stores/',
@@ -421,6 +423,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAccountIndexRoute =
+  AuthenticatedAccountIndexRouteImport.update({
+    id: '/account/',
+    path: '/account/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const LovableEmailEventsRoute = LovableEmailEventsRouteImport.update({
   id: '/lovable/email/events',
   path: '/lovable/email/events',
@@ -495,6 +503,12 @@ const AuthenticatedAdminCrmRoute = AuthenticatedAdminCrmRouteImport.update({
   path: '/crm',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAccountUsersRoute =
+  AuthenticatedAccountUsersRouteImport.update({
+    id: '/account/users',
+    path: '/account/users',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedStoresStoreIdIndexRoute =
   AuthenticatedStoresStoreIdIndexRouteImport.update({
     id: '/',
@@ -866,7 +880,6 @@ export interface FileRoutesByFullPath {
   '/start': typeof StartRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
-  '/account': typeof AuthenticatedAccountRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -884,6 +897,7 @@ export interface FileRoutesByFullPath {
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/prestashop': typeof IntegrationsPrestashopRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
   '/pos/history': typeof PosHistoryRoute
   '/pos/nfc-inspect': typeof PosNfcInspectRoute
@@ -895,6 +909,7 @@ export interface FileRoutesByFullPath {
   '/t/$slug': typeof TSlugRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
+  '/account/users': typeof AuthenticatedAccountUsersRoute
   '/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
@@ -908,6 +923,7 @@ export interface FileRoutesByFullPath {
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
+  '/account/': typeof AuthenticatedAccountIndexRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/stores/': typeof AuthenticatedStoresIndexRoute
   '/admin/crm/leads': typeof AuthenticatedAdminCrmLeadsRoute
@@ -995,7 +1011,6 @@ export interface FileRoutesByTo {
   '/start': typeof StartRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
-  '/account': typeof AuthenticatedAccountRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exports': typeof AuthenticatedExportsRoute
@@ -1012,6 +1027,7 @@ export interface FileRoutesByTo {
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/prestashop': typeof IntegrationsPrestashopRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
   '/pos/history': typeof PosHistoryRoute
   '/pos/nfc-inspect': typeof PosNfcInspectRoute
@@ -1023,6 +1039,7 @@ export interface FileRoutesByTo {
   '/t/$slug': typeof TSlugRoute
   '/integrations': typeof IntegrationsIndexRoute
   '/pos': typeof PosIndexRoute
+  '/account/users': typeof AuthenticatedAccountUsersRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/lightning': typeof AuthenticatedAdminLightningRoute
   '/admin/merchants': typeof AuthenticatedAdminMerchantsRoute
@@ -1033,6 +1050,7 @@ export interface FileRoutesByTo {
   '/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
+  '/account': typeof AuthenticatedAccountIndexRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/stores': typeof AuthenticatedStoresIndexRoute
   '/admin/crm/leads': typeof AuthenticatedAdminCrmLeadsRoute
@@ -1123,7 +1141,6 @@ export interface FileRoutesById {
   '/start': typeof StartRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
-  '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -1141,6 +1158,7 @@ export interface FileRoutesById {
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/prestashop': typeof IntegrationsPrestashopRoute
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
   '/pos/history': typeof PosHistoryRoute
   '/pos/nfc-inspect': typeof PosNfcInspectRoute
@@ -1152,6 +1170,7 @@ export interface FileRoutesById {
   '/t/$slug': typeof TSlugRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
+  '/_authenticated/account/users': typeof AuthenticatedAccountUsersRoute
   '/_authenticated/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/_authenticated/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
@@ -1165,6 +1184,7 @@ export interface FileRoutesById {
   '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/_authenticated/stores/new': typeof AuthenticatedStoresNewRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
+  '/_authenticated/account/': typeof AuthenticatedAccountIndexRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/stores/': typeof AuthenticatedStoresIndexRoute
   '/_authenticated/admin/crm/leads': typeof AuthenticatedAdminCrmLeadsRoute
@@ -1255,7 +1275,6 @@ export interface FileRouteTypes {
     | '/start'
     | '/terms'
     | '/unsubscribe'
-    | '/account'
     | '/admin'
     | '/billing'
     | '/dashboard'
@@ -1273,6 +1292,7 @@ export interface FileRouteTypes {
     | '/i/$invoiceId'
     | '/integrations/prestashop'
     | '/integrations/woocommerce'
+    | '/invite/$token'
     | '/pay/$invoiceId'
     | '/pos/history'
     | '/pos/nfc-inspect'
@@ -1284,6 +1304,7 @@ export interface FileRouteTypes {
     | '/t/$slug'
     | '/integrations/'
     | '/pos/'
+    | '/account/users'
     | '/admin/crm'
     | '/admin/invoices'
     | '/admin/knowledge'
@@ -1297,6 +1318,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId'
     | '/stores/new'
     | '/lovable/email/events'
+    | '/account/'
     | '/admin/'
     | '/stores/'
     | '/admin/crm/leads'
@@ -1384,7 +1406,6 @@ export interface FileRouteTypes {
     | '/start'
     | '/terms'
     | '/unsubscribe'
-    | '/account'
     | '/billing'
     | '/dashboard'
     | '/exports'
@@ -1401,6 +1422,7 @@ export interface FileRouteTypes {
     | '/i/$invoiceId'
     | '/integrations/prestashop'
     | '/integrations/woocommerce'
+    | '/invite/$token'
     | '/pay/$invoiceId'
     | '/pos/history'
     | '/pos/nfc-inspect'
@@ -1412,6 +1434,7 @@ export interface FileRouteTypes {
     | '/t/$slug'
     | '/integrations'
     | '/pos'
+    | '/account/users'
     | '/admin/invoices'
     | '/admin/lightning'
     | '/admin/merchants'
@@ -1422,6 +1445,7 @@ export interface FileRouteTypes {
     | '/m/virtual-terminal'
     | '/stores/new'
     | '/lovable/email/events'
+    | '/account'
     | '/admin'
     | '/stores'
     | '/admin/crm/leads'
@@ -1511,7 +1535,6 @@ export interface FileRouteTypes {
     | '/start'
     | '/terms'
     | '/unsubscribe'
-    | '/_authenticated/account'
     | '/_authenticated/admin'
     | '/_authenticated/billing'
     | '/_authenticated/dashboard'
@@ -1529,6 +1552,7 @@ export interface FileRouteTypes {
     | '/i/$invoiceId'
     | '/integrations/prestashop'
     | '/integrations/woocommerce'
+    | '/invite/$token'
     | '/pay/$invoiceId'
     | '/pos/history'
     | '/pos/nfc-inspect'
@@ -1540,6 +1564,7 @@ export interface FileRouteTypes {
     | '/t/$slug'
     | '/integrations/'
     | '/pos/'
+    | '/_authenticated/account/users'
     | '/_authenticated/admin/crm'
     | '/_authenticated/admin/invoices'
     | '/_authenticated/admin/knowledge'
@@ -1553,6 +1578,7 @@ export interface FileRouteTypes {
     | '/_authenticated/stores/$storeId'
     | '/_authenticated/stores/new'
     | '/lovable/email/events'
+    | '/_authenticated/account/'
     | '/_authenticated/admin/'
     | '/_authenticated/stores/'
     | '/_authenticated/admin/crm/leads'
@@ -1649,6 +1675,7 @@ export interface RootRouteChildren {
   IInvoiceIdRoute: typeof IInvoiceIdRoute
   IntegrationsPrestashopRoute: typeof IntegrationsPrestashopRoute
   IntegrationsWoocommerceRoute: typeof IntegrationsWoocommerceRoute
+  InviteTokenRoute: typeof InviteTokenRoute
   PayInvoiceIdRoute: typeof PayInvoiceIdRoute
   SdkPayhmeDotjsRoute: typeof SdkPayhmeDotjsRoute
   TSlugRoute: typeof TSlugRoute
@@ -1938,6 +1965,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PayInvoiceIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/invite/$token': {
+      id: '/invite/$token'
+      path: '/invite/$token'
+      fullPath: '/invite/$token'
+      preLoaderRoute: typeof InviteTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/integrations/woocommerce': {
       id: '/integrations/woocommerce'
       path: '/integrations/woocommerce'
@@ -2057,13 +2091,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/account': {
-      id: '/_authenticated/account'
-      path: '/account'
-      fullPath: '/account'
-      preLoaderRoute: typeof AuthenticatedAccountRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/stores/': {
       id: '/_authenticated/stores/'
       path: '/stores'
@@ -2077,6 +2104,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/account/': {
+      id: '/_authenticated/account/'
+      path: '/account'
+      fullPath: '/account/'
+      preLoaderRoute: typeof AuthenticatedAccountIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/lovable/email/events': {
       id: '/lovable/email/events'
@@ -2168,6 +2202,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/crm'
       preLoaderRoute: typeof AuthenticatedAdminCrmRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/account/users': {
+      id: '/_authenticated/account/users'
+      path: '/account/users'
+      fullPath: '/account/users'
+      preLoaderRoute: typeof AuthenticatedAccountUsersRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/stores/$storeId/': {
       id: '/_authenticated/stores/$storeId/'
@@ -2731,7 +2772,6 @@ const AuthenticatedStoresStoreIdRouteWithChildren =
   )
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -2739,15 +2779,16 @@ interface AuthenticatedRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedTerminalsRoute: typeof AuthenticatedTerminalsRoute
   AuthenticatedVerifyRoute: typeof AuthenticatedVerifyRoute
+  AuthenticatedAccountUsersRoute: typeof AuthenticatedAccountUsersRoute
   AuthenticatedMHomeRoute: typeof AuthenticatedMHomeRoute
   AuthenticatedMVirtualTerminalRoute: typeof AuthenticatedMVirtualTerminalRoute
   AuthenticatedStoresStoreIdRoute: typeof AuthenticatedStoresStoreIdRouteWithChildren
   AuthenticatedStoresNewRoute: typeof AuthenticatedStoresNewRoute
+  AuthenticatedAccountIndexRoute: typeof AuthenticatedAccountIndexRoute
   AuthenticatedStoresIndexRoute: typeof AuthenticatedStoresIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -2755,10 +2796,12 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedTerminalsRoute: AuthenticatedTerminalsRoute,
   AuthenticatedVerifyRoute: AuthenticatedVerifyRoute,
+  AuthenticatedAccountUsersRoute: AuthenticatedAccountUsersRoute,
   AuthenticatedMHomeRoute: AuthenticatedMHomeRoute,
   AuthenticatedMVirtualTerminalRoute: AuthenticatedMVirtualTerminalRoute,
   AuthenticatedStoresStoreIdRoute: AuthenticatedStoresStoreIdRouteWithChildren,
   AuthenticatedStoresNewRoute: AuthenticatedStoresNewRoute,
+  AuthenticatedAccountIndexRoute: AuthenticatedAccountIndexRoute,
   AuthenticatedStoresIndexRoute: AuthenticatedStoresIndexRoute,
 }
 
@@ -2903,6 +2946,7 @@ const rootRouteChildren: RootRouteChildren = {
   IInvoiceIdRoute: IInvoiceIdRoute,
   IntegrationsPrestashopRoute: IntegrationsPrestashopRoute,
   IntegrationsWoocommerceRoute: IntegrationsWoocommerceRoute,
+  InviteTokenRoute: InviteTokenRoute,
   PayInvoiceIdRoute: PayInvoiceIdRoute,
   SdkPayhmeDotjsRoute: SdkPayhmeDotjsRoute,
   TSlugRoute: TSlugRoute,
