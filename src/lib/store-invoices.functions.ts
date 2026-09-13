@@ -42,7 +42,7 @@ export const createStoreInvoice = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => CreateInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { supabase } = context;
 
     const { data: store, error: storeErr } = await supabase
       .from("stores")
@@ -109,7 +109,7 @@ export const resendStoreInvoice = createServerFn({ method: "POST" })
     IdInput.extend({ to: z.string().email().max(255).optional() }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { supabase } = context;
     const { data: inv, error } = await supabase
       .from("invoices")
       .select(
@@ -163,7 +163,7 @@ export const cancelStoreInvoice = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => IdInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { supabase } = context;
     const { data: inv } = await supabase
       .from("invoices")
       .select("id, status, stores!inner(owner_id)")
