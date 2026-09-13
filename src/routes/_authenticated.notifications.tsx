@@ -23,6 +23,12 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
 import {
+  listStoreNotificationPrefs,
+  saveStoreNotificationPrefs,
+  clearStoreNotificationPrefs,
+  type StoreNotificationPref,
+} from "@/lib/notify-store.functions";
+import {
   getNotificationPrefs,
   saveNotificationPrefs,
   createTelegramBindCode,
@@ -222,6 +228,8 @@ function NotificationsPage() {
             </CardContent>
           </Card>
 
+          <StoreOverrides accountEmail={prefs.email_address} telegramReady={!!prefs.telegram_chat_id} />
+
           {/* Recent log */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-3">
@@ -319,5 +327,169 @@ function TelegramBindBox({
       </a>
       <p className="text-[10px] text-muted-foreground">Code expires in 15 minutes.</p>
     </div>
+  );
+}
+
+function StoreOverrides({
+  accountEmail,
+  telegramReady,
+}: {
+  accountEmail: string | null;
+  telegramReady: boolean;
+}) {
+  const list = useServerFn(listStoreNotificationPrefs);
+  const save = useServerFn(saveStoreNotificationPrefs);
+  const clear = useServerFn(clearStoreNotificationPrefs);
+  const qc = useQueryClient();
+  const [open, setOpen] = useState<string | null>(null);
+
+  const q = useQuery({ queryKey: ["store-notification-prefs"], queryFn: () => list() });
+
+  const saveMut = useMutation({
+    mutationFn: (row: StoreNotificationPref) =>
+      save({
+        data: {
+          storeId: row.store_id,
+          enabled: row.enabled,
+          email_enabled: row.email_enabled,
+          email_address: row.email_address,
+          telegram_enabled: row.telegram_enabled,
+          events: row.events,
+        },
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["store-notification-prefs"] });
+      toast.success("Store settings saved");
+    },
+    onError: (e) => toast.error(`Save failed: ${(e as Error).message}`),
+  });
+
+  const clearMut = useMutation({
+    mutationFn: (storeId: string) => clear({ data: { storeId } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["store-notification-prefs"] });
+      toast.success("Back to account defaults");
+    },
+  });
+
+  const rows = q.data ?? [];
+  if (!rows.length) return null;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Per-store settings</CardTitle>
+        <p className="text-xs text-muted-foreground">
+          By default every store uses the settings above. Give a store its own channels and events
+          when you want it handled differently.
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {rows.map((row) => {
+          const isOpen = open === row.store_id;
+          return (
+            <div
+              key={row.store_id}
+              className="rounded-md border border-border/40 bg-card/40 p-3"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-medium">{row.store_name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {row.has_override
+                      ? row.enabled
+                        ? `Custom · ${[row.email_enabled && "email", row.telegram_enabled && "telegram"]
+                            .filter(Boolean)
+                            .join(" + ") || "no channels"}`
+                        : "Alerts muted for this store"
+                      : "Using account defaults"}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {row.has_override && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => clearMut.mutate(row.store_id)}
+                      disabled={clearMut.isPending}
+                    >
+                      Reset
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setOpen(isOpen ? null : row.store_id)}
+                  >
+                    {isOpen ? "Close" : "Customize"}
+                  </Button>
+                </div>
+              </div>
+
+              {isOpen && (
+                <div className="mt-3 space-y-3 border-t border-border/40 pt-3">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm">Send alerts for this store</div>
+                    <Switch
+                      checked={row.enabled}
+                      onCheckedChange={(v) => saveMut.mutate({ ...row, enabled: v })}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm">Email</div>
+                    <Switch
+                      checked={row.email_enabled}
+                      onCheckedChange={(v) => saveMut.mutate({ ...row, email_enabled: v })}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Email address for this store</Label>
+                    <Input
+                      type="email"
+                      placeholder={accountEmail ?? "you@store.com"}
+                      defaultValue={row.email_address ?? ""}
+                      onBlur={(e) => {
+                        if (e.target.value !== (row.email_address ?? "")) {
+                          saveMut.mutate({ ...row, email_address: e.target.value });
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm">Telegram</div>
+                      {!telegramReady && (
+                        <div className="text-xs text-muted-foreground">
+                          Connect Telegram above first.
+                        </div>
+                      )}
+                    </div>
+                    <Switch
+                      checked={row.telegram_enabled}
+                      disabled={!telegramReady}
+                      onCheckedChange={(v) => saveMut.mutate({ ...row, telegram_enabled: v })}
+                    />
+                  </div>
+                  <Separator />
+                  {Object.entries(EVENT_LABELS)
+                    .filter(([k]) => k.startsWith("invoice_"))
+                    .map(([key, { label }]) => (
+                      <div key={key} className="flex items-center justify-between">
+                        <div className="text-sm">{label}</div>
+                        <Switch
+                          checked={row.events[key] !== false}
+                          onCheckedChange={(v) =>
+                            saveMut.mutate({ ...row, events: { ...row.events, [key]: v } })
+                          }
+                        />
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </CardContent>
+    </Card>
   );
 }
