@@ -10,3 +10,8 @@
 ## Crypto address / transaction verifier
 - [x] Admin verifier at /admin/verify (all stores, xpub scan, on-chain lookup)
 - [x] Merchant "is this a good transaction?" verifier at /verify (scoped to own stores)
+
+## Store team access (/account/users)
+- [x] Invite people by email to a single store with View only / Manager / Full access
+- [x] Accept flow at /invite/<token>, change level or remove access, cancel pending invites
+- [x] Access rules enforced in the database (owner-only: wallet setup, billing, closing a store)
