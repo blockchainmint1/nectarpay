@@ -574,19 +574,43 @@ export function WalletLink({ storeId, onDone }: { storeId: string; onDone: () =>
                 {(secondsLeft % 60).toString().padStart(2, "0")}
               </p>
             </>
-          ) : expired ? (
-            <div className="flex flex-col items-center gap-3 py-10 text-center">
-              <Smartphone className="h-10 w-10 text-muted-foreground" />
-              <p className="text-sm">Code expired</p>
-              <Button size="sm" onClick={generate} disabled={busy}>
-                Generate new QR
-              </Button>
-            </div>
           ) : (
-            <div className="flex h-64 w-64 items-center justify-center">
-              <span className="text-xs text-muted-foreground">
-                {busy ? "Generating QR…" : "Loading…"}
-              </span>
+            <div className="w-full max-w-xs space-y-3 py-4 text-center">
+              <Smartphone className="mx-auto h-10 w-10 text-muted-foreground" />
+              <p className="text-sm font-medium">
+                {expired ? "That QR expired" : "Confirm it's really you"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {sentTo
+                  ? `We emailed a 6-digit code to ${sentTo}. Enter it below to get your QR.`
+                  : "For your protection we email a 6-digit code before linking a wallet."}
+              </p>
+              <Button
+                size="sm"
+                variant={sentTo ? "outline" : "default"}
+                className="w-full"
+                onClick={sendEmailCode}
+                disabled={sending}
+              >
+                <Mail className="mr-2 h-4 w-4" />
+                {sending ? "Sending…" : sentTo ? "Send another code" : "Email me a code"}
+              </Button>
+              <input
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                value={codeInput}
+                onChange={(e) => setCodeInput(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                placeholder="000000"
+                className="h-12 w-full rounded-lg border border-input bg-background text-center text-xl tracking-[0.4em]"
+              />
+              <Button
+                className="w-full"
+                onClick={generate}
+                disabled={busy || codeInput.length !== 6}
+              >
+                {busy ? "Generating QR…" : "Show my link QR"}
+              </Button>
             </div>
           )}
         </div>
