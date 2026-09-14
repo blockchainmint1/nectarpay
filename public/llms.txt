@@ -32,7 +32,21 @@ Base URL: `https://app.nectar-pay.com` — all calls authenticate with
   `order_id`, `description`, `redirect_url`, `buyer_email`, `expires_in_seconds` (60–86400).
   Returns `id`, `address`, `crypto_amount`, `rate`, `status`, `expires_at`, `checkout_url`.
 - `GET  /api/public/v1/invoices/{id}` — invoice status (pending | underpaid | confirmed | expired).
+- `GET  /api/public/v1/invoices` — list invoices. Filters: `status`, `chain` (comma-separated),
+  `order_id`, `since`, `until`, `limit` (1–200), `offset`. Returns `total` + `invoices[]`.
+- `POST /api/public/v1/invoices/{id}/email` — email the payment request to the customer.
+  Body `{ "to": "..." }` optional; defaults to the invoice's `buyer_email`.
+- `GET  /api/public/v1/invoices/{id}/webhooks` — delivery history (attempt, status_code,
+  delivered_at, next_retry_at, event_type, response body excerpt).
 - `POST /api/public/v1/invoices/{id}?action=redeliver-webhook` — resend the webhook for one invoice.
+- `GET  /api/public/v1/rates` — live USD rates per chain; `?amount=25` adds converted
+  crypto amounts. Stablecoins (USDC, USDT, TSD) pegged at $1.
+- `GET  /api/public/v1/store` — store profile: currency, tax settings, invoice TTL, enabled
+  chains/tokens, whether a webhook is configured, hosted payment links.
+- `GET|POST /api/public/v1/links` and `GET|PATCH|DELETE /api/public/v1/links/{slug}` —
+  manage reusable hosted payment links at `https://app.nectar-pay.com/t/{slug}`.
+  Fields: `slug`, `title`, `subtitle`, `cta_label`, `currency`, `preset_amounts`,
+  `allow_custom_amount`, `min_amount`, `max_amount`, `is_donation`, `active`.
 - Webhooks: signed POST to the store's webhook URL. Header
   `X-TXCPay-Signature: t=<unix>,v1=<hex>` where `v1 = HMAC_SHA256(webhook_secret, "{t}.{rawBody}")`.
   Event types: `invoice.paid`, `invoice.confirmed`, `invoice.underpaid`.

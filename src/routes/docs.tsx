@@ -312,14 +312,128 @@ if (!hash_equals($expected, $v1)) { http_response_code(401); exit; }`}</Pre>
         <LiveDemo />
       </Section>
 
-      <Section title="8. Hosted payment link (no code at all)">
+      <Section title="8. Email an invoice to the customer">
         <p>
-          Every store gets a hosted payment page at{" "}
-          <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">https://app.nectar-pay.com/t/your-store</code>{" "}
-          — link it from a button, an email, an invoice PDF, or a QR code. No API key, no
-          webhook to host. When you outgrow it, everything above is waiting.
+          Have us send the branded payment request by email. Uses the invoice's{" "}
+          <span className="font-mono">buyer_email</span> unless you pass{" "}
+          <span className="font-mono">to</span>. Sending an expiring invoice pushes its expiry
+          out 7 days so the emailed link stays payable.
+        </p>
+        <Pre>{`curl -X POST "https://app.nectar-pay.com/api/public/v1/invoices/{id}/email" \\
+  -H "Authorization: Bearer sk_live_..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"to":"customer@example.com"}'
+
+# 200
+{ "ok": true, "to": "customer@example.com", "sent_at": "...",
+  "send_count": 1, "expires_at": "...", "checkout_url": "https://app.nectar-pay.com/i/..." }`}</Pre>
+      </Section>
+
+      <Section title="9. List invoices (reconciliation)">
+        <p>
+          Paged, newest first, scoped to your key's store. All filters are optional and
+          combinable; <span className="font-mono">status</span> and{" "}
+          <span className="font-mono">chain</span> accept comma-separated lists.
+        </p>
+        <Pre>{`curl "https://app.nectar-pay.com/api/public/v1/invoices?status=confirmed,underpaid&since=2026-09-01T00:00:00Z&limit=100" \\
+  -H "Authorization: Bearer sk_live_..."
+
+# 200
+{ "total": 214, "limit": 100, "offset": 0, "invoices": [ { "id": "...", "status": "confirmed",
+  "chain": "btc", "token": null, "fiat_amount": 49, "fiat_currency": "USD",
+  "crypto_amount": 0.00042, "order_id": "ORDER_1234", "created_at": "...",
+  "checkout_url": "..." } ] }`}</Pre>
+        <Table
+          head={["Query param", "Meaning"]}
+          rows={[
+            ["status", "pending, detected, underpaid, confirmed, overpaid, expired, cancelled, failed"],
+            ["chain", "btc, txc, eth, base, sol, tron, ltc, doge, bch, dash, isk, zcu, lightning"],
+            ["order_id", "Exact match on your own order reference"],
+            ["since / until", "ISO-8601 timestamps filtering created_at"],
+            ["limit / offset", "limit 1–200 (default 50), offset for paging"],
+          ]}
+        />
+      </Section>
+
+      <Section title="10. Webhook delivery history">
+        <p>
+          Every attempt we made for an invoice — status code, retry schedule, and the first
+          500 bytes of your response. Handy when a webhook silently failed in production.
+        </p>
+        <Pre>{`curl "https://app.nectar-pay.com/api/public/v1/invoices/{id}/webhooks" \\
+  -H "Authorization: Bearer sk_live_..."
+
+# 200
+{ "invoice_id": "...", "deliveries": [ { "id": "...", "url": "https://you/hook",
+  "attempt": 1, "status_code": 200, "ok": true, "delivered_at": "...",
+  "next_retry_at": null, "event_type": "invoice.paid", "event_id": "..." } ] }`}</Pre>
+      </Section>
+
+      <Section title="11. Rates">
+        <p>
+          The live USD rates we price invoices with. Pass{" "}
+          <span className="font-mono">?amount=</span> to get the converted crypto amount per
+          network — useful for showing a price before creating an invoice. Stablecoins
+          (USDC, USDT, TSD) are pegged at $1.
+        </p>
+        <Pre>{`curl "https://app.nectar-pay.com/api/public/v1/rates?amount=25" \\
+  -H "Authorization: Bearer sk_live_..."
+
+# 200
+{ "fiat": "USD", "amount": 25,
+  "rates": [ { "chain": "btc", "rate": 118422.5, "crypto_amount": 0.00021, "fetched_at": "..." } ],
+  "stablecoins": [ { "token": "USDC", "rate": 1, "crypto_amount": 25 } ] }`}</Pre>
+      </Section>
+
+      <Section title="12. Store info">
+        <p>
+          What your key can see about the store it belongs to: currency, tax settings,
+          default invoice lifetime, which networks and tokens are enabled, whether a webhook
+          is configured, and the store's hosted payment links.
+        </p>
+        <Pre>{`curl "https://app.nectar-pay.com/api/public/v1/store" \\
+  -H "Authorization: Bearer sk_live_..."
+
+# 200
+{ "id": "...", "name": "Acme Coffee", "currency": "USD", "invoice_ttl_seconds": 900,
+  "tax_bps": 825, "webhook_configured": true,
+  "chains": [ { "chain": "btc", "network": "mainnet", "tokens": [] },
+              { "chain": "base", "network": "mainnet", "tokens": ["USDC"] } ],
+  "payment_links": [ { "slug": "acme", "url": "https://app.nectar-pay.com/t/acme" } ] }`}</Pre>
+      </Section>
+
+      <Section title="13. Hosted payment links (no code at all)">
+        <p>
+          A payment link is a reusable hosted page at{" "}
+          <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">https://app.nectar-pay.com/t/your-slug</code>{" "}
+          — put it in an email, a QR code, a bio link, a donation button. No API key needed by
+          the payer. Create and manage them over the API:
+        </p>
+        <Pre>{`# create
+curl -X POST "https://app.nectar-pay.com/api/public/v1/links" \\
+  -H "Authorization: Bearer sk_live_..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"slug":"acme","title":"Acme Coffee","preset_amounts":[5,10,25],
+       "allow_custom_amount":true,"min_amount":1,"max_amount":500}'
+# 201 -> { "slug": "acme", "url": "https://app.nectar-pay.com/t/acme", ... }
+
+# list
+curl "https://app.nectar-pay.com/api/public/v1/links" -H "Authorization: Bearer sk_live_..."
+
+# update / deactivate
+curl -X PATCH  "https://app.nectar-pay.com/api/public/v1/links/acme" \\
+  -H "Authorization: Bearer sk_live_..." -H "Content-Type: application/json" \\
+  -d '{"title":"Acme Coffee — Tips"}'
+curl -X DELETE "https://app.nectar-pay.com/api/public/v1/links/acme" \\
+  -H "Authorization: Bearer sk_live_..."`}</Pre>
+        <p>
+          Omit <span className="font-mono">slug</span> and we derive one from the title (with a
+          short suffix if it's taken). Deleting deactivates the link — the URL stops accepting
+          payments but past invoices stay intact. Set{" "}
+          <span className="font-mono">is_donation: true</span> for a donate-style page.
         </p>
       </Section>
+
 
       <Section title="E-commerce plugins">
         <p>
