@@ -997,6 +997,7 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
   const [token, setToken] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [linkUrl, setLinkUrl] = useState<string | null>(null);
   const [now, setNow] = useState<number>(() => Date.now());
   const [busy, setBusy] = useState(false);
   const [linked, setLinked] = useState(false);
@@ -1062,8 +1063,9 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
       const canonical =
         (import.meta.env.VITE_PUBLIC_SITE_URL as string | undefined)?.replace(/\/$/, "") ||
         "https://app.nectar-pay.com";
-      const linkUrl = `${canonical}/api/public/v1/wallet-link?token=${encodeURIComponent(result.token)}`;
-      const qr = await qrToDataURL(linkUrl, { width: 320, margin: 1 });
+      const url = `${canonical}/api/public/v1/wallet-link?token=${encodeURIComponent(result.token)}`;
+      const qr = await qrToDataURL(url, { width: 320, margin: 1 });
+      setLinkUrl(url);
       setQrDataUrl(qr);
       setToken(result.token);
       setExpiresAt(new Date(result.expires_at).getTime());
@@ -1078,6 +1080,7 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
     setToken(null);
     setExpiresAt(null);
     setQrDataUrl(null);
+    setLinkUrl(null);
     setLinked(false);
     setSentTo(null);
     setVerificationCode("");
@@ -1123,48 +1126,43 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
                   you a 6-digit code first. It expires in 10 minutes.
                 </p>
 
-                {!sentTo ? (
-                  <Button
-                    className="mt-3"
-                    variant="outline"
-                    size="sm"
-                    onClick={onSendVerification}
-                    disabled={sendingCode}
-                  >
-                    {sendingCode ? "Sending…" : "Email me a confirmation code"}
+                <Button
+                  className="mt-3"
+                  variant="outline"
+                  size="sm"
+                  onClick={onSendVerification}
+                  disabled={sendingCode}
+                >
+                  {sendingCode ? "Sending…" : sentTo ? "Resend code" : "Email me a confirmation code"}
+                </Button>
+
+                <div className="mt-3 text-[11px] text-muted-foreground">
+                  {sentTo ? (
+                    <>
+                      Code sent to <span className="text-foreground">{sentTo}</span>. Enter it below.
+                    </>
+                  ) : (
+                    <>Already have a code from an earlier email? Enter it below — no need to resend.</>
+                  )}
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <Input
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    value={verificationCode}
+                    onChange={(e) =>
+                      setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                    }
+                    placeholder="123456"
+                    className="h-9 w-32 text-center font-mono tracking-[0.3em]"
+                  />
+                  <Button onClick={onGenerate} disabled={busy || verificationCode.length !== 6}>
+                    <Smartphone className="mr-2 h-4 w-4" />
+                    {busy ? "Generating…" : "Confirm & get link QR"}
                   </Button>
-                ) : (
-                  <>
-                    <div className="mt-2 text-[11px] text-muted-foreground">
-                      Code sent to <span className="text-foreground">{sentTo}</span>.
-                    </div>
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <Input
-                        inputMode="numeric"
-                        autoComplete="one-time-code"
-                        maxLength={6}
-                        value={verificationCode}
-                        onChange={(e) =>
-                          setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))
-                        }
-                        placeholder="123456"
-                        className="h-9 w-32 text-center font-mono tracking-[0.3em]"
-                      />
-                      <Button onClick={onGenerate} disabled={busy || verificationCode.length !== 6}>
-                        <Smartphone className="mr-2 h-4 w-4" />
-                        {busy ? "Generating…" : "Confirm & generate link code"}
-                      </Button>
-                      <button
-                        type="button"
-                        onClick={onSendVerification}
-                        disabled={sendingCode}
-                        className="text-[11px] text-muted-foreground underline"
-                      >
-                        Resend
-                      </button>
-                    </div>
-                  </>
-                )}
+                </div>
+
               </div>
             </>
           )}
@@ -1191,6 +1189,28 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
                       Expires in {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, "0")}
                     </div>
                   </>
+                )}
+                {!linked && !expired && linkUrl && (
+                  <div className="mt-3">
+                    <div className="text-[11px] text-muted-foreground">
+                      Can't scan? Paste this link into Beekeeper:
+                    </div>
+                    <div className="mt-1 flex items-center gap-2">
+                      <code className="block max-w-full flex-1 truncate rounded border border-border bg-background/60 px-2 py-1 font-mono text-[10px]">
+                        {linkUrl}
+                      </code>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          void navigator.clipboard.writeText(linkUrl);
+                          toast.success("Link copied");
+                        }}
+                      >
+                        Copy
+                      </Button>
+                    </div>
+                  </div>
                 )}
                 <Button variant="ghost" size="sm" className="mt-3" onClick={reset}>
                   <RefreshCw className="mr-2 h-3 w-3" />
