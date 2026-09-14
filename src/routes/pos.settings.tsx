@@ -27,9 +27,6 @@ export const Route = createFileRoute("/pos/settings")({
 function SettingsPage() {
   const navigate = useNavigate();
   const [draft, setDraft] = useState<PosSettings>(() => loadSettings());
-  const [pinMode, setPinMode] = useState<"keep" | "set" | "clear">("keep");
-  const [newPin, setNewPin] = useState("");
-  const [confirmPin, setConfirmPin] = useState("");
   const [saved, setSaved] = useState(false);
   const [update, setUpdate] = useState<UpdateStatus | null>(null);
   const [checking, setChecking] = useState(false);
@@ -81,14 +78,8 @@ function SettingsPage() {
   };
 
   const submit = async () => {
-    const next = { ...draft };
-    if (pinMode === "clear") next.pinHash = null;
-    else if (pinMode === "set") {
-      if (!/^\d{4}$/.test(newPin)) return alert("PIN must be 4 digits");
-      if (newPin !== confirmPin) return alert("PINs don't match");
-      next.pinHash = await sha256(newPin);
-    }
-    saveSettings(next);
+    // PIN lock was removed — always persist without one.
+    saveSettings({ ...draft, pinHash: null, idleLockMs: 0 });
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
   };
@@ -145,52 +136,6 @@ function SettingsPage() {
             <p className="mt-1 text-[10px] text-white/50">Set a preset to 0 to hide it. "No tip" is always offered.</p>
           </Field>
 
-          <Field label="Auto-lock after">
-            <select
-              value={draft.idleLockMs}
-              onChange={(e) => setDraft({ ...draft, idleLockMs: Number(e.target.value) })}
-              className="w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-sm"
-            >
-              <option value={0}>Never</option>
-              <option value={60_000}>1 minute</option>
-              <option value={3 * 60_000}>3 minutes</option>
-              <option value={5 * 60_000}>5 minutes</option>
-              <option value={15 * 60_000}>15 minutes</option>
-            </select>
-          </Field>
-
-          <Field label="PIN lock">
-            <div className="flex gap-2 text-xs">
-              <button onClick={() => setPinMode("keep")} className={`flex-1 h-9 rounded-lg border ${pinMode === "keep" ? "border-amber-400 bg-amber-400/10 text-amber-300" : "border-white/15 text-white/70"}`}>
-                {draft.pinHash ? "Keep current" : "No PIN"}
-              </button>
-              <button onClick={() => setPinMode("set")} className={`flex-1 h-9 rounded-lg border ${pinMode === "set" ? "border-amber-400 bg-amber-400/10 text-amber-300" : "border-white/15 text-white/70"}`}>
-                Set new
-              </button>
-              {draft.pinHash && (
-                <button onClick={() => setPinMode("clear")} className={`flex-1 h-9 rounded-lg border ${pinMode === "clear" ? "border-red-400 bg-red-400/10 text-red-300" : "border-white/15 text-white/70"}`}>
-                  Clear
-                </button>
-              )}
-            </div>
-            {pinMode === "set" && (
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <input
-                  type="tel" inputMode="numeric" autoComplete="off" pattern="[0-9]*" maxLength={4}
-                  value={newPin} onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ""))}
-                  placeholder="4-digit PIN"
-                  className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 font-mono text-sm"
-                />
-                <input
-                  type="tel" inputMode="numeric" autoComplete="off" pattern="[0-9]*" maxLength={4}
-                  value={confirmPin} onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ""))}
-                  placeholder="Confirm"
-                  className="rounded-lg border border-white/15 bg-white/5 px-3 py-2 font-mono text-sm"
-                />
-
-              </div>
-            )}
-          </Field>
         </div>
 
         <button

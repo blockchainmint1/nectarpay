@@ -83,7 +83,6 @@ function PosShell() {
   const [creds, setCreds] = useState<TerminalCreds | null>(null);
   const [bootChecked, setBootChecked] = useState(false);
   const [settings, setSettings] = useState<PosSettings>(() => loadSettings());
-  const [locked, setLocked] = useState(false);
 
   useEffect(() => {
     const c = loadCreds();
@@ -92,33 +91,14 @@ function PosShell() {
       return;
     }
     setCreds(c);
-    const s = loadSettings();
-    setSettings(s);
-    setLocked(!!s.pinHash);
+    setSettings(loadSettings());
     setBootChecked(true);
   }, [navigate]);
-
-  // Idle auto-lock
-  useEffect(() => {
-    if (!settings.pinHash || settings.idleLockMs <= 0) return;
-    let timer: ReturnType<typeof setTimeout>;
-    const reset = () => {
-      clearTimeout(timer);
-      timer = setTimeout(() => setLocked(true), settings.idleLockMs);
-    };
-    const events = ["pointerdown", "keydown", "touchstart"] as const;
-    events.forEach((e) => window.addEventListener(e, reset));
-    reset();
-    return () => { clearTimeout(timer); events.forEach((e) => window.removeEventListener(e, reset)); };
-  }, [settings.pinHash, settings.idleLockMs]);
 
   if (!bootChecked || !creds) {
     return <Splash label="STARTING…" />;
   }
-  if (locked && settings.pinHash) {
-    return <PinLock pinHash={settings.pinHash} onUnlock={() => setLocked(false)} />;
-  }
-  return <Sale creds={creds} settings={settings} onLock={() => setLocked(true)} />;
+  return <Sale creds={creds} settings={settings} />;
 }
 
 function Splash({ label }: { label: string }) {
@@ -126,43 +106,6 @@ function Splash({ label }: { label: string }) {
     <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#1a1108] text-white">
       <Lock className="size-8 text-white/40" />
       <p className="mt-3 text-[10px] font-bold tracking-[0.3em] text-white/60">{label}</p>
-    </div>
-  );
-}
-
-function PinLock({ pinHash, onUnlock }: { pinHash: string; onUnlock: () => void }) {
-  const [pin, setPin] = useState("");
-  const [err, setErr] = useState(false);
-  const press = async (k: string) => {
-    if (k === "⌫") return setPin((p) => p.slice(0, -1));
-    if (pin.length >= 4) return;
-    const next = pin + k;
-    setPin(next); setErr(false);
-    if (next.length === 4) {
-      const h = await sha256(next);
-      if (h === pinHash) onUnlock();
-      else { setErr(true); setTimeout(() => setPin(""), 500); }
-    }
-  };
-  return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#1a1108] text-white px-6">
-      <Lock className="size-10 text-white/40" />
-      <p className="mt-3 text-[10px] font-bold tracking-[0.3em] text-white/60">TERMINAL LOCKED</p>
-      <div className="mt-6 flex gap-3">
-        {[0,1,2,3].map((i) => (
-          <span key={i} className={`size-4 rounded-full border-2 ${pin.length > i ? "border-amber-400 bg-amber-400" : "border-white/20"}`} />
-        ))}
-      </div>
-      {err && <p className="mt-3 text-xs text-red-400">Wrong PIN</p>}
-      <div className="mt-8 grid grid-cols-3 gap-3 w-64">
-        {["1","2","3","4","5","6","7","8","9","","0","⌫"].map((k, i) =>
-          k === "" ? <div key={i} /> : (
-            <button key={k} onClick={() => press(k)} className="h-16 rounded-full bg-white/5 text-2xl font-semibold hover:bg-white/10 active:scale-95 transition">
-              {k}
-            </button>
-          )
-        )}
-      </div>
     </div>
   );
 }
@@ -187,7 +130,7 @@ interface ReceiptConfig {
 }
 const DEFAULT_RECEIPT: ReceiptConfig = { business_name: null, address: null, logo_url: null, footer: null, tax_id: null };
 
-function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: PosSettings; onLock: () => void }) {
+function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings }) {
   const [screen, setScreen] = useState<Screen>("amount");
   const [subtotalCents, setSubtotalCents] = useState(0);
   const [tipBps, setTipBps] = useState(0);
@@ -321,7 +264,7 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
 
   return (
     <div className="fixed inset-0 flex flex-col overflow-hidden bg-[#1a1108] text-white">
-      <Header onLock={onLock} hasPin={!!settings.pinHash} storeName={storeName} />
+      <Header storeName={storeName} />
       <main className="flex min-h-0 flex-1 flex-col">
         {screen === "amount" && (
           <AmountScreen subtotalCents={subtotalCents} taxCents={taxCents} taxBps={settings.taxBps} press={press} onCharge={onChargePress} busy={busy} err={err} />
@@ -389,7 +332,7 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
   );
 }
 
-function Header({ onLock, hasPin, storeName }: { onLock: () => void; hasPin: boolean; storeName: string | null }) {
+function Header({ storeName }: { storeName: string | null }) {
   return (
     <header className="flex shrink-0 items-center justify-between border-b border-white/5 bg-black/40 px-4 py-2 backdrop-blur">
       <div className="flex items-center gap-2 min-w-0">
@@ -405,11 +348,6 @@ function Header({ onLock, hasPin, storeName }: { onLock: () => void; hasPin: boo
         <Link to="/pos/settings" className="rounded-md p-1.5 text-white/70 hover:bg-white/10" aria-label="Settings">
           <Settings className="size-4" />
         </Link>
-        {hasPin && (
-          <button onClick={onLock} className="rounded-md p-1.5 text-white/70 hover:bg-white/10" aria-label="Lock">
-            <Lock className="size-4" />
-          </button>
-        )}
       </div>
     </header>
   );
