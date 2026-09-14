@@ -49,13 +49,15 @@ export const Route = createFileRoute("/api/public/v1/links/$slug")({
 
           const { data: row } = await supabaseAdmin
             .from("public_terminals")
-            .select(COLS + ", store_id")
+            .select(
+              "slug, title, subtitle, cta_label, currency, preset_amounts, allow_custom_amount, min_amount, max_amount, is_donation, active, view_count, created_at, store_id",
+            )
             .eq("slug", params.slug.toLowerCase())
             .maybeSingle();
           if (!row || row.store_id !== keyRow.store_id) return apiJson({ error: "Link not found." }, 404);
 
-          const { store_id: _s, ...rest } = row as Record<string, unknown> & { store_id: string };
-          return apiJson(shape(rest, new URL(request.url).origin));
+          const { store_id: _s, ...rest } = row;
+          return apiJson(shape(rest as unknown as Record<string, unknown>, new URL(request.url).origin));
         } catch (err) {
           return apiJson({ error: err instanceof Error ? err.message : "Server error" }, 500);
         }

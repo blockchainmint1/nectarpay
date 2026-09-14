@@ -100,6 +100,7 @@ import { Route as ApiPublicV1RatesRouteImport } from './routes/api.public.v1.rat
 import { Route as ApiPublicV1MeRouteImport } from './routes/api/public/v1/me'
 import { Route as ApiPublicV1LookupRouteImport } from './routes/api.public.v1.lookup'
 import { Route as ApiPublicV1LiveStatsRouteImport } from './routes/api/public/v1/live-stats'
+import { Route as ApiPublicV1LinksRouteImport } from './routes/api.public.v1.links'
 import { Route as ApiPublicV1InvoicesRouteImport } from './routes/api.public.v1.invoices'
 import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
 import { Route as ApiPublicHooksAlchemyActivityRouteImport } from './routes/api/public/hooks/alchemy-activity'
@@ -139,6 +140,7 @@ import { Route as ApiPublicV1TerminalsInvoiceRouteImport } from './routes/api/pu
 import { Route as ApiPublicV1TerminalsHeartbeatRouteImport } from './routes/api/public/v1/terminals/heartbeat'
 import { Route as ApiPublicV1StatsLiveRouteImport } from './routes/api/public/v1/stats/live'
 import { Route as ApiPublicV1PayInvoiceIdRouteImport } from './routes/api/public/v1/pay/$invoiceId'
+import { Route as ApiPublicV1LinksSlugRouteImport } from './routes/api.public.v1.links.$slug'
 import { Route as ApiPublicV1InvoicesIdRouteImport } from './routes/api.public.v1.invoices.$id'
 import { Route as ApiPublicV1HooksAffiliateSaleRouteImport } from './routes/api/public/v1/hooks/affiliate-sale'
 import { Route as AuthenticatedAdminKnowledgeTrainingSalesRepsRouteImport } from './routes/_authenticated.admin.knowledge.training.sales-reps'
@@ -631,6 +633,11 @@ const ApiPublicV1LiveStatsRoute = ApiPublicV1LiveStatsRouteImport.update({
   path: '/api/public/v1/live-stats',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1LinksRoute = ApiPublicV1LinksRouteImport.update({
+  id: '/api/public/v1/links',
+  path: '/api/public/v1/links',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicV1InvoicesRoute = ApiPublicV1InvoicesRouteImport.update({
   id: '/api/public/v1/invoices',
   path: '/api/public/v1/invoices',
@@ -857,6 +864,11 @@ const ApiPublicV1PayInvoiceIdRoute = ApiPublicV1PayInvoiceIdRouteImport.update({
   path: '/api/public/v1/pay/$invoiceId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1LinksSlugRoute = ApiPublicV1LinksSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ApiPublicV1LinksRoute,
+} as any)
 const ApiPublicV1InvoicesIdRoute = ApiPublicV1InvoicesIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -1045,6 +1057,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
+  '/api/public/v1/links': typeof ApiPublicV1LinksRouteWithChildren
   '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
   '/api/public/v1/lookup': typeof ApiPublicV1LookupRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
@@ -1065,6 +1078,7 @@ export interface FileRoutesByFullPath {
   '/admin/knowledge/training/sales-reps': typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRoute
   '/api/public/v1/hooks/affiliate-sale': typeof ApiPublicV1HooksAffiliateSaleRoute
   '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRouteWithChildren
+  '/api/public/v1/links/$slug': typeof ApiPublicV1LinksSlugRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
@@ -1183,6 +1197,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
+  '/api/public/v1/links': typeof ApiPublicV1LinksRouteWithChildren
   '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
   '/api/public/v1/lookup': typeof ApiPublicV1LookupRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
@@ -1203,6 +1218,7 @@ export interface FileRoutesByTo {
   '/admin/knowledge/training/sales-reps': typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRoute
   '/api/public/v1/hooks/affiliate-sale': typeof ApiPublicV1HooksAffiliateSaleRoute
   '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRouteWithChildren
+  '/api/public/v1/links/$slug': typeof ApiPublicV1LinksSlugRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
@@ -1329,6 +1345,7 @@ export interface FileRoutesById {
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
+  '/api/public/v1/links': typeof ApiPublicV1LinksRouteWithChildren
   '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
   '/api/public/v1/lookup': typeof ApiPublicV1LookupRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
@@ -1349,6 +1366,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/knowledge/training/sales-reps': typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRoute
   '/api/public/v1/hooks/affiliate-sale': typeof ApiPublicV1HooksAffiliateSaleRoute
   '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRouteWithChildren
+  '/api/public/v1/links/$slug': typeof ApiPublicV1LinksSlugRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
@@ -1475,6 +1493,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/alchemy-activity'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
+    | '/api/public/v1/links'
     | '/api/public/v1/live-stats'
     | '/api/public/v1/lookup'
     | '/api/public/v1/me'
@@ -1495,6 +1514,7 @@ export interface FileRouteTypes {
     | '/admin/knowledge/training/sales-reps'
     | '/api/public/v1/hooks/affiliate-sale'
     | '/api/public/v1/invoices/$id'
+    | '/api/public/v1/links/$slug'
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/stats/live'
     | '/api/public/v1/terminals/heartbeat'
@@ -1613,6 +1633,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/alchemy-activity'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
+    | '/api/public/v1/links'
     | '/api/public/v1/live-stats'
     | '/api/public/v1/lookup'
     | '/api/public/v1/me'
@@ -1633,6 +1654,7 @@ export interface FileRouteTypes {
     | '/admin/knowledge/training/sales-reps'
     | '/api/public/v1/hooks/affiliate-sale'
     | '/api/public/v1/invoices/$id'
+    | '/api/public/v1/links/$slug'
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/stats/live'
     | '/api/public/v1/terminals/heartbeat'
@@ -1758,6 +1780,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/alchemy-activity'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
+    | '/api/public/v1/links'
     | '/api/public/v1/live-stats'
     | '/api/public/v1/lookup'
     | '/api/public/v1/me'
@@ -1778,6 +1801,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/knowledge/training/sales-reps'
     | '/api/public/v1/hooks/affiliate-sale'
     | '/api/public/v1/invoices/$id'
+    | '/api/public/v1/links/$slug'
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/stats/live'
     | '/api/public/v1/terminals/heartbeat'
@@ -1844,6 +1868,7 @@ export interface RootRouteChildren {
   ApiPublicHooksAlchemyActivityRoute: typeof ApiPublicHooksAlchemyActivityRoute
   ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
   ApiPublicV1InvoicesRoute: typeof ApiPublicV1InvoicesRouteWithChildren
+  ApiPublicV1LinksRoute: typeof ApiPublicV1LinksRouteWithChildren
   ApiPublicV1LiveStatsRoute: typeof ApiPublicV1LiveStatsRoute
   ApiPublicV1LookupRoute: typeof ApiPublicV1LookupRoute
   ApiPublicV1MeRoute: typeof ApiPublicV1MeRoute
@@ -2502,6 +2527,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1LiveStatsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/links': {
+      id: '/api/public/v1/links'
+      path: '/api/public/v1/links'
+      fullPath: '/api/public/v1/links'
+      preLoaderRoute: typeof ApiPublicV1LinksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/invoices': {
       id: '/api/public/v1/invoices'
       path: '/api/public/v1/invoices'
@@ -2774,6 +2806,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/v1/pay/$invoiceId'
       preLoaderRoute: typeof ApiPublicV1PayInvoiceIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/links/$slug': {
+      id: '/api/public/v1/links/$slug'
+      path: '/$slug'
+      fullPath: '/api/public/v1/links/$slug'
+      preLoaderRoute: typeof ApiPublicV1LinksSlugRouteImport
+      parentRoute: typeof ApiPublicV1LinksRoute
     }
     '/api/public/v1/invoices/$id': {
       id: '/api/public/v1/invoices/$id'
@@ -3144,6 +3183,17 @@ const ApiPublicV1InvoicesRouteChildren: ApiPublicV1InvoicesRouteChildren = {
 const ApiPublicV1InvoicesRouteWithChildren =
   ApiPublicV1InvoicesRoute._addFileChildren(ApiPublicV1InvoicesRouteChildren)
 
+interface ApiPublicV1LinksRouteChildren {
+  ApiPublicV1LinksSlugRoute: typeof ApiPublicV1LinksSlugRoute
+}
+
+const ApiPublicV1LinksRouteChildren: ApiPublicV1LinksRouteChildren = {
+  ApiPublicV1LinksSlugRoute: ApiPublicV1LinksSlugRoute,
+}
+
+const ApiPublicV1LinksRouteWithChildren =
+  ApiPublicV1LinksRoute._addFileChildren(ApiPublicV1LinksRouteChildren)
+
 interface ApiPublicV1WalletLinkRouteChildren {
   ApiPublicV1WalletLinkStatusRoute: typeof ApiPublicV1WalletLinkStatusRoute
 }
@@ -3241,6 +3291,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksAlchemyActivityRoute: ApiPublicHooksAlchemyActivityRoute,
   ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
   ApiPublicV1InvoicesRoute: ApiPublicV1InvoicesRouteWithChildren,
+  ApiPublicV1LinksRoute: ApiPublicV1LinksRouteWithChildren,
   ApiPublicV1LiveStatsRoute: ApiPublicV1LiveStatsRoute,
   ApiPublicV1LookupRoute: ApiPublicV1LookupRoute,
   ApiPublicV1MeRoute: ApiPublicV1MeRoute,
