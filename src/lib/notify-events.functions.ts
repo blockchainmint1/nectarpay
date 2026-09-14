@@ -115,10 +115,21 @@ export const notifyNewStore = createServerFn({ method: "POST" })
     if (!store || store.owner_id !== context.userId) {
       return { ok: false };
     }
-    const createdMs = store.created_at ? new Date(store.created_at).getTime() : 0;
-    if (Date.now() - createdMs > 10 * 60 * 1000) return { ok: true, skipped: true };
     const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(store.owner_id);
     const ownerEmail = userRes?.user?.email ?? "(unknown)";
+
+    // Second chance for the demo self-destruct link, in case the signup
+    // notification never fired (offline terminal, closed tab, etc).
+    const { isDemoEmail, ensureDemoResetLink } = await import("@/lib/demo-account.server");
+    if (userRes?.user?.email && isDemoEmail(userRes.user.email)) {
+      await ensureDemoResetLink(store.owner_id, userRes.user.email).catch((e) =>
+        console.error("[notify-events] demo reset link failed", e),
+      );
+    }
+
+    const createdMs = store.created_at ? new Date(store.created_at).getTime() : 0;
+    if (Date.now() - createdMs > 10 * 60 * 1000) return { ok: true, skipped: true };
+
     const subject = `New merchant: ${store.name}`;
     const rows = [
       `Store: ${escapeHtml(store.name || "")}`,
