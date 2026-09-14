@@ -389,7 +389,7 @@ function Sale({ creds, settings, onLock }: { creds: TerminalCreds; settings: Pos
   );
 }
 
-function Header({ onLock, hasPin, storeName }: { onLock: () => void; hasPin: boolean; storeName: string | null }) {
+function Header({ storeName }: { storeName: string | null }) {
   return (
     <header className="flex shrink-0 items-center justify-between border-b border-white/5 bg-black/40 px-4 py-2 backdrop-blur">
       <div className="flex items-center gap-2 min-w-0">
@@ -405,11 +405,6 @@ function Header({ onLock, hasPin, storeName }: { onLock: () => void; hasPin: boo
         <Link to="/pos/settings" className="rounded-md p-1.5 text-white/70 hover:bg-white/10" aria-label="Settings">
           <Settings className="size-4" />
         </Link>
-        {hasPin && (
-          <button onClick={onLock} className="rounded-md p-1.5 text-white/70 hover:bg-white/10" aria-label="Lock">
-            <Lock className="size-4" />
-          </button>
-        )}
       </div>
     </header>
   );
