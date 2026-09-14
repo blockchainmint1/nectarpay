@@ -8,23 +8,49 @@ import { useAuth } from "@/lib/auth-context";
 export const Route = createFileRoute("/docs")({
   head: () => ({
     meta: [
-      { title: "Docs · Nectar.Pay" },
+      { title: "Developer Docs & API Reference · Nectar.Pay" },
       {
         name: "description",
         content:
-          "Quickstart, API reference, and webhook signing for the Nectar.Pay gateway.",
+          "Full public API reference for the Nectar.Pay gateway: authentication, invoices, statuses, webhooks, signature verification, and the drop-in JS checkout button.",
       },
-      { property: "og:title", content: "Nectar.Pay Docs" },
+      { property: "og:title", content: "Nectar.Pay Developer Docs" },
       {
         property: "og:description",
-        content: "Quickstart, API reference, and webhook signing.",
+        content:
+          "Everything a third-party integration needs: API keys, invoice creation, status polling, signed webhooks, and error formats.",
       },
-          { property: "og:url", content: "https://app.nectar-pay.com/docs" },
-],
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://app.nectar-pay.com/docs" },
+      { name: "twitter:card", content: "summary" },
+    ],
     links: [{ rel: "canonical", href: "https://app.nectar-pay.com/docs" }],
   }),
   component: DocsPage,
 });
+
+const CHAINS = [
+  ["btc", "Bitcoin (on-chain)"],
+  ["lightning", "Bitcoin via Lightning"],
+  ["txc", "TEXITcoin"],
+  ["eth", "Ethereum (ETH + USDC/USDT/PYUSD/DAI)"],
+  ["base", "Base (ETH + stablecoins)"],
+  ["tron", "Tron (TRX + USDT)"],
+  ["sol", "Solana (SOL + SPL tokens)"],
+  ["doge", "Dogecoin"],
+  ["ltc", "Litecoin"],
+  ["bch", "Bitcoin Cash"],
+  ["dash", "Dash"],
+  ["isk", "Iskander Network"],
+  ["zcu", "ZCU (Zero Chill)"],
+] as const;
+
+const STATUSES = [
+  ["pending", "Created; waiting for payment (or for the customer to pick a chain)."],
+  ["underpaid", "A payment arrived but is short of the requested amount."],
+  ["confirmed", "Paid and confirmed on-chain. Treat this as final."],
+  ["expired", "TTL elapsed with no (sufficient) payment."],
+] as const;
 
 function DocsPage() {
   const { user, loading } = useAuth();
@@ -50,32 +76,24 @@ function DocsPage() {
 export function DocsBody() {
   return (
     <section className="mx-auto max-w-3xl px-4 py-16">
-      <h1 className="text-3xl font-semibold tracking-tight">Documentation</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">Developer documentation</h1>
       <p className="mt-3 text-muted-foreground">
         A non-custodial gateway. You hold the keys; we derive deposit addresses, watch the
-        chain, and notify your store.
+        chain, and notify your store. This page is the complete public API reference —
+        everything a third-party site needs to integrate without ever talking to us.
       </p>
 
-      <Section title="1. Create an account">
+      {/* ---------------------------------------------------------- */}
+      <Section title="1. Create an account &amp; store">
         <p>
           Sign up at <Link to="/auth" className="text-primary underline">/auth</Link>, create
           a store, and add at least one chain config.
-        </p>
-      </Section>
-
-      <Section title="2. Add an xpub or receive address">
-        <p>
-          We support BIP32 extended public keys for UTXO chains (BTC, TXC, DOGE, ISK, ZCU)
-          and a single receive address for account-based chains (ETH, Base, Tron, Solana).
-          Your private keys never leave your wallet.
         </p>
         <p>
           New to xpubs?{" "}
           <Link to="/docs/wallet-setup" className="text-primary underline">
             Step-by-step wallet setup guide for every supported chain →
-          </Link>
-        </p>
-        <p>
+          </Link>{" "}
           Wondering whether each invoice gets its own address?{" "}
           <Link to="/docs/address-rotation" className="text-primary underline">
             Address derivation &amp; rotation policy →
@@ -83,20 +101,28 @@ export function DocsBody() {
         </p>
       </Section>
 
-
-      <Section title="3. Get your API key">
+      <Section title="2. Get your credentials">
         <p>
-          Each store has its own secret API key (<span className="font-mono">sk_live_…</span>).
-          It's shown once — store it securely.
+          Each store has its own secret API key (<span className="font-mono">sk_live_…</span>),
+          created from <strong>Store → API keys</strong>. It's shown once — store it securely.
+        </p>
+        <p>
+          For webhooks, set your endpoint URL and copy the signing secret from{" "}
+          <strong>Store → Webhooks</strong>. The secret is per-store and is used to verify
+          every event we send you (see §6).
         </p>
       </Section>
 
-      <Section title="API base URL">
+      <Section title="3. Base URL &amp; authentication">
         <p>
           <strong>All API calls go to <span className="font-mono">https://app.nectar-pay.com</span></strong>.
           Keys are issued and validated on this host only — sending a valid key to{" "}
           <span className="font-mono">nectar-pay.com</span> (the marketing site) returns{" "}
           <span className="font-mono">401 Invalid API key</span>.
+        </p>
+        <p>
+          Every request carries the key as a Bearer token. Keys are scoped to a single store:
+          you can only ever see and create that store's invoices.
         </p>
         <Pre>{`NECTARPAY_API_URL=https://app.nectar-pay.com
 
@@ -106,43 +132,156 @@ curl -s https://app.nectar-pay.com/api/public/v1/me \\
         <p>
           A <span className="font-mono">200</span> from{" "}
           <span className="font-mono">/api/public/v1/me</span> confirms the key, the store it
-          belongs to, and the webhook URL currently configured.
+          belongs to, and the webhook URL currently configured. All errors across the API
+          look like <span className="font-mono">{'{ "error": "human readable message" }'}</span>{" "}
+          with an appropriate 4xx/5xx status.
         </p>
       </Section>
 
-      <Section title="4. Create invoices">
+      <Section title="4. Create an invoice">
         <Pre>{`POST https://app.nectar-pay.com/api/public/v1/invoices
 Authorization: Bearer sk_live_...
 Content-Type: application/json
 
 {
-  "chain": "btc",
-  "amount": 49.00,
-  "currency": "USD",
-  "order_id": "ORDER_1234",
-  "redirect_url": "https://store.example.com/thanks"
+  "chain": "btc",                    // optional — omit to let the customer pick
+  "amount": 49.00,                   // required, fiat amount
+  "currency": "USD",                 // required, ISO fiat code
+  "order_id": "ORDER_1234",          // optional, echoed back + sent in webhooks
+  "description": "T-shirt, size M",  // optional
+  "redirect_url": "https://store.example.com/thanks", // optional
+  "buyer_email": "sam@example.com",  // optional, sends a receipt
+  "expires_in_seconds": 900          // optional, 60–86400, default is store TTL
 }`}</Pre>
-        <p>Response includes the unique deposit address and the hosted payment page URL.</p>
+        <p>
+          Supported <span className="font-mono">chain</span> values:
+        </p>
+        <Table
+          head={["chain", "network"]}
+          rows={CHAINS.map(([c, n]) => [c, n])}
+        />
+        <p>
+          If you omit <span className="font-mono">chain</span>, the invoice is created in a
+          "customer picks the network" state and{" "}
+          <span className="font-mono">address</span>/<span className="font-mono">crypto_amount</span>/
+          <span className="font-mono">rate</span> are <span className="font-mono">null</span>{" "}
+          until the customer chooses on the hosted checkout page.
+        </p>
+        <p>Response (201):</p>
+        <Pre>{`{
+  "id": "7c9e…-invoice-uuid",
+  "address": "bc1q…",              // null if chain omitted
+  "crypto_amount": 0.00041712,     // null if chain omitted
+  "rate": 117500.00,               // fiat per coin, null if chain omitted
+  "fiat_amount": 49.00,
+  "currency": "USD",
+  "chain": "btc",
+  "status": "pending",
+  "expires_at": "2026-09-14T10:15:00.000Z",
+  "checkout_url": "https://app.nectar-pay.com/i/7c9e…"
+}`}</Pre>
+        <p>
+          Send the customer to <span className="font-mono">checkout_url</span> (QR + amount +
+          copyable address) or render your own UI from{" "}
+          <span className="font-mono">address</span> and{" "}
+          <span className="font-mono">crypto_amount</span>.
+        </p>
       </Section>
 
-      <Section title="5. Receive webhooks">
-        <p>
-          We POST to your configured webhook URL on every status change. Each request is signed:
-        </p>
-        <Pre>{`X-TXCPay-Signature: t=1729000000,v1=hex-hmac-sha256
+      <Section title="5. Check invoice status (polling)">
+        <Pre>{`GET https://app.nectar-pay.com/api/public/v1/invoices/{id}
+Authorization: Bearer sk_live_...
 
-# verify in node:
+→ 200 {
+  "id": "7c9e…",
+  "status": "confirmed",           // see lifecycle below
+  "chain": "btc",
+  "fiat_amount": 49.00,
+  "fiat_currency": "USD",
+  "crypto_amount": 0.00041712,
+  "rate": 117500.00,
+  "address": "bc1q…",
+  "order_id": "ORDER_1234",
+  "description": "…",
+  "redirect_url": "…",
+  "buyer_email": "…",
+  "expires_at": "…",
+  "created_at": "…",
+  "checkout_url": "https://app.nectar-pay.com/i/7c9e…"
+}`}</Pre>
+        <p>
+          A <span className="font-mono">404</span> means the invoice doesn't exist{" "}
+          <em>or belongs to a different store's key</em> — we never leak across stores.
+        </p>
+        <p>Invoice lifecycle:</p>
+        <Table head={["status", "meaning"]} rows={STATUSES.map(([s, m]) => [s, m])} />
+      </Section>
+
+      <Section title="6. Receive webhooks">
+        <p>
+          We POST a signed JSON event to your configured webhook URL on every status change.
+          Headers:
+        </p>
+        <Pre>{`POST /your/webhook HTTP/1.1
+Content-Type: application/json
+X-TXCPay-Signature: t=1729000000,v1=<hex-hmac-sha256>
+X-TXCPay-Event: invoice.paid
+X-TXCPay-Event-Id: 0f4c…-event-uuid
+User-Agent: payHME-webhook/1`}</Pre>
+        <p>
+          Event types: <span className="font-mono">invoice.paid</span> (payment seen),{" "}
+          <span className="font-mono">invoice.confirmed</span> (on-chain confirmation — final),{" "}
+          <span className="font-mono">invoice.underpaid</span>.
+        </p>
+        <p>Body:</p>
+        <Pre>{`{
+  "id": "0f4c…-event-uuid",
+  "type": "invoice.paid",
+  "created_at": "2026-09-14T10:02:11.000Z",
+  "data": {
+    "invoice_id": "7c9e…",
+    "store_id": "1a2b…",
+    "status": "confirmed",
+    "chain": "btc",
+    "address": "bc1q…",
+    "fiat_amount": 49.00,
+    "fiat_currency": "USD",
+    "paid_amount_usd": 49.00,
+    "order_id": "ORDER_1234"
+  }
+}`}</Pre>
+        <p>
+          <strong>Always verify the signature</strong> against the raw request body before
+          trusting anything:
+        </p>
+        <Pre>{`// node:
 const sig = req.headers["x-txcpay-signature"];
-const [, t] = sig.match(/t=(\\d+)/);
+const [, t]  = sig.match(/t=(\\d+)/);
 const [, v1] = sig.match(/v1=([a-f0-9]+)/);
 const expected = crypto
-  .createHmac("sha256", WEBHOOK_SECRET)
+  .createHmac("sha256", WEBHOOK_SECRET)   // Store → Webhooks
   .update(\`\${t}.\${rawBody}\`)
   .digest("hex");
-if (!crypto.timingSafeEqual(Buffer.from(v1), Buffer.from(expected))) reject();`}</Pre>
+if (!crypto.timingSafeEqual(Buffer.from(v1), Buffer.from(expected))) reject();
+
+// php:
+[$t, $v1] = sscanf($_SERVER['HTTP_X_TXCPAY_SIGNATURE'], 't=%d,v1=%s');
+$expected = hash_hmac('sha256', "$t." . file_get_contents('php://input'), $WEBHOOK_SECRET);
+if (!hash_equals($expected, $v1)) { http_response_code(401); exit; }`}</Pre>
+        <p>
+          Reject timestamps more than ~5 minutes old to stop replay. Events carry a unique{" "}
+          <span className="font-mono">id</span> — dedupe on it, because retries can repeat a
+          delivery. Reply <span className="font-mono">2xx</span> quickly and process
+          asynchronously.
+        </p>
+        <p>
+          Missed one? Trigger a redelivery for a single invoice:
+        </p>
+        <Pre>{`curl -X POST "https://app.nectar-pay.com/api/public/v1/invoices/{id}?action=redeliver-webhook" \\
+  -H "Authorization: Bearer sk_live_..."`}</Pre>
       </Section>
 
-      <Section title="Drop-in JS button">
+      <Section title="7. Drop-in JS button (no backend code)">
         <p>
           One <code className="font-mono">&lt;script&gt;</code> tag and a button —
           crypto checkout opens in a modal, no redirect, works on any site.
@@ -166,15 +305,29 @@ if (!crypto.timingSafeEqual(Buffer.from(v1), Buffer.from(expected))) reject();`}
   // result.status: "paid" | "closed" | "expired"
   if (result.status === "paid") console.log("Got it:", result.tx);
 });`}</Pre>
+        <p>
+          The button's result event is a UX signal, not a settlement guarantee — still confirm
+          payment via webhook or the status endpoint before shipping goods.
+        </p>
         <LiveDemo />
       </Section>
 
-      <Section title="WooCommerce">
+      <Section title="8. Hosted payment link (no code at all)">
         <p>
-          See the <Link to="/integrations/woocommerce" className="text-primary underline">
-            WooCommerce integration guide
+          Every store gets a hosted payment page at{" "}
+          <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">https://app.nectar-pay.com/t/your-store</code>{" "}
+          — link it from a button, an email, an invoice PDF, or a QR code. No API key, no
+          webhook to host. When you outgrow it, everything above is waiting.
+        </p>
+      </Section>
+
+      <Section title="E-commerce plugins">
+        <p>
+          Prefer a ready-made plugin?{" "}
+          <Link to="/integrations" className="text-primary underline">
+            WooCommerce, PrestaShop, OpenCart, Magento, WHMCS and more →
           </Link>{" "}
-          to install our plugin in under five minutes.
+          Every plugin is a thin wrapper around the exact API documented above.
         </p>
       </Section>
 
@@ -259,6 +412,29 @@ function Pre({ children }: { children: React.ReactNode }) {
     <pre className="overflow-x-auto rounded-lg border border-border bg-card/60 p-4 text-xs leading-relaxed text-foreground">
       <code>{children}</code>
     </pre>
+  );
+}
+
+function Table({ head, rows }: { head: [string, string]; rows: readonly (readonly [string, string])[] }) {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-border">
+      <table className="w-full text-xs">
+        <thead>
+          <tr className="border-b border-border bg-card/60 text-left text-foreground">
+            <th className="px-3 py-2 font-medium">{head[0]}</th>
+            <th className="px-3 py-2 font-medium">{head[1]}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(([a, b]) => (
+            <tr key={a} className="border-b border-border/50 last:border-0">
+              <td className="px-3 py-1.5 font-mono text-foreground">{a}</td>
+              <td className="px-3 py-1.5">{b}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
