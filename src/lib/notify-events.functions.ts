@@ -17,42 +17,29 @@ function escapeHtml(s: string): string {
 }
 
 async function enqueueAdmin(
-  supabase: any,
+  _supabase: unknown,
   subject: string,
   html: string,
   text: string,
   label: string,
   idempotencyKey: string,
 ) {
+  const { enqueueAppEmail } = await import("@/lib/email/enqueue.server");
   for (const to of ADMIN_NOTIFY_EMAILS) {
-    const messageId = crypto.randomUUID();
-    await supabase.from("email_send_log").insert({
-      message_id: messageId,
-      template_name: label,
-      recipient_email: to,
-      status: "pending",
+    const res = await enqueueAppEmail({
+      to,
+      subject,
+      html,
+      text,
+      label,
+      idempotencyKey: `${idempotencyKey}:${to}`,
     });
-    const { error } = await supabase.rpc("enqueue_email", {
-      queue_name: "transactional_emails",
-      payload: {
-        message_id: messageId,
-        idempotency_key: `${idempotencyKey}:${to}`,
-        to,
-        from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
-        sender_domain: SENDER_DOMAIN,
-        subject,
-        html,
-        text,
-        purpose: "transactional",
-        label,
-        queued_at: new Date().toISOString(),
-      },
-    });
-    if (error) {
-      console.error("[notify-events] enqueue failed", { label, to, error });
+    if (!res.ok) {
+      console.error("[notify-events] send failed", { label, to, error: res.error });
     }
   }
 }
+
 
 function wrap(title: string, rows: string[], linkHref: string, linkLabel: string) {
   const body = rows.map((r) => `<div style="padding:4px 0;color:#ddd;">${r}</div>`).join("");
