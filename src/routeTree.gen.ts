@@ -95,6 +95,8 @@ import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/l
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as ApiPublicV1WalletLinkRouteImport } from './routes/api/public/v1/wallet-link'
+import { Route as ApiPublicV1StoreRouteImport } from './routes/api.public.v1.store'
+import { Route as ApiPublicV1RatesRouteImport } from './routes/api.public.v1.rates'
 import { Route as ApiPublicV1MeRouteImport } from './routes/api/public/v1/me'
 import { Route as ApiPublicV1LookupRouteImport } from './routes/api.public.v1.lookup'
 import { Route as ApiPublicV1LiveStatsRouteImport } from './routes/api/public/v1/live-stats'
@@ -146,6 +148,8 @@ import { Route as AuthenticatedAdminKnowledgePitchNewMarketsRouteImport } from '
 import { Route as AuthenticatedAdminKnowledgePitchMerchantsRouteImport } from './routes/_authenticated.admin.knowledge.pitch.merchants'
 import { Route as AuthenticatedAdminKnowledgePitchConsumersRouteImport } from './routes/_authenticated.admin.knowledge.pitch.consumers'
 import { Route as ApiPublicV1TerminalsInvoiceIdRouteImport } from './routes/api/public/v1/terminals/invoice.$id'
+import { Route as ApiPublicV1InvoicesIdWebhooksRouteImport } from './routes/api.public.v1.invoices.$id.webhooks'
+import { Route as ApiPublicV1InvoicesIdEmailRouteImport } from './routes/api.public.v1.invoices.$id.email'
 import { Route as ApiPublicV1TerminalsInvoiceIdReceiptRouteImport } from './routes/api/public/v1/terminals/invoice.$id.receipt'
 import { Route as ApiPublicV1TerminalsInvoiceIdCancelRouteImport } from './routes/api/public/v1/terminals/invoice.$id.cancel'
 
@@ -602,6 +606,16 @@ const ApiPublicV1WalletLinkRoute = ApiPublicV1WalletLinkRouteImport.update({
   path: '/api/public/v1/wallet-link',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicV1StoreRoute = ApiPublicV1StoreRouteImport.update({
+  id: '/api/public/v1/store',
+  path: '/api/public/v1/store',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1RatesRoute = ApiPublicV1RatesRouteImport.update({
+  id: '/api/public/v1/rates',
+  path: '/api/public/v1/rates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicV1MeRoute = ApiPublicV1MeRouteImport.update({
   id: '/api/public/v1/me',
   path: '/api/public/v1/me',
@@ -896,6 +910,18 @@ const ApiPublicV1TerminalsInvoiceIdRoute =
     path: '/$id',
     getParentRoute: () => ApiPublicV1TerminalsInvoiceRoute,
   } as any)
+const ApiPublicV1InvoicesIdWebhooksRoute =
+  ApiPublicV1InvoicesIdWebhooksRouteImport.update({
+    id: '/webhooks',
+    path: '/webhooks',
+    getParentRoute: () => ApiPublicV1InvoicesIdRoute,
+  } as any)
+const ApiPublicV1InvoicesIdEmailRoute =
+  ApiPublicV1InvoicesIdEmailRouteImport.update({
+    id: '/email',
+    path: '/email',
+    getParentRoute: () => ApiPublicV1InvoicesIdRoute,
+  } as any)
 const ApiPublicV1TerminalsInvoiceIdReceiptRoute =
   ApiPublicV1TerminalsInvoiceIdReceiptRouteImport.update({
     id: '/receipt',
@@ -1022,6 +1048,8 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
   '/api/public/v1/lookup': typeof ApiPublicV1LookupRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
+  '/api/public/v1/rates': typeof ApiPublicV1RatesRoute
+  '/api/public/v1/store': typeof ApiPublicV1StoreRoute
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRouteWithChildren
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -1036,7 +1064,7 @@ export interface FileRoutesByFullPath {
   '/admin/knowledge/training/merchant-onboarding': typeof AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute
   '/admin/knowledge/training/sales-reps': typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRoute
   '/api/public/v1/hooks/affiliate-sale': typeof ApiPublicV1HooksAffiliateSaleRoute
-  '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRoute
+  '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRouteWithChildren
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
@@ -1045,6 +1073,8 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/terminals/options': typeof ApiPublicV1TerminalsOptionsRoute
   '/api/public/v1/terminals/pair': typeof ApiPublicV1TerminalsPairRoute
   '/api/public/v1/wallet-link/status': typeof ApiPublicV1WalletLinkStatusRoute
+  '/api/public/v1/invoices/$id/email': typeof ApiPublicV1InvoicesIdEmailRoute
+  '/api/public/v1/invoices/$id/webhooks': typeof ApiPublicV1InvoicesIdWebhooksRoute
   '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
   '/api/public/v1/terminals/invoice/$id/cancel': typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
   '/api/public/v1/terminals/invoice/$id/receipt': typeof ApiPublicV1TerminalsInvoiceIdReceiptRoute
@@ -1156,6 +1186,8 @@ export interface FileRoutesByTo {
   '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
   '/api/public/v1/lookup': typeof ApiPublicV1LookupRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
+  '/api/public/v1/rates': typeof ApiPublicV1RatesRoute
+  '/api/public/v1/store': typeof ApiPublicV1StoreRoute
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRouteWithChildren
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -1170,7 +1202,7 @@ export interface FileRoutesByTo {
   '/admin/knowledge/training/merchant-onboarding': typeof AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute
   '/admin/knowledge/training/sales-reps': typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRoute
   '/api/public/v1/hooks/affiliate-sale': typeof ApiPublicV1HooksAffiliateSaleRoute
-  '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRoute
+  '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRouteWithChildren
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
@@ -1179,6 +1211,8 @@ export interface FileRoutesByTo {
   '/api/public/v1/terminals/options': typeof ApiPublicV1TerminalsOptionsRoute
   '/api/public/v1/terminals/pair': typeof ApiPublicV1TerminalsPairRoute
   '/api/public/v1/wallet-link/status': typeof ApiPublicV1WalletLinkStatusRoute
+  '/api/public/v1/invoices/$id/email': typeof ApiPublicV1InvoicesIdEmailRoute
+  '/api/public/v1/invoices/$id/webhooks': typeof ApiPublicV1InvoicesIdWebhooksRoute
   '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
   '/api/public/v1/terminals/invoice/$id/cancel': typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
   '/api/public/v1/terminals/invoice/$id/receipt': typeof ApiPublicV1TerminalsInvoiceIdReceiptRoute
@@ -1298,6 +1332,8 @@ export interface FileRoutesById {
   '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
   '/api/public/v1/lookup': typeof ApiPublicV1LookupRoute
   '/api/public/v1/me': typeof ApiPublicV1MeRoute
+  '/api/public/v1/rates': typeof ApiPublicV1RatesRoute
+  '/api/public/v1/store': typeof ApiPublicV1StoreRoute
   '/api/public/v1/wallet-link': typeof ApiPublicV1WalletLinkRouteWithChildren
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -1312,7 +1348,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/knowledge/training/merchant-onboarding': typeof AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute
   '/_authenticated/admin/knowledge/training/sales-reps': typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRoute
   '/api/public/v1/hooks/affiliate-sale': typeof ApiPublicV1HooksAffiliateSaleRoute
-  '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRoute
+  '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRouteWithChildren
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
@@ -1321,6 +1357,8 @@ export interface FileRoutesById {
   '/api/public/v1/terminals/options': typeof ApiPublicV1TerminalsOptionsRoute
   '/api/public/v1/terminals/pair': typeof ApiPublicV1TerminalsPairRoute
   '/api/public/v1/wallet-link/status': typeof ApiPublicV1WalletLinkStatusRoute
+  '/api/public/v1/invoices/$id/email': typeof ApiPublicV1InvoicesIdEmailRoute
+  '/api/public/v1/invoices/$id/webhooks': typeof ApiPublicV1InvoicesIdWebhooksRoute
   '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
   '/api/public/v1/terminals/invoice/$id/cancel': typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
   '/api/public/v1/terminals/invoice/$id/receipt': typeof ApiPublicV1TerminalsInvoiceIdReceiptRoute
@@ -1440,6 +1478,8 @@ export interface FileRouteTypes {
     | '/api/public/v1/live-stats'
     | '/api/public/v1/lookup'
     | '/api/public/v1/me'
+    | '/api/public/v1/rates'
+    | '/api/public/v1/store'
     | '/api/public/v1/wallet-link'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -1463,6 +1503,8 @@ export interface FileRouteTypes {
     | '/api/public/v1/terminals/options'
     | '/api/public/v1/terminals/pair'
     | '/api/public/v1/wallet-link/status'
+    | '/api/public/v1/invoices/$id/email'
+    | '/api/public/v1/invoices/$id/webhooks'
     | '/api/public/v1/terminals/invoice/$id'
     | '/api/public/v1/terminals/invoice/$id/cancel'
     | '/api/public/v1/terminals/invoice/$id/receipt'
@@ -1574,6 +1616,8 @@ export interface FileRouteTypes {
     | '/api/public/v1/live-stats'
     | '/api/public/v1/lookup'
     | '/api/public/v1/me'
+    | '/api/public/v1/rates'
+    | '/api/public/v1/store'
     | '/api/public/v1/wallet-link'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -1597,6 +1641,8 @@ export interface FileRouteTypes {
     | '/api/public/v1/terminals/options'
     | '/api/public/v1/terminals/pair'
     | '/api/public/v1/wallet-link/status'
+    | '/api/public/v1/invoices/$id/email'
+    | '/api/public/v1/invoices/$id/webhooks'
     | '/api/public/v1/terminals/invoice/$id'
     | '/api/public/v1/terminals/invoice/$id/cancel'
     | '/api/public/v1/terminals/invoice/$id/receipt'
@@ -1715,6 +1761,8 @@ export interface FileRouteTypes {
     | '/api/public/v1/live-stats'
     | '/api/public/v1/lookup'
     | '/api/public/v1/me'
+    | '/api/public/v1/rates'
+    | '/api/public/v1/store'
     | '/api/public/v1/wallet-link'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -1738,6 +1786,8 @@ export interface FileRouteTypes {
     | '/api/public/v1/terminals/options'
     | '/api/public/v1/terminals/pair'
     | '/api/public/v1/wallet-link/status'
+    | '/api/public/v1/invoices/$id/email'
+    | '/api/public/v1/invoices/$id/webhooks'
     | '/api/public/v1/terminals/invoice/$id'
     | '/api/public/v1/terminals/invoice/$id/cancel'
     | '/api/public/v1/terminals/invoice/$id/receipt'
@@ -1797,6 +1847,8 @@ export interface RootRouteChildren {
   ApiPublicV1LiveStatsRoute: typeof ApiPublicV1LiveStatsRoute
   ApiPublicV1LookupRoute: typeof ApiPublicV1LookupRoute
   ApiPublicV1MeRoute: typeof ApiPublicV1MeRoute
+  ApiPublicV1RatesRoute: typeof ApiPublicV1RatesRoute
+  ApiPublicV1StoreRoute: typeof ApiPublicV1StoreRoute
   ApiPublicV1WalletLinkRoute: typeof ApiPublicV1WalletLinkRouteWithChildren
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -2415,6 +2467,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1WalletLinkRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/store': {
+      id: '/api/public/v1/store'
+      path: '/api/public/v1/store'
+      fullPath: '/api/public/v1/store'
+      preLoaderRoute: typeof ApiPublicV1StoreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/rates': {
+      id: '/api/public/v1/rates'
+      path: '/api/public/v1/rates'
+      fullPath: '/api/public/v1/rates'
+      preLoaderRoute: typeof ApiPublicV1RatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/me': {
       id: '/api/public/v1/me'
       path: '/api/public/v1/me'
@@ -2772,6 +2838,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1TerminalsInvoiceIdRouteImport
       parentRoute: typeof ApiPublicV1TerminalsInvoiceRoute
     }
+    '/api/public/v1/invoices/$id/webhooks': {
+      id: '/api/public/v1/invoices/$id/webhooks'
+      path: '/webhooks'
+      fullPath: '/api/public/v1/invoices/$id/webhooks'
+      preLoaderRoute: typeof ApiPublicV1InvoicesIdWebhooksRouteImport
+      parentRoute: typeof ApiPublicV1InvoicesIdRoute
+    }
+    '/api/public/v1/invoices/$id/email': {
+      id: '/api/public/v1/invoices/$id/email'
+      path: '/email'
+      fullPath: '/api/public/v1/invoices/$id/email'
+      preLoaderRoute: typeof ApiPublicV1InvoicesIdEmailRouteImport
+      parentRoute: typeof ApiPublicV1InvoicesIdRoute
+    }
     '/api/public/v1/terminals/invoice/$id/receipt': {
       id: '/api/public/v1/terminals/invoice/$id/receipt'
       path: '/receipt'
@@ -3038,12 +3118,27 @@ const PosRouteChildren: PosRouteChildren = {
 
 const PosRouteWithChildren = PosRoute._addFileChildren(PosRouteChildren)
 
+interface ApiPublicV1InvoicesIdRouteChildren {
+  ApiPublicV1InvoicesIdEmailRoute: typeof ApiPublicV1InvoicesIdEmailRoute
+  ApiPublicV1InvoicesIdWebhooksRoute: typeof ApiPublicV1InvoicesIdWebhooksRoute
+}
+
+const ApiPublicV1InvoicesIdRouteChildren: ApiPublicV1InvoicesIdRouteChildren = {
+  ApiPublicV1InvoicesIdEmailRoute: ApiPublicV1InvoicesIdEmailRoute,
+  ApiPublicV1InvoicesIdWebhooksRoute: ApiPublicV1InvoicesIdWebhooksRoute,
+}
+
+const ApiPublicV1InvoicesIdRouteWithChildren =
+  ApiPublicV1InvoicesIdRoute._addFileChildren(
+    ApiPublicV1InvoicesIdRouteChildren,
+  )
+
 interface ApiPublicV1InvoicesRouteChildren {
-  ApiPublicV1InvoicesIdRoute: typeof ApiPublicV1InvoicesIdRoute
+  ApiPublicV1InvoicesIdRoute: typeof ApiPublicV1InvoicesIdRouteWithChildren
 }
 
 const ApiPublicV1InvoicesRouteChildren: ApiPublicV1InvoicesRouteChildren = {
-  ApiPublicV1InvoicesIdRoute: ApiPublicV1InvoicesIdRoute,
+  ApiPublicV1InvoicesIdRoute: ApiPublicV1InvoicesIdRouteWithChildren,
 }
 
 const ApiPublicV1InvoicesRouteWithChildren =
@@ -3149,6 +3244,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1LiveStatsRoute: ApiPublicV1LiveStatsRoute,
   ApiPublicV1LookupRoute: ApiPublicV1LookupRoute,
   ApiPublicV1MeRoute: ApiPublicV1MeRoute,
+  ApiPublicV1RatesRoute: ApiPublicV1RatesRoute,
+  ApiPublicV1StoreRoute: ApiPublicV1StoreRoute,
   ApiPublicV1WalletLinkRoute: ApiPublicV1WalletLinkRouteWithChildren,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
