@@ -421,6 +421,7 @@ export function WalletLink({ storeId, onDone }: { storeId: string; onDone: () =>
   const [now, setNow] = useState(Date.now());
   const [busy, setBusy] = useState(false);
   const [linked, setLinked] = useState(false);
+  const [needsCode, setNeedsCode] = useState(false);
 
   useEffect(() => {
     const i = setInterval(() => setNow(Date.now()), 1000);
@@ -428,6 +429,7 @@ export function WalletLink({ storeId, onDone }: { storeId: string; onDone: () =>
   }, []);
 
   // Check if any chain is already configured (wallet linked previously).
+  // Brand new store = first link, no email step-up needed: show the QR straight away.
   useEffect(() => {
     void (async () => {
       const { data } = await supabase
@@ -435,8 +437,13 @@ export function WalletLink({ storeId, onDone }: { storeId: string; onDone: () =>
         .select("id")
         .eq("store_id", storeId)
         .limit(1);
-      if (data && data.length > 0) setLinked(true);
+      if (data && data.length > 0) {
+        setLinked(true);
+      } else {
+        void generate();
+      }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storeId]);
 
 
@@ -474,16 +481,20 @@ export function WalletLink({ storeId, onDone }: { storeId: string; onDone: () =>
     }
   }
 
-  async function generate() {
+  async function generate(opts?: { withCode?: boolean }) {
     const verificationCode = codeInput.trim();
-    if (!/^\d{6}$/.test(verificationCode)) {
+    if (opts?.withCode && !/^\d{6}$/.test(verificationCode)) {
       toast.error("Enter the 6-digit code from your email.");
       return;
     }
     setBusy(true);
     try {
       const result = await createCode({
-        data: { storeId, allowNewWallet: false, verificationCode },
+        data: {
+          storeId,
+          allowNewWallet: false,
+          ...(opts?.withCode ? { verificationCode } : {}),
+        },
       });
       const canonical =
         (import.meta.env.VITE_PUBLIC_SITE_URL as string | undefined)?.replace(/\/$/, "") ||
@@ -494,7 +505,12 @@ export function WalletLink({ storeId, onDone }: { storeId: string; onDone: () =>
       setToken(result.token);
       setExpiresAt(new Date(result.expires_at).getTime());
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not issue link code");
+      // First-link shortcut refused (store already has keys) — fall back to email step-up.
+      if (!opts?.withCode) {
+        setNeedsCode(true);
+      } else {
+        toast.error(e instanceof Error ? e.message : "Could not issue link code");
+      }
     } finally {
       setBusy(false);
     }
@@ -577,6 +593,15 @@ export function WalletLink({ storeId, onDone }: { storeId: string; onDone: () =>
           ) : (
             <div className="w-full max-w-xs space-y-3 py-4 text-center">
               <Smartphone className="mx-auto h-10 w-10 text-muted-foreground" />
+              {!needsCode && !expired ? (
+                <>
+                  <p className="text-sm font-medium">{busy ? "Preparing your QR…" : "Ready when you are"}</p>
+                  <Button className="w-full" onClick={() => generate()} disabled={busy}>
+                    {busy ? "Generating QR…" : "Show my link QR"}
+                  </Button>
+                </>
+              ) : (
+              <>
               <p className="text-sm font-medium">
                 {expired ? "That QR expired" : "Confirm it's really you"}
               </p>
@@ -606,11 +631,13 @@ export function WalletLink({ storeId, onDone }: { storeId: string; onDone: () =>
               />
               <Button
                 className="w-full"
-                onClick={generate}
+                onClick={() => generate({ withCode: true })}
                 disabled={busy || codeInput.length !== 6}
               >
                 {busy ? "Generating QR…" : "Show my link QR"}
               </Button>
+              </>
+              )}
             </div>
           )}
         </div>
