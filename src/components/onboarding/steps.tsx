@@ -74,7 +74,7 @@ export function Welcome({ signedIn, redirectTo = "/start" }: { signedIn: boolean
     }
   }
 
-  async function sendMagicLink() {
+  async function sendCode() {
     const trimmed = email.trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
       toast.error("Enter a valid email");
@@ -92,7 +92,7 @@ export function Welcome({ signedIn, redirectTo = "/start" }: { signedIn: boolean
       if (error) throw error;
       setSent(true);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not send magic link");
+      toast.error(e instanceof Error ? e.message : "Could not send your code");
     } finally {
       setBusy(false);
     }
@@ -149,15 +149,12 @@ export function Welcome({ signedIn, redirectTo = "/start" }: { signedIn: boolean
               <Mail className="mx-auto h-10 w-10 text-primary" />
               <p className="mt-3 text-base font-medium">Check your inbox</p>
               <p className="mt-1 text-xs text-muted-foreground">
-                We sent a sign-in email to{" "}
+                We sent a sign-in code to{" "}
                 <strong className="text-foreground">{email.trim()}</strong>.
               </p>
               <p className="mt-3 text-[11px] text-muted-foreground">
-                <strong className="text-foreground">On a phone or laptop?</strong> Just tap the link
-                in the email.
-                <br />
-                <strong className="text-foreground">On a terminal?</strong> Type the code
-                below.
+                Open the email on any device and type the code below. No need to be on this
+                device.
               </p>
             </div>
 
@@ -182,7 +179,7 @@ export function Welcome({ signedIn, redirectTo = "/start" }: { signedIn: boolean
               <Button
                 size="lg"
                 onClick={verifyCode}
-                disabled={verifying || code.length < 8}
+                disabled={verifying || code.length < 6}
                 className="mt-3 h-12 w-full text-base"
               >
                 {verifying ? "Verifying…" : "Sign in with code"}
@@ -223,11 +220,12 @@ export function Welcome({ signedIn, redirectTo = "/start" }: { signedIn: boolean
             </label>
             <Button
               size="lg"
-              onClick={sendMagicLink}
+              onClick={sendCode}
               disabled={busy || !email.trim()}
               className="h-14 w-full text-base"
             >
-              {busy ? "Sending…" : "Send magic link"} <ArrowRight className="ml-2 h-5 w-5" />
+              {busy ? "Sending…" : "Email me a sign-in code"}{" "}
+              <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             <button
               type="button"
@@ -237,7 +235,7 @@ export function Welcome({ signedIn, redirectTo = "/start" }: { signedIn: boolean
               ← Back to sign-in options
             </button>
             <p className="pt-2 text-center text-[11px] text-muted-foreground">
-              No password. We&apos;ll email you a one-tap login link.
+              No password. We&apos;ll email you a short code — check it on any device.
             </p>
           </div>
         )}

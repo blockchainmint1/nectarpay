@@ -100,6 +100,15 @@ export const notifyNewSignup = createServerFn({ method: "POST" })
       "admin-notify-signup",
       `signup:${u.id}`,
     );
+
+    // "+demo" signups get a one-time self-destruct link so reps can clean up
+    // after themselves without us doing it by hand.
+    const { isDemoEmail, ensureDemoResetLink } = await import("@/lib/demo-account.server");
+    if (u.email && isDemoEmail(u.email)) {
+      await ensureDemoResetLink(u.id, u.email).catch((e) =>
+        console.error("[notify-events] demo reset link failed", e),
+      );
+    }
     return { ok: true };
   });
 

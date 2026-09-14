@@ -27,6 +27,7 @@ import { Route as LiveRouteImport } from './routes/live'
 import { Route as KycRouteImport } from './routes/kyc'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as DocsRouteImport } from './routes/docs'
+import { Route as DemoResetRouteImport } from './routes/demo-reset'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CashOutRouteImport } from './routes/cash-out'
@@ -69,6 +70,7 @@ import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated.admin.index'
 import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authenticated.account.index'
 import { Route as LovableEmailEventsRouteImport } from './routes/lovable/email/events'
+import { Route as ApiPublicDemoResetRouteImport } from './routes/api/public/demo-reset'
 import { Route as AuthenticatedStoresNewRouteImport } from './routes/_authenticated.stores.new'
 import { Route as AuthenticatedStoresStoreIdRouteImport } from './routes/_authenticated.stores.$storeId'
 import { Route as AuthenticatedReportsTaxRouteImport } from './routes/_authenticated.reports.tax'
@@ -243,6 +245,11 @@ const HelpRoute = HelpRouteImport.update({
 const DocsRoute = DocsRouteImport.update({
   id: '/docs',
   path: '/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoResetRoute = DemoResetRouteImport.update({
+  id: '/demo-reset',
+  path: '/demo-reset',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -457,6 +464,11 @@ const AuthenticatedAccountIndexRoute =
 const LovableEmailEventsRoute = LovableEmailEventsRouteImport.update({
   id: '/lovable/email/events',
   path: '/lovable/email/events',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicDemoResetRoute = ApiPublicDemoResetRouteImport.update({
+  id: '/api/public/demo-reset',
+  path: '/api/public/demo-reset',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedStoresNewRoute = AuthenticatedStoresNewRouteImport.update({
@@ -954,6 +966,7 @@ export interface FileRoutesByFullPath {
   '/cash-out': typeof CashOutRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
+  '/demo-reset': typeof DemoResetRoute
   '/docs': typeof DocsRouteWithChildren
   '/help': typeof HelpRoute
   '/kyc': typeof KycRoute
@@ -1021,6 +1034,7 @@ export interface FileRoutesByFullPath {
   '/reports/tax': typeof AuthenticatedReportsTaxRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/stores/new': typeof AuthenticatedStoresNewRoute
+  '/api/public/demo-reset': typeof ApiPublicDemoResetRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
   '/account/': typeof AuthenticatedAccountIndexRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -1100,6 +1114,7 @@ export interface FileRoutesByTo {
   '/cash-out': typeof CashOutRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
+  '/demo-reset': typeof DemoResetRoute
   '/docs': typeof DocsRouteWithChildren
   '/help': typeof HelpRoute
   '/kyc': typeof KycRoute
@@ -1161,6 +1176,7 @@ export interface FileRoutesByTo {
   '/reports/settlement': typeof AuthenticatedReportsSettlementRoute
   '/reports/tax': typeof AuthenticatedReportsTaxRoute
   '/stores/new': typeof AuthenticatedStoresNewRoute
+  '/api/public/demo-reset': typeof ApiPublicDemoResetRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
   '/account': typeof AuthenticatedAccountIndexRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -1242,6 +1258,7 @@ export interface FileRoutesById {
   '/cash-out': typeof CashOutRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
+  '/demo-reset': typeof DemoResetRoute
   '/docs': typeof DocsRouteWithChildren
   '/help': typeof HelpRoute
   '/kyc': typeof KycRoute
@@ -1309,6 +1326,7 @@ export interface FileRoutesById {
   '/_authenticated/reports/tax': typeof AuthenticatedReportsTaxRoute
   '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/_authenticated/stores/new': typeof AuthenticatedStoresNewRoute
+  '/api/public/demo-reset': typeof ApiPublicDemoResetRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
   '/_authenticated/account/': typeof AuthenticatedAccountIndexRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -1390,6 +1408,7 @@ export interface FileRouteTypes {
     | '/cash-out'
     | '/checkout'
     | '/compare'
+    | '/demo-reset'
     | '/docs'
     | '/help'
     | '/kyc'
@@ -1457,6 +1476,7 @@ export interface FileRouteTypes {
     | '/reports/tax'
     | '/stores/$storeId'
     | '/stores/new'
+    | '/api/public/demo-reset'
     | '/lovable/email/events'
     | '/account/'
     | '/admin/'
@@ -1536,6 +1556,7 @@ export interface FileRouteTypes {
     | '/cash-out'
     | '/checkout'
     | '/compare'
+    | '/demo-reset'
     | '/docs'
     | '/help'
     | '/kyc'
@@ -1597,6 +1618,7 @@ export interface FileRouteTypes {
     | '/reports/settlement'
     | '/reports/tax'
     | '/stores/new'
+    | '/api/public/demo-reset'
     | '/lovable/email/events'
     | '/account'
     | '/admin'
@@ -1677,6 +1699,7 @@ export interface FileRouteTypes {
     | '/cash-out'
     | '/checkout'
     | '/compare'
+    | '/demo-reset'
     | '/docs'
     | '/help'
     | '/kyc'
@@ -1744,6 +1767,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reports/tax'
     | '/_authenticated/stores/$storeId'
     | '/_authenticated/stores/new'
+    | '/api/public/demo-reset'
     | '/lovable/email/events'
     | '/_authenticated/account/'
     | '/_authenticated/admin/'
@@ -1825,6 +1849,7 @@ export interface RootRouteChildren {
   CashOutRoute: typeof CashOutRoute
   CheckoutRoute: typeof CheckoutRouteWithChildren
   CompareRoute: typeof CompareRoute
+  DemoResetRoute: typeof DemoResetRoute
   DocsRoute: typeof DocsRouteWithChildren
   HelpRoute: typeof HelpRoute
   KycRoute: typeof KycRoute
@@ -1854,6 +1879,7 @@ export interface RootRouteChildren {
   SdkPayhmeDotjsRoute: typeof SdkPayhmeDotjsRoute
   TSlugRoute: typeof TSlugRoute
   IntegrationsIndexRoute: typeof IntegrationsIndexRoute
+  ApiPublicDemoResetRoute: typeof ApiPublicDemoResetRoute
   LovableEmailEventsRoute: typeof LovableEmailEventsRoute
   ApiPublicAffiliateClickRoute: typeof ApiPublicAffiliateClickRoute
   ApiPublicAuthWalletCallbackRoute: typeof ApiPublicAuthWalletCallbackRoute
@@ -2014,6 +2040,13 @@ declare module '@tanstack/react-router' {
       path: '/docs'
       fullPath: '/docs'
       preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo-reset': {
+      id: '/demo-reset'
+      path: '/demo-reset'
+      fullPath: '/demo-reset'
+      preLoaderRoute: typeof DemoResetRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -2308,6 +2341,13 @@ declare module '@tanstack/react-router' {
       path: '/lovable/email/events'
       fullPath: '/lovable/email/events'
       preLoaderRoute: typeof LovableEmailEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/demo-reset': {
+      id: '/api/public/demo-reset'
+      path: '/api/public/demo-reset'
+      fullPath: '/api/public/demo-reset'
+      preLoaderRoute: typeof ApiPublicDemoResetRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/stores/new': {
@@ -3248,6 +3288,7 @@ const rootRouteChildren: RootRouteChildren = {
   CashOutRoute: CashOutRoute,
   CheckoutRoute: CheckoutRouteWithChildren,
   CompareRoute: CompareRoute,
+  DemoResetRoute: DemoResetRoute,
   DocsRoute: DocsRouteWithChildren,
   HelpRoute: HelpRoute,
   KycRoute: KycRoute,
@@ -3277,6 +3318,7 @@ const rootRouteChildren: RootRouteChildren = {
   SdkPayhmeDotjsRoute: SdkPayhmeDotjsRoute,
   TSlugRoute: TSlugRoute,
   IntegrationsIndexRoute: IntegrationsIndexRoute,
+  ApiPublicDemoResetRoute: ApiPublicDemoResetRoute,
   LovableEmailEventsRoute: LovableEmailEventsRoute,
   ApiPublicAffiliateClickRoute: ApiPublicAffiliateClickRoute,
   ApiPublicAuthWalletCallbackRoute: ApiPublicAuthWalletCallbackRoute,

@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import {
   Body,
-  Button,
+  
   Container,
   Head,
   Heading,
@@ -17,6 +17,7 @@ interface SignupEmailProps {
   siteUrl: string
   recipient: string
   confirmationUrl: string
+  token?: string
 }
 
 export const SignupEmail = ({
@@ -24,6 +25,7 @@ export const SignupEmail = ({
   siteUrl,
   recipient,
   confirmationUrl,
+  token,
 }: SignupEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head>
@@ -41,15 +43,21 @@ export const SignupEmail = ({
           !
         </Text>
         <Text style={text}>
-          Please confirm your email address (
-          <Link href={`mailto:${recipient}`} style={link}>
-            {recipient}
-          </Link>
-          ) by clicking the button below:
+          Type this code into {siteName} to confirm {recipient} and finish signing
+          in:
         </Text>
-        <Button className="dm-btn" style={button} href={confirmationUrl}>
-          Verify Email
-        </Button>
+        {token ? (
+          <Text className="dm-code" style={codeBox}>
+            {token}
+          </Text>
+        ) : null}
+        <Text style={text}>
+          On the same device? You can also{' '}
+          <Link href={confirmationUrl} style={link}>
+            confirm with this link
+          </Link>
+          .
+        </Text>
         <Text style={footer}>
           If you didn't create an account, you can safely ignore this email.
         </Text>
@@ -84,12 +92,24 @@ const button = {
   padding: '12px 20px',
   textDecoration: 'none',
 }
+const codeBox = {
+  fontSize: '34px',
+  fontWeight: 'bold' as const,
+  letterSpacing: '10px',
+  color: '#000000',
+  backgroundColor: '#f4f4f5',
+  border: '1px solid #e4e4e7',
+  borderRadius: '10px',
+  padding: '18px 12px',
+  textAlign: 'center' as const,
+  margin: '0 0 24px',
+}
 const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
 // Rendered as a text child, which React may HTML-escape: keep this CSS free of >, &, and quotes.
 const darkModeCss = `
   @media (prefers-color-scheme: dark) {
-    .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
+  .dm-code { background-color: #1c1c1f !important; color: #ffffff !important; border-color: #333338 !important; }
   }
-  [data-ogsc] .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
-  [data-ogsb] .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
+  [data-ogsc] .dm-code { background-color: #1c1c1f !important; color: #ffffff !important; }
+  [data-ogsb] .dm-code { background-color: #1c1c1f !important; color: #ffffff !important; }
 `
