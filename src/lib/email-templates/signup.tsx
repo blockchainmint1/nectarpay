@@ -43,15 +43,21 @@ export const SignupEmail = ({
           !
         </Text>
         <Text style={text}>
-          Please confirm your email address (
-          <Link href={`mailto:${recipient}`} style={link}>
-            {recipient}
-          </Link>
-          ) by clicking the button below:
+          Type this code into {siteName} to confirm {recipient} and finish signing
+          in:
         </Text>
-        <Button className="dm-btn" style={button} href={confirmationUrl}>
-          Verify Email
-        </Button>
+        {token ? (
+          <Text className="dm-code" style={codeBox}>
+            {token}
+          </Text>
+        ) : null}
+        <Text style={text}>
+          On the same device? You can also{' '}
+          <Link href={confirmationUrl} style={link}>
+            confirm with this link
+          </Link>
+          .
+        </Text>
         <Text style={footer}>
           If you didn't create an account, you can safely ignore this email.
         </Text>
