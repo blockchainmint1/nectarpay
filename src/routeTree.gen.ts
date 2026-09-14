@@ -27,6 +27,7 @@ import { Route as LiveRouteImport } from './routes/live'
 import { Route as KycRouteImport } from './routes/kyc'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as DocsRouteImport } from './routes/docs'
+import { Route as DemoResetRouteImport } from './routes/demo-reset'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CashOutRouteImport } from './routes/cash-out'
@@ -244,6 +245,11 @@ const HelpRoute = HelpRouteImport.update({
 const DocsRoute = DocsRouteImport.update({
   id: '/docs',
   path: '/docs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DemoResetRoute = DemoResetRouteImport.update({
+  id: '/demo-reset',
+  path: '/demo-reset',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -960,6 +966,7 @@ export interface FileRoutesByFullPath {
   '/cash-out': typeof CashOutRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
+  '/demo-reset': typeof DemoResetRoute
   '/docs': typeof DocsRouteWithChildren
   '/help': typeof HelpRoute
   '/kyc': typeof KycRoute
@@ -1107,6 +1114,7 @@ export interface FileRoutesByTo {
   '/cash-out': typeof CashOutRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
+  '/demo-reset': typeof DemoResetRoute
   '/docs': typeof DocsRouteWithChildren
   '/help': typeof HelpRoute
   '/kyc': typeof KycRoute
@@ -1250,6 +1258,7 @@ export interface FileRoutesById {
   '/cash-out': typeof CashOutRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
+  '/demo-reset': typeof DemoResetRoute
   '/docs': typeof DocsRouteWithChildren
   '/help': typeof HelpRoute
   '/kyc': typeof KycRoute
@@ -1399,6 +1408,7 @@ export interface FileRouteTypes {
     | '/cash-out'
     | '/checkout'
     | '/compare'
+    | '/demo-reset'
     | '/docs'
     | '/help'
     | '/kyc'
@@ -1546,6 +1556,7 @@ export interface FileRouteTypes {
     | '/cash-out'
     | '/checkout'
     | '/compare'
+    | '/demo-reset'
     | '/docs'
     | '/help'
     | '/kyc'
@@ -1688,6 +1699,7 @@ export interface FileRouteTypes {
     | '/cash-out'
     | '/checkout'
     | '/compare'
+    | '/demo-reset'
     | '/docs'
     | '/help'
     | '/kyc'
@@ -1837,6 +1849,7 @@ export interface RootRouteChildren {
   CashOutRoute: typeof CashOutRoute
   CheckoutRoute: typeof CheckoutRouteWithChildren
   CompareRoute: typeof CompareRoute
+  DemoResetRoute: typeof DemoResetRoute
   DocsRoute: typeof DocsRouteWithChildren
   HelpRoute: typeof HelpRoute
   KycRoute: typeof KycRoute
@@ -2027,6 +2040,13 @@ declare module '@tanstack/react-router' {
       path: '/docs'
       fullPath: '/docs'
       preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo-reset': {
+      id: '/demo-reset'
+      path: '/demo-reset'
+      fullPath: '/demo-reset'
+      preLoaderRoute: typeof DemoResetRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -3268,6 +3288,7 @@ const rootRouteChildren: RootRouteChildren = {
   CashOutRoute: CashOutRoute,
   CheckoutRoute: CheckoutRouteWithChildren,
   CompareRoute: CompareRoute,
+  DemoResetRoute: DemoResetRoute,
   DocsRoute: DocsRouteWithChildren,
   HelpRoute: HelpRoute,
   KycRoute: KycRoute,
