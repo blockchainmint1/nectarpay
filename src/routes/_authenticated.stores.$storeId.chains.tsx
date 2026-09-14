@@ -1170,9 +1170,15 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
 
           {token && qrDataUrl && (
             <div className="mt-4 flex flex-col items-start gap-4 sm:flex-row">
-              <div className="rounded-md border border-border bg-white p-2">
+              <div className="shrink-0 self-start rounded-md border border-border bg-white p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={qrDataUrl} alt="Wallet link QR" className="h-48 w-48" />
+                <img
+                  src={qrDataUrl}
+                  alt="Wallet link QR"
+                  width={192}
+                  height={192}
+                  style={{ width: 192, height: 192, display: "block" }}
+                />
               </div>
               <div className="flex-1 text-xs">
                 {linked ? (
