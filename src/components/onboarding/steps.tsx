@@ -8,7 +8,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
-import { createWalletLinkCode } from "@/lib/wallet-link.functions";
+import { createWalletLinkCode, requestWalletLinkVerification } from "@/lib/wallet-link.functions";
 import { createPairingCode } from "@/lib/terminals.functions";
 import { getLatestPosRelease } from "@/lib/pos-releases.functions";
 import { saveCreds } from "@/lib/pos-client";
