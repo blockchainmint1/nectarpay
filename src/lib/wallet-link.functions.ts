@@ -113,7 +113,10 @@ export const createWalletLinkCode = createServerFn({ method: "POST" })
       .object({
         storeId: z.string().uuid(),
         allowNewWallet: z.boolean().optional().default(false),
-        verificationCode: z.string().regex(/^\d{6}$/, "Enter the 6-digit code from your email."),
+        verificationCode: z
+          .string()
+          .regex(/^\d{6}$/, "Enter the 6-digit code from your email.")
+          .optional(),
       })
       .parse(d),
   )
@@ -129,6 +132,15 @@ export const createWalletLinkCode = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    // First-time link (brand new store with no payout keys yet) needs no
+    // email step-up — there are no keys to hijack. Re-linking always does.
+    const { count: existingKeys } = await supabaseAdmin
+      .from("chain_configs")
+      .select("id", { count: "exact", head: true })
+      .eq("store_id", store.id);
+    const firstLink = (existingKeys ?? 0) === 0;
+
+    if (!firstLink) {
     const { data: challenge } = await supabaseAdmin
       .from("sensitive_action_codes")
       .select("id, code_hash, expires_at, attempts, consumed_at")
@@ -151,7 +163,7 @@ export const createWalletLinkCode = createServerFn({ method: "POST" })
         .eq("id", challenge.id);
       throw new Error("Too many wrong codes — request a new one.");
     }
-    if (!safeEqual(challenge.code_hash, sha256(data.verificationCode))) {
+    if (!data.verificationCode || !safeEqual(challenge.code_hash, sha256(data.verificationCode))) {
       await supabaseAdmin
         .from("sensitive_action_codes")
         .update({ attempts: challenge.attempts + 1 })
@@ -164,6 +176,7 @@ export const createWalletLinkCode = createServerFn({ method: "POST" })
       .from("sensitive_action_codes")
       .update({ consumed_at: new Date().toISOString() })
       .eq("id", challenge.id);
+    }
 
     const token = base64url(randomBytes(24)); // ~32 chars
     const code_hash = sha256(token);
