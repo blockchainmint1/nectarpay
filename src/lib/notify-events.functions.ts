@@ -61,11 +61,20 @@ export const notifyNewSignup = createServerFn({ method: "POST" })
     const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(context.userId);
     const u = userRes?.user;
     if (!u) return { ok: false };
+    // "+demo" accounts always get their one-time self-destruct link, even if
+    // this call arrives late — it is idempotent per account.
+    const { isDemoEmail, ensureDemoResetLink } = await import("@/lib/demo-account.server");
+    if (u.email && isDemoEmail(u.email)) {
+      await ensureDemoResetLink(u.id, u.email).catch((e) =>
+        console.error("[notify-events] demo reset link failed", e),
+      );
+    }
     const createdMs = u.created_at ? new Date(u.created_at).getTime() : 0;
     if (Date.now() - createdMs > 5 * 60 * 1000) {
       // older than 5 minutes — not actually a new signup
       return { ok: true, skipped: true };
     }
+
     const email = u.email ?? "(no email)";
     const name = (u.user_metadata?.full_name || u.user_metadata?.name || "").toString();
     const provider = (u.app_metadata?.provider || "email").toString();
