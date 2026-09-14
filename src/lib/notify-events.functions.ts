@@ -17,42 +17,29 @@ function escapeHtml(s: string): string {
 }
 
 async function enqueueAdmin(
-  supabase: any,
+  _supabase: unknown,
   subject: string,
   html: string,
   text: string,
   label: string,
   idempotencyKey: string,
 ) {
+  const { enqueueAppEmail } = await import("@/lib/email/enqueue.server");
   for (const to of ADMIN_NOTIFY_EMAILS) {
-    const messageId = crypto.randomUUID();
-    await supabase.from("email_send_log").insert({
-      message_id: messageId,
-      template_name: label,
-      recipient_email: to,
-      status: "pending",
+    const res = await enqueueAppEmail({
+      to,
+      subject,
+      html,
+      text,
+      label,
+      idempotencyKey: `${idempotencyKey}:${to}`,
     });
-    const { error } = await supabase.rpc("enqueue_email", {
-      queue_name: "transactional_emails",
-      payload: {
-        message_id: messageId,
-        idempotency_key: `${idempotencyKey}:${to}`,
-        to,
-        from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
-        sender_domain: SENDER_DOMAIN,
-        subject,
-        html,
-        text,
-        purpose: "transactional",
-        label,
-        queued_at: new Date().toISOString(),
-      },
-    });
-    if (error) {
-      console.error("[notify-events] enqueue failed", { label, to, error });
+    if (!res.ok) {
+      console.error("[notify-events] send failed", { label, to, error: res.error });
     }
   }
 }
+
 
 function wrap(title: string, rows: string[], linkHref: string, linkLabel: string) {
   const body = rows.map((r) => `<div style="padding:4px 0;color:#ddd;">${r}</div>`).join("");
@@ -74,11 +61,20 @@ export const notifyNewSignup = createServerFn({ method: "POST" })
     const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(context.userId);
     const u = userRes?.user;
     if (!u) return { ok: false };
+    // "+demo" accounts always get their one-time self-destruct link, even if
+    // this call arrives late — it is idempotent per account.
+    const { isDemoEmail, ensureDemoResetLink } = await import("@/lib/demo-account.server");
+    if (u.email && isDemoEmail(u.email)) {
+      await ensureDemoResetLink(u.id, u.email).catch((e) =>
+        console.error("[notify-events] demo reset link failed", e),
+      );
+    }
     const createdMs = u.created_at ? new Date(u.created_at).getTime() : 0;
     if (Date.now() - createdMs > 5 * 60 * 1000) {
       // older than 5 minutes — not actually a new signup
       return { ok: true, skipped: true };
     }
+
     const email = u.email ?? "(no email)";
     const name = (u.user_metadata?.full_name || u.user_metadata?.name || "").toString();
     const provider = (u.app_metadata?.provider || "email").toString();
@@ -101,14 +97,7 @@ export const notifyNewSignup = createServerFn({ method: "POST" })
       `signup:${u.id}`,
     );
 
-    // "+demo" signups get a one-time self-destruct link so reps can clean up
-    // after themselves without us doing it by hand.
-    const { isDemoEmail, ensureDemoResetLink } = await import("@/lib/demo-account.server");
-    if (u.email && isDemoEmail(u.email)) {
-      await ensureDemoResetLink(u.id, u.email).catch((e) =>
-        console.error("[notify-events] demo reset link failed", e),
-      );
-    }
+
     return { ok: true };
   });
 
@@ -126,10 +115,21 @@ export const notifyNewStore = createServerFn({ method: "POST" })
     if (!store || store.owner_id !== context.userId) {
       return { ok: false };
     }
-    const createdMs = store.created_at ? new Date(store.created_at).getTime() : 0;
-    if (Date.now() - createdMs > 10 * 60 * 1000) return { ok: true, skipped: true };
     const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(store.owner_id);
     const ownerEmail = userRes?.user?.email ?? "(unknown)";
+
+    // Second chance for the demo self-destruct link, in case the signup
+    // notification never fired (offline terminal, closed tab, etc).
+    const { isDemoEmail, ensureDemoResetLink } = await import("@/lib/demo-account.server");
+    if (userRes?.user?.email && isDemoEmail(userRes.user.email)) {
+      await ensureDemoResetLink(store.owner_id, userRes.user.email).catch((e) =>
+        console.error("[notify-events] demo reset link failed", e),
+      );
+    }
+
+    const createdMs = store.created_at ? new Date(store.created_at).getTime() : 0;
+    if (Date.now() - createdMs > 10 * 60 * 1000) return { ok: true, skipped: true };
+
     const subject = `New merchant: ${store.name}`;
     const rows = [
       `Store: ${escapeHtml(store.name || "")}`,
