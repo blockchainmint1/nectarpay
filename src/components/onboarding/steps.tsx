@@ -464,8 +464,8 @@ export function WalletLink({ storeId, onDone }: { storeId: string; onDone: () =>
   async function sendEmailCode() {
     setSending(true);
     try {
-      const res = (await requestVerification({ data: { storeId } })) as { sentTo?: string };
-      setSentTo(res?.sentTo ?? "your email");
+      const res = (await requestVerification({ data: { storeId } })) as { sent_to?: string };
+      setSentTo(res?.sent_to ?? "your email");
       toast.success("Confirmation code sent — check your email.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not send the code");
