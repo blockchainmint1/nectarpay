@@ -1123,48 +1123,43 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
                   you a 6-digit code first. It expires in 10 minutes.
                 </p>
 
-                {!sentTo ? (
-                  <Button
-                    className="mt-3"
-                    variant="outline"
-                    size="sm"
-                    onClick={onSendVerification}
-                    disabled={sendingCode}
-                  >
-                    {sendingCode ? "Sending…" : "Email me a confirmation code"}
+                <Button
+                  className="mt-3"
+                  variant="outline"
+                  size="sm"
+                  onClick={onSendVerification}
+                  disabled={sendingCode}
+                >
+                  {sendingCode ? "Sending…" : sentTo ? "Resend code" : "Email me a confirmation code"}
+                </Button>
+
+                <div className="mt-3 text-[11px] text-muted-foreground">
+                  {sentTo ? (
+                    <>
+                      Code sent to <span className="text-foreground">{sentTo}</span>. Enter it below.
+                    </>
+                  ) : (
+                    <>Already have a code from an earlier email? Enter it below — no need to resend.</>
+                  )}
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <Input
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    value={verificationCode}
+                    onChange={(e) =>
+                      setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                    }
+                    placeholder="123456"
+                    className="h-9 w-32 text-center font-mono tracking-[0.3em]"
+                  />
+                  <Button onClick={onGenerate} disabled={busy || verificationCode.length !== 6}>
+                    <Smartphone className="mr-2 h-4 w-4" />
+                    {busy ? "Generating…" : "Confirm & get link QR"}
                   </Button>
-                ) : (
-                  <>
-                    <div className="mt-2 text-[11px] text-muted-foreground">
-                      Code sent to <span className="text-foreground">{sentTo}</span>.
-                    </div>
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <Input
-                        inputMode="numeric"
-                        autoComplete="one-time-code"
-                        maxLength={6}
-                        value={verificationCode}
-                        onChange={(e) =>
-                          setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))
-                        }
-                        placeholder="123456"
-                        className="h-9 w-32 text-center font-mono tracking-[0.3em]"
-                      />
-                      <Button onClick={onGenerate} disabled={busy || verificationCode.length !== 6}>
-                        <Smartphone className="mr-2 h-4 w-4" />
-                        {busy ? "Generating…" : "Confirm & generate link code"}
-                      </Button>
-                      <button
-                        type="button"
-                        onClick={onSendVerification}
-                        disabled={sendingCode}
-                        className="text-[11px] text-muted-foreground underline"
-                      >
-                        Resend
-                      </button>
-                    </div>
-                  </>
-                )}
+                </div>
+
               </div>
             </>
           )}
