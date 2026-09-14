@@ -1063,8 +1063,9 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
       const canonical =
         (import.meta.env.VITE_PUBLIC_SITE_URL as string | undefined)?.replace(/\/$/, "") ||
         "https://app.nectar-pay.com";
-      const linkUrl = `${canonical}/api/public/v1/wallet-link?token=${encodeURIComponent(result.token)}`;
-      const qr = await qrToDataURL(linkUrl, { width: 320, margin: 1 });
+      const url = `${canonical}/api/public/v1/wallet-link?token=${encodeURIComponent(result.token)}`;
+      const qr = await qrToDataURL(url, { width: 320, margin: 1 });
+      setLinkUrl(url);
       setQrDataUrl(qr);
       setToken(result.token);
       setExpiresAt(new Date(result.expires_at).getTime());
