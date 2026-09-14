@@ -67,10 +67,11 @@ export const Route = createFileRoute("/api/public/v1/invoices")({
             )
             .eq("store_id", keyRow.store_id);
 
+          const csv = (v: string) => v.split(",").map((s) => s.trim()).filter(Boolean);
           const status = url.searchParams.get("status");
-          if (status) q = q.in("status", status.split(",").map((s) => s.trim()).filter(Boolean));
+          if (status) q = q.in("status", csv(status) as never[]);
           const chain = url.searchParams.get("chain");
-          if (chain) q = q.in("chain", chain.split(",").map((s) => s.trim()).filter(Boolean));
+          if (chain) q = q.in("chain", csv(chain) as never[]);
           const orderId = url.searchParams.get("order_id");
           if (orderId) q = q.eq("external_order_id", orderId);
           const since = url.searchParams.get("since");
