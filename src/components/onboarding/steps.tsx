@@ -593,7 +593,7 @@ export function WalletLink({ storeId, onDone }: { storeId: string; onDone: () =>
           ) : (
             <div className="w-full max-w-xs space-y-3 py-4 text-center">
               <Smartphone className="mx-auto h-10 w-10 text-muted-foreground" />
-              {!needsCode && !expired ? (
+              {!needsCode ? (
                 <>
                   <p className="text-sm font-medium">{busy ? "Preparing your QR…" : "Ready when you are"}</p>
                   <Button className="w-full" onClick={() => generate()} disabled={busy}>
