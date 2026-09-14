@@ -1190,6 +1190,28 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
                     </div>
                   </>
                 )}
+                {!linked && !expired && linkUrl && (
+                  <div className="mt-3">
+                    <div className="text-[11px] text-muted-foreground">
+                      Can't scan? Paste this link into Beekeeper:
+                    </div>
+                    <div className="mt-1 flex items-center gap-2">
+                      <code className="block max-w-full flex-1 truncate rounded border border-border bg-background/60 px-2 py-1 font-mono text-[10px]">
+                        {linkUrl}
+                      </code>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          void navigator.clipboard.writeText(linkUrl);
+                          toast.success("Link copied");
+                        }}
+                      >
+                        Copy
+                      </Button>
+                    </div>
+                  </div>
+                )}
                 <Button variant="ghost" size="sm" className="mt-3" onClick={reset}>
                   <RefreshCw className="mr-2 h-3 w-3" />
                   {linked ? "Done" : "Cancel"}
