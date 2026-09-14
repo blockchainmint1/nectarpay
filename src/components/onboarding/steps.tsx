@@ -411,6 +411,10 @@ export function Business({
 
 export function WalletLink({ storeId, onDone }: { storeId: string; onDone: () => void }) {
   const createCode = useServerFn(createWalletLinkCode);
+  const requestVerification = useServerFn(requestWalletLinkVerification);
+  const [codeInput, setCodeInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sentTo, setSentTo] = useState<string | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
@@ -435,12 +439,6 @@ export function WalletLink({ storeId, onDone }: { storeId: string; onDone: () =>
     })();
   }, [storeId]);
 
-  // Auto-generate the QR on mount.
-  useEffect(() => {
-    if (token || linked) return;
-    void generate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Poll for redemption.
   useEffect(() => {
