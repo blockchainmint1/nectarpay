@@ -1080,6 +1080,7 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
     setToken(null);
     setExpiresAt(null);
     setQrDataUrl(null);
+    setLinkUrl(null);
     setLinked(false);
     setSentTo(null);
     setVerificationCode("");
