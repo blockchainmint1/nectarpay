@@ -20,6 +20,28 @@ Nectar.Pay is part of the Honest Money ecosystem. Merchants paste a public key (
 - [Terms](/terms): Terms of service.
 - [Privacy](/privacy): Privacy policy.
 
+## Public API (for third-party integrations)
+
+Base URL: `https://app.nectar-pay.com` — all calls authenticate with
+`Authorization: Bearer sk_live_...` (per-store key, shown once at creation).
+
+- `GET  /api/public/v1/me` — verify a key; returns store + configured webhook URL.
+- `POST /api/public/v1/invoices` — create an invoice. Body: `amount` (fiat, required),
+  `currency` (default USD), `chain` (optional: btc, lightning, txc, eth, base, tron, sol,
+  doge, ltc, bch, dash, isk, zcu — omit to let the customer pick on the hosted checkout),
+  `order_id`, `description`, `redirect_url`, `buyer_email`, `expires_in_seconds` (60–86400).
+  Returns `id`, `address`, `crypto_amount`, `rate`, `status`, `expires_at`, `checkout_url`.
+- `GET  /api/public/v1/invoices/{id}` — invoice status (pending | underpaid | confirmed | expired).
+- `POST /api/public/v1/invoices/{id}?action=redeliver-webhook` — resend the webhook for one invoice.
+- Webhooks: signed POST to the store's webhook URL. Header
+  `X-TXCPay-Signature: t=<unix>,v1=<hex>` where `v1 = HMAC_SHA256(webhook_secret, "{t}.{rawBody}")`.
+  Event types: `invoice.paid`, `invoice.confirmed`, `invoice.underpaid`.
+- Drop-in checkout button: `<script src="https://app.nectar-pay.com/sdk/payhme.js">` + a
+  `data-payhme` button, or `PayHME.checkout({ apiKey, chain, amount, currency, orderId })`.
+- Hosted payment page (no code): `https://app.nectar-pay.com/t/{store-slug}`.
+
+Full reference with copy-paste examples: [/docs](/docs).
+
 ## Optional
 
 - [Start](/start): Mobile-friendly merchant onboarding.
