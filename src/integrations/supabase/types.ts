@@ -415,6 +415,36 @@ export type Database = {
           },
         ]
       }
+      demo_account_resets: {
+        Row: {
+          created_at: string
+          deleted_summary: Json | null
+          email: string
+          id: string
+          token_hash: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_summary?: Json | null
+          email: string
+          id?: string
+          token_hash: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_summary?: Json | null
+          email?: string
+          id?: string
+          token_hash?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       derived_addresses: {
         Row: {
           address: string
