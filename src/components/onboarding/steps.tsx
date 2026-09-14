@@ -179,7 +179,7 @@ export function Welcome({ signedIn, redirectTo = "/start" }: { signedIn: boolean
               <Button
                 size="lg"
                 onClick={verifyCode}
-                disabled={verifying || code.length < 8}
+                disabled={verifying || code.length < 6}
                 className="mt-3 h-12 w-full text-base"
               >
                 {verifying ? "Verifying…" : "Sign in with code"}
@@ -220,11 +220,12 @@ export function Welcome({ signedIn, redirectTo = "/start" }: { signedIn: boolean
             </label>
             <Button
               size="lg"
-              onClick={sendMagicLink}
+              onClick={sendCode}
               disabled={busy || !email.trim()}
               className="h-14 w-full text-base"
             >
-              {busy ? "Sending…" : "Send magic link"} <ArrowRight className="ml-2 h-5 w-5" />
+              {busy ? "Sending…" : "Email me a sign-in code"}{" "}
+              <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             <button
               type="button"
@@ -234,7 +235,7 @@ export function Welcome({ signedIn, redirectTo = "/start" }: { signedIn: boolean
               ← Back to sign-in options
             </button>
             <p className="pt-2 text-center text-[11px] text-muted-foreground">
-              No password. We&apos;ll email you a one-tap login link.
+              No password. We&apos;ll email you a short code — check it on any device.
             </p>
           </div>
         )}
