@@ -461,10 +461,30 @@ export function WalletLink({ storeId, onDone }: { storeId: string; onDone: () =>
   const expired = expiresAt != null && now >= expiresAt;
   const secondsLeft = expiresAt == null ? 0 : Math.max(0, Math.floor((expiresAt - now) / 1000));
 
+  async function sendEmailCode() {
+    setSending(true);
+    try {
+      const res = (await requestVerification({ data: { storeId } })) as { sentTo?: string };
+      setSentTo(res?.sentTo ?? "your email");
+      toast.success("Confirmation code sent — check your email.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not send the code");
+    } finally {
+      setSending(false);
+    }
+  }
+
   async function generate() {
+    const verificationCode = codeInput.trim();
+    if (!/^\d{6}$/.test(verificationCode)) {
+      toast.error("Enter the 6-digit code from your email.");
+      return;
+    }
     setBusy(true);
     try {
-      const result = await createCode({ data: { storeId, allowNewWallet: false } });
+      const result = await createCode({
+        data: { storeId, allowNewWallet: false, verificationCode },
+      });
       const canonical =
         (import.meta.env.VITE_PUBLIC_SITE_URL as string | undefined)?.replace(/\/$/, "") ||
         "https://app.nectar-pay.com";
