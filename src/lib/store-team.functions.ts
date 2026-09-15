@@ -252,7 +252,7 @@ export const listAllStoreTeams = createServerFn({ method: "GET" })
         .in("store_id", storeIds),
       supabaseAdmin
         .from("store_invites")
-        .select("id, email, role, store_id, expires_at")
+        .select("id, email, role, store_id, expires_at, token_hash")
         .in("store_id", storeIds)
         .is("accepted_at", null),
     ]);
@@ -295,14 +295,37 @@ export const listAllStoreTeams = createServerFn({ method: "GET" })
     return {
       stores: storeList,
       people: Array.from(byUser.values()),
-      invites: (invitesRes.data ?? []).map((i) => ({
-        id: i.id,
-        email: i.email,
-        role: i.role as StoreRole,
-        store_id: i.store_id,
-        store_name: nameOf.get(i.store_id) ?? "Store",
-        expired: new Date(i.expires_at).getTime() < now,
-      })),
+      // One invitation can cover several stores (shared token) — group it so the
+      // owner sees a single pending line, not one per store.
+      invites: Array.from(
+        (invitesRes.data ?? [])
+          .reduce(
+            (acc, i) => {
+              const key = i.token_hash;
+              const entry = acc.get(key) ?? {
+                group_id: key,
+                email: i.email,
+                role: i.role as StoreRole,
+                store_names: [] as string[],
+                expired: new Date(i.expires_at).getTime() < now,
+              };
+              entry.store_names.push(nameOf.get(i.store_id) ?? "Store");
+              acc.set(key, entry);
+              return acc;
+            },
+            new Map<
+              string,
+              {
+                group_id: string;
+                email: string;
+                role: StoreRole;
+                store_names: string[];
+                expired: boolean;
+              }
+            >(),
+          )
+          .values(),
+      ),
     };
   });
 
