@@ -13,7 +13,7 @@ import {
   inviteStoreUserMulti,
   updateStoreMemberRole,
   removeStoreMember,
-  revokeStoreInvite,
+  revokeStoreInviteGroup,
   ROLE_LABEL,
   ROLE_BLURB,
   type StoreRole,
@@ -53,7 +53,7 @@ function UsersPage() {
   const inviteFn = useServerFn(inviteStoreUserMulti);
   const roleFn = useServerFn(updateStoreMemberRole);
   const removeFn = useServerFn(removeStoreMember);
-  const revokeFn = useServerFn(revokeStoreInvite);
+  const revokeFn = useServerFn(revokeStoreInviteGroup);
 
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<StoreRole>("viewer");
