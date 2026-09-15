@@ -444,13 +444,15 @@ export const acceptStoreInvite = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const tokenHash = await sha256Hex(data.token);
 
-    const { data: invite } = await supabaseAdmin
+    // A single token can cover several stores — accept them all at once.
+    const { data: rows } = await supabaseAdmin
       .from("store_invites")
       .select("id, store_id, email, role, expires_at, accepted_at")
-      .eq("token_hash", tokenHash)
-      .maybeSingle();
+      .eq("token_hash", tokenHash);
+    const open = (rows ?? []).filter((r) => !r.accepted_at);
+    const invite = rows?.[0];
     if (!invite) throw new Error("This invitation link is not valid.");
-    if (invite.accepted_at) throw new Error("This invitation has already been used.");
+    if (!open.length) throw new Error("This invitation has already been used.");
     if (new Date(invite.expires_at).getTime() < Date.now())
       throw new Error("This invitation has expired. Ask for a new one.");
 
@@ -461,11 +463,11 @@ export const acceptStoreInvite = createServerFn({ method: "POST" })
     }
 
     const { error: memberErr } = await supabaseAdmin.from("store_members").upsert(
-      {
-        store_id: invite.store_id,
+      open.map((r) => ({
+        store_id: r.store_id,
         user_id: context.userId,
-        role: invite.role,
-      },
+        role: r.role,
+      })),
       { onConflict: "store_id,user_id" },
     );
     if (memberErr) throw new Error(memberErr.message);
@@ -473,9 +475,12 @@ export const acceptStoreInvite = createServerFn({ method: "POST" })
     await supabaseAdmin
       .from("store_invites")
       .update({ accepted_at: new Date().toISOString(), accepted_by: context.userId })
-      .eq("id", invite.id);
+      .in(
+        "id",
+        open.map((r) => r.id),
+      );
 
-    return { ok: true, store_id: invite.store_id };
+    return { ok: true, store_id: invite.store_id, stores: open.length };
   });
 
 /** Stores shared with the signed-in user (not owned by them). */
