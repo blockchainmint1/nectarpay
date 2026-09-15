@@ -416,20 +416,24 @@ export const previewStoreInvite = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const tokenHash = await sha256Hex(data.token);
-    const { data: invite } = await supabaseAdmin
+    const { data: rows } = await supabaseAdmin
       .from("store_invites")
       .select("id, email, role, expires_at, accepted_at, store_id, stores(name)")
-      .eq("token_hash", tokenHash)
-      .maybeSingle();
+      .eq("token_hash", tokenHash);
+    const invite = rows?.[0];
     if (!invite) return { valid: false as const, reason: "not_found" as const };
-    if (invite.accepted_at) return { valid: false as const, reason: "used" as const };
+    if (rows!.every((r) => r.accepted_at)) return { valid: false as const, reason: "used" as const };
     if (new Date(invite.expires_at).getTime() < Date.now())
       return { valid: false as const, reason: "expired" as const };
+    const names = (rows ?? []).map(
+      (r) => (r as unknown as { stores: { name: string } | null }).stores?.name ?? "a store",
+    );
     return {
       valid: true as const,
       email: invite.email,
       role: invite.role as StoreRole,
-      store_name: (invite as unknown as { stores: { name: string } | null }).stores?.name ?? "a store",
+      store_name: names.length === 1 ? names[0]! : `${names.length} stores`,
+      store_names: names,
     };
   });
 
