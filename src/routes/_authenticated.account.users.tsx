@@ -13,7 +13,7 @@ import {
   inviteStoreUserMulti,
   updateStoreMemberRole,
   removeStoreMember,
-  revokeStoreInvite,
+  revokeStoreInviteGroup,
   ROLE_LABEL,
   ROLE_BLURB,
   type StoreRole,
@@ -53,7 +53,7 @@ function UsersPage() {
   const inviteFn = useServerFn(inviteStoreUserMulti);
   const roleFn = useServerFn(updateStoreMemberRole);
   const removeFn = useServerFn(removeStoreMember);
-  const revokeFn = useServerFn(revokeStoreInvite);
+  const revokeFn = useServerFn(revokeStoreInviteGroup);
 
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<StoreRole>("viewer");
@@ -291,13 +291,19 @@ function UsersPage() {
               </h2>
               <ul className="mt-3 divide-y divide-border">
                 {(data?.invites ?? []).map((i) => (
-                  <li key={i.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                  <li
+                    key={i.group_id}
+                    className="flex flex-wrap items-center justify-between gap-3 py-3"
+                  >
                     <div className="flex min-w-0 items-center gap-2">
                       <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
                       <div className="min-w-0">
                         <div className="truncate text-sm">{i.email}</div>
                         <div className="text-xs text-muted-foreground">
-                          {i.store_name} · {ROLE_LABEL[i.role]} ·{" "}
+                          {i.store_names.length === stores.length
+                            ? "All stores"
+                            : i.store_names.join(", ")}{" "}
+                          · {ROLE_LABEL[i.role]} ·{" "}
                           {i.expired ? "expired" : "waiting to be accepted"}
                         </div>
                       </div>
@@ -307,7 +313,7 @@ function UsersPage() {
                       size="sm"
                       onClick={async () => {
                         try {
-                          await revokeFn({ data: { store_id: i.store_id, invite_id: i.id } });
+                          await revokeFn({ data: { group_id: i.group_id } });
                           toast.success("Invitation cancelled.");
                           await refresh();
                         } catch (e) {

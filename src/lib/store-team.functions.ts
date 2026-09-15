@@ -160,7 +160,10 @@ export const inviteStoreUser = createServerFn({ method: "POST" })
     return { ok: true, link };
   });
 
-/** Invite one person to several stores at once (or all of them). */
+/**
+ * Invite one person to several stores at once (or all of them).
+ * One shared token across every store row => ONE email, one click to accept all.
+ */
 export const inviteStoreUserMulti = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
@@ -176,14 +179,15 @@ export const inviteStoreUserMulti = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { enqueueAppEmail } = await import("@/lib/email/enqueue.server");
     const email = data.email.trim().toLowerCase();
+
+    const token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+    const tokenHash = await sha256Hex(token);
+    const expiresAt = new Date(Date.now() + 14 * 86_400_000).toISOString();
     const names: string[] = [];
-    let firstLink = "";
 
     for (const storeId of data.store_ids) {
       const store = await assertOwner(context.userId, storeId);
-      const token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
-      const tokenHash = await sha256Hex(token);
-      const expiresAt = new Date(Date.now() + 14 * 86_400_000).toISOString();
+      names.push(store.name);
 
       await supabaseAdmin
         .from("store_invites")
@@ -201,24 +205,26 @@ export const inviteStoreUserMulti = createServerFn({ method: "POST" })
         expires_at: expiresAt,
       });
       if (error) throw new Error(error.message);
-
-      const link = `${APP_ORIGIN}/invite/${token}`;
-      if (!firstLink) firstLink = link;
-      names.push(store.name);
-
-      await enqueueAppEmail({
-        to: email,
-        label: "store_invite",
-        subject: `You've been invited to ${store.name} on Nectar-Pay`,
-        html: `<p>You've been given <strong>${ROLE_LABEL[data.role]}</strong> access to <strong>${store.name}</strong> on Nectar-Pay.</p>
-<p><a href="${link}">Accept your invitation</a></p>
-<p>${ROLE_BLURB[data.role]}</p>
-<p>This link expires in 14 days. If you weren't expecting it, ignore this email.</p>`,
-        text: `You've been given ${ROLE_LABEL[data.role]} access to ${store.name} on Nectar-Pay.\n\nAccept: ${link}\n\nThis link expires in 14 days.`,
-      });
     }
 
-    return { ok: true, stores: names, link: firstLink };
+    const link = `${APP_ORIGIN}/invite/${token}`;
+    const storeLabel =
+      names.length === 1 ? names[0] : `${names.length} stores`;
+    const list = names.map((n) => `<li>${n}</li>`).join("");
+
+    await enqueueAppEmail({
+      to: email,
+      label: "store_invite",
+      subject: `You've been invited to ${storeLabel} on Nectar-Pay`,
+      html: `<p>You've been given <strong>${ROLE_LABEL[data.role]}</strong> access on Nectar-Pay to:</p>
+<ul>${list}</ul>
+<p><a href="${link}">Accept your invitation</a></p>
+<p>${ROLE_BLURB[data.role]}</p>
+<p>One click accepts all of them. This link expires in 14 days. If you weren't expecting it, ignore this email.</p>`,
+      text: `You've been given ${ROLE_LABEL[data.role]} access on Nectar-Pay to:\n${names.map((n) => `- ${n}`).join("\n")}\n\nAccept (all at once): ${link}\n\nThis link expires in 14 days.`,
+    });
+
+    return { ok: true, stores: names, link };
   });
 
 /** Everyone with access to any store the caller owns, grouped by person. */
@@ -246,7 +252,7 @@ export const listAllStoreTeams = createServerFn({ method: "GET" })
         .in("store_id", storeIds),
       supabaseAdmin
         .from("store_invites")
-        .select("id, email, role, store_id, expires_at")
+        .select("id, email, role, store_id, expires_at, token_hash")
         .in("store_id", storeIds)
         .is("accepted_at", null),
     ]);
@@ -289,14 +295,37 @@ export const listAllStoreTeams = createServerFn({ method: "GET" })
     return {
       stores: storeList,
       people: Array.from(byUser.values()),
-      invites: (invitesRes.data ?? []).map((i) => ({
-        id: i.id,
-        email: i.email,
-        role: i.role as StoreRole,
-        store_id: i.store_id,
-        store_name: nameOf.get(i.store_id) ?? "Store",
-        expired: new Date(i.expires_at).getTime() < now,
-      })),
+      // One invitation can cover several stores (shared token) — group it so the
+      // owner sees a single pending line, not one per store.
+      invites: Array.from(
+        (invitesRes.data ?? [])
+          .reduce(
+            (acc, i) => {
+              const key = i.token_hash;
+              const entry = acc.get(key) ?? {
+                group_id: key,
+                email: i.email,
+                role: i.role as StoreRole,
+                store_names: [] as string[],
+                expired: new Date(i.expires_at).getTime() < now,
+              };
+              entry.store_names.push(nameOf.get(i.store_id) ?? "Store");
+              acc.set(key, entry);
+              return acc;
+            },
+            new Map<
+              string,
+              {
+                group_id: string;
+                email: string;
+                role: StoreRole;
+                store_names: string[];
+                expired: boolean;
+              }
+            >(),
+          )
+          .values(),
+      ),
     };
   });
 
@@ -357,26 +386,54 @@ export const revokeStoreInvite = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** Cancel one invitation across every store it covers (shared token). */
+export const revokeStoreInviteGroup = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ group_id: z.string().min(10).max(128) }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: stores, error: storesErr } = await supabaseAdmin
+      .from("stores")
+      .select("id")
+      .eq("owner_id", context.userId);
+    if (storesErr) throw new Error(storesErr.message);
+    const ids = (stores ?? []).map((s) => s.id);
+    if (!ids.length) return { ok: true };
+    const { error } = await supabaseAdmin
+      .from("store_invites")
+      .delete()
+      .eq("token_hash", data.group_id)
+      .in("store_id", ids);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 /** Public: what does this invite token point at? No sign-in required. */
 export const previewStoreInvite = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ token: z.string().min(10).max(128) }).parse(d))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const tokenHash = await sha256Hex(data.token);
-    const { data: invite } = await supabaseAdmin
+    const { data: rows } = await supabaseAdmin
       .from("store_invites")
       .select("id, email, role, expires_at, accepted_at, store_id, stores(name)")
-      .eq("token_hash", tokenHash)
-      .maybeSingle();
+      .eq("token_hash", tokenHash);
+    const invite = rows?.[0];
     if (!invite) return { valid: false as const, reason: "not_found" as const };
-    if (invite.accepted_at) return { valid: false as const, reason: "used" as const };
+    if (rows!.every((r) => r.accepted_at)) return { valid: false as const, reason: "used" as const };
     if (new Date(invite.expires_at).getTime() < Date.now())
       return { valid: false as const, reason: "expired" as const };
+    const names = (rows ?? []).map(
+      (r) => (r as unknown as { stores: { name: string } | null }).stores?.name ?? "a store",
+    );
     return {
       valid: true as const,
       email: invite.email,
       role: invite.role as StoreRole,
-      store_name: (invite as unknown as { stores: { name: string } | null }).stores?.name ?? "a store",
+      store_name: names.length === 1 ? names[0]! : `${names.length} stores`,
+      store_names: names,
     };
   });
 
@@ -387,13 +444,15 @@ export const acceptStoreInvite = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const tokenHash = await sha256Hex(data.token);
 
-    const { data: invite } = await supabaseAdmin
+    // A single token can cover several stores — accept them all at once.
+    const { data: rows } = await supabaseAdmin
       .from("store_invites")
       .select("id, store_id, email, role, expires_at, accepted_at")
-      .eq("token_hash", tokenHash)
-      .maybeSingle();
+      .eq("token_hash", tokenHash);
+    const open = (rows ?? []).filter((r) => !r.accepted_at);
+    const invite = rows?.[0];
     if (!invite) throw new Error("This invitation link is not valid.");
-    if (invite.accepted_at) throw new Error("This invitation has already been used.");
+    if (!open.length) throw new Error("This invitation has already been used.");
     if (new Date(invite.expires_at).getTime() < Date.now())
       throw new Error("This invitation has expired. Ask for a new one.");
 
@@ -404,11 +463,11 @@ export const acceptStoreInvite = createServerFn({ method: "POST" })
     }
 
     const { error: memberErr } = await supabaseAdmin.from("store_members").upsert(
-      {
-        store_id: invite.store_id,
+      open.map((r) => ({
+        store_id: r.store_id,
         user_id: context.userId,
-        role: invite.role,
-      },
+        role: r.role,
+      })),
       { onConflict: "store_id,user_id" },
     );
     if (memberErr) throw new Error(memberErr.message);
@@ -416,9 +475,12 @@ export const acceptStoreInvite = createServerFn({ method: "POST" })
     await supabaseAdmin
       .from("store_invites")
       .update({ accepted_at: new Date().toISOString(), accepted_by: context.userId })
-      .eq("id", invite.id);
+      .in(
+        "id",
+        open.map((r) => r.id),
+      );
 
-    return { ok: true, store_id: invite.store_id };
+    return { ok: true, store_id: invite.store_id, stores: open.length };
   });
 
 /** Stores shared with the signed-in user (not owned by them). */
