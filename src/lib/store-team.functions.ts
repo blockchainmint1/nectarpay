@@ -160,6 +160,146 @@ export const inviteStoreUser = createServerFn({ method: "POST" })
     return { ok: true, link };
   });
 
+/** Invite one person to several stores at once (or all of them). */
+export const inviteStoreUserMulti = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        store_ids: z.array(z.string().uuid()).min(1),
+        email: z.string().email().max(255),
+        role: z.enum(["viewer", "manager", "admin"]),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { enqueueAppEmail } = await import("@/lib/email/enqueue.server");
+    const email = data.email.trim().toLowerCase();
+    const names: string[] = [];
+    let firstLink = "";
+
+    for (const storeId of data.store_ids) {
+      const store = await assertOwner(context.userId, storeId);
+      const token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+      const tokenHash = await sha256Hex(token);
+      const expiresAt = new Date(Date.now() + 14 * 86_400_000).toISOString();
+
+      await supabaseAdmin
+        .from("store_invites")
+        .delete()
+        .eq("store_id", storeId)
+        .eq("email", email)
+        .is("accepted_at", null);
+
+      const { error } = await supabaseAdmin.from("store_invites").insert({
+        store_id: storeId,
+        email,
+        role: data.role,
+        token_hash: tokenHash,
+        invited_by: context.userId,
+        expires_at: expiresAt,
+      });
+      if (error) throw new Error(error.message);
+
+      const link = `${APP_ORIGIN}/invite/${token}`;
+      if (!firstLink) firstLink = link;
+      names.push(store.name);
+
+      await enqueueAppEmail({
+        to: email,
+        label: "store_invite",
+        subject: `You've been invited to ${store.name} on Nectar-Pay`,
+        html: `<p>You've been given <strong>${ROLE_LABEL[data.role]}</strong> access to <strong>${store.name}</strong> on Nectar-Pay.</p>
+<p><a href="${link}">Accept your invitation</a></p>
+<p>${ROLE_BLURB[data.role]}</p>
+<p>This link expires in 14 days. If you weren't expecting it, ignore this email.</p>`,
+        text: `You've been given ${ROLE_LABEL[data.role]} access to ${store.name} on Nectar-Pay.\n\nAccept: ${link}\n\nThis link expires in 14 days.`,
+      });
+    }
+
+    return { ok: true, stores: names, link: firstLink };
+  });
+
+/** Everyone with access to any store the caller owns, grouped by person. */
+export const listAllStoreTeams = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: stores, error: storesErr } = await supabaseAdmin
+      .from("stores")
+      .select("id, name")
+      .eq("owner_id", context.userId)
+      .is("deactivated_at", null)
+      .order("created_at", { ascending: true });
+    if (storesErr) throw new Error(storesErr.message);
+
+    const storeList = (stores ?? []).map((s) => ({ id: s.id, name: s.name }));
+    const storeIds = storeList.map((s) => s.id);
+    const nameOf = new Map(storeList.map((s) => [s.id, s.name]));
+    if (!storeIds.length) return { stores: storeList, people: [], invites: [] };
+
+    const [membersRes, invitesRes] = await Promise.all([
+      supabaseAdmin
+        .from("store_members")
+        .select("id, user_id, store_id, role, created_at")
+        .in("store_id", storeIds),
+      supabaseAdmin
+        .from("store_invites")
+        .select("id, email, role, store_id, expires_at")
+        .in("store_id", storeIds)
+        .is("accepted_at", null),
+    ]);
+    if (membersRes.error) throw new Error(membersRes.error.message);
+
+    const ids = Array.from(new Set((membersRes.data ?? []).map((m) => m.user_id)));
+    const profiles = ids.length
+      ? await supabaseAdmin.from("profiles").select("user_id, email, full_name").in("user_id", ids)
+      : { data: [] as { user_id: string; email: string | null; full_name: string | null }[] };
+    const pMap = new Map((profiles.data ?? []).map((p) => [p.user_id, p]));
+
+    const byUser = new Map<
+      string,
+      {
+        user_id: string;
+        email: string | null;
+        name: string | null;
+        access: { member_id: string; store_id: string; store_name: string; role: StoreRole }[];
+      }
+    >();
+    for (const m of membersRes.data ?? []) {
+      const entry =
+        byUser.get(m.user_id) ??
+        {
+          user_id: m.user_id,
+          email: pMap.get(m.user_id)?.email ?? null,
+          name: pMap.get(m.user_id)?.full_name ?? null,
+          access: [],
+        };
+      entry.access.push({
+        member_id: m.id,
+        store_id: m.store_id,
+        store_name: nameOf.get(m.store_id) ?? "Store",
+        role: m.role as StoreRole,
+      });
+      byUser.set(m.user_id, entry);
+    }
+
+    const now = Date.now();
+    return {
+      stores: storeList,
+      people: Array.from(byUser.values()),
+      invites: (invitesRes.data ?? []).map((i) => ({
+        id: i.id,
+        email: i.email,
+        role: i.role as StoreRole,
+        store_id: i.store_id,
+        store_name: nameOf.get(i.store_id) ?? "Store",
+        expired: new Date(i.expires_at).getTime() < now,
+      })),
+    };
+  });
+
 export const updateStoreMemberRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
