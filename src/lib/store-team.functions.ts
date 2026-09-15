@@ -386,6 +386,30 @@ export const revokeStoreInvite = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** Cancel one invitation across every store it covers (shared token). */
+export const revokeStoreInviteGroup = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ group_id: z.string().min(10).max(128) }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: stores, error: storesErr } = await supabaseAdmin
+      .from("stores")
+      .select("id")
+      .eq("owner_id", context.userId);
+    if (storesErr) throw new Error(storesErr.message);
+    const ids = (stores ?? []).map((s) => s.id);
+    if (!ids.length) return { ok: true };
+    const { error } = await supabaseAdmin
+      .from("store_invites")
+      .delete()
+      .eq("token_hash", data.group_id)
+      .in("store_id", ids);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 /** Public: what does this invite token point at? No sign-in required. */
 export const previewStoreInvite = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ token: z.string().min(10).max(128) }).parse(d))
