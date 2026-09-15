@@ -227,6 +227,7 @@ function TwoFactorCard() {
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: "totp",
         friendlyName: "Authenticator app",
+        issuer: "NectarPay",
       });
       if (error) throw error;
       setEnroll({ id: data.id, qr: data.totp.qr_code, secret: data.totp.secret });
