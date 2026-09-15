@@ -160,7 +160,10 @@ export const inviteStoreUser = createServerFn({ method: "POST" })
     return { ok: true, link };
   });
 
-/** Invite one person to several stores at once (or all of them). */
+/**
+ * Invite one person to several stores at once (or all of them).
+ * One shared token across every store row => ONE email, one click to accept all.
+ */
 export const inviteStoreUserMulti = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
@@ -176,14 +179,15 @@ export const inviteStoreUserMulti = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { enqueueAppEmail } = await import("@/lib/email/enqueue.server");
     const email = data.email.trim().toLowerCase();
+
+    const token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+    const tokenHash = await sha256Hex(token);
+    const expiresAt = new Date(Date.now() + 14 * 86_400_000).toISOString();
     const names: string[] = [];
-    let firstLink = "";
 
     for (const storeId of data.store_ids) {
       const store = await assertOwner(context.userId, storeId);
-      const token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
-      const tokenHash = await sha256Hex(token);
-      const expiresAt = new Date(Date.now() + 14 * 86_400_000).toISOString();
+      names.push(store.name);
 
       await supabaseAdmin
         .from("store_invites")
@@ -201,24 +205,26 @@ export const inviteStoreUserMulti = createServerFn({ method: "POST" })
         expires_at: expiresAt,
       });
       if (error) throw new Error(error.message);
-
-      const link = `${APP_ORIGIN}/invite/${token}`;
-      if (!firstLink) firstLink = link;
-      names.push(store.name);
-
-      await enqueueAppEmail({
-        to: email,
-        label: "store_invite",
-        subject: `You've been invited to ${store.name} on Nectar-Pay`,
-        html: `<p>You've been given <strong>${ROLE_LABEL[data.role]}</strong> access to <strong>${store.name}</strong> on Nectar-Pay.</p>
-<p><a href="${link}">Accept your invitation</a></p>
-<p>${ROLE_BLURB[data.role]}</p>
-<p>This link expires in 14 days. If you weren't expecting it, ignore this email.</p>`,
-        text: `You've been given ${ROLE_LABEL[data.role]} access to ${store.name} on Nectar-Pay.\n\nAccept: ${link}\n\nThis link expires in 14 days.`,
-      });
     }
 
-    return { ok: true, stores: names, link: firstLink };
+    const link = `${APP_ORIGIN}/invite/${token}`;
+    const storeLabel =
+      names.length === 1 ? names[0] : `${names.length} stores`;
+    const list = names.map((n) => `<li>${n}</li>`).join("");
+
+    await enqueueAppEmail({
+      to: email,
+      label: "store_invite",
+      subject: `You've been invited to ${storeLabel} on Nectar-Pay`,
+      html: `<p>You've been given <strong>${ROLE_LABEL[data.role]}</strong> access on Nectar-Pay to:</p>
+<ul>${list}</ul>
+<p><a href="${link}">Accept your invitation</a></p>
+<p>${ROLE_BLURB[data.role]}</p>
+<p>One click accepts all of them. This link expires in 14 days. If you weren't expecting it, ignore this email.</p>`,
+      text: `You've been given ${ROLE_LABEL[data.role]} access on Nectar-Pay to:\n${names.map((n) => `- ${n}`).join("\n")}\n\nAccept (all at once): ${link}\n\nThis link expires in 14 days.`,
+    });
+
+    return { ok: true, stores: names, link };
   });
 
 /** Everyone with access to any store the caller owns, grouped by person. */
