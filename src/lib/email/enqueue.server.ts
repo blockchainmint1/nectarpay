@@ -99,6 +99,8 @@ export interface PaymentAlertEmailData {
   amountReceived: string;
   paymentMethod: string;
   orderId?: string | null;
+  /** Full invoice UUID — used to deep-link the button to this exact sale. */
+  invoiceUuid?: string | null;
 }
 
 /** Polished receipt-style email for merchant payment notifications. */
