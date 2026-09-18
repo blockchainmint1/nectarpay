@@ -41,7 +41,7 @@ async function enqueueAdmin(
 }
 
 
-function wrap(
+export function renderAdminAlertEmail(
   title: string,
   intro: string,
   rows: Array<{ label: string; value: string }>,
@@ -155,7 +155,7 @@ export const notifyNewSignup = createServerFn({ method: "POST" })
       { label: "User ID", value: u.id },
     ];
     const text = ["A new person just joined NectarPay.", ...rows.map(({ label, value }) => `${label}: ${value}`)].join("\n");
-    const html = wrap(
+    const html = renderAdminAlertEmail(
       "Someone new joined NectarPay",
       `${name || email} just created an account.`,
       rows,
@@ -213,7 +213,7 @@ export const notifyNewStore = createServerFn({ method: "POST" })
       { label: "Store ID", value: store.id },
     ];
     const text = ["A new merchant store was created.", ...rows.map(({ label, value }) => `${label}: ${value}`)].join("\n");
-    const html = wrap(
+    const html = renderAdminAlertEmail(
       "A new merchant joined the hive",
       `${store.name || "A new store"} is now getting set up to accept payments with NectarPay.`,
       rows,
