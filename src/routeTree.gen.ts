@@ -73,6 +73,7 @@ import { Route as LovableEmailEventsRouteImport } from './routes/lovable/email/e
 import { Route as ApiPublicDemoResetRouteImport } from './routes/api/public/demo-reset'
 import { Route as AuthenticatedStoresNewRouteImport } from './routes/_authenticated.stores.new'
 import { Route as AuthenticatedStoresStoreIdRouteImport } from './routes/_authenticated.stores.$storeId'
+import { Route as AuthenticatedSalesInvoiceIdRouteImport } from './routes/_authenticated.sales.$invoiceId'
 import { Route as AuthenticatedReportsTaxRouteImport } from './routes/_authenticated.reports.tax'
 import { Route as AuthenticatedReportsSettlementRouteImport } from './routes/_authenticated.reports.settlement'
 import { Route as AuthenticatedReportsSalesRouteImport } from './routes/_authenticated.reports.sales'
@@ -480,6 +481,12 @@ const AuthenticatedStoresStoreIdRoute =
   AuthenticatedStoresStoreIdRouteImport.update({
     id: '/stores/$storeId',
     path: '/stores/$storeId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedSalesInvoiceIdRoute =
+  AuthenticatedSalesInvoiceIdRouteImport.update({
+    id: '/sales/$invoiceId',
+    path: '/sales/$invoiceId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedReportsTaxRoute = AuthenticatedReportsTaxRouteImport.update({
@@ -1032,6 +1039,7 @@ export interface FileRoutesByFullPath {
   '/reports/sales': typeof AuthenticatedReportsSalesRoute
   '/reports/settlement': typeof AuthenticatedReportsSettlementRoute
   '/reports/tax': typeof AuthenticatedReportsTaxRoute
+  '/sales/$invoiceId': typeof AuthenticatedSalesInvoiceIdRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/api/public/demo-reset': typeof ApiPublicDemoResetRoute
@@ -1175,6 +1183,7 @@ export interface FileRoutesByTo {
   '/reports/sales': typeof AuthenticatedReportsSalesRoute
   '/reports/settlement': typeof AuthenticatedReportsSettlementRoute
   '/reports/tax': typeof AuthenticatedReportsTaxRoute
+  '/sales/$invoiceId': typeof AuthenticatedSalesInvoiceIdRoute
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/api/public/demo-reset': typeof ApiPublicDemoResetRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
@@ -1324,6 +1333,7 @@ export interface FileRoutesById {
   '/_authenticated/reports/sales': typeof AuthenticatedReportsSalesRoute
   '/_authenticated/reports/settlement': typeof AuthenticatedReportsSettlementRoute
   '/_authenticated/reports/tax': typeof AuthenticatedReportsTaxRoute
+  '/_authenticated/sales/$invoiceId': typeof AuthenticatedSalesInvoiceIdRoute
   '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/_authenticated/stores/new': typeof AuthenticatedStoresNewRoute
   '/api/public/demo-reset': typeof ApiPublicDemoResetRoute
@@ -1474,6 +1484,7 @@ export interface FileRouteTypes {
     | '/reports/sales'
     | '/reports/settlement'
     | '/reports/tax'
+    | '/sales/$invoiceId'
     | '/stores/$storeId'
     | '/stores/new'
     | '/api/public/demo-reset'
@@ -1617,6 +1628,7 @@ export interface FileRouteTypes {
     | '/reports/sales'
     | '/reports/settlement'
     | '/reports/tax'
+    | '/sales/$invoiceId'
     | '/stores/new'
     | '/api/public/demo-reset'
     | '/lovable/email/events'
@@ -1765,6 +1777,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reports/sales'
     | '/_authenticated/reports/settlement'
     | '/_authenticated/reports/tax'
+    | '/_authenticated/sales/$invoiceId'
     | '/_authenticated/stores/$storeId'
     | '/_authenticated/stores/new'
     | '/api/public/demo-reset'
@@ -2362,6 +2375,13 @@ declare module '@tanstack/react-router' {
       path: '/stores/$storeId'
       fullPath: '/stores/$storeId'
       preLoaderRoute: typeof AuthenticatedStoresStoreIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/sales/$invoiceId': {
+      id: '/_authenticated/sales/$invoiceId'
+      path: '/sales/$invoiceId'
+      fullPath: '/sales/$invoiceId'
+      preLoaderRoute: typeof AuthenticatedSalesInvoiceIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/reports/tax': {
@@ -3121,6 +3141,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAccountUsersRoute: typeof AuthenticatedAccountUsersRoute
   AuthenticatedMHomeRoute: typeof AuthenticatedMHomeRoute
   AuthenticatedMVirtualTerminalRoute: typeof AuthenticatedMVirtualTerminalRoute
+  AuthenticatedSalesInvoiceIdRoute: typeof AuthenticatedSalesInvoiceIdRoute
   AuthenticatedStoresStoreIdRoute: typeof AuthenticatedStoresStoreIdRouteWithChildren
   AuthenticatedStoresNewRoute: typeof AuthenticatedStoresNewRoute
   AuthenticatedAccountIndexRoute: typeof AuthenticatedAccountIndexRoute
@@ -3139,6 +3160,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAccountUsersRoute: AuthenticatedAccountUsersRoute,
   AuthenticatedMHomeRoute: AuthenticatedMHomeRoute,
   AuthenticatedMVirtualTerminalRoute: AuthenticatedMVirtualTerminalRoute,
+  AuthenticatedSalesInvoiceIdRoute: AuthenticatedSalesInvoiceIdRoute,
   AuthenticatedStoresStoreIdRoute: AuthenticatedStoresStoreIdRouteWithChildren,
   AuthenticatedStoresNewRoute: AuthenticatedStoresNewRoute,
   AuthenticatedAccountIndexRoute: AuthenticatedAccountIndexRoute,

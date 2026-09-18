@@ -251,6 +251,7 @@ export async function settleInvoice(
       metadata: {
         storeName,
         invoiceId: invoiceId.slice(0, 8),
+        invoiceUuid: invoiceId,
         amountDue: formatMoney(amountDueUsd),
         amountReceived: formatMoney(paidAmountUsd),
         paymentMethod,

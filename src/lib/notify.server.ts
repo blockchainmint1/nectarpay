@@ -31,6 +31,7 @@ interface PaymentEmailMetadata {
   amountReceived: string;
   paymentMethod: string;
   orderId?: string | null;
+  invoiceUuid?: string | null;
 }
 
 function isPaymentEmailMetadata(value: unknown): value is PaymentEmailMetadata {

@@ -99,6 +99,8 @@ export interface PaymentAlertEmailData {
   amountReceived: string;
   paymentMethod: string;
   orderId?: string | null;
+  /** Full invoice UUID — used to deep-link the button to this exact sale. */
+  invoiceUuid?: string | null;
 }
 
 /** Polished receipt-style email for merchant payment notifications. */
@@ -115,6 +117,10 @@ export function renderPaymentAlertEmail(data: PaymentAlertEmailData): string {
   const orderRow = data.orderId
     ? detailRow("Order reference", data.orderId)
     : "";
+  const saleUrl = data.invoiceUuid
+    ? `https://app.nectar-pay.com/sales/${encodeURIComponent(data.invoiceUuid)}`
+    : "https://app.nectar-pay.com/dashboard";
+  const ctaLabel = data.invoiceUuid ? "View this sale" : "View sale in NectarPay";
 
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#2B3242;">
@@ -146,7 +152,7 @@ export function renderPaymentAlertEmail(data: PaymentAlertEmailData): string {
         </table>
 
         <div style="margin-top:28px;text-align:center;">
-          <a href="https://app.nectar-pay.com/dashboard" style="display:inline-block;padding:14px 24px;border-radius:8px;background:#F6A21E;color:#0D1B33;font-size:15px;font-weight:800;text-decoration:none;">View sale in NectarPay</a>
+          <a href="${saleUrl}" style="display:inline-block;padding:14px 24px;border-radius:8px;background:#F6A21E;color:#0D1B33;font-size:15px;font-weight:800;text-decoration:none;">${ctaLabel}</a>
         </div>
         <p style="margin:22px 0 0;text-align:center;font-size:12px;line-height:1.5;color:#6A7182;">This notification was sent by NectarPay for ${escapeHtml(data.storeName)}.</p>
       </td></tr>
