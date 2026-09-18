@@ -41,14 +41,50 @@ async function enqueueAdmin(
 }
 
 
-function wrap(title: string, rows: string[], linkHref: string, linkLabel: string) {
-  const body = rows.map((r) => `<div style="padding:4px 0;color:#ddd;">${r}</div>`).join("");
-  return `<!doctype html><html><body style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#0b0b0d;color:#eee;padding:24px;">
-<div style="max-width:640px;margin:0 auto;background:#141418;border:1px solid #2a2a30;border-radius:12px;padding:24px;">
-  <h1 style="margin:0 0 12px;font-size:18px;color:#f5c542;">${escapeHtml(title)}</h1>
-  ${body}
-  <p style="margin-top:20px;"><a href="${linkHref}" style="color:#f5c542;">${escapeHtml(linkLabel)} →</a></p>
-</div></body></html>`;
+function wrap(
+  title: string,
+  intro: string,
+  rows: Array<{ label: string; value: string }>,
+  linkHref: string,
+  linkLabel: string,
+) {
+  const details = rows
+    .map(
+      ({ label, value }) => `<tr>
+        <td style="padding:12px 0;border-bottom:1px solid #E7E1D2;font-size:13px;color:#6A7182;vertical-align:top;">${escapeHtml(label)}</td>
+        <td align="right" style="padding:12px 0 12px 20px;border-bottom:1px solid #E7E1D2;font-size:13px;font-weight:700;color:#2B3242;vertical-align:top;word-break:break-word;">${escapeHtml(value)}</td>
+      </tr>`,
+    )
+    .join("");
+
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#2B3242;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(intro)}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;background:#ffffff;"><tr><td align="center" style="padding:32px 16px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;border:1px solid #E7E1D2;border-radius:12px;overflow:hidden;">
+      <tr><td style="background:#0D1B33;padding:24px 32px;border-bottom:4px solid #F6A21E;">
+        <div style="font-size:22px;line-height:1;font-weight:900;color:#ffffff;">Nectar<span style="color:#F6A21E;">Pay</span></div>
+        <div style="margin-top:8px;font-size:12px;line-height:1.4;color:#B7C0D4;">Private team notification</div>
+      </td></tr>
+      <tr><td style="padding:36px 32px 30px;background:#ffffff;">
+        <div style="font-size:12px;line-height:1.4;font-weight:800;letter-spacing:1.5px;color:#E8880C;">A LITTLE MORE NECTAR IN THE HIVE</div>
+        <h1 style="margin:8px 0 10px;font-size:30px;line-height:1.15;color:#0D1B33;">${escapeHtml(title)}</h1>
+        <p style="margin:0 0 26px;font-size:16px;line-height:1.55;color:#4B5563;">${escapeHtml(intro)}</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;">
+          ${details}
+        </table>
+        <div style="margin-top:28px;text-align:center;">
+          <a href="${linkHref}" style="display:inline-block;padding:14px 24px;border-radius:8px;background:#F6A21E;color:#0D1B33;font-size:15px;font-weight:800;text-decoration:none;">${escapeHtml(linkLabel)}</a>
+        </div>
+        <p style="margin:22px 0 0;text-align:center;font-size:12px;line-height:1.5;color:#6A7182;">Sent by NectarPay because a new account or store was created.</p>
+      </td></tr>
+      <tr><td style="padding:20px 28px;background:#FAF8F3;border-top:1px solid #E7E1D2;text-align:center;">
+        <p style="margin:0 0 7px;font-size:12px;color:#6A7182;">Part of the <a href="https://honest.money" style="color:#B96A00;text-decoration:none;">honest.money ecosystem</a></p>
+        <p style="margin:0;font-size:11px;color:#6A7182;"><a href="https://app.nectar-pay.com/terms" style="color:#6A7182;">Terms</a> &nbsp;·&nbsp; <a href="https://app.nectar-pay.com/privacy" style="color:#6A7182;">Privacy</a> &nbsp;·&nbsp; <a href="https://app.nectar-pay.com/manifesto" style="color:#6A7182;">Manifesto</a></p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
 }
 
 // ─── New signup notification ────────────────────────────────────────────
@@ -80,14 +116,20 @@ export const notifyNewSignup = createServerFn({ method: "POST" })
     const provider = (u.app_metadata?.provider || "email").toString();
     const subject = `New signup: ${name || email}`;
     const rows = [
-      `Email: ${escapeHtml(email)}`,
-      name ? `Name: ${escapeHtml(name)}` : "",
-      `Provider: ${escapeHtml(provider)}`,
-      `User ID: ${escapeHtml(u.id)}`,
-      `Created: ${escapeHtml(u.created_at ?? "")}`,
-    ].filter(Boolean);
-    const text = rows.join("\n").replace(/<[^>]+>/g, "");
-    const html = wrap("New NectarPay signup", rows, "https://app.nectar-pay.com/admin", "Open admin");
+      { label: "Name", value: name || "Not provided" },
+      { label: "Email", value: email },
+      { label: "Sign-in method", value: provider },
+      { label: "Created", value: u.created_at ?? "" },
+      { label: "User ID", value: u.id },
+    ];
+    const text = ["A new person just joined NectarPay.", ...rows.map(({ label, value }) => `${label}: ${value}`)].join("\n");
+    const html = wrap(
+      "Someone new joined NectarPay",
+      `${name || email} just created an account.`,
+      rows,
+      "https://app.nectar-pay.com/admin",
+      "View in admin",
+    );
     await enqueueAdmin(
       supabaseAdmin,
       subject,
@@ -132,18 +174,19 @@ export const notifyNewStore = createServerFn({ method: "POST" })
 
     const subject = `New merchant: ${store.name}`;
     const rows = [
-      `Store: ${escapeHtml(store.name || "")}`,
-      store.website ? `Website: ${escapeHtml(store.website)}` : "",
-      `Currency: ${escapeHtml(store.fiat_currency || "")}`,
-      `Owner: ${escapeHtml(ownerEmail)}`,
-      `Store ID: ${escapeHtml(store.id)}`,
-    ].filter(Boolean);
-    const text = rows.join("\n");
+      { label: "Store", value: store.name || "Unnamed store" },
+      ...(store.website ? [{ label: "Website", value: store.website }] : []),
+      { label: "Currency", value: store.fiat_currency || "Not set" },
+      { label: "Owner", value: ownerEmail },
+      { label: "Store ID", value: store.id },
+    ];
+    const text = ["A new merchant store was created.", ...rows.map(({ label, value }) => `${label}: ${value}`)].join("\n");
     const html = wrap(
-      "New merchant store created",
+      "A new merchant joined the hive",
+      `${store.name || "A new store"} is now getting set up to accept payments with NectarPay.`,
       rows,
       `https://app.nectar-pay.com/admin/merchants`,
-      "Open merchants",
+      "View merchant",
     );
     await enqueueAdmin(
       supabaseAdmin,
