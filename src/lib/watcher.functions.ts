@@ -205,7 +205,7 @@ export async function settleInvoice(
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
-    .select("id, status, store_id, chain, address, fiat_amount, fiat_currency, external_order_id, token_symbol, rate, stores(owner_id, webhook_url, webhook_secret)")
+    .select("id, status, store_id, chain, address, fiat_amount, fiat_currency, external_order_id, token_symbol, rate, stores(name, owner_id, webhook_url, webhook_secret)")
     .eq("id", invoiceId)
     .single();
   if (!inv || ["confirmed", "expired", "cancelled"].includes(inv.status)) {
@@ -228,17 +228,33 @@ export async function settleInvoice(
     .update({ status: newStatus })
     .eq("id", invoiceId);
 
-  const store = inv.stores as { owner_id: string; webhook_url: string | null; webhook_secret: string | null } | null;
+  const store = inv.stores as { name: string | null; owner_id: string; webhook_url: string | null; webhook_secret: string | null } | null;
   const ownerId = store?.owner_id;
   if (ownerId) {
+    const currency = (inv.fiat_currency || "USD").toUpperCase();
+    const formatMoney = (amount: number) =>
+      new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount);
+    const storeName = store.name?.trim() || "Your store";
+    const paymentMethod = inv.token_symbol
+      ? `${inv.token_symbol.toUpperCase()} on ${inv.chain.toUpperCase()}`
+      : inv.chain.toUpperCase();
     await notifyUser(ownerId, {
       event: isPaid ? "invoice_paid" : "invoice_underpaid",
-      subject: isPaid ? `Invoice paid · $${amountDueUsd.toFixed(2)}` : `Invoice underpaid`,
+      subject: isPaid
+        ? `🎉 ${storeName} made a sale · ${formatMoney(paidAmountUsd)}`
+        : `${storeName} received an underpayment`,
       text: isPaid
-        ? `Invoice ${invoiceId.slice(0, 8)} was paid in full ($${paidAmountUsd.toFixed(2)} of $${amountDueUsd.toFixed(2)}).`
-        : `Invoice ${invoiceId.slice(0, 8)} received only $${paidAmountUsd.toFixed(2)} of $${amountDueUsd.toFixed(2)}.`,
+        ? `${storeName} made a sale! Invoice ${invoiceId.slice(0, 8)} was paid in full (${formatMoney(paidAmountUsd)} of ${formatMoney(amountDueUsd)}) via ${paymentMethod}.`
+        : `${storeName}: invoice ${invoiceId.slice(0, 8)} received only ${formatMoney(paidAmountUsd)} of ${formatMoney(amountDueUsd)} via ${paymentMethod}.`,
       storeId: inv.store_id,
-      metadata: { invoiceId },
+      metadata: {
+        storeName,
+        invoiceId: invoiceId.slice(0, 8),
+        amountDue: formatMoney(amountDueUsd),
+        amountReceived: formatMoney(paidAmountUsd),
+        paymentMethod,
+        orderId: inv.external_order_id,
+      },
     });
   }
 
