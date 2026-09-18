@@ -114,12 +114,44 @@ export const notifyNewSignup = createServerFn({ method: "POST" })
     const email = u.email ?? "(no email)";
     const name = (u.user_metadata?.full_name || u.user_metadata?.name || "").toString();
     const provider = (u.app_metadata?.provider || "email").toString();
+    const { data: attribution } = await supabaseAdmin
+      .from("affiliate_attributions")
+      .select("affiliate_id, landing_path, utm_source, utm_medium, utm_campaign, referrer")
+      .eq("user_id", u.id)
+      .maybeSingle();
+    const created = u.created_at
+      ? new Intl.DateTimeFormat("en-US", {
+          dateStyle: "medium",
+          timeStyle: "short",
+          timeZone: "UTC",
+        }).format(new Date(u.created_at)) + " UTC"
+      : "Unknown";
     const subject = `New signup: ${name || email}`;
     const rows = [
       { label: "Name", value: name || "Not provided" },
       { label: "Email", value: email },
       { label: "Sign-in method", value: provider },
-      { label: "Created", value: u.created_at ?? "" },
+      { label: "Email verified", value: u.email_confirmed_at ? "Yes" : "Not yet" },
+      { label: "Account type", value: isDemoEmail(email) ? "Demo" : "Standard" },
+      ...(attribution?.affiliate_id
+        ? [{ label: "Referred by", value: attribution.affiliate_id }]
+        : []),
+      ...(attribution?.utm_source
+        ? [{ label: "Campaign source", value: attribution.utm_source }]
+        : []),
+      ...(attribution?.utm_medium
+        ? [{ label: "Campaign medium", value: attribution.utm_medium }]
+        : []),
+      ...(attribution?.utm_campaign
+        ? [{ label: "Campaign", value: attribution.utm_campaign }]
+        : []),
+      ...(attribution?.landing_path
+        ? [{ label: "First page", value: attribution.landing_path }]
+        : []),
+      ...(attribution?.referrer
+        ? [{ label: "Referrer", value: attribution.referrer }]
+        : []),
+      { label: "Created", value: created },
       { label: "User ID", value: u.id },
     ];
     const text = ["A new person just joined NectarPay.", ...rows.map(({ label, value }) => `${label}: ${value}`)].join("\n");
