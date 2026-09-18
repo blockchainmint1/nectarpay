@@ -24,6 +24,23 @@ export interface NotifyPayload {
   metadata?: Record<string, unknown>;
 }
 
+interface PaymentEmailMetadata {
+  storeName: string;
+  invoiceId: string;
+  amountDue: string;
+  amountReceived: string;
+  paymentMethod: string;
+  orderId?: string | null;
+}
+
+function isPaymentEmailMetadata(value: unknown): value is PaymentEmailMetadata {
+  if (!value || typeof value !== "object") return false;
+  const data = value as Record<string, unknown>;
+  return ["storeName", "invoiceId", "amountDue", "amountReceived", "paymentMethod"].every(
+    (key) => typeof data[key] === "string",
+  );
+}
+
 async function sendTelegram(
   token: string,
   chatId: string,
@@ -122,8 +139,15 @@ export async function notifyUser(
 
   // Email — enqueued onto the Lovable Emails queue.
   if (prefs?.email_enabled && prefs.email_address) {
-    const { enqueueAppEmail, renderAlertEmail } = await import("@/lib/email/enqueue.server");
-    const html = renderAlertEmail(payload.subject, payload.text.split("\n"));
+    const { enqueueAppEmail, renderAlertEmail, renderPaymentAlertEmail } = await import("@/lib/email/enqueue.server");
+    const html =
+      (payload.event === "invoice_paid" || payload.event === "invoice_underpaid") &&
+      isPaymentEmailMetadata(payload.metadata)
+        ? renderPaymentAlertEmail({
+            status: payload.event === "invoice_paid" ? "paid" : "underpaid",
+            ...payload.metadata,
+          })
+        : renderAlertEmail(payload.subject, payload.text.split("\n"));
     const result = await enqueueAppEmail({
       to: prefs.email_address,
       subject: payload.subject,

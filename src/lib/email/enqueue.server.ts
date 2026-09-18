@@ -91,7 +91,79 @@ export async function enqueueAppEmail(
   return { ok: true };
 }
 
-/** Minimal branded HTML wrapper for merchant alert emails. */
+export interface PaymentAlertEmailData {
+  status: "paid" | "underpaid";
+  storeName: string;
+  invoiceId: string;
+  amountDue: string;
+  amountReceived: string;
+  paymentMethod: string;
+  orderId?: string | null;
+}
+
+/** Polished receipt-style email for merchant payment notifications. */
+export function renderPaymentAlertEmail(data: PaymentAlertEmailData): string {
+  const paid = data.status === "paid";
+  const eyebrow = paid ? "PAYMENT RECEIVED" : "PAYMENT NEEDS ATTENTION";
+  const headline = paid ? "You made a sale!" : "A payment came in short";
+  const intro = paid
+    ? `Great news — ${data.storeName} just received a payment.`
+    : `${data.storeName} received a payment, but it did not cover the full invoice.`;
+  const accent = paid ? "#F6A21E" : "#D97706";
+  const badgeBg = paid ? "#FFF7E8" : "#FFF4E5";
+  const statusLabel = paid ? "Paid in full" : "Underpaid";
+  const orderRow = data.orderId
+    ? detailRow("Order reference", data.orderId)
+    : "";
+
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#2B3242;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(headline)} ${escapeHtml(data.amountReceived)} at ${escapeHtml(data.storeName)}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;background:#ffffff;"><tr><td align="center" style="padding:32px 16px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;border:1px solid #E7E1D2;border-radius:12px;overflow:hidden;">
+      <tr><td style="background:#0D1B33;padding:24px 32px;border-bottom:4px solid ${accent};">
+        <div style="font-size:22px;line-height:1;font-weight:900;color:#ffffff;">Nectar<span style="color:#F6A21E;">Pay</span></div>
+        <div style="margin-top:8px;font-size:12px;line-height:1.4;color:#B7C0D4;">Payment notification for ${escapeHtml(data.storeName)}</div>
+      </td></tr>
+      <tr><td style="padding:36px 32px 30px;background:#ffffff;">
+        <div style="font-size:12px;line-height:1.4;font-weight:800;letter-spacing:1.5px;color:${accent};">${eyebrow}</div>
+        <h1 style="margin:8px 0 10px;font-size:30px;line-height:1.15;color:#0D1B33;">${headline}</h1>
+        <p style="margin:0 0 26px;font-size:16px;line-height:1.55;color:#4B5563;">${escapeHtml(intro)}</p>
+
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;background:${badgeBg};border:1px solid #F2D7A3;border-radius:10px;">
+          <tr><td align="center" style="padding:24px 20px;">
+            <div style="font-size:13px;font-weight:700;color:#6A7182;">${statusLabel}</div>
+            <div style="margin-top:5px;font-size:38px;line-height:1.1;font-weight:900;color:#0D1B33;">${escapeHtml(data.amountReceived)}</div>
+          </td></tr>
+        </table>
+
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;margin-top:24px;border-collapse:collapse;">
+          ${detailRow("Store", data.storeName)}
+          ${detailRow("Invoice", data.invoiceId)}
+          ${detailRow("Payment method", data.paymentMethod)}
+          ${detailRow("Invoice total", data.amountDue)}
+          ${orderRow}
+        </table>
+
+        <div style="margin-top:28px;text-align:center;">
+          <a href="https://app.nectar-pay.com/dashboard" style="display:inline-block;padding:14px 24px;border-radius:8px;background:#F6A21E;color:#0D1B33;font-size:15px;font-weight:800;text-decoration:none;">View sale in NectarPay</a>
+        </div>
+        <p style="margin:22px 0 0;text-align:center;font-size:12px;line-height:1.5;color:#6A7182;">This notification was sent by NectarPay for ${escapeHtml(data.storeName)}.</p>
+      </td></tr>
+      <tr><td style="padding:20px 28px;background:#FAF8F3;border-top:1px solid #E7E1D2;text-align:center;">
+        <p style="margin:0 0 7px;font-size:12px;color:#6A7182;">Part of the <a href="https://honest.money" style="color:#B96A00;text-decoration:none;">honest.money ecosystem</a></p>
+        <p style="margin:0;font-size:11px;color:#6A7182;"><a href="https://app.nectar-pay.com/terms" style="color:#6A7182;">Terms</a> &nbsp;·&nbsp; <a href="https://app.nectar-pay.com/privacy" style="color:#6A7182;">Privacy</a> &nbsp;·&nbsp; <a href="https://app.nectar-pay.com/manifesto" style="color:#6A7182;">Manifesto</a></p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
+function detailRow(label: string, value: string): string {
+  return `<tr><td style="padding:11px 0;border-bottom:1px solid #E7E1D2;font-size:13px;color:#6A7182;">${escapeHtml(label)}</td><td align="right" style="padding:11px 0;border-bottom:1px solid #E7E1D2;font-size:13px;font-weight:700;color:#2B3242;">${escapeHtml(value)}</td></tr>`;
+}
+
+/** Minimal branded HTML wrapper for non-payment merchant alert emails. */
 export function renderAlertEmail(subject: string, lines: string[]): string {
   const rows = lines
     .map(

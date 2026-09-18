@@ -15,5 +15,10 @@
 - [x] Invite people by email to a single store with View only / Manager / Full access
 - [x] Accept flow at /invite/<token>, change level or remove access, cancel pending invites
 - [x] Access rules enforced in the database (owner-only: wallet setup, billing, closing a store)
+- [x] Send one combined invitation when granting access to multiple or all stores
 
 - [x] Merchant reports suite at /reports (summary, sales, methods, stores & devices, customers & invoices, settlement & fees, tax)
+
+## Merchant payment notifications
+- [x] Branded sale receipt email with store, amount, payment method, invoice, and order details
+- [x] Celebratory paid-sale message and clear underpayment warning
