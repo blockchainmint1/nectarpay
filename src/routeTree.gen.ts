@@ -70,6 +70,7 @@ import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated.admin.index'
 import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authenticated.account.index'
 import { Route as LovableEmailEventsRouteImport } from './routes/lovable/email/events'
+import { Route as ApiPublicDevSignupEmailSampleRouteImport } from './routes/api.public.dev-signup-email-sample'
 import { Route as ApiPublicDemoResetRouteImport } from './routes/api/public/demo-reset'
 import { Route as AuthenticatedStoresNewRouteImport } from './routes/_authenticated.stores.new'
 import { Route as AuthenticatedStoresStoreIdRouteImport } from './routes/_authenticated.stores.$storeId'
@@ -467,6 +468,12 @@ const LovableEmailEventsRoute = LovableEmailEventsRouteImport.update({
   path: '/lovable/email/events',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDevSignupEmailSampleRoute =
+  ApiPublicDevSignupEmailSampleRouteImport.update({
+    id: '/api/public/dev-signup-email-sample',
+    path: '/api/public/dev-signup-email-sample',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicDemoResetRoute = ApiPublicDemoResetRouteImport.update({
   id: '/api/public/demo-reset',
   path: '/api/public/demo-reset',
@@ -1043,6 +1050,7 @@ export interface FileRoutesByFullPath {
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/api/public/demo-reset': typeof ApiPublicDemoResetRoute
+  '/api/public/dev-signup-email-sample': typeof ApiPublicDevSignupEmailSampleRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
   '/account/': typeof AuthenticatedAccountIndexRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -1186,6 +1194,7 @@ export interface FileRoutesByTo {
   '/sales/$invoiceId': typeof AuthenticatedSalesInvoiceIdRoute
   '/stores/new': typeof AuthenticatedStoresNewRoute
   '/api/public/demo-reset': typeof ApiPublicDemoResetRoute
+  '/api/public/dev-signup-email-sample': typeof ApiPublicDevSignupEmailSampleRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
   '/account': typeof AuthenticatedAccountIndexRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -1337,6 +1346,7 @@ export interface FileRoutesById {
   '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/_authenticated/stores/new': typeof AuthenticatedStoresNewRoute
   '/api/public/demo-reset': typeof ApiPublicDemoResetRoute
+  '/api/public/dev-signup-email-sample': typeof ApiPublicDevSignupEmailSampleRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
   '/_authenticated/account/': typeof AuthenticatedAccountIndexRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -1488,6 +1498,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId'
     | '/stores/new'
     | '/api/public/demo-reset'
+    | '/api/public/dev-signup-email-sample'
     | '/lovable/email/events'
     | '/account/'
     | '/admin/'
@@ -1631,6 +1642,7 @@ export interface FileRouteTypes {
     | '/sales/$invoiceId'
     | '/stores/new'
     | '/api/public/demo-reset'
+    | '/api/public/dev-signup-email-sample'
     | '/lovable/email/events'
     | '/account'
     | '/admin'
@@ -1781,6 +1793,7 @@ export interface FileRouteTypes {
     | '/_authenticated/stores/$storeId'
     | '/_authenticated/stores/new'
     | '/api/public/demo-reset'
+    | '/api/public/dev-signup-email-sample'
     | '/lovable/email/events'
     | '/_authenticated/account/'
     | '/_authenticated/admin/'
@@ -1893,6 +1906,7 @@ export interface RootRouteChildren {
   TSlugRoute: typeof TSlugRoute
   IntegrationsIndexRoute: typeof IntegrationsIndexRoute
   ApiPublicDemoResetRoute: typeof ApiPublicDemoResetRoute
+  ApiPublicDevSignupEmailSampleRoute: typeof ApiPublicDevSignupEmailSampleRoute
   LovableEmailEventsRoute: typeof LovableEmailEventsRoute
   ApiPublicAffiliateClickRoute: typeof ApiPublicAffiliateClickRoute
   ApiPublicAuthWalletCallbackRoute: typeof ApiPublicAuthWalletCallbackRoute
@@ -2354,6 +2368,13 @@ declare module '@tanstack/react-router' {
       path: '/lovable/email/events'
       fullPath: '/lovable/email/events'
       preLoaderRoute: typeof LovableEmailEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/dev-signup-email-sample': {
+      id: '/api/public/dev-signup-email-sample'
+      path: '/api/public/dev-signup-email-sample'
+      fullPath: '/api/public/dev-signup-email-sample'
+      preLoaderRoute: typeof ApiPublicDevSignupEmailSampleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/demo-reset': {
@@ -3341,6 +3362,7 @@ const rootRouteChildren: RootRouteChildren = {
   TSlugRoute: TSlugRoute,
   IntegrationsIndexRoute: IntegrationsIndexRoute,
   ApiPublicDemoResetRoute: ApiPublicDemoResetRoute,
+  ApiPublicDevSignupEmailSampleRoute: ApiPublicDevSignupEmailSampleRoute,
   LovableEmailEventsRoute: LovableEmailEventsRoute,
   ApiPublicAffiliateClickRoute: ApiPublicAffiliateClickRoute,
   ApiPublicAuthWalletCallbackRoute: ApiPublicAuthWalletCallbackRoute,
