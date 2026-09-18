@@ -180,3 +180,28 @@ export const cancelStoreInvoice = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+/** Full detail for one sale/invoice, including on-chain transactions. */
+export const getStoreInvoiceDetail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => IdInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: inv, error } = await supabase
+      .from("invoices")
+      .select(
+        `${SELECT_COLS}, derivation_index, address_index, redirect_url, stores!inner(id, name, fiat_currency)`,
+      )
+      .eq("id", data.invoice_id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!inv) throw new Error("Sale not found.");
+
+    const { data: txs } = await supabase
+      .from("transactions")
+      .select("id, tx_hash, amount, confirmations, block_height, first_seen_at, confirmed_at, token_symbol")
+      .eq("invoice_id", data.invoice_id)
+      .order("first_seen_at", { ascending: true });
+
+    return { invoice: inv, transactions: txs ?? [] };
+  });
