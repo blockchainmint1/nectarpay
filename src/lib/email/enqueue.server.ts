@@ -117,6 +117,10 @@ export function renderPaymentAlertEmail(data: PaymentAlertEmailData): string {
   const orderRow = data.orderId
     ? detailRow("Order reference", data.orderId)
     : "";
+  const saleUrl = data.invoiceUuid
+    ? `https://app.nectar-pay.com/sales/${encodeURIComponent(data.invoiceUuid)}`
+    : "https://app.nectar-pay.com/dashboard";
+  const ctaLabel = data.invoiceUuid ? "View this sale" : "View sale in NectarPay";
 
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#2B3242;">
