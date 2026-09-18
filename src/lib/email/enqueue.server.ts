@@ -152,7 +152,7 @@ export function renderPaymentAlertEmail(data: PaymentAlertEmailData): string {
         </table>
 
         <div style="margin-top:28px;text-align:center;">
-          <a href="https://app.nectar-pay.com/dashboard" style="display:inline-block;padding:14px 24px;border-radius:8px;background:#F6A21E;color:#0D1B33;font-size:15px;font-weight:800;text-decoration:none;">View sale in NectarPay</a>
+          <a href="${saleUrl}" style="display:inline-block;padding:14px 24px;border-radius:8px;background:#F6A21E;color:#0D1B33;font-size:15px;font-weight:800;text-decoration:none;">${ctaLabel}</a>
         </div>
         <p style="margin:22px 0 0;text-align:center;font-size:12px;line-height:1.5;color:#6A7182;">This notification was sent by NectarPay for ${escapeHtml(data.storeName)}.</p>
       </td></tr>
