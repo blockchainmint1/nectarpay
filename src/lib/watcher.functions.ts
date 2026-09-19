@@ -141,6 +141,23 @@ export async function recordTransaction(
     .eq("tx_hash", txHash)
     .maybeSingle();
   const now = new Date().toISOString();
+
+  // Cross-invoice guard: a single on-chain tx can only pay ONE invoice. EVM
+  // addresses get recycled, so a later invoice on the same address can
+  // re-discover an older tx — never link it to a second invoice.
+  if (!existing) {
+    const { data: claimed } = await supabaseAdmin
+      .from("transactions")
+      .select("id, invoice_id")
+      .eq("tx_hash", txHash)
+      .neq("invoice_id", invoiceId)
+      .limit(1);
+    if (claimed?.length) {
+      console.warn(`[watcher] tx ${txHash} already credited to invoice ${claimed[0].invoice_id}; skipping ${invoiceId}`);
+      return;
+    }
+  }
+
   if (existing) {
     await supabaseAdmin
       .from("transactions")
@@ -208,7 +225,7 @@ export async function settleInvoice(
     .select("id, status, store_id, chain, address, fiat_amount, fiat_currency, external_order_id, token_symbol, rate, stores(name, owner_id, webhook_url, webhook_secret)")
     .eq("id", invoiceId)
     .single();
-  if (!inv || ["confirmed", "expired", "cancelled"].includes(inv.status)) {
+  if (!inv || ["confirmed", "overpaid", "expired", "cancelled"].includes(inv.status)) {
     return { status: inv?.status ?? "unknown", changed: false, paidUsd: 0 };
   }
 
@@ -235,10 +252,18 @@ export async function settleInvoice(
   if (newStatus === inv.status) return { status: newStatus, changed: false, paidUsd: paidAmountUsd };
 
 
-  await supabaseAdmin
+  // Atomic claim: only flip the row if it's still in a pre-settlement state.
+  // Two watcher runs can race the same invoice — the loser updates 0 rows and
+  // must NOT send notifications/webhooks again.
+  const { data: claimedRows } = await supabaseAdmin
     .from("invoices")
     .update({ status: newStatus })
-    .eq("id", invoiceId);
+    .eq("id", invoiceId)
+    .not("status", "in", '("confirmed","overpaid","expired","cancelled")')
+    .select("id");
+  if (!claimedRows?.length) {
+    return { status: newStatus, changed: false, paidUsd: paidAmountUsd };
+  }
 
   const store = inv.stores as { name: string | null; owner_id: string; webhook_url: string | null; webhook_secret: string | null } | null;
   const ownerId = store?.owner_id;
