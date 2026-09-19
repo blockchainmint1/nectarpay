@@ -328,7 +328,7 @@ export async function settleInvoice(
 
   // If this invoice backs a Terminal Kit checkout, forward the order to
   // BlockchainMint for fulfillment as soon as it confirms.
-  if (newStatus === "confirmed") {
+  if (newStatus === "confirmed" || newStatus === "overpaid") {
     try {
       const { forwardKitOrderToBmForInvoice } = await import("./bm-fulfillment.server");
       await forwardKitOrderToBmForInvoice(inv.id);
