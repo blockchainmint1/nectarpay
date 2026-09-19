@@ -157,8 +157,25 @@ export async function recordTransaction(
   blockHeight: number | null,
   isConfirmed: boolean,
   tokenSymbol: string | null = null,
+  /** On-chain time of the credit in ms (null = mempool/unknown). */
+  txTimeMs: number | null = null,
 ) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  // Backstop: never credit an invoice with money that moved before the invoice
+  // existed. Every chain path passes the on-chain time; this is the last gate.
+  if (txTimeMs != null) {
+    const { data: invRow } = await supabaseAdmin
+      .from("invoices")
+      .select("created_at")
+      .eq("id", invoiceId)
+      .maybeSingle();
+    if (creditPredatesInvoice(txTimeMs, invRow?.created_at ?? null)) {
+      console.warn(`[watcher] tx ${txHash} predates invoice ${invoiceId}; ignoring`);
+      return;
+    }
+  }
+
   const { data: existing } = await supabaseAdmin
     .from("transactions")
     .select("id")
