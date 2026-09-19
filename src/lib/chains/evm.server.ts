@@ -51,6 +51,7 @@ export async function getTransfersTo(
     rawValue: string;
     decimals: number;
     isNative: boolean;
+    blockTimeMs: number | null;
   }[]
 > {
   if (addresses.length === 0) return [];
@@ -68,7 +69,7 @@ export async function getTransfersTo(
         fromBlock: fromHex,
         toAddress: addr,
         category: ["external", "erc20"],
-        withMetadata: false,
+        withMetadata: true,
         excludeZeroValue: true,
         maxCount: "0x32", // 50
         contractAddresses: undefined as undefined | string[],
@@ -99,6 +100,9 @@ export async function getTransfersTo(
         rawValue: t.rawContract.value,
         decimals,
         isNative,
+        blockTimeMs: t.metadata?.blockTimestamp
+          ? (Number.isFinite(Date.parse(t.metadata.blockTimestamp)) ? Date.parse(t.metadata.blockTimestamp) : null)
+          : null,
       });
     }
   }

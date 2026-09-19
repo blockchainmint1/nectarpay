@@ -411,7 +411,7 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
-    .select("id, store_id, chain, address, token_symbol, fiat_amount, status, rate, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd)")
+    .select("id, store_id, chain, address, token_symbol, fiat_amount, status, rate, created_at, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd)")
     .eq("id", invoiceId)
     .maybeSingle();
   if (!inv || !inv.address || !isBtcLikeChain(inv.chain)) return false;
@@ -658,7 +658,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
         const cfgByStoreId = new Map(configList.map((c) => [c.store_id, c]));
         const { data: openInvoices } = await supabaseAdmin
           .from("invoices")
-          .select("id, store_id, address, token_symbol, fiat_amount, status, rate, crypto_amount")
+          .select("id, store_id, address, token_symbol, fiat_amount, status, rate, crypto_amount, created_at")
           .eq("chain", chain as ChainKind)
           .in("store_id", configList.map((c) => c.store_id))
           .in("status", ["pending", "detected", "underpaid"])
@@ -804,7 +804,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               ) as never[];
               const invQuery = supabaseAdmin
                 .from("invoices")
-                .select("id, fiat_amount, status, chain, token_symbol")
+                .select("id, fiat_amount, status, chain, token_symbol, created_at")
                 .ilike("address", t.to) // EVM addresses are stored checksum-cased; match case-insensitively
                 .in("chain", matchChains)
                 .in("status", ["pending", "detected", "underpaid"]);
@@ -895,7 +895,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           for (const t of credits) {
             const { data: candidates } = await supabaseAdmin
               .from("invoices")
-              .select("id, fiat_amount, status, token_symbol, crypto_amount")
+              .select("id, fiat_amount, status, token_symbol, crypto_amount, created_at")
               .eq("address", a.address)
               .eq("chain", "tron")
               .in("status", ["pending", "detected", "underpaid"]);
@@ -964,6 +964,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               status: string;
               token_symbol: string | null;
               crypto_amount: number | null;
+              created_at: string;
             };
             const human = Number(BigInt(c.rawValue)) / 10 ** c.decimals;
             const matchToken = (row: InvMatch) =>
@@ -975,7 +976,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               const prefix = c.memo.trim().slice(0, 8);
               const { data } = await supabaseAdmin
                 .from("invoices")
-                .select("id, fiat_amount, status, token_symbol, crypto_amount")
+                .select("id, fiat_amount, status, token_symbol, crypto_amount, created_at")
                 .eq("store_id", a.store_id)
                 .eq("chain", "sol")
                 .ilike("id", `${prefix}%`);
@@ -984,7 +985,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             if (!inv) {
               const { data } = await supabaseAdmin
                 .from("invoices")
-                .select("id, fiat_amount, status, token_symbol, crypto_amount")
+                .select("id, fiat_amount, status, token_symbol, crypto_amount, created_at")
                 .eq("address", a.address)
                 .eq("chain", "sol")
                 .in("status", ["pending", "detected", "underpaid"])
