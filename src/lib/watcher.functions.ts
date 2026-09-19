@@ -214,12 +214,24 @@ export async function settleInvoice(
 
   const lockedRate = inv.rate == null ? null : Number(inv.rate);
   const paidAmountUsd = await totalPaidUsdForInvoice(inv.id, inv.token_symbol ?? null, lockedRate);
-  const isPaid = paidAmountUsd + 0.005 >= amountDueUsd;
-  const newStatus: "confirmed" | "underpaid" | typeof inv.status = isPaid
-    ? "confirmed"
-    : paidAmountUsd > 0
-      ? "underpaid"
-      : inv.status;
+
+  // Shortfall cushion: accept a payment that lands within 1% of the invoice
+  // total, capped at $25 so a large invoice can't give away a big amount.
+  const shortTolerance = Math.min(amountDueUsd * 0.01, 25) + 0.005;
+  // Overage flag: anything more than 1% (and at least $1) above the total is
+  // still treated as paid, but recorded as an overpayment so it can be seen.
+  const overTolerance = Math.max(amountDueUsd * 0.01, 1);
+  const isPaid = paidAmountUsd + shortTolerance >= amountDueUsd;
+  const isOverpaid = isPaid && paidAmountUsd > amountDueUsd + overTolerance;
+  const shortfallUsd = Math.max(amountDueUsd - paidAmountUsd, 0);
+  const overageUsd = Math.max(paidAmountUsd - amountDueUsd, 0);
+  const newStatus: "confirmed" | "overpaid" | "underpaid" | typeof inv.status = isOverpaid
+    ? "overpaid"
+    : isPaid
+      ? "confirmed"
+      : paidAmountUsd > 0
+        ? "underpaid"
+        : inv.status;
   if (newStatus === inv.status) return { status: newStatus, changed: false, paidUsd: paidAmountUsd };
 
 
