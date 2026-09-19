@@ -9,6 +9,7 @@ const TELEGRAM_API = "https://api.telegram.org";
 export type NotifyEvent =
   | "invoice_paid"
   | "invoice_underpaid"
+  | "invoice_overpaid"
   | "invoice_expired"
   | "deposit_received"
   | "plan_renewed"
