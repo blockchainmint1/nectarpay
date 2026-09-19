@@ -164,6 +164,7 @@ export function renderPaymentAlertEmail(data: PaymentAlertEmailData): string {
           ${detailRow("Invoice", data.invoiceId)}
           ${detailRow("Payment method", data.paymentMethod)}
           ${detailRow("Invoice total", data.amountDue)}
+          ${differenceRow}
           ${orderRow}
         </table>
 
