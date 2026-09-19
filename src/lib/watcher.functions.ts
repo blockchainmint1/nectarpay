@@ -442,7 +442,9 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
     const paidUsd = paidCrypto * usdRate;
     const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd, chainKey, inv.token_symbol);
     const isConfirmed = credit.confirmations >= required;
-    await recordTransaction(inv.id, credit.txid, paidCrypto, credit.confirmations, null, isConfirmed);
+    const creditTimeMs = credit.blockTime == null ? null : credit.blockTime * 1000;
+    if (creditPredatesInvoice(creditTimeMs, inv.created_at)) continue;
+    await recordTransaction(inv.id, credit.txid, paidCrypto, credit.confirmations, null, isConfirmed, null, creditTimeMs);
     if (isConfirmed) {
       const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
       changed = settled.changed || changed;
@@ -565,7 +567,7 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
       const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd, net.symbol);
       const isConfirmed = confirmations >= required;
 
-      await recordTransaction(inv.id, t.hash, human, confirmations, blockNum, isConfirmed, token ? token : null);
+      await recordTransaction(inv.id, t.hash, human, confirmations, blockNum, isConfirmed, token ? token : null, Number.isFinite(blockTime) ? blockTime : null);
       if (isConfirmed) {
         const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
         changed = settled.changed || changed;
@@ -709,6 +711,8 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             const paidUsd = paidCrypto * usdRate;
             const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, paidUsd, chain, inv.token_symbol);
             const isConfirmed = credit.confirmations >= required;
+            const creditTimeMs = credit.blockTime == null ? null : credit.blockTime * 1000;
+            if (creditPredatesInvoice(creditTimeMs, inv.created_at)) continue;
             await recordTransaction(
               inv.id,
               credit.txid,
@@ -716,6 +720,8 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               credit.confirmations,
               null,
               isConfirmed,
+              null,
+              creditTimeMs,
             );
             if (isConfirmed) {
               const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
@@ -816,7 +822,8 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               const cfg = configList[0];
               const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, usd, net.symbol);
               const isConfirmed = confirmations >= required;
-              await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed, t.asset);
+              if (creditPredatesInvoice(t.blockTimeMs ?? null, inv.created_at)) continue;
+              await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed, t.asset, t.blockTimeMs ?? null);
               if (isConfirmed) {
                 const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
                 if (settled.changed) r.invoicesUpdated++;
@@ -906,7 +913,8 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             });
             if (!inv) continue;
             const usd = t.isNative ? human * (await getUsdRate("TRX")) : human;
-            await recordTransaction(inv.id, t.txHash, human, net.confirmationsRequired, null, true, t.asset);
+            if (creditPredatesInvoice(t.blockTime ?? null, inv.created_at)) continue;
+            await recordTransaction(inv.id, t.txHash, human, net.confirmationsRequired, null, true, t.asset, t.blockTime ?? null);
             const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
             if (settled.changed) r.invoicesUpdated++;
           }
@@ -987,7 +995,9 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             if (!inv) continue;
             const usd = c.isNative ? human * (await getUsdRate("SOL")) : human;
             const isConfirmed = c.confirmations >= net.confirmationsRequired;
-            await recordTransaction(inv.id, c.signature, human, c.confirmations, c.slot, isConfirmed, c.asset);
+            const solTimeMs = c.blockTime == null ? null : c.blockTime * 1000;
+            if (creditPredatesInvoice(solTimeMs, inv.created_at)) continue;
+            await recordTransaction(inv.id, c.signature, human, c.confirmations, c.slot, isConfirmed, c.asset, solTimeMs);
             const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
             if (settled.changed) r.invoicesUpdated++;
           }

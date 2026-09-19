@@ -11,6 +11,7 @@ interface AssetTransfer {
   value: number | null;
   asset: string | null;
   category: "external" | "internal" | "erc20" | "erc721" | "erc1155" | "specialnft";
+  metadata?: { blockTimestamp?: string };
   rawContract: { value: string; address: string | null; decimal: string | null };
 }
 
