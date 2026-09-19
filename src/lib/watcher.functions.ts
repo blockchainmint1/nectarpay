@@ -252,10 +252,18 @@ export async function settleInvoice(
   if (newStatus === inv.status) return { status: newStatus, changed: false, paidUsd: paidAmountUsd };
 
 
-  await supabaseAdmin
+  // Atomic claim: only flip the row if it's still in a pre-settlement state.
+  // Two watcher runs can race the same invoice — the loser updates 0 rows and
+  // must NOT send notifications/webhooks again.
+  const { data: claimedRows } = await supabaseAdmin
     .from("invoices")
     .update({ status: newStatus })
-    .eq("id", invoiceId);
+    .eq("id", invoiceId)
+    .not("status", "in", '("confirmed","overpaid","expired","cancelled")')
+    .select("id");
+  if (!claimedRows?.length) {
+    return { status: newStatus, changed: false, paidUsd: paidAmountUsd };
+  }
 
   const store = inv.stores as { name: string | null; owner_id: string; webhook_url: string | null; webhook_secret: string | null } | null;
   const ownerId = store?.owner_id;
