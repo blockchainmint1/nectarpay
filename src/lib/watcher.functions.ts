@@ -288,9 +288,18 @@ export async function settleInvoice(
   }
 
   // Outbound signed webhook to the merchant's server, if configured.
-  if (store?.webhook_url && store.webhook_secret && (newStatus === "confirmed" || newStatus === "underpaid")) {
+  if (
+    store?.webhook_url &&
+    store.webhook_secret &&
+    (newStatus === "confirmed" || newStatus === "overpaid" || newStatus === "underpaid")
+  ) {
     const { deliverWebhook } = await import("./webhooks.server");
-    const eventType = newStatus === "confirmed" ? "invoice.paid" : "invoice.underpaid";
+    const eventType =
+      newStatus === "underpaid"
+        ? "invoice.underpaid"
+        : newStatus === "overpaid"
+          ? "invoice.overpaid"
+          : "invoice.paid";
     const eventId = (crypto as { randomUUID: () => string }).randomUUID();
     const result = await deliverWebhook({
       url: store.webhook_url,
