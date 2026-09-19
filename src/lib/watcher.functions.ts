@@ -17,6 +17,31 @@ import { getUsdRate } from "./rates.functions";
 
 const ADDRESS_WINDOW = 20; // BIP44 gap-limit-style lookahead per chain_config
 
+/**
+ * Clock-skew / propagation grace. A payment can legitimately land a couple of
+ * minutes "before" the invoice row if node timestamps drift or the customer
+ * pre-broadcast, but nothing older than this can belong to the invoice.
+ */
+const PRE_INVOICE_GRACE_MS = 10 * 60 * 1000;
+
+/**
+ * True when an on-chain credit happened BEFORE the invoice was created.
+ * Addresses get reused/recycled (EVM especially), so an old transaction on the
+ * same address must never settle a new invoice.
+ *
+ * `txTimeMs == null` means mempool / unknown time — that's a live payment, keep it.
+ */
+export function creditPredatesInvoice(
+  txTimeMs: number | null | undefined,
+  invoiceCreatedAt: string | null | undefined,
+): boolean {
+  if (txTimeMs == null || !Number.isFinite(txTimeMs) || txTimeMs <= 0) return false;
+  if (!invoiceCreatedAt) return false;
+  const created = Date.parse(invoiceCreatedAt);
+  if (!Number.isFinite(created)) return false;
+  return txTimeMs < created - PRE_INVOICE_GRACE_MS;
+}
+
 export interface WatcherResult {
   chain: string;
   addresses: number;
@@ -132,8 +157,25 @@ export async function recordTransaction(
   blockHeight: number | null,
   isConfirmed: boolean,
   tokenSymbol: string | null = null,
+  /** On-chain time of the credit in ms (null = mempool/unknown). */
+  txTimeMs: number | null = null,
 ) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  // Backstop: never credit an invoice with money that moved before the invoice
+  // existed. Every chain path passes the on-chain time; this is the last gate.
+  if (txTimeMs != null) {
+    const { data: invRow } = await supabaseAdmin
+      .from("invoices")
+      .select("created_at")
+      .eq("id", invoiceId)
+      .maybeSingle();
+    if (creditPredatesInvoice(txTimeMs, invRow?.created_at ?? null)) {
+      console.warn(`[watcher] tx ${txHash} predates invoice ${invoiceId}; ignoring`);
+      return;
+    }
+  }
+
   const { data: existing } = await supabaseAdmin
     .from("transactions")
     .select("id")
@@ -369,7 +411,7 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
-    .select("id, store_id, chain, address, token_symbol, fiat_amount, status, rate, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd)")
+    .select("id, store_id, chain, address, token_symbol, fiat_amount, status, rate, created_at, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd)")
     .eq("id", invoiceId)
     .maybeSingle();
   if (!inv || !inv.address || !isBtcLikeChain(inv.chain)) return false;
@@ -400,7 +442,9 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
     const paidUsd = paidCrypto * usdRate;
     const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd, chainKey, inv.token_symbol);
     const isConfirmed = credit.confirmations >= required;
-    await recordTransaction(inv.id, credit.txid, paidCrypto, credit.confirmations, null, isConfirmed);
+    const creditTimeMs = credit.blockTime == null ? null : credit.blockTime * 1000;
+    if (creditPredatesInvoice(creditTimeMs, inv.created_at)) continue;
+    await recordTransaction(inv.id, credit.txid, paidCrypto, credit.confirmations, null, isConfirmed, null, creditTimeMs);
     if (isConfirmed) {
       const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
       changed = settled.changed || changed;
@@ -523,7 +567,7 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
       const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd, net.symbol);
       const isConfirmed = confirmations >= required;
 
-      await recordTransaction(inv.id, t.hash, human, confirmations, blockNum, isConfirmed, token ? token : null);
+      await recordTransaction(inv.id, t.hash, human, confirmations, blockNum, isConfirmed, token ? token : null, Number.isFinite(blockTime) ? blockTime : null);
       if (isConfirmed) {
         const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
         changed = settled.changed || changed;
@@ -614,7 +658,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
         const cfgByStoreId = new Map(configList.map((c) => [c.store_id, c]));
         const { data: openInvoices } = await supabaseAdmin
           .from("invoices")
-          .select("id, store_id, address, token_symbol, fiat_amount, status, rate, crypto_amount")
+          .select("id, store_id, address, token_symbol, fiat_amount, status, rate, crypto_amount, created_at")
           .eq("chain", chain as ChainKind)
           .in("store_id", configList.map((c) => c.store_id))
           .in("status", ["pending", "detected", "underpaid"])
@@ -667,6 +711,8 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             const paidUsd = paidCrypto * usdRate;
             const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, paidUsd, chain, inv.token_symbol);
             const isConfirmed = credit.confirmations >= required;
+            const creditTimeMs = credit.blockTime == null ? null : credit.blockTime * 1000;
+            if (creditPredatesInvoice(creditTimeMs, inv.created_at)) continue;
             await recordTransaction(
               inv.id,
               credit.txid,
@@ -674,6 +720,8 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               credit.confirmations,
               null,
               isConfirmed,
+              null,
+              creditTimeMs,
             );
             if (isConfirmed) {
               const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
@@ -756,7 +804,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               ) as never[];
               const invQuery = supabaseAdmin
                 .from("invoices")
-                .select("id, fiat_amount, status, chain, token_symbol")
+                .select("id, fiat_amount, status, chain, token_symbol, created_at")
                 .ilike("address", t.to) // EVM addresses are stored checksum-cased; match case-insensitively
                 .in("chain", matchChains)
                 .in("status", ["pending", "detected", "underpaid"]);
@@ -774,7 +822,8 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               const cfg = configList[0];
               const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, usd, net.symbol);
               const isConfirmed = confirmations >= required;
-              await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed, t.asset);
+              if (creditPredatesInvoice(t.blockTimeMs ?? null, inv.created_at)) continue;
+              await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed, t.asset, t.blockTimeMs ?? null);
               if (isConfirmed) {
                 const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
                 if (settled.changed) r.invoicesUpdated++;
@@ -846,7 +895,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           for (const t of credits) {
             const { data: candidates } = await supabaseAdmin
               .from("invoices")
-              .select("id, fiat_amount, status, token_symbol, crypto_amount")
+              .select("id, fiat_amount, status, token_symbol, crypto_amount, created_at")
               .eq("address", a.address)
               .eq("chain", "tron")
               .in("status", ["pending", "detected", "underpaid"]);
@@ -864,7 +913,8 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             });
             if (!inv) continue;
             const usd = t.isNative ? human * (await getUsdRate("TRX")) : human;
-            await recordTransaction(inv.id, t.txHash, human, net.confirmationsRequired, null, true, t.asset);
+            if (creditPredatesInvoice(t.blockTime ?? null, inv.created_at)) continue;
+            await recordTransaction(inv.id, t.txHash, human, net.confirmationsRequired, null, true, t.asset, t.blockTime ?? null);
             const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
             if (settled.changed) r.invoicesUpdated++;
           }
@@ -914,6 +964,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               status: string;
               token_symbol: string | null;
               crypto_amount: number | null;
+              created_at: string;
             };
             const human = Number(BigInt(c.rawValue)) / 10 ** c.decimals;
             const matchToken = (row: InvMatch) =>
@@ -925,7 +976,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               const prefix = c.memo.trim().slice(0, 8);
               const { data } = await supabaseAdmin
                 .from("invoices")
-                .select("id, fiat_amount, status, token_symbol, crypto_amount")
+                .select("id, fiat_amount, status, token_symbol, crypto_amount, created_at")
                 .eq("store_id", a.store_id)
                 .eq("chain", "sol")
                 .ilike("id", `${prefix}%`);
@@ -934,7 +985,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             if (!inv) {
               const { data } = await supabaseAdmin
                 .from("invoices")
-                .select("id, fiat_amount, status, token_symbol, crypto_amount")
+                .select("id, fiat_amount, status, token_symbol, crypto_amount, created_at")
                 .eq("address", a.address)
                 .eq("chain", "sol")
                 .in("status", ["pending", "detected", "underpaid"])
@@ -945,7 +996,9 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             if (!inv) continue;
             const usd = c.isNative ? human * (await getUsdRate("SOL")) : human;
             const isConfirmed = c.confirmations >= net.confirmationsRequired;
-            await recordTransaction(inv.id, c.signature, human, c.confirmations, c.slot, isConfirmed, c.asset);
+            const solTimeMs = c.blockTime == null ? null : c.blockTime * 1000;
+            if (creditPredatesInvoice(solTimeMs, inv.created_at)) continue;
+            await recordTransaction(inv.id, c.signature, human, c.confirmations, c.slot, isConfirmed, c.asset, solTimeMs);
             const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
             if (settled.changed) r.invoicesUpdated++;
           }
