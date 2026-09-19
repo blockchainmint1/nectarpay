@@ -9,6 +9,7 @@ const TELEGRAM_API = "https://api.telegram.org";
 export type NotifyEvent =
   | "invoice_paid"
   | "invoice_underpaid"
+  | "invoice_overpaid"
   | "invoice_expired"
   | "deposit_received"
   | "plan_renewed"
@@ -142,10 +143,17 @@ export async function notifyUser(
   if (prefs?.email_enabled && prefs.email_address) {
     const { enqueueAppEmail, renderAlertEmail, renderPaymentAlertEmail } = await import("@/lib/email/enqueue.server");
     const html =
-      (payload.event === "invoice_paid" || payload.event === "invoice_underpaid") &&
+      (payload.event === "invoice_paid" ||
+        payload.event === "invoice_underpaid" ||
+        payload.event === "invoice_overpaid") &&
       isPaymentEmailMetadata(payload.metadata)
         ? renderPaymentAlertEmail({
-            status: payload.event === "invoice_paid" ? "paid" : "underpaid",
+            status:
+              payload.event === "invoice_paid"
+                ? "paid"
+                : payload.event === "invoice_overpaid"
+                  ? "overpaid"
+                  : "underpaid",
             ...payload.metadata,
           })
         : renderAlertEmail(payload.subject, payload.text.split("\n"));

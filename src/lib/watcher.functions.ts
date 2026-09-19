@@ -214,12 +214,24 @@ export async function settleInvoice(
 
   const lockedRate = inv.rate == null ? null : Number(inv.rate);
   const paidAmountUsd = await totalPaidUsdForInvoice(inv.id, inv.token_symbol ?? null, lockedRate);
-  const isPaid = paidAmountUsd + 0.005 >= amountDueUsd;
-  const newStatus: "confirmed" | "underpaid" | typeof inv.status = isPaid
-    ? "confirmed"
-    : paidAmountUsd > 0
-      ? "underpaid"
-      : inv.status;
+
+  // Shortfall cushion: accept a payment that lands within 1% of the invoice
+  // total, capped at $25 so a large invoice can't give away a big amount.
+  const shortTolerance = Math.min(amountDueUsd * 0.01, 25) + 0.005;
+  // Overage flag: anything more than 1% (and at least $1) above the total is
+  // still treated as paid, but recorded as an overpayment so it can be seen.
+  const overTolerance = Math.max(amountDueUsd * 0.01, 1);
+  const isPaid = paidAmountUsd + shortTolerance >= amountDueUsd;
+  const isOverpaid = isPaid && paidAmountUsd > amountDueUsd + overTolerance;
+  const shortfallUsd = Math.max(amountDueUsd - paidAmountUsd, 0);
+  const overageUsd = Math.max(paidAmountUsd - amountDueUsd, 0);
+  const newStatus: "confirmed" | "overpaid" | "underpaid" | typeof inv.status = isOverpaid
+    ? "overpaid"
+    : isPaid
+      ? "confirmed"
+      : paidAmountUsd > 0
+        ? "underpaid"
+        : inv.status;
   if (newStatus === inv.status) return { status: newStatus, changed: false, paidUsd: paidAmountUsd };
 
 
@@ -239,14 +251,22 @@ export async function settleInvoice(
     const paymentMethod = inv.token_symbol
       ? `${inv.token_symbol.toUpperCase()} on ${chainLabel}`
       : chainLabel;
-    await notifyUser(ownerId, {
-      event: isPaid ? "invoice_paid" : "invoice_underpaid",
-      subject: isPaid
+    const shortAccepted = isPaid && !isOverpaid && shortfallUsd > 0.005;
+    const event = isOverpaid ? "invoice_overpaid" : isPaid ? "invoice_paid" : "invoice_underpaid";
+    const subject = isOverpaid
+      ? `⚠️ ${storeName} was overpaid · ${formatMoney(overageUsd)} extra`
+      : isPaid
         ? `🎉 ${storeName} made a sale · ${formatMoney(paidAmountUsd)}`
-        : `${storeName} received an underpayment`,
-      text: isPaid
-        ? `${storeName} made a sale! Invoice ${invoiceId.slice(0, 8)} was paid in full (${formatMoney(paidAmountUsd)} of ${formatMoney(amountDueUsd)}) via ${paymentMethod}.`
-        : `${storeName}: invoice ${invoiceId.slice(0, 8)} received only ${formatMoney(paidAmountUsd)} of ${formatMoney(amountDueUsd)} via ${paymentMethod}.`,
+        : `${storeName} received an underpayment`;
+    const text = isOverpaid
+      ? `${storeName}: invoice ${invoiceId.slice(0, 8)} received ${formatMoney(paidAmountUsd)} against ${formatMoney(amountDueUsd)} via ${paymentMethod} — ${formatMoney(overageUsd)} more than expected. The sale is marked paid; the overage needs review.`
+      : isPaid
+        ? `${storeName} made a sale! Invoice ${invoiceId.slice(0, 8)} was paid in full (${formatMoney(paidAmountUsd)} of ${formatMoney(amountDueUsd)}) via ${paymentMethod}.${shortAccepted ? ` Accepted within tolerance — ${formatMoney(shortfallUsd)} short.` : ""}`
+        : `${storeName}: invoice ${invoiceId.slice(0, 8)} received only ${formatMoney(paidAmountUsd)} of ${formatMoney(amountDueUsd)} via ${paymentMethod}.`;
+    await notifyUser(ownerId, {
+      event,
+      subject,
+      text,
       storeId: inv.store_id,
       metadata: {
         storeName,
@@ -256,14 +276,30 @@ export async function settleInvoice(
         amountReceived: formatMoney(paidAmountUsd),
         paymentMethod,
         orderId: inv.external_order_id,
+        differenceLabel: isOverpaid
+          ? `${formatMoney(overageUsd)} over`
+          : shortAccepted
+            ? `${formatMoney(shortfallUsd)} short (accepted)`
+            : !isPaid
+              ? `${formatMoney(shortfallUsd)} short`
+              : null,
       },
     });
   }
 
   // Outbound signed webhook to the merchant's server, if configured.
-  if (store?.webhook_url && store.webhook_secret && (newStatus === "confirmed" || newStatus === "underpaid")) {
+  if (
+    store?.webhook_url &&
+    store.webhook_secret &&
+    (newStatus === "confirmed" || newStatus === "overpaid" || newStatus === "underpaid")
+  ) {
     const { deliverWebhook } = await import("./webhooks.server");
-    const eventType = newStatus === "confirmed" ? "invoice.paid" : "invoice.underpaid";
+    const eventType =
+      newStatus === "underpaid"
+        ? "invoice.underpaid"
+        : newStatus === "overpaid"
+          ? "invoice.overpaid"
+          : "invoice.paid";
     const eventId = (crypto as { randomUUID: () => string }).randomUUID();
     const result = await deliverWebhook({
       url: store.webhook_url,
@@ -292,7 +328,7 @@ export async function settleInvoice(
 
   // If this invoice backs a Terminal Kit checkout, forward the order to
   // BlockchainMint for fulfillment as soon as it confirms.
-  if (newStatus === "confirmed") {
+  if (newStatus === "confirmed" || newStatus === "overpaid") {
     try {
       const { forwardKitOrderToBmForInvoice } = await import("./bm-fulfillment.server");
       await forwardKitOrderToBmForInvoice(inv.id);

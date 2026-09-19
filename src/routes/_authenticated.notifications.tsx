@@ -43,7 +43,8 @@ export const Route = createFileRoute("/_authenticated/notifications")({
 
 const EVENT_LABELS: Record<string, { label: string; help: string }> = {
   invoice_paid: { label: "Invoice paid", help: "An incoming payment fully settled an invoice." },
-  invoice_underpaid: { label: "Invoice underpaid", help: "A payment landed but is short of the invoice amount." },
+  invoice_underpaid: { label: "Invoice underpaid", help: "A payment landed but is short of the invoice amount, beyond the 1% cushion." },
+  invoice_overpaid: { label: "Invoice overpaid", help: "A payment came in more than 1% above the invoice amount. The sale still counts as paid." },
   invoice_expired: { label: "Invoice expired", help: "Time window closed without payment." },
   deposit_received: { label: "TXC deposit received", help: "Your TXC credit balance was topped up." },
   plan_renewed: { label: "Plan renewed", help: "Monthly subscription debit succeeded." },
