@@ -34,6 +34,7 @@ export const getNotificationPrefs = createServerFn({ method: "GET" })
         events: {
           invoice_paid: true,
           invoice_underpaid: true,
+          invoice_overpaid: true,
           invoice_expired: true,
           deposit_received: true,
           plan_renewed: true,
