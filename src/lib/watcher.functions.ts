@@ -251,14 +251,22 @@ export async function settleInvoice(
     const paymentMethod = inv.token_symbol
       ? `${inv.token_symbol.toUpperCase()} on ${chainLabel}`
       : chainLabel;
-    await notifyUser(ownerId, {
-      event: isPaid ? "invoice_paid" : "invoice_underpaid",
-      subject: isPaid
+    const shortAccepted = isPaid && !isOverpaid && shortfallUsd > 0.005;
+    const event = isOverpaid ? "invoice_overpaid" : isPaid ? "invoice_paid" : "invoice_underpaid";
+    const subject = isOverpaid
+      ? `⚠️ ${storeName} was overpaid · ${formatMoney(overageUsd)} extra`
+      : isPaid
         ? `🎉 ${storeName} made a sale · ${formatMoney(paidAmountUsd)}`
-        : `${storeName} received an underpayment`,
-      text: isPaid
-        ? `${storeName} made a sale! Invoice ${invoiceId.slice(0, 8)} was paid in full (${formatMoney(paidAmountUsd)} of ${formatMoney(amountDueUsd)}) via ${paymentMethod}.`
-        : `${storeName}: invoice ${invoiceId.slice(0, 8)} received only ${formatMoney(paidAmountUsd)} of ${formatMoney(amountDueUsd)} via ${paymentMethod}.`,
+        : `${storeName} received an underpayment`;
+    const text = isOverpaid
+      ? `${storeName}: invoice ${invoiceId.slice(0, 8)} received ${formatMoney(paidAmountUsd)} against ${formatMoney(amountDueUsd)} via ${paymentMethod} — ${formatMoney(overageUsd)} more than expected. The sale is marked paid; the overage needs review.`
+      : isPaid
+        ? `${storeName} made a sale! Invoice ${invoiceId.slice(0, 8)} was paid in full (${formatMoney(paidAmountUsd)} of ${formatMoney(amountDueUsd)}) via ${paymentMethod}.${shortAccepted ? ` Accepted within tolerance — ${formatMoney(shortfallUsd)} short.` : ""}`
+        : `${storeName}: invoice ${invoiceId.slice(0, 8)} received only ${formatMoney(paidAmountUsd)} of ${formatMoney(amountDueUsd)} via ${paymentMethod}.`;
+    await notifyUser(ownerId, {
+      event,
+      subject,
+      text,
       storeId: inv.store_id,
       metadata: {
         storeName,
@@ -268,6 +276,13 @@ export async function settleInvoice(
         amountReceived: formatMoney(paidAmountUsd),
         paymentMethod,
         orderId: inv.external_order_id,
+        differenceLabel: isOverpaid
+          ? `${formatMoney(overageUsd)} over`
+          : shortAccepted
+            ? `${formatMoney(shortfallUsd)} short (accepted)`
+            : !isPaid
+              ? `${formatMoney(shortfallUsd)} short`
+              : null,
       },
     });
   }
