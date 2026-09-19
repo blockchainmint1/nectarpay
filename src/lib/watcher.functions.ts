@@ -17,6 +17,31 @@ import { getUsdRate } from "./rates.functions";
 
 const ADDRESS_WINDOW = 20; // BIP44 gap-limit-style lookahead per chain_config
 
+/**
+ * Clock-skew / propagation grace. A payment can legitimately land a couple of
+ * minutes "before" the invoice row if node timestamps drift or the customer
+ * pre-broadcast, but nothing older than this can belong to the invoice.
+ */
+const PRE_INVOICE_GRACE_MS = 10 * 60 * 1000;
+
+/**
+ * True when an on-chain credit happened BEFORE the invoice was created.
+ * Addresses get reused/recycled (EVM especially), so an old transaction on the
+ * same address must never settle a new invoice.
+ *
+ * `txTimeMs == null` means mempool / unknown time — that's a live payment, keep it.
+ */
+export function creditPredatesInvoice(
+  txTimeMs: number | null | undefined,
+  invoiceCreatedAt: string | null | undefined,
+): boolean {
+  if (txTimeMs == null || !Number.isFinite(txTimeMs) || txTimeMs <= 0) return false;
+  if (!invoiceCreatedAt) return false;
+  const created = Date.parse(invoiceCreatedAt);
+  if (!Number.isFinite(created)) return false;
+  return txTimeMs < created - PRE_INVOICE_GRACE_MS;
+}
+
 export interface WatcherResult {
   chain: string;
   addresses: number;
