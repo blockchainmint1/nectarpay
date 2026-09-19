@@ -92,13 +92,15 @@ export async function enqueueAppEmail(
 }
 
 export interface PaymentAlertEmailData {
-  status: "paid" | "underpaid";
+  status: "paid" | "underpaid" | "overpaid";
   storeName: string;
   invoiceId: string;
   amountDue: string;
   amountReceived: string;
   paymentMethod: string;
   orderId?: string | null;
+  /** Human label for the gap, e.g. "$12.40 over" or "$1.24 short (accepted)". */
+  differenceLabel?: string | null;
   /** Full invoice UUID — used to deep-link the button to this exact sale. */
   invoiceUuid?: string | null;
 }
@@ -106,14 +108,28 @@ export interface PaymentAlertEmailData {
 /** Polished receipt-style email for merchant payment notifications. */
 export function renderPaymentAlertEmail(data: PaymentAlertEmailData): string {
   const paid = data.status === "paid";
-  const eyebrow = paid ? "PAYMENT RECEIVED" : "PAYMENT NEEDS ATTENTION";
-  const headline = paid ? "You made a sale!" : "A payment came in short";
+  const over = data.status === "overpaid";
+  const eyebrow = paid
+    ? "PAYMENT RECEIVED"
+    : over
+      ? "OVERPAYMENT RECEIVED"
+      : "PAYMENT NEEDS ATTENTION";
+  const headline = paid
+    ? "You made a sale!"
+    : over
+      ? "You made a sale — and then some"
+      : "A payment came in short";
   const intro = paid
     ? `Great news — ${data.storeName} just received a payment.`
-    : `${data.storeName} received a payment, but it did not cover the full invoice.`;
+    : over
+      ? `${data.storeName} received more than the invoice asked for. The sale is marked paid, but the extra amount needs a look.`
+      : `${data.storeName} received a payment, but it did not cover the full invoice.`;
   const accent = paid ? "#F6A21E" : "#D97706";
   const badgeBg = paid ? "#FFF7E8" : "#FFF4E5";
-  const statusLabel = paid ? "Paid in full" : "Underpaid";
+  const statusLabel = paid ? "Paid in full" : over ? "Overpaid" : "Underpaid";
+  const differenceRow = data.differenceLabel
+    ? detailRow("Difference", data.differenceLabel)
+    : "";
   const orderRow = data.orderId
     ? detailRow("Order reference", data.orderId)
     : "";
