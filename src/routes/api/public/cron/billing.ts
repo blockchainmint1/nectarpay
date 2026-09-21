@@ -7,6 +7,19 @@ import { notifyUser } from "@/lib/notify.server";
 import { getUsdRate } from "@/lib/rates.functions";
 import { scanTxcDeposits } from "@/lib/txc-deposit-scanner.server";
 
+function displayDate(value: Date): string {
+  return value.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+function displayPlanName(value: string): string {
+  return value.trim().toLowerCase() === "cheap" ? "Merchant" : value.trim();
+}
+
 async function rolloverBilling(): Promise<{
   renewed: number;
   blocked: number;
@@ -35,8 +48,12 @@ async function rolloverBilling(): Promise<{
       .eq("user_id", s.user_id);
     await notifyUser(s.user_id, {
       event: "grace_warning",
-      subject: "Account blocked — payment overdue",
+      subject: "Let’s get your NectarPay account running again",
       text: "Your subscription grace period has ended. Top up your TXC balance to restore API access.",
+      metadata: {
+        status: "blocked",
+        planName: displayPlanName(s.plan_id),
+      },
     });
     blocked++;
   }
@@ -52,6 +69,7 @@ async function rolloverBilling(): Promise<{
   for (const sub of dueRenewal ?? []) {
     const priceUsd = Number((sub.plans as { monthly_price_usd: number }).monthly_price_usd);
     const planName = (sub.plans as { name: string }).name;
+    const friendlyPlanName = displayPlanName(planName);
     const txcOwed = Number((priceUsd / txcRate).toFixed(8));
 
     const { data: balRow } = await supabaseAdmin.rpc("txc_balance", { _user_id: sub.user_id });
@@ -82,8 +100,16 @@ async function rolloverBilling(): Promise<{
         .eq("user_id", sub.user_id);
       await notifyUser(sub.user_id, {
         event: "plan_renewed",
-        subject: `${planName} plan renewed`,
+        subject: "You’re all set for another month!",
         text: `${txcOwed} TXC ($${priceUsd}) debited for next month.`,
+        metadata: {
+          status: "renewed",
+          planName: friendlyPlanName,
+          priceUsd: `$${priceUsd.toFixed(2)}`,
+          txcCharged: `${txcOwed.toFixed(8)} TXC`,
+          txcBalance: `${Math.max(0, balance - txcOwed).toFixed(8)} TXC`,
+          nextRenewal: displayDate(newEnd),
+        },
       });
       renewed++;
     } else {
@@ -95,8 +121,16 @@ async function rolloverBilling(): Promise<{
         .eq("user_id", sub.user_id);
       await notifyUser(sub.user_id, {
         event: "grace_warning",
-        subject: "Top up TXC to keep your account active",
+        subject: "A quick TXC top-up will keep NectarPay running",
         text: `Auto-renewal failed. Need ${txcOwed} TXC, have ${balance.toFixed(2)}. You have 7 days to top up.`,
+        metadata: {
+          status: "payment_due",
+          planName: friendlyPlanName,
+          priceUsd: `$${priceUsd.toFixed(2)}`,
+          txcNeeded: `${txcOwed.toFixed(8)} TXC`,
+          txcBalance: `${balance.toFixed(8)} TXC`,
+          graceEnds: displayDate(graceEnds),
+        },
       });
       warned++;
     }
