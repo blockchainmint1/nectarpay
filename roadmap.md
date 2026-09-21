@@ -22,3 +22,4 @@
 ## Merchant payment notifications
 - [x] Branded sale receipt email with store, amount, payment method, invoice, and order details
 - [x] Celebratory paid-sale message and clear underpayment warning
+- [x] Branded subscription renewal receipts and friendly billing warnings

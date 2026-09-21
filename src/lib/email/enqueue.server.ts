@@ -105,6 +105,77 @@ export interface PaymentAlertEmailData {
   invoiceUuid?: string | null;
 }
 
+export interface BillingAlertEmailData {
+  status: "renewed" | "payment_due" | "blocked";
+  planName: string;
+  priceUsd?: string;
+  txcCharged?: string;
+  txcNeeded?: string;
+  txcBalance?: string;
+  nextRenewal?: string;
+  graceEnds?: string;
+}
+
+/** Friendly NectarPay receipt/warning for subscription billing events. */
+export function renderBillingAlertEmail(data: BillingAlertEmailData): string {
+  const renewed = data.status === "renewed";
+  const blocked = data.status === "blocked";
+  const eyebrow = renewed ? "RENEWAL COMPLETE" : blocked ? "ACCOUNT PAUSED" : "ACTION NEEDED";
+  const headline = renewed
+    ? "You’re all set for another month!"
+    : blocked
+      ? "Let’s get you back up and running"
+      : "Your plan needs a quick top-up";
+  const intro = renewed
+    ? `Your NectarPay ${data.planName} plan renewed successfully. Thanks for building the future of honest payments with us.`
+    : blocked
+      ? `Your NectarPay ${data.planName} plan is paused because its renewal balance is still short. Top up your TXC balance and we’ll get you moving again.`
+      : `We couldn’t renew your NectarPay ${data.planName} plan from your current TXC balance. Add TXC before the date below to keep everything running smoothly.`;
+  const accent = renewed ? "#F6A21E" : "#D97706";
+  const panelBg = renewed ? "#FFF8E8" : "#FFF4E5";
+  const statusLabel = renewed ? "Paid with TEXITcoin" : blocked ? "Service paused" : "Top-up required";
+  const rows = [
+    detailRow("Plan", `${data.planName} plan`),
+    data.priceUsd ? detailRow("Monthly price", data.priceUsd) : "",
+    data.txcCharged ? detailRow("TXC charged", data.txcCharged) : "",
+    data.txcNeeded ? detailRow("TXC needed", data.txcNeeded) : "",
+    data.txcBalance ? detailRow("TXC balance", data.txcBalance) : "",
+    data.nextRenewal ? detailRow("Next renewal", data.nextRenewal) : "",
+    data.graceEnds ? detailRow("Top up by", data.graceEnds) : "",
+  ].join("");
+
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#2B3242;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(headline)} ${renewed && data.nextRenewal ? `Next renewal: ${escapeHtml(data.nextRenewal)}.` : ""}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;background:#ffffff;"><tr><td align="center" style="padding:32px 16px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;border:1px solid #E7E1D2;border-radius:12px;overflow:hidden;">
+      <tr><td style="background:#0D1B33;padding:24px 32px;border-bottom:4px solid ${accent};">
+        <div style="font-size:22px;line-height:1;font-weight:900;color:#ffffff;">Nectar<span style="color:#F6A21E;">Pay</span></div>
+        <div style="margin-top:8px;font-size:12px;line-height:1.4;color:#B7C0D4;">Honest money · Real merchants</div>
+      </td></tr>
+      <tr><td style="padding:36px 32px 30px;background:#ffffff;">
+        <div style="font-size:12px;line-height:1.4;font-weight:800;letter-spacing:1.5px;color:${accent};">${eyebrow}</div>
+        <h1 style="margin:8px 0 10px;font-size:30px;line-height:1.15;color:#0D1B33;">${headline}</h1>
+        <p style="margin:0 0 26px;font-size:16px;line-height:1.55;color:#4B5563;">${escapeHtml(intro)}</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;background:${panelBg};border:1px solid #F2D7A3;border-radius:10px;">
+          <tr><td align="center" style="padding:23px 20px;">
+            <div style="font-size:13px;font-weight:700;color:#6A7182;">${statusLabel}</div>
+            <div style="margin-top:5px;font-size:30px;line-height:1.15;font-weight:900;color:#0D1B33;">${escapeHtml(renewed ? data.priceUsd ?? `${data.planName} plan` : data.txcNeeded ?? `${data.planName} plan`)}</div>
+          </td></tr>
+        </table>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;margin-top:24px;border-collapse:collapse;">${rows}</table>
+        <div style="margin-top:28px;text-align:center;"><a href="https://app.nectar-pay.com/billing" style="display:inline-block;padding:14px 24px;border-radius:8px;background:#F6A21E;color:#0D1B33;font-size:15px;font-weight:800;text-decoration:none;">${renewed ? "View billing details" : "Top up & manage billing"}</a></div>
+        <p style="margin:22px 0 0;text-align:center;font-size:12px;line-height:1.5;color:#6A7182;">Questions? Just reply to this email — we’re happy to help.</p>
+      </td></tr>
+      <tr><td style="padding:20px 28px;background:#FAF8F3;border-top:1px solid #E7E1D2;text-align:center;">
+        <p style="margin:0 0 7px;font-size:12px;color:#6A7182;">Part of the <a href="https://honest.money" style="color:#B96A00;text-decoration:none;">honest.money ecosystem</a></p>
+        <p style="margin:0;font-size:11px;color:#6A7182;"><a href="https://app.nectar-pay.com/terms" style="color:#6A7182;">Terms</a> &nbsp;·&nbsp; <a href="https://app.nectar-pay.com/privacy" style="color:#6A7182;">Privacy</a> &nbsp;·&nbsp; <a href="https://app.nectar-pay.com/manifesto" style="color:#6A7182;">Manifesto</a></p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
 /** Polished receipt-style email for merchant payment notifications. */
 export function renderPaymentAlertEmail(data: PaymentAlertEmailData): string {
   const paid = data.status === "paid";

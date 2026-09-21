@@ -35,11 +35,31 @@ interface PaymentEmailMetadata {
   invoiceUuid?: string | null;
 }
 
+interface BillingEmailMetadata {
+  status: "renewed" | "payment_due" | "blocked";
+  planName: string;
+  priceUsd?: string;
+  txcCharged?: string;
+  txcNeeded?: string;
+  txcBalance?: string;
+  nextRenewal?: string;
+  graceEnds?: string;
+}
+
 function isPaymentEmailMetadata(value: unknown): value is PaymentEmailMetadata {
   if (!value || typeof value !== "object") return false;
   const data = value as Record<string, unknown>;
   return ["storeName", "invoiceId", "amountDue", "amountReceived", "paymentMethod"].every(
     (key) => typeof data[key] === "string",
+  );
+}
+
+function isBillingEmailMetadata(value: unknown): value is BillingEmailMetadata {
+  if (!value || typeof value !== "object") return false;
+  const data = value as Record<string, unknown>;
+  return (
+    typeof data.planName === "string" &&
+    (data.status === "renewed" || data.status === "payment_due" || data.status === "blocked")
   );
 }
 
@@ -141,7 +161,7 @@ export async function notifyUser(
 
   // Email — enqueued onto the Lovable Emails queue.
   if (prefs?.email_enabled && prefs.email_address) {
-    const { enqueueAppEmail, renderAlertEmail, renderPaymentAlertEmail } = await import("@/lib/email/enqueue.server");
+    const { enqueueAppEmail, renderAlertEmail, renderBillingAlertEmail, renderPaymentAlertEmail } = await import("@/lib/email/enqueue.server");
     const html =
       (payload.event === "invoice_paid" ||
         payload.event === "invoice_underpaid" ||
@@ -156,7 +176,10 @@ export async function notifyUser(
                   : "underpaid",
             ...payload.metadata,
           })
-        : renderAlertEmail(payload.subject, payload.text.split("\n"));
+        : (payload.event === "plan_renewed" || payload.event === "grace_warning") &&
+            isBillingEmailMetadata(payload.metadata)
+          ? renderBillingAlertEmail(payload.metadata)
+          : renderAlertEmail(payload.subject, payload.text.split("\n"));
     const result = await enqueueAppEmail({
       to: prefs.email_address,
       subject: payload.subject,
