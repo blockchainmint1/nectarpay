@@ -257,20 +257,64 @@ function detailRow(label: string, value: string): string {
   return `<tr><td style="padding:11px 0;border-bottom:1px solid #E7E1D2;font-size:13px;color:#6A7182;">${escapeHtml(label)}</td><td align="right" style="padding:11px 0;border-bottom:1px solid #E7E1D2;font-size:13px;font-weight:700;color:#2B3242;">${escapeHtml(value)}</td></tr>`;
 }
 
-/** Minimal branded HTML wrapper for non-payment merchant alert emails. */
+/** Branded security email for the wallet-key step-up code. */
+export function renderWalletLinkVerificationEmail(storeName: string, code: string): string {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#2B3242;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Use ${escapeHtml(code)} to confirm the wallet change for ${escapeHtml(storeName)}. Expires in 10 minutes.</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;background:#ffffff;"><tr><td align="center" style="padding:32px 16px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;border:1px solid #E7E1D2;border-radius:12px;overflow:hidden;">
+      <tr><td style="background:#0D1B33;padding:24px 32px;border-bottom:4px solid #F6A21E;">
+        <div style="font-size:22px;line-height:1;font-weight:900;color:#ffffff;">Nectar<span style="color:#F6A21E;">Pay</span></div>
+        <div style="margin-top:8px;font-size:12px;line-height:1.4;color:#B7C0D4;">Security confirmation for ${escapeHtml(storeName)}</div>
+      </td></tr>
+      <tr><td style="padding:36px 32px 30px;background:#ffffff;">
+        <div style="font-size:12px;line-height:1.4;font-weight:800;letter-spacing:1.5px;color:#E8880C;">WALLET SECURITY</div>
+        <h1 style="margin:8px 0 10px;font-size:30px;line-height:1.15;color:#0D1B33;">Confirm your wallet change</h1>
+        <p style="margin:0 0 24px;font-size:16px;line-height:1.55;color:#4B5563;">Enter this one-time code in NectarPay to approve new wallet keys for <strong style="color:#0D1B33;">${escapeHtml(storeName)}</strong>.</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;background:#FFF8E8;border:1px solid #F2D7A3;border-radius:10px;">
+          <tr><td align="center" style="padding:24px 16px;">
+            <div style="font-size:12px;font-weight:800;letter-spacing:1.5px;color:#B96A00;">YOUR CONFIRMATION CODE</div>
+            <div style="margin-top:10px;font-family:Menlo,Consolas,'Courier New',monospace;font-size:38px;line-height:1;font-weight:900;letter-spacing:8px;color:#0D1B33;">${escapeHtml(code)}</div>
+            <div style="margin-top:12px;font-size:12px;color:#6A7182;">Expires in 10 minutes · Works once</div>
+          </td></tr>
+        </table>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;margin-top:24px;background:#FFF4E5;border-left:4px solid #D97706;">
+          <tr><td style="padding:16px 18px;font-size:13px;line-height:1.55;color:#594516;"><strong style="color:#7C4A03;">Didn’t request this?</strong><br>Do not share this code. Sign in, change your password, and contact support immediately—wallet changes can redirect payouts.</td></tr>
+        </table>
+        <div style="margin-top:28px;text-align:center;"><a href="https://app.nectar-pay.com/dashboard" style="display:inline-block;padding:14px 24px;border-radius:8px;background:#F6A21E;color:#0D1B33;font-size:15px;font-weight:800;text-decoration:none;">Open NectarPay</a></div>
+        <p style="margin:20px 0 0;text-align:center;font-size:12px;line-height:1.5;color:#6A7182;">NectarPay will never ask you to send this code by email, text, or chat.</p>
+      </td></tr>
+      ${emailFooter()}
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
+/** Branded fallback for merchant security and operational alerts. */
 export function renderAlertEmail(subject: string, lines: string[]): string {
-  const rows = lines
-    .map(
-      (l) =>
-        `<div style="padding:4px 0;color:#dddddd;white-space:pre-wrap;">${escapeHtml(l)}</div>`,
-    )
+  const paragraphs = lines
+    .filter((line) => line.trim())
+    .map((line) => `<p style="margin:0 0 12px;font-size:15px;line-height:1.55;color:#4B5563;">${escapeHtml(line)}</p>`)
     .join("");
-  return `<!doctype html><html><body style="font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#0b0b0d;color:#eeeeee;padding:24px;">
-<div style="max-width:640px;margin:0 auto;background:#141418;border:1px solid #2a2a30;border-radius:12px;padding:24px;">
-  <h1 style="margin:0 0 12px;font-size:18px;color:#f5c542;">${escapeHtml(subject)}</h1>
-  ${rows}
-  <p style="margin-top:20px;"><a href="https://app.nectar-pay.com/dashboard" style="color:#f5c542;">Open your dashboard →</a></p>
-</div></body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#2B3242;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(subject)}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;background:#ffffff;"><tr><td align="center" style="padding:32px 16px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;border:1px solid #E7E1D2;border-radius:12px;overflow:hidden;">
+      <tr><td style="background:#0D1B33;padding:24px 32px;border-bottom:4px solid #F6A21E;"><div style="font-size:22px;line-height:1;font-weight:900;color:#ffffff;">Nectar<span style="color:#F6A21E;">Pay</span></div><div style="margin-top:8px;font-size:12px;color:#B7C0D4;">Account notification</div></td></tr>
+      <tr><td style="padding:36px 32px 30px;background:#ffffff;"><div style="font-size:12px;font-weight:800;letter-spacing:1.5px;color:#E8880C;">ACCOUNT UPDATE</div><h1 style="margin:8px 0 20px;font-size:28px;line-height:1.2;color:#0D1B33;">${escapeHtml(subject)}</h1>${paragraphs}<div style="margin-top:28px;text-align:center;"><a href="https://app.nectar-pay.com/dashboard" style="display:inline-block;padding:14px 24px;border-radius:8px;background:#F6A21E;color:#0D1B33;font-size:15px;font-weight:800;text-decoration:none;">Open NectarPay</a></div></td></tr>
+      ${emailFooter()}
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
+function emailFooter(): string {
+  return `<tr><td style="padding:20px 28px;background:#FAF8F3;border-top:1px solid #E7E1D2;text-align:center;">
+    <p style="margin:0 0 7px;font-size:12px;color:#6A7182;">Part of the <a href="https://honest.money" style="color:#B96A00;text-decoration:none;">honest.money ecosystem</a></p>
+    <p style="margin:0;font-size:11px;color:#6A7182;"><a href="https://app.nectar-pay.com/terms" style="color:#6A7182;">Terms</a> &nbsp;·&nbsp; <a href="https://app.nectar-pay.com/privacy" style="color:#6A7182;">Privacy</a> &nbsp;·&nbsp; <a href="https://app.nectar-pay.com/manifesto" style="color:#6A7182;">Manifesto</a></p>
+  </td></tr>`;
 }
 
 function escapeHtml(s: string): string {
