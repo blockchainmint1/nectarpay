@@ -77,7 +77,7 @@ export const requestWalletLinkVerification = createServerFn({ method: "POST" })
     });
     if (insErr) throw new Error(insErr.message);
 
-    const { enqueueAppEmail, renderAlertEmail } = await import("@/lib/email/enqueue.server");
+    const { enqueueAppEmail, renderWalletLinkVerificationEmail } = await import("@/lib/email/enqueue.server");
     const subject = "Confirm a wallet key change on your store";
     const lines = [
       `Your confirmation code is: ${code}`,
@@ -90,7 +90,7 @@ export const requestWalletLinkVerification = createServerFn({ method: "POST" })
     await enqueueAppEmail({
       to: email,
       subject,
-      html: renderAlertEmail(subject, lines),
+      html: renderWalletLinkVerificationEmail(store.name, code),
       text: lines.join("\n"),
       label: "wallet_link_verification",
     });
