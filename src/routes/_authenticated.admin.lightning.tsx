@@ -10,12 +10,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   getLightningAdminStatus,
   getLightningDepositAddress,
+  getLightningEnabled,
   openLightningChannel,
   runLightningSweep,
   runLightningWatcher,
+  setLightningEnabled,
 } from "@/lib/lightning-admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/lightning")({
@@ -99,6 +102,19 @@ function AdminLightning() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const getFlag = useServerFn(getLightningEnabled);
+  const setFlag = useServerFn(setLightningEnabled);
+  const flagQ = useQuery({ queryKey: ["admin-lightning-flag"], queryFn: () => getFlag({}) });
+  const flagMut = useMutation({
+    mutationFn: (enabled: boolean) => setFlag({ data: { enabled } }),
+    onSuccess: (r) => {
+      toast.success(r.enabled ? "Lightning is on for stores." : "Lightning is off everywhere.");
+      void qc.invalidateQueries({ queryKey: ["admin-lightning-flag"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  const lnEnabled = flagQ.data?.enabled ?? false;
+
   const d = q.data;
   const usd = (sats: number) => (d?.btcUsd ? `$${((sats / SATS) * d.btcUsd).toLocaleString(undefined, { maximumFractionDigits: 2 })}` : null);
 
@@ -152,6 +168,26 @@ function AdminLightning() {
           </Button>
         </div>
       </div>
+
+      <Card className={lnEnabled ? "border-emerald-500/40" : "border-destructive/40"}>
+        <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
+          <div className="text-sm">
+            <p className="font-medium">
+              Lightning for all stores: {lnEnabled ? "ON" : "OFF"}
+            </p>
+            <p className="text-muted-foreground">
+              {lnEnabled
+                ? "Stores that switch Lightning on can offer it at checkout."
+                : "Hidden everywhere. Stores can't turn it on until you switch this back on."}
+            </p>
+          </div>
+          <Switch
+            checked={lnEnabled}
+            disabled={flagQ.isLoading || flagMut.isPending}
+            onCheckedChange={(v) => flagMut.mutate(v)}
+          />
+        </CardContent>
+      </Card>
 
       {/* Plain-English health banner */}
       <Card className={healthy ? "border-emerald-500/40" : "border-amber-500/40"}>

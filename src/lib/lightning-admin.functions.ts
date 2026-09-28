@@ -240,3 +240,33 @@ export const runLightningSweep = createServerFn({ method: "POST" })
     const { runLightningSweepTick } = await import("@/lib/lightning.server");
     return runLightningSweepTick();
   });
+
+/** Global on/off switch for Lightning across every store. */
+export const getLightningEnabled = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("platform_settings")
+      .select("value")
+      .eq("key", "lightning_enabled")
+      .maybeSingle();
+    return { enabled: data?.value === true };
+  });
+
+export const setLightningEnabled = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { enabled: boolean }) => ({ enabled: !!input.enabled }))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("platform_settings")
+      .upsert({ key: "lightning_enabled", value: data.enabled, updated_at: new Date().toISOString() });
+    if (error) throw new Error(error.message);
+    if (!data.enabled) {
+      await supabaseAdmin.from("chain_configs").update({ enabled: false }).eq("chain", "lightning");
+    }
+    return { enabled: data.enabled };
+  });

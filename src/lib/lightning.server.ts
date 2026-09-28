@@ -55,6 +55,15 @@ export async function createLightningInvoice(
   }
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+  const { data: flag } = await supabaseAdmin
+    .from("platform_settings")
+    .select("value")
+    .eq("key", "lightning_enabled")
+    .maybeSingle();
+  if (flag?.value !== true) {
+    throw new Error("Lightning is turned off right now.");
+  }
+
   const { data: cfg } = await supabaseAdmin
     .from("chain_configs")
     .select("id, enabled, xpub_or_address")
