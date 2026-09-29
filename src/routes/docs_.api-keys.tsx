@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 
-export const Route = createFileRoute("/docs/api-keys")({
+export const Route = createFileRoute("/docs_/api-keys")({
   head: () => ({
     meta: [
       { title: "How to get your API key · NectarPay" },

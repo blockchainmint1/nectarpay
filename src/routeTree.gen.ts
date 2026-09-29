@@ -53,9 +53,9 @@ import { Route as IntegrationsWoocommerceRouteImport } from './routes/integratio
 import { Route as IntegrationsPrestashopRouteImport } from './routes/integrations.prestashop'
 import { Route as IInvoiceIdRouteImport } from './routes/i.$invoiceId'
 import { Route as GoKitRouteImport } from './routes/go.kit'
+import { Route as DocsApiKeysRouteImport } from './routes/docs_.api-keys'
 import { Route as DocsWalletSetupRouteImport } from './routes/docs.wallet-setup'
 import { Route as DocsTapToPayTangemRouteImport } from './routes/docs.tap-to-pay-tangem'
-import { Route as DocsApiKeysRouteImport } from './routes/docs.api-keys'
 import { Route as DocsAddressRotationRouteImport } from './routes/docs.address-rotation'
 import { Route as DevTangemTestRouteImport } from './routes/dev.tangem-test'
 import { Route as CompareBitpayCoingateVsNectarRouteImport } from './routes/compare_.bitpay-coingate-vs-nectar'
@@ -380,6 +380,11 @@ const GoKitRoute = GoKitRouteImport.update({
   path: '/go/kit',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocsApiKeysRoute = DocsApiKeysRouteImport.update({
+  id: '/docs_/api-keys',
+  path: '/docs/api-keys',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DocsWalletSetupRoute = DocsWalletSetupRouteImport.update({
   id: '/wallet-setup',
   path: '/wallet-setup',
@@ -388,11 +393,6 @@ const DocsWalletSetupRoute = DocsWalletSetupRouteImport.update({
 const DocsTapToPayTangemRoute = DocsTapToPayTangemRouteImport.update({
   id: '/tap-to-pay-tangem',
   path: '/tap-to-pay-tangem',
-  getParentRoute: () => DocsRoute,
-} as any)
-const DocsApiKeysRoute = DocsApiKeysRouteImport.update({
-  id: '/api-keys',
-  path: '/api-keys',
   getParentRoute: () => DocsRoute,
 } as any)
 const DocsAddressRotationRoute = DocsAddressRotationRouteImport.update({
@@ -1024,9 +1024,9 @@ export interface FileRoutesByFullPath {
   '/compare/bitpay-coingate-vs-nectar': typeof CompareBitpayCoingateVsNectarRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/address-rotation': typeof DocsAddressRotationRoute
-  '/docs/api-keys': typeof DocsApiKeysRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
+  '/docs/api-keys': typeof DocsApiKeysRoute
   '/go/kit': typeof GoKitRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/prestashop': typeof IntegrationsPrestashopRoute
@@ -1173,9 +1173,9 @@ export interface FileRoutesByTo {
   '/compare/bitpay-coingate-vs-nectar': typeof CompareBitpayCoingateVsNectarRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/address-rotation': typeof DocsAddressRotationRoute
-  '/docs/api-keys': typeof DocsApiKeysRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
+  '/docs/api-keys': typeof DocsApiKeysRoute
   '/go/kit': typeof GoKitRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/prestashop': typeof IntegrationsPrestashopRoute
@@ -1324,9 +1324,9 @@ export interface FileRoutesById {
   '/compare_/bitpay-coingate-vs-nectar': typeof CompareBitpayCoingateVsNectarRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/address-rotation': typeof DocsAddressRotationRoute
-  '/docs/api-keys': typeof DocsApiKeysRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
+  '/docs_/api-keys': typeof DocsApiKeysRoute
   '/go/kit': typeof GoKitRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/prestashop': typeof IntegrationsPrestashopRoute
@@ -1478,9 +1478,9 @@ export interface FileRouteTypes {
     | '/compare/bitpay-coingate-vs-nectar'
     | '/dev/tangem-test'
     | '/docs/address-rotation'
-    | '/docs/api-keys'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
+    | '/docs/api-keys'
     | '/go/kit'
     | '/i/$invoiceId'
     | '/integrations/prestashop'
@@ -1627,9 +1627,9 @@ export interface FileRouteTypes {
     | '/compare/bitpay-coingate-vs-nectar'
     | '/dev/tangem-test'
     | '/docs/address-rotation'
-    | '/docs/api-keys'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
+    | '/docs/api-keys'
     | '/go/kit'
     | '/i/$invoiceId'
     | '/integrations/prestashop'
@@ -1777,9 +1777,9 @@ export interface FileRouteTypes {
     | '/compare_/bitpay-coingate-vs-nectar'
     | '/dev/tangem-test'
     | '/docs/address-rotation'
-    | '/docs/api-keys'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
+    | '/docs_/api-keys'
     | '/go/kit'
     | '/i/$invoiceId'
     | '/integrations/prestashop'
@@ -1921,6 +1921,7 @@ export interface RootRouteChildren {
   UnsubscribeRoute: typeof UnsubscribeRoute
   CompareBitpayCoingateVsNectarRoute: typeof CompareBitpayCoingateVsNectarRoute
   DevTangemTestRoute: typeof DevTangemTestRoute
+  DocsApiKeysRoute: typeof DocsApiKeysRoute
   GoKitRoute: typeof GoKitRoute
   IInvoiceIdRoute: typeof IInvoiceIdRoute
   IntegrationsPrestashopRoute: typeof IntegrationsPrestashopRoute
@@ -2275,6 +2276,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GoKitRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/docs_/api-keys': {
+      id: '/docs_/api-keys'
+      path: '/docs/api-keys'
+      fullPath: '/docs/api-keys'
+      preLoaderRoute: typeof DocsApiKeysRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/docs/wallet-setup': {
       id: '/docs/wallet-setup'
       path: '/wallet-setup'
@@ -2287,13 +2295,6 @@ declare module '@tanstack/react-router' {
       path: '/tap-to-pay-tangem'
       fullPath: '/docs/tap-to-pay-tangem'
       preLoaderRoute: typeof DocsTapToPayTangemRouteImport
-      parentRoute: typeof DocsRoute
-    }
-    '/docs/api-keys': {
-      id: '/docs/api-keys'
-      path: '/api-keys'
-      fullPath: '/docs/api-keys'
-      preLoaderRoute: typeof DocsApiKeysRouteImport
       parentRoute: typeof DocsRoute
     }
     '/docs/address-rotation': {
@@ -3244,14 +3245,12 @@ const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
 
 interface DocsRouteChildren {
   DocsAddressRotationRoute: typeof DocsAddressRotationRoute
-  DocsApiKeysRoute: typeof DocsApiKeysRoute
   DocsTapToPayTangemRoute: typeof DocsTapToPayTangemRoute
   DocsWalletSetupRoute: typeof DocsWalletSetupRoute
 }
 
 const DocsRouteChildren: DocsRouteChildren = {
   DocsAddressRotationRoute: DocsAddressRotationRoute,
-  DocsApiKeysRoute: DocsApiKeysRoute,
   DocsTapToPayTangemRoute: DocsTapToPayTangemRoute,
   DocsWalletSetupRoute: DocsWalletSetupRoute,
 }
@@ -3394,6 +3393,7 @@ const rootRouteChildren: RootRouteChildren = {
   UnsubscribeRoute: UnsubscribeRoute,
   CompareBitpayCoingateVsNectarRoute: CompareBitpayCoingateVsNectarRoute,
   DevTangemTestRoute: DevTangemTestRoute,
+  DocsApiKeysRoute: DocsApiKeysRoute,
   GoKitRoute: GoKitRoute,
   IInvoiceIdRoute: IInvoiceIdRoute,
   IntegrationsPrestashopRoute: IntegrationsPrestashopRoute,
