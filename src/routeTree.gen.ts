@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as StatusRouteImport } from './routes/status'
 import { Route as StartRouteImport } from './routes/start'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
@@ -30,6 +31,7 @@ import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DemoResetRouteImport } from './routes/demo-reset'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as CashOutRouteImport } from './routes/cash-out'
 import { Route as BrandRouteImport } from './routes/brand'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -53,6 +55,7 @@ import { Route as IInvoiceIdRouteImport } from './routes/i.$invoiceId'
 import { Route as GoKitRouteImport } from './routes/go.kit'
 import { Route as DocsWalletSetupRouteImport } from './routes/docs.wallet-setup'
 import { Route as DocsTapToPayTangemRouteImport } from './routes/docs.tap-to-pay-tangem'
+import { Route as DocsApiKeysRouteImport } from './routes/docs.api-keys'
 import { Route as DocsAddressRotationRouteImport } from './routes/docs.address-rotation'
 import { Route as DevTangemTestRouteImport } from './routes/dev.tangem-test'
 import { Route as CompareBitpayCoingateVsNectarRouteImport } from './routes/compare_.bitpay-coingate-vs-nectar'
@@ -168,6 +171,11 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StatusRoute = StatusRouteImport.update({
+  id: '/status',
+  path: '/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StartRoute = StartRouteImport.update({
   id: '/start',
   path: '/start',
@@ -261,6 +269,11 @@ const CompareRoute = CompareRouteImport.update({
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChangelogRoute = ChangelogRouteImport.update({
+  id: '/changelog',
+  path: '/changelog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CashOutRoute = CashOutRouteImport.update({
@@ -375,6 +388,11 @@ const DocsWalletSetupRoute = DocsWalletSetupRouteImport.update({
 const DocsTapToPayTangemRoute = DocsTapToPayTangemRouteImport.update({
   id: '/tap-to-pay-tangem',
   path: '/tap-to-pay-tangem',
+  getParentRoute: () => DocsRoute,
+} as any)
+const DocsApiKeysRoute = DocsApiKeysRouteImport.update({
+  id: '/api-keys',
+  path: '/api-keys',
   getParentRoute: () => DocsRoute,
 } as any)
 const DocsAddressRotationRoute = DocsAddressRotationRouteImport.update({
@@ -971,6 +989,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
+  '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/demo-reset': typeof DemoResetRoute
@@ -990,6 +1009,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/start': typeof StartRoute
+  '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
@@ -1004,6 +1024,7 @@ export interface FileRoutesByFullPath {
   '/compare/bitpay-coingate-vs-nectar': typeof CompareBitpayCoingateVsNectarRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/address-rotation': typeof DocsAddressRotationRoute
+  '/docs/api-keys': typeof DocsApiKeysRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/go/kit': typeof GoKitRoute
@@ -1120,6 +1141,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
+  '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/demo-reset': typeof DemoResetRoute
@@ -1138,6 +1160,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/start': typeof StartRoute
+  '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/billing': typeof AuthenticatedBillingRoute
@@ -1150,6 +1173,7 @@ export interface FileRoutesByTo {
   '/compare/bitpay-coingate-vs-nectar': typeof CompareBitpayCoingateVsNectarRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/address-rotation': typeof DocsAddressRotationRoute
+  '/docs/api-keys': typeof DocsApiKeysRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/go/kit': typeof GoKitRoute
@@ -1265,6 +1289,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
+  '/changelog': typeof ChangelogRoute
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/demo-reset': typeof DemoResetRoute
@@ -1284,6 +1309,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/start': typeof StartRoute
+  '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
@@ -1298,6 +1324,7 @@ export interface FileRoutesById {
   '/compare_/bitpay-coingate-vs-nectar': typeof CompareBitpayCoingateVsNectarRoute
   '/dev/tangem-test': typeof DevTangemTestRoute
   '/docs/address-rotation': typeof DocsAddressRotationRoute
+  '/docs/api-keys': typeof DocsApiKeysRoute
   '/docs/tap-to-pay-tangem': typeof DocsTapToPayTangemRoute
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/go/kit': typeof GoKitRoute
@@ -1416,6 +1443,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/brand'
     | '/cash-out'
+    | '/changelog'
     | '/checkout'
     | '/compare'
     | '/demo-reset'
@@ -1435,6 +1463,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/start'
+    | '/status'
     | '/terms'
     | '/unsubscribe'
     | '/admin'
@@ -1449,6 +1478,7 @@ export interface FileRouteTypes {
     | '/compare/bitpay-coingate-vs-nectar'
     | '/dev/tangem-test'
     | '/docs/address-rotation'
+    | '/docs/api-keys'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
     | '/go/kit'
@@ -1565,6 +1595,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/brand'
     | '/cash-out'
+    | '/changelog'
     | '/checkout'
     | '/compare'
     | '/demo-reset'
@@ -1583,6 +1614,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/start'
+    | '/status'
     | '/terms'
     | '/unsubscribe'
     | '/billing'
@@ -1595,6 +1627,7 @@ export interface FileRouteTypes {
     | '/compare/bitpay-coingate-vs-nectar'
     | '/dev/tangem-test'
     | '/docs/address-rotation'
+    | '/docs/api-keys'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
     | '/go/kit'
@@ -1709,6 +1742,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/brand'
     | '/cash-out'
+    | '/changelog'
     | '/checkout'
     | '/compare'
     | '/demo-reset'
@@ -1728,6 +1762,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/sitemap.xml'
     | '/start'
+    | '/status'
     | '/terms'
     | '/unsubscribe'
     | '/_authenticated/admin'
@@ -1742,6 +1777,7 @@ export interface FileRouteTypes {
     | '/compare_/bitpay-coingate-vs-nectar'
     | '/dev/tangem-test'
     | '/docs/address-rotation'
+    | '/docs/api-keys'
     | '/docs/tap-to-pay-tangem'
     | '/docs/wallet-setup'
     | '/go/kit'
@@ -1860,6 +1896,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BrandRoute: typeof BrandRoute
   CashOutRoute: typeof CashOutRoute
+  ChangelogRoute: typeof ChangelogRoute
   CheckoutRoute: typeof CheckoutRouteWithChildren
   CompareRoute: typeof CompareRoute
   DemoResetRoute: typeof DemoResetRoute
@@ -1879,6 +1916,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StartRoute: typeof StartRoute
+  StatusRoute: typeof StatusRoute
   TermsRoute: typeof TermsRoute
   UnsubscribeRoute: typeof UnsubscribeRoute
   CompareBitpayCoingateVsNectarRoute: typeof CompareBitpayCoingateVsNectarRoute
@@ -1941,6 +1979,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/status': {
+      id: '/status'
+      path: '/status'
+      fullPath: '/status'
+      preLoaderRoute: typeof StatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/start': {
@@ -2074,6 +2119,13 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/changelog': {
+      id: '/changelog'
+      path: '/changelog'
+      fullPath: '/changelog'
+      preLoaderRoute: typeof ChangelogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cash-out': {
@@ -2235,6 +2287,13 @@ declare module '@tanstack/react-router' {
       path: '/tap-to-pay-tangem'
       fullPath: '/docs/tap-to-pay-tangem'
       preLoaderRoute: typeof DocsTapToPayTangemRouteImport
+      parentRoute: typeof DocsRoute
+    }
+    '/docs/api-keys': {
+      id: '/docs/api-keys'
+      path: '/api-keys'
+      fullPath: '/docs/api-keys'
+      preLoaderRoute: typeof DocsApiKeysRouteImport
       parentRoute: typeof DocsRoute
     }
     '/docs/address-rotation': {
@@ -3185,12 +3244,14 @@ const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
 
 interface DocsRouteChildren {
   DocsAddressRotationRoute: typeof DocsAddressRotationRoute
+  DocsApiKeysRoute: typeof DocsApiKeysRoute
   DocsTapToPayTangemRoute: typeof DocsTapToPayTangemRoute
   DocsWalletSetupRoute: typeof DocsWalletSetupRoute
 }
 
 const DocsRouteChildren: DocsRouteChildren = {
   DocsAddressRotationRoute: DocsAddressRotationRoute,
+  DocsApiKeysRoute: DocsApiKeysRoute,
   DocsTapToPayTangemRoute: DocsTapToPayTangemRoute,
   DocsWalletSetupRoute: DocsWalletSetupRoute,
 }
@@ -3308,6 +3369,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BrandRoute: BrandRoute,
   CashOutRoute: CashOutRoute,
+  ChangelogRoute: ChangelogRoute,
   CheckoutRoute: CheckoutRouteWithChildren,
   CompareRoute: CompareRoute,
   DemoResetRoute: DemoResetRoute,
@@ -3327,6 +3389,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StartRoute: StartRoute,
+  StatusRoute: StatusRoute,
   TermsRoute: TermsRoute,
   UnsubscribeRoute: UnsubscribeRoute,
   CompareBitpayCoingateVsNectarRoute: CompareBitpayCoingateVsNectarRoute,

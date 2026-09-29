@@ -54,7 +54,12 @@ Base URL: `https://app.nectar-pay.com` — all calls authenticate with
   `data-payhme` button, or `PayHME.checkout({ apiKey, chain, amount, currency, orderId })`.
 - Hosted payment page (no code): `https://app.nectar-pay.com/t/{store-slug}`.
 
+- Errors: `{ "error": "...", "code": "unauthorized|not_found|invalid_request|rate_limited|server_error|..." }`.
+- Rate limit: 120 requests/minute per key; over it returns 429 with `Retry-After` (seconds).
+
 Full reference with copy-paste examples: [/docs](/docs).
+Machine-readable spec: [/openapi.json](/openapi.json). Get a key: [/docs/api-keys](/docs/api-keys).
+Status: [/status](/status). Changelog: [/changelog](/changelog).
 
 ## Optional
 
