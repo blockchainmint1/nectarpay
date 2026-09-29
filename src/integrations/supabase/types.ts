@@ -303,6 +303,24 @@ export type Database = {
           },
         ]
       }
+      api_rate_counters: {
+        Row: {
+          hits: number
+          key_id: string
+          window_start: string
+        }
+        Insert: {
+          hits?: number
+          key_id: string
+          window_start: string
+        }
+        Update: {
+          hits?: number
+          key_id?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       chain_config_audit: {
         Row: {
           action: string
@@ -2598,6 +2616,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      api_rate_hit: { Args: { _key_id: string }; Returns: number }
       get_merchant_map_pins: {
         Args: never
         Returns: {
