@@ -1,7 +1,7 @@
 // Bearer API-key authentication for the public v1 REST API.
 // Server-only: loaded with a dynamic import inside route handlers.
 
-import { apiJson } from "@/lib/public-api";
+import { apiJson, API_RATE_LIMIT_PER_MIN } from "@/lib/public-api";
 
 async function sha256Hex(s: string): Promise<string> {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s));
@@ -49,6 +49,18 @@ export async function authenticateApiKey(request: Request): Promise<
           api_base: "https://app.nectar-pay.com",
         },
         401,
+      ),
+    };
+  }
+
+  const { data: hits } = await supabaseAdmin.rpc("api_rate_hit" as never, { _key_id: keyRow.id } as never);
+  if (typeof hits === "number" && hits > API_RATE_LIMIT_PER_MIN) {
+    const retry = String(60 - new Date().getUTCSeconds());
+    return {
+      error: apiJson(
+        { error: `Too many requests. Limit is ${API_RATE_LIMIT_PER_MIN} per minute per key; try again in ${retry} seconds.`, retry_after_seconds: Number(retry) },
+        429,
+        { "Retry-After": retry, "X-RateLimit-Limit": String(API_RATE_LIMIT_PER_MIN), "X-RateLimit-Remaining": "0" },
       ),
     };
   }
