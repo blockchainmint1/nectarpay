@@ -1,0 +1,153 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "NectarPay API",
+    "version": "1.0.0",
+    "description": "Non-custodial crypto payment API. Create invoices, track payment status, manage payment links and receive signed webhooks. Funds always settle directly to the merchant's own wallet — API keys can never move money.",
+    "contact": { "name": "NectarPay support", "url": "https://app.nectar-pay.com/help" },
+    "termsOfService": "https://app.nectar-pay.com/terms"
+  },
+  "servers": [{ "url": "https://app.nectar-pay.com" }],
+  "security": [{ "bearerAuth": [] }],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": { "type": "http", "scheme": "bearer", "description": "Per-store secret key, format sk_live_…  Create one at Stores → your store → API keys." }
+    },
+    "responses": {
+      "Error": {
+        "description": "Error",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      },
+      "RateLimited": {
+        "description": "Too many requests (120 per minute per key). See Retry-After header.",
+        "headers": { "Retry-After": { "schema": { "type": "integer" } } },
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": ["error", "code"],
+        "properties": {
+          "error": { "type": "string", "description": "Human-readable message." },
+          "code": { "type": "string", "enum": ["invalid_request", "unauthorized", "forbidden", "not_found", "conflict", "rate_limited", "server_error", "upstream_error", "unavailable"] },
+          "retry_after_seconds": { "type": "integer" }
+        }
+      },
+      "Chain": { "type": "string", "enum": ["btc", "lightning", "txc", "eth", "base", "tron", "sol", "doge", "ltc", "bch", "dash", "isk", "zcu"] },
+      "InvoiceStatus": { "type": "string", "enum": ["pending", "underpaid", "overpaid", "confirmed", "expired"] },
+      "Invoice": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "status": { "$ref": "#/components/schemas/InvoiceStatus" },
+          "amount": { "type": "number" },
+          "currency": { "type": "string" },
+          "chain": { "$ref": "#/components/schemas/Chain" },
+          "address": { "type": "string" },
+          "crypto_amount": { "type": "string" },
+          "rate": { "type": "number" },
+          "order_id": { "type": "string" },
+          "expires_at": { "type": "string", "format": "date-time" },
+          "checkout_url": { "type": "string", "format": "uri" }
+        }
+      },
+      "CreateInvoice": {
+        "type": "object",
+        "required": ["amount"],
+        "properties": {
+          "amount": { "type": "number", "description": "Fiat amount." },
+          "currency": { "type": "string", "default": "USD" },
+          "chain": { "$ref": "#/components/schemas/Chain" },
+          "order_id": { "type": "string" },
+          "description": { "type": "string" },
+          "redirect_url": { "type": "string", "format": "uri" },
+          "buyer_email": { "type": "string", "format": "email" },
+          "expires_in_seconds": { "type": "integer", "minimum": 60, "maximum": 86400 }
+        }
+      },
+      "PaymentLink": {
+        "type": "object",
+        "properties": {
+          "slug": { "type": "string" }, "title": { "type": "string" }, "subtitle": { "type": "string" },
+          "cta_label": { "type": "string" }, "currency": { "type": "string" },
+          "preset_amounts": { "type": "array", "items": { "type": "number" } },
+          "allow_custom_amount": { "type": "boolean" }, "min_amount": { "type": "number" },
+          "max_amount": { "type": "number" }, "is_donation": { "type": "boolean" }, "active": { "type": "boolean" }
+        }
+      }
+    },
+    "parameters": {
+      "InvoiceId": { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+      "Slug": { "name": "slug", "in": "path", "required": true, "schema": { "type": "string" } }
+    }
+  },
+  "paths": {
+    "/api/public/v1/me": {
+      "get": { "operationId": "getMe", "summary": "Verify a key; returns store, key mode and webhook URL.",
+        "responses": { "200": { "description": "OK" }, "401": { "$ref": "#/components/responses/Error" } } }
+    },
+    "/api/public/v1/invoices": {
+      "get": { "operationId": "listInvoices", "summary": "List invoices",
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "chain", "in": "query", "schema": { "type": "string" }, "description": "Comma-separated" },
+          { "name": "order_id", "in": "query", "schema": { "type": "string" } },
+          { "name": "since", "in": "query", "schema": { "type": "string", "format": "date-time" } },
+          { "name": "until", "in": "query", "schema": { "type": "string", "format": "date-time" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 200 } },
+          { "name": "offset", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "type": "object", "properties": { "total": { "type": "integer" }, "invoices": { "type": "array", "items": { "$ref": "#/components/schemas/Invoice" } } } } } } }, "401": { "$ref": "#/components/responses/Error" }, "429": { "$ref": "#/components/responses/RateLimited" } } },
+      "post": { "operationId": "createInvoice", "summary": "Create an invoice",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateInvoice" } } } },
+        "responses": { "200": { "description": "Created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Invoice" } } } }, "400": { "$ref": "#/components/responses/Error" }, "401": { "$ref": "#/components/responses/Error" }, "429": { "$ref": "#/components/responses/RateLimited" } } }
+    },
+    "/api/public/v1/invoices/{id}": {
+      "get": { "operationId": "getInvoice", "summary": "Invoice status", "parameters": [{ "$ref": "#/components/parameters/InvoiceId" }],
+        "responses": { "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Invoice" } } } }, "404": { "$ref": "#/components/responses/Error" } } },
+      "post": { "operationId": "redeliverWebhook", "summary": "Resend the webhook (?action=redeliver-webhook)",
+        "parameters": [{ "$ref": "#/components/parameters/InvoiceId" }, { "name": "action", "in": "query", "required": true, "schema": { "type": "string", "enum": ["redeliver-webhook"] } }],
+        "responses": { "200": { "description": "OK" }, "404": { "$ref": "#/components/responses/Error" } } }
+    },
+    "/api/public/v1/invoices/{id}/email": {
+      "post": { "operationId": "emailInvoice", "summary": "Email the payment request to the customer", "parameters": [{ "$ref": "#/components/parameters/InvoiceId" }],
+        "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "to": { "type": "string", "format": "email" } } } } } },
+        "responses": { "200": { "description": "Queued" }, "400": { "$ref": "#/components/responses/Error" } } }
+    },
+    "/api/public/v1/invoices/{id}/webhooks": {
+      "get": { "operationId": "listInvoiceWebhooks", "summary": "Webhook delivery history", "parameters": [{ "$ref": "#/components/parameters/InvoiceId" }],
+        "responses": { "200": { "description": "OK" } } }
+    },
+    "/api/public/v1/rates": {
+      "get": { "operationId": "getRates", "summary": "Live USD rates per chain", "parameters": [{ "name": "amount", "in": "query", "schema": { "type": "number" } }],
+        "responses": { "200": { "description": "OK" } } }
+    },
+    "/api/public/v1/store": {
+      "get": { "operationId": "getStore", "summary": "Store profile, enabled chains and payment links", "responses": { "200": { "description": "OK" } } }
+    },
+    "/api/public/v1/links": {
+      "get": { "operationId": "listLinks", "summary": "List payment links", "responses": { "200": { "description": "OK" } } },
+      "post": { "operationId": "createLink", "summary": "Create a payment link",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaymentLink" } } } },
+        "responses": { "200": { "description": "Created" }, "400": { "$ref": "#/components/responses/Error" } } }
+    },
+    "/api/public/v1/links/{slug}": {
+      "get": { "operationId": "getLink", "parameters": [{ "$ref": "#/components/parameters/Slug" }], "responses": { "200": { "description": "OK" }, "404": { "$ref": "#/components/responses/Error" } } },
+      "patch": { "operationId": "updateLink", "parameters": [{ "$ref": "#/components/parameters/Slug" }],
+        "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaymentLink" } } } },
+        "responses": { "200": { "description": "OK" } } },
+      "delete": { "operationId": "deleteLink", "parameters": [{ "$ref": "#/components/parameters/Slug" }], "responses": { "200": { "description": "Deleted" } } }
+    }
+  },
+  "webhooks": {
+    "invoiceEvent": {
+      "post": {
+        "summary": "Signed invoice event (invoice.paid, invoice.confirmed, invoice.underpaid, invoice.overpaid)",
+        "description": "Header X-TXCPay-Signature: t=<unix>,v1=<hex> where v1 = HMAC_SHA256(webhook_secret, \"{t}.{rawBody}\"). Reject if t is older than 5 minutes.",
+        "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "type": { "type": "string" }, "data": { "$ref": "#/components/schemas/Invoice" } } } } } },
+        "responses": { "200": { "description": "Acknowledge with any 2xx" } }
+      }
+    }
+  }
+}
