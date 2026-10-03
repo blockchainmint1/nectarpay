@@ -908,6 +908,13 @@ function ChainCard({
         </div>
       )}
 
+      <div className="mt-4 flex justify-end">
+        <Button onClick={onSave} disabled={saving}>
+          <Save className="mr-2 h-4 w-4" />
+          {saving ? "Saving…" : "Save"}
+        </Button>
+      </div>
+
       {lightning && (
         <LightningSection
           storeId={storeId}
