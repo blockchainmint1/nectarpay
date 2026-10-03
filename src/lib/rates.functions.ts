@@ -83,6 +83,27 @@ export async function pollRates(): Promise<{
     }
   }
 
+  // ZCU via the wZCU Uniswap v3 pool (30-minute average resists pump/dump
+  // manipulation of a thin pool). Admin can still override in Admin overview,
+  // but the next poll will replace it.
+  try {
+    const res = await fetch("https://wzcu.zerochill.com/api/public/price?twap=30m");
+    if (res.ok) {
+      const data = (await res.json()) as { ok?: boolean; usd?: number };
+      if (data.ok && typeof data.usd === "number" && data.usd > 0) {
+        await supabaseAdmin
+          .from("rates_cache")
+          .upsert(
+            { chain: "zcu", fiat: "USD", rate: data.usd, fetched_at: new Date().toISOString() },
+            { onConflict: "chain,fiat" },
+          );
+        updated.push({ symbol: "ZCU", rate: data.usd, source: "wzcu.zerochill.com (uniswap twap 30m)" });
+      }
+    }
+  } catch (e) {
+    errors.push(`zcu: ${(e as Error).message}`);
+  }
+
   return { updated, errors };
 }
 
