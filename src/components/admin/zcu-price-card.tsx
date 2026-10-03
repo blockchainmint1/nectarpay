@@ -38,7 +38,7 @@ export function ZcuPriceCard() {
         <div>
           <div className="text-sm font-medium">ZCU price (USD per ZCU)</div>
           <p className="mt-1 text-xs text-muted-foreground">
-            ZCU has no public price feed yet, so you set it here. Customers can't pay in ZCU until a
+            Updates automatically from the wZCU Uniswap pool (30-min average). Set it by hand only if the feed breaks — the next update replaces it. Customers can't pay in ZCU without a
             price is set. Current:{" "}
             <strong className="text-foreground">{data?.rate != null ? `$${data.rate}` : "not set"}</strong>
             {data?.updatedAt && <> · updated {new Date(data.updatedAt).toLocaleString()}</>}
