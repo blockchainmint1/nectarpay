@@ -493,7 +493,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
         Account-wide settings — applied to every chain on this store.
       </p>
 
-      <div className="mt-4 grid gap-4 md:grid-cols-[160px_1fr_auto] md:items-end">
+      <div className="mt-4 grid gap-4 md:grid-cols-2 md:items-end">
         <div>
           <Label htmlFor="default-confs" className="text-xs">Confirmations required</Label>
           <Input
@@ -519,10 +519,6 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
             below. Blank = no cap (any amount).
           </p>
         </div>
-        <Button onClick={onSave} disabled={saving}>
-          <Save className="mr-2 h-4 w-4" />
-          {saving ? "Saving…" : "Save"}
-        </Button>
       </div>
 
       <div className="mt-5 grid gap-3 border-t border-primary/15 pt-4 sm:grid-cols-2">
@@ -608,6 +604,13 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
             </p>
           </div>
         </label>
+      </div>
+
+      <div className="mt-5 flex justify-end border-t border-primary/15 pt-4">
+        <Button onClick={onSave} disabled={saving}>
+          <Save className="mr-2 h-4 w-4" />
+          {saving ? "Saving…" : "Save"}
+        </Button>
       </div>
     </div>
   );
@@ -790,7 +793,7 @@ function ChainCard({
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+      <div className="mt-4">
         {showInput ? (
 
           <div>
@@ -857,11 +860,6 @@ function ChainCard({
             </div>
           </div>
         )}
-
-        <Button onClick={onSave} disabled={saving}>
-          <Save className="mr-2 h-4 w-4" />
-          {saving ? "Saving…" : "Save"}
-        </Button>
       </div>
 
       {STABLES_BY_CHAIN[meta.key] && STABLES_BY_CHAIN[meta.key]!.length > 0 && (
@@ -912,6 +910,13 @@ function ChainCard({
           </p>
         </div>
       )}
+
+      <div className="mt-4 flex justify-end">
+        <Button onClick={onSave} disabled={saving}>
+          <Save className="mr-2 h-4 w-4" />
+          {saving ? "Saving…" : "Save"}
+        </Button>
+      </div>
 
       {lightning && (
         <LightningSection
