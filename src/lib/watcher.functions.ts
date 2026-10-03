@@ -361,12 +361,15 @@ export async function settleInvoice(
     (newStatus === "confirmed" || newStatus === "overpaid" || newStatus === "underpaid")
   ) {
     const { deliverWebhook } = await import("./webhooks.server");
-    const eventType =
+    // Settled invoices (confirmed/overpaid) get their own event AND a final
+    // `invoice.confirmed`, which every store plugin settles orders on.
+    const eventTypes: ("invoice.paid" | "invoice.underpaid" | "invoice.overpaid" | "invoice.confirmed")[] =
       newStatus === "underpaid"
-        ? "invoice.underpaid"
+        ? ["invoice.underpaid"]
         : newStatus === "overpaid"
-          ? "invoice.overpaid"
-          : "invoice.paid";
+          ? ["invoice.overpaid", "invoice.confirmed"]
+          : ["invoice.paid", "invoice.confirmed"];
+    for (const eventType of eventTypes) {
     const eventId = (crypto as { randomUUID: () => string }).randomUUID();
     const result = await deliverWebhook({
       url: store.webhook_url,
@@ -390,6 +393,7 @@ export async function settleInvoice(
     });
     if (!result.ok) {
       console.error(`webhook delivery failed (invoice ${inv.id}):`, result.status, result.error);
+    }
     }
   }
 

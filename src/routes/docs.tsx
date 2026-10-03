@@ -228,28 +228,65 @@ X-TXCPay-Signature: t=1729000000,v1=<hex-hmac-sha256>
 X-TXCPay-Event: invoice.paid
 X-TXCPay-Event-Id: 0f4c…-event-uuid
 User-Agent: payHME-webhook/1`}</Pre>
+        <p>Events and when they're sent:</p>
+        <Table
+          head={["Event", "When / what to do"]}
+          rows={[
+            ["invoice.paid", "Full payment received (data.status = \"confirmed\"). Always followed by invoice.confirmed."],
+            ["invoice.overpaid", "Customer paid more than asked (data.status = \"overpaid\"). Also followed by invoice.confirmed."],
+            ["invoice.confirmed", "FINAL — mark the order paid / ship. Sent for every settled invoice (status confirmed or overpaid). Settle on this one event."],
+            ["invoice.underpaid", "Payment arrived but short beyond the 1% cushion (data.status = \"underpaid\"). Don't ship."],
+          ]}
+        />
         <p>
-          Event types: <span className="font-mono">invoice.paid</span> (payment seen),{" "}
-          <span className="font-mono">invoice.confirmed</span> (on-chain confirmation — final),{" "}
-          <span className="font-mono">invoice.underpaid</span>.
+          A real, complete <strong>paid</strong> notification — this is the exact JSON body, no
+          other fields are sent:
         </p>
-        <p>Body:</p>
-        <Pre>{`{
-  "id": "0f4c…-event-uuid",
-  "type": "invoice.paid",
-  "created_at": "2026-09-14T10:02:11.000Z",
+        <Pre>{`POST https://your-site.com/your/webhook
+Content-Type: application/json
+X-TXCPay-Signature: t=1791019331,v1=5d2c0e9f6b1a…(64 hex chars)
+X-TXCPay-Event: invoice.confirmed
+X-TXCPay-Event-Id: 3b8f2a61-9d4e-4c1a-8f0b-2e7d5c9a1f44
+User-Agent: payHME-webhook/1
+
+{
+  "id": "3b8f2a61-9d4e-4c1a-8f0b-2e7d5c9a1f44",
+  "type": "invoice.confirmed",
+  "created_at": "2026-10-03T09:22:11.482Z",
   "data": {
-    "invoice_id": "7c9e…",
-    "store_id": "1a2b…",
+    "invoice_id": "7c9e6f1a-2b3d-4e5f-8a9b-0c1d2e3f4a5b",
+    "store_id": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
     "status": "confirmed",
-    "chain": "btc",
-    "address": "bc1q…",
+    "chain": "txc",
+    "address": "TXc9yQ…(the address the customer paid)",
     "fiat_amount": 49.00,
     "fiat_currency": "USD",
     "paid_amount_usd": 49.00,
     "order_id": "ORDER_1234"
   }
 }`}</Pre>
+        <Table
+          head={["Field", "Meaning"]}
+          rows={[
+            ["id", "Unique event id (uuid). Dedupe on this — same as the X-TXCPay-Event-Id header."],
+            ["type", "One of the four events above. Same as the X-TXCPay-Event header."],
+            ["created_at", "When we sent it (ISO 8601, UTC)."],
+            ["data.invoice_id", "NectarPay invoice id — the id returned when you created the invoice."],
+            ["data.store_id", "Your store's id."],
+            ["data.status", "confirmed | overpaid | underpaid."],
+            ["data.chain", "Network paid on: btc, txc, eth, base, tron, sol, ltc, doge, bch, dash, isk, zcu."],
+            ["data.address", "Receiving address in your wallet."],
+            ["data.fiat_amount", "Invoice amount you asked for (number)."],
+            ["data.fiat_currency", "Currency of fiat_amount, e.g. USD."],
+            ["data.paid_amount_usd", "USD value we actually received (can be slightly under within 1%, or over)."],
+            ["data.order_id", "The order_id you sent when creating the invoice, or null. Use it to find your order."],
+          ]}
+        />
+        <p>
+          Want to double-check? Fetch <span className="font-mono">GET /api/public/v1/invoices/{"{invoice_id}"}</span>{" "}
+          and confirm <span className="font-mono">status</span> is <span className="font-mono">confirmed</span> or{" "}
+          <span className="font-mono">overpaid</span> before shipping.
+        </p>
         <p>
           <strong>Always verify the signature</strong> against the raw request body before
           trusting anything:
