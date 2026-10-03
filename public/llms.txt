@@ -49,7 +49,7 @@ Base URL: `https://app.nectar-pay.com` — all calls authenticate with
   `allow_custom_amount`, `min_amount`, `max_amount`, `is_donation`, `active`.
 - Webhooks: signed POST to the store's webhook URL. Header
   `X-TXCPay-Signature: t=<unix>,v1=<hex>` where `v1 = HMAC_SHA256(webhook_secret, "{t}.{rawBody}")`.
-  Event types: `invoice.paid`, `invoice.confirmed`, `invoice.underpaid`.
+  Event types: `invoice.paid`, `invoice.overpaid`, `invoice.underpaid`, and `invoice.confirmed` (final — settle orders on this). Body: `{ id, type, created_at, data: { invoice_id, store_id, status, chain, address, fiat_amount, fiat_currency, paid_amount_usd, order_id } }` — full sample at /docs.
 - Drop-in checkout button: `<script src="https://app.nectar-pay.com/sdk/payhme.js">` + a
   `data-payhme` button, or `PayHME.checkout({ apiKey, chain, amount, currency, orderId })`.
 - Hosted payment page (no code): `https://app.nectar-pay.com/t/{store-slug}`.
