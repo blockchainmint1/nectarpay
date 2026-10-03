@@ -194,7 +194,7 @@ export async function deriveInvoiceAddress(
   // promises die when the request returns, so fire-and-forget silently
   // dropped registrations. The cron watcher remains the safety net if this
   // still fails. Skip if no auth token configured.
-  if (net.kind === "evm" && process.env.ALCHEMY_AUTH_TOKEN) {
+  if (net.kind === "evm" && chain !== "zcu" && process.env.ALCHEMY_AUTH_TOKEN) {
     try {
       const { registerEvmAddressEverywhere } = await import("./alchemy-notify.server");
       await Promise.race([

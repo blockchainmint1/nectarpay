@@ -970,7 +970,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             const human = Number(BigInt(t.rawValue)) / 1e18;
             const usd = human * (await getUsdRate("zcu"));
             const confirmations = tip - t.blockNum + 1;
-            const cfg = configList.find((c) => c.store_id) ?? configList[0];
+            const cfg = configList[0];
             const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, usd, "zcu");
             const isConfirmed = confirmations >= required;
             await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed, "ZCU", t.blockTimeMs);
