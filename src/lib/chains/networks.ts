@@ -481,6 +481,7 @@ export const ALL_NETWORKS = {
   eth: ETH_NETWORK,
   base: BASE_NETWORK,
   bsc: BSC_NETWORK,
+  zcu: ZCU_NETWORK,
   tron: TRON_NETWORK,
   sol: SOL_NETWORK,
   lightning: LIGHTNING_NETWORK,
