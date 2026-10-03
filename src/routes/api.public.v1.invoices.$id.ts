@@ -118,12 +118,13 @@ export const Route = createFileRoute("/api/public/v1/invoices/$id")({
           if (!store?.webhook_url || !store.webhook_secret) {
             return json({ error: "Store has no webhook configured." }, 400);
           }
-          if (!["confirmed", "underpaid"].includes(inv.status)) {
+          if (!["confirmed", "overpaid", "underpaid"].includes(inv.status)) {
             return json({ error: `Invoice status is '${inv.status}'; nothing to redeliver.` }, 400);
           }
 
           const { deliverWebhook } = await import("@/lib/webhooks.server");
-          const eventType = inv.status === "confirmed" ? "invoice.paid" : "invoice.underpaid";
+          // Settled invoices redeliver the final `invoice.confirmed` event plugins settle on.
+          const eventType = inv.status === "underpaid" ? "invoice.underpaid" : "invoice.confirmed";
           const eventId = (crypto as { randomUUID: () => string }).randomUUID();
           const result = await deliverWebhook({
             url: store.webhook_url,
@@ -145,7 +146,7 @@ export const Route = createFileRoute("/api/public/v1/invoices/$id")({
               },
             },
           });
-          return json({ ok: result.ok, status: result.status ?? null, error: result.error ?? null, event_id: eventId });
+          return json({ ok: result.ok, status: result.status ?? null, error: result.error ?? null, event_id: eventId, event_type: eventType });
         } catch (err) {
           return json({ error: err instanceof Error ? err.message : "Server error" }, 500);
         }
