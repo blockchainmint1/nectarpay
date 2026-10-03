@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -301,8 +301,8 @@ function ChainsPage() {
       ) : (
         <div className="mt-6 space-y-4">
           {CHAINS.filter((c) => c.key !== "lightning").map((meta) => (
+            <Fragment key={meta.key}>
             <ChainCard
-              key={meta.key}
               meta={meta}
               row={rows[meta.key]}
               storeId={storeId}
@@ -318,11 +318,92 @@ function ChainsPage() {
                   : undefined
               }
             />
+            {meta.key === "eth" && (
+              <ZcuCard
+                storeId={storeId}
+                ethRow={rows.eth}
+                zcuRow={(data ?? []).find((r) => r.chain === "zcu") ?? null}
+                onSaved={() => refetch()}
+              />
+            )}
+            </Fragment>
           ))}
 
         </div>
 
       )}
+    </div>
+  );
+}
+
+/**
+ * ZCU (Zero Chill Units) rides on the merchant's EVM wallet: same seed, same
+ * 0x addresses. Turning it on copies the EVM xpub into a "zcu" chain config;
+ * native ZCU only, priced like ETH (not a stablecoin). Off by default.
+ */
+function ZcuCard({
+  storeId,
+  ethRow,
+  zcuRow,
+  onSaved,
+}: {
+  storeId: string;
+  ethRow: Row;
+  zcuRow: { id: string; enabled: boolean } | null;
+  onSaved: () => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const enabled = !!zcuRow?.enabled;
+  const ethXpub = ethRow.xpub ?? (isXpubLike(ethRow.xpub_or_address) ? ethRow.xpub_or_address : null);
+
+  async function toggle(next: boolean) {
+    if (next && !ethXpub) {
+      toast.error("Add your EVM wallet (xpub) above first — ZCU uses the same wallet.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error } = next
+        ? await supabase.from("chain_configs").upsert(
+            {
+              store_id: storeId,
+              chain: "zcu",
+              network: "mainnet",
+              xpub: ethXpub,
+              xpub_or_address: ethXpub!,
+              enabled: true,
+              stables: [],
+            },
+            { onConflict: "store_id,chain" },
+          )
+        : await supabase.from("chain_configs").update({ enabled: false }).eq("id", zcuRow!.id);
+      if (error) throw new Error(error.message);
+      toast.success(next ? "ZCU is on — customers can now pay with ZCU." : "ZCU is off.");
+      onSaved();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Save failed.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="ml-4 rounded-lg border border-dashed border-border bg-card/40 p-4">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <div className="text-sm font-medium">ZCU (Zero Chill Units)</div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Ethereum-style coin that uses your EVM wallet above — same addresses, nothing new to
+            set up. Customers pay in native ZCU at the live price.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="enabled-zcu" className="text-xs text-muted-foreground">
+            Accept ZCU
+          </Label>
+          <Switch id="enabled-zcu" checked={enabled} disabled={saving} onCheckedChange={toggle} />
+        </div>
+      </div>
     </div>
   );
 }

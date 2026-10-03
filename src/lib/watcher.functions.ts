@@ -4,7 +4,8 @@
 //   2) Poll the chain for incoming credits to those addresses
 //   3) Match credits to open invoices, mark paid/underpaid, emit notifications & webhooks
 
-import { BTC_NETWORK, TXC_NETWORK, ETH_NETWORK, getNetwork, isBtcLikeChain, type BtcLikeNetwork, type ChainKind, EVM_NETWORKS, TRON_NETWORK, SOL_NETWORK, isFastFinality, type EvmNetwork } from "./chains/networks";
+import { BTC_NETWORK, TXC_NETWORK, ETH_NETWORK, getNetwork, isBtcLikeChain, type BtcLikeNetwork, type ChainKind, EVM_NETWORKS, TRON_NETWORK, SOL_NETWORK, ZCU_NETWORK, isFastFinality, type EvmNetwork } from "./chains/networks";
+import { getZcuBlockNumber, getZcuTransfersTo } from "./chains/zcu.server";
 import { deriveBtcLikeAddress, deriveEvmAddress, deriveTronAddress } from "./chains/derive.server";
 import { extractIncoming, getAddressTxs, getTipHeight } from "./chains/btc-like.server";
 import { extractOmniIncoming } from "./chains/omni.server";
@@ -930,6 +931,62 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           .from("watcher_cursors")
           .update({ last_height: tip, last_run_at: new Date().toISOString(), last_status: "ok", last_error: null })
           .eq("chain", "tron");
+      } else if (chain === "zcu") {
+        // ZCU: native coin only, scanned block-by-block over the public node.
+        const net = ZCU_NETWORK;
+        const tip = await getZcuBlockNumber(net);
+        const { data: openInvoices } = await supabaseAdmin
+          .from("invoices")
+          .select("address")
+          .eq("chain", "zcu")
+          .in("store_id", configList.map((c) => c.store_id))
+          .in("status", ["pending", "detected", "underpaid"])
+          .not("address", "is", null);
+        const addrList = Array.from(new Set((openInvoices ?? []).map((a) => a.address as string).filter(Boolean)));
+        r.addresses = addrList.length;
+
+        const { data: cursor } = await supabaseAdmin
+          .from("watcher_cursors").select("last_height").eq("chain", "zcu").maybeSingle();
+        // Re-scan a small overlap so confirmation counts keep advancing; cap
+        // per tick so a long gap catches up over several runs.
+        const MAX_BLOCKS = 300;
+        let fromBlock = cursor?.last_height ? Number(cursor.last_height) - 12 : tip - 50;
+        fromBlock = Math.max(0, Math.max(fromBlock, tip - 2000));
+        const toBlock = Math.min(tip, fromBlock + MAX_BLOCKS);
+
+        if (addrList.length) {
+          const transfers = await getZcuTransfersTo(net, addrList, fromBlock, toBlock);
+          r.credits += transfers.length;
+          for (const t of transfers) {
+            const { data: candidates } = await supabaseAdmin
+              .from("invoices")
+              .select("id, fiat_amount, status, created_at, token_symbol")
+              .ilike("address", t.to)
+              .eq("chain", "zcu")
+              .in("status", ["pending", "detected", "underpaid"]);
+            const inv = (candidates ?? []).find((c) => c.token_symbol == null);
+            if (!inv) continue;
+            if (creditPredatesInvoice(t.blockTimeMs, inv.created_at)) continue;
+            const human = Number(BigInt(t.rawValue)) / 1e18;
+            const usd = human * (await getUsdRate("zcu"));
+            const confirmations = tip - t.blockNum + 1;
+            const cfg = configList[0];
+            const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, usd, "zcu");
+            const isConfirmed = confirmations >= required;
+            await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed, "ZCU", t.blockTimeMs);
+            if (isConfirmed) {
+              const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
+              if (settled.changed) r.invoicesUpdated++;
+            } else if (await markInvoiceDetected(inv.id)) {
+              r.invoicesUpdated++;
+            }
+          }
+        }
+
+        await supabaseAdmin.from("watcher_cursors").upsert(
+          { chain: "zcu", last_height: addrList.length ? toBlock : tip, last_run_at: new Date().toISOString(), last_status: "ok", last_error: null },
+          { onConflict: "chain" },
+        );
       } else if (chain === "sol") {
         // Solana: single-address mode only (no xpub derivation for ed25519 keys).
         // Invoices are matched by memo containing the invoice id prefix (first 8 chars).

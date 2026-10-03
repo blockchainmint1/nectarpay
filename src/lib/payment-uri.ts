@@ -76,7 +76,7 @@ export function buildPaymentUri(
   }
 
 
-  if (chain === "eth" || chain === "base" || chain === "bsc") {
+  if (chain === "eth" || chain === "base" || chain === "bsc" || chain === "zcu") {
     const net = getNetwork(chain as ChainKind);
     const chainId = net && net.kind === "evm" ? net.chainId : undefined;
 

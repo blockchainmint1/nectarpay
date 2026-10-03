@@ -293,6 +293,24 @@ export const BSC_NETWORK: EvmNetwork = {
 /** EVM networks that share a derivation path — one xpub covers all of them. */
 export const EVM_NETWORKS: EvmNetwork[] = [ETH_NETWORK, BASE_NETWORK, BSC_NETWORK];
 
+/**
+ * ZCU (Zero Chill Units) — go-ethereum fork, Scrypt PoW. Uses the same EVM
+ * derivation as ETH (same seed → same 0x addresses) but is watched over its
+ * own public RPC, not Alchemy, so it is deliberately NOT in EVM_NETWORKS.
+ * Native coin only — no stablecoins. Specs: zerochill.com/build
+ */
+export const ZCU_NETWORK: EvmNetwork = {
+  kind: "evm",
+  symbol: "zcu",
+  name: "Zero Chill Units",
+  chainId: 90031273,
+  rpcUrl: () => "https://node-zcu.honest.money",
+  explorerTx: (t) => `https://mempool.zerochill.com/tx/${t}`,
+  explorerAddr: (a) => `https://mempool.zerochill.com/address/${a}`,
+  stables: [],
+  confirmationsRequired: 6,
+};
+
 export const TRON_NETWORK: TronNetwork = {
   kind: "tron",
   symbol: "tron",
@@ -463,6 +481,7 @@ export const ALL_NETWORKS = {
   eth: ETH_NETWORK,
   base: BASE_NETWORK,
   bsc: BSC_NETWORK,
+  zcu: ZCU_NETWORK,
   tron: TRON_NETWORK,
   sol: SOL_NETWORK,
   lightning: LIGHTNING_NETWORK,
