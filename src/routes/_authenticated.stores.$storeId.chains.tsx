@@ -790,7 +790,7 @@ function ChainCard({
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+      <div className="mt-4">
         {showInput ? (
 
           <div>
@@ -857,11 +857,6 @@ function ChainCard({
             </div>
           </div>
         )}
-
-        <Button onClick={onSave} disabled={saving}>
-          <Save className="mr-2 h-4 w-4" />
-          {saving ? "Saving…" : "Save"}
-        </Button>
       </div>
 
       {STABLES_BY_CHAIN[meta.key] && STABLES_BY_CHAIN[meta.key]!.length > 0 && (
