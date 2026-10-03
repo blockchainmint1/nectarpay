@@ -605,6 +605,13 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
           </div>
         </label>
       </div>
+
+      <div className="mt-5 flex justify-end border-t border-primary/15 pt-4">
+        <Button onClick={onSave} disabled={saving}>
+          <Save className="mr-2 h-4 w-4" />
+          {saving ? "Saving…" : "Save"}
+        </Button>
+      </div>
     </div>
   );
 }
