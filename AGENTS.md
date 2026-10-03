@@ -8,4 +8,4 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
-- ZCU (chain id 90031273) is an EVM chain sharing the ETH xpub but scanned via its own RPC (src/lib/chains/zcu.server.ts), not Alchemy; native only; price is admin-set in rates_cache — no public feed exists.
+- ZCU (chain id 90031273) is an EVM chain sharing the ETH xpub but scanned via its own RPC (src/lib/chains/zcu.server.ts), not Alchemy; native only; price comes from wzcu.zerochill.com Uniswap 30m TWAP in pollRates (admin override available).
