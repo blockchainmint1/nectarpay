@@ -100,6 +100,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
 
     scripts: [
+      // honest.money ecosystem referral snippet (see honest.money/api §2b).
+      { src: "https://honest.money/hm.js", async: true },
       {
         type: "application/ld+json",
         children: JSON.stringify({
