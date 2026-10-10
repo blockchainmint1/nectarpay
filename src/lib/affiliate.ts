@@ -90,7 +90,10 @@ export function captureAffiliateFromUrl() {
 
 export function readAffiliateSnapshot(): AffiliateSnapshot | null {
   if (typeof window === "undefined") return null;
-  const id = readCookie(COOKIE) || localStorage.getItem(COOKIE);
+  // Fall back to the honest.money hm_ref code (set by hm.js) if we have none.
+  const id =
+    readCookie(COOKIE) || localStorage.getItem(COOKIE) ||
+    readCookie("hm_ref") || localStorage.getItem("hm_ref");
   if (!id || !AFFILIATE_ID_RE.test(id)) return null;
   let utm: { source?: string; medium?: string; campaign?: string } = {};
   try {
