@@ -33,6 +33,7 @@ import { Route as PosBuildIdRouteImport } from './routes/pos-build-id'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SsoRouteImport } from './routes/sso'
 import { Route as StartRouteImport } from './routes/start'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as TermsRouteImport } from './routes/terms'
@@ -116,6 +117,7 @@ import { Route as AuthenticatedStoresStoreIdShareLinksRouteImport } from './rout
 import { Route as AuthenticatedStoresStoreIdTangemRouteImport } from './routes/_authenticated.stores.$storeId.tangem'
 import { Route as AuthenticatedStoresStoreIdTerminalsRouteImport } from './routes/_authenticated.stores.$storeId.terminals'
 import { Route as ApiPublicAffiliateClickRouteImport } from './routes/api/public/affiliate.click'
+import { Route as ApiPublicAuthHmeSsoRouteImport } from './routes/api/public/auth/hme-sso'
 import { Route as ApiPublicAuthWalletCallbackRouteImport } from './routes/api/public/auth/wallet-callback'
 import { Route as ApiPublicAuthWalletChallengeRouteImport } from './routes/api/public/auth/wallet-challenge'
 import { Route as ApiPublicAuthWalletExchangeRouteImport } from './routes/api/public/auth/wallet-exchange'
@@ -278,6 +280,11 @@ const SignupRoute = SignupRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SsoRoute = SsoRouteImport.update({
+  id: '/sso',
+  path: '/sso',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StartRoute = StartRouteImport.update({
@@ -737,6 +744,11 @@ const ApiPublicAffiliateClickRoute = ApiPublicAffiliateClickRouteImport.update({
   path: '/api/public/affiliate/click',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAuthHmeSsoRoute = ApiPublicAuthHmeSsoRouteImport.update({
+  id: '/api/public/auth/hme-sso',
+  path: '/api/public/auth/hme-sso',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicAuthWalletCallbackRoute =
   ApiPublicAuthWalletCallbackRouteImport.update({
     id: '/api/public/auth/wallet-callback',
@@ -1008,6 +1020,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/sso': typeof SsoRoute
   '/start': typeof StartRoute
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
@@ -1088,6 +1101,7 @@ export interface FileRoutesByFullPath {
   '/stores/$storeId/tangem': typeof AuthenticatedStoresStoreIdTangemRoute
   '/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
   '/api/public/affiliate/click': typeof ApiPublicAffiliateClickRoute
+  '/api/public/auth/hme-sso': typeof ApiPublicAuthHmeSsoRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
   '/api/public/auth/wallet-exchange': typeof ApiPublicAuthWalletExchangeRoute
@@ -1159,6 +1173,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/sso': typeof SsoRoute
   '/start': typeof StartRoute
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
@@ -1234,6 +1249,7 @@ export interface FileRoutesByTo {
   '/stores/$storeId/tangem': typeof AuthenticatedStoresStoreIdTangemRoute
   '/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
   '/api/public/affiliate/click': typeof ApiPublicAffiliateClickRoute
+  '/api/public/auth/hme-sso': typeof ApiPublicAuthHmeSsoRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
   '/api/public/auth/wallet-exchange': typeof ApiPublicAuthWalletExchangeRoute
@@ -1308,6 +1324,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/sso': typeof SsoRoute
   '/start': typeof StartRoute
   '/status': typeof StatusRoute
   '/terms': typeof TermsRoute
@@ -1388,6 +1405,7 @@ export interface FileRoutesById {
   '/_authenticated/stores/$storeId/tangem': typeof AuthenticatedStoresStoreIdTangemRoute
   '/_authenticated/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
   '/api/public/affiliate/click': typeof ApiPublicAffiliateClickRoute
+  '/api/public/auth/hme-sso': typeof ApiPublicAuthHmeSsoRoute
   '/api/public/auth/wallet-callback': typeof ApiPublicAuthWalletCallbackRoute
   '/api/public/auth/wallet-challenge': typeof ApiPublicAuthWalletChallengeRoute
   '/api/public/auth/wallet-exchange': typeof ApiPublicAuthWalletExchangeRoute
@@ -1462,6 +1480,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/sitemap.xml'
+    | '/sso'
     | '/start'
     | '/status'
     | '/terms'
@@ -1542,6 +1561,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId/tangem'
     | '/stores/$storeId/terminals'
     | '/api/public/affiliate/click'
+    | '/api/public/auth/hme-sso'
     | '/api/public/auth/wallet-callback'
     | '/api/public/auth/wallet-challenge'
     | '/api/public/auth/wallet-exchange'
@@ -1613,6 +1633,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/sitemap.xml'
+    | '/sso'
     | '/start'
     | '/status'
     | '/terms'
@@ -1688,6 +1709,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId/tangem'
     | '/stores/$storeId/terminals'
     | '/api/public/affiliate/click'
+    | '/api/public/auth/hme-sso'
     | '/api/public/auth/wallet-callback'
     | '/api/public/auth/wallet-challenge'
     | '/api/public/auth/wallet-exchange'
@@ -1761,6 +1783,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/signup'
     | '/sitemap.xml'
+    | '/sso'
     | '/start'
     | '/status'
     | '/terms'
@@ -1841,6 +1864,7 @@ export interface FileRouteTypes {
     | '/_authenticated/stores/$storeId/tangem'
     | '/_authenticated/stores/$storeId/terminals'
     | '/api/public/affiliate/click'
+    | '/api/public/auth/hme-sso'
     | '/api/public/auth/wallet-callback'
     | '/api/public/auth/wallet-challenge'
     | '/api/public/auth/wallet-exchange'
@@ -1915,6 +1939,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  SsoRoute: typeof SsoRoute
   StartRoute: typeof StartRoute
   StatusRoute: typeof StatusRoute
   TermsRoute: typeof TermsRoute
@@ -1934,6 +1959,7 @@ export interface RootRouteChildren {
   ApiPublicDemoResetRoute: typeof ApiPublicDemoResetRoute
   LovableEmailEventsRoute: typeof LovableEmailEventsRoute
   ApiPublicAffiliateClickRoute: typeof ApiPublicAffiliateClickRoute
+  ApiPublicAuthHmeSsoRoute: typeof ApiPublicAuthHmeSsoRoute
   ApiPublicAuthWalletCallbackRoute: typeof ApiPublicAuthWalletCallbackRoute
   ApiPublicAuthWalletChallengeRoute: typeof ApiPublicAuthWalletChallengeRoute
   ApiPublicAuthWalletExchangeRoute: typeof ApiPublicAuthWalletExchangeRoute
@@ -2134,6 +2160,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sso': {
+      id: '/sso'
+      path: '/sso'
+      fullPath: '/sso'
+      preLoaderRoute: typeof SsoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/start': {
@@ -2715,6 +2748,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/affiliate/click'
       fullPath: '/api/public/affiliate/click'
       preLoaderRoute: typeof ApiPublicAffiliateClickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/auth/hme-sso': {
+      id: '/api/public/auth/hme-sso'
+      path: '/api/public/auth/hme-sso'
+      fullPath: '/api/public/auth/hme-sso'
+      preLoaderRoute: typeof ApiPublicAuthHmeSsoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/auth/wallet-callback': {
@@ -3387,6 +3427,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  SsoRoute: SsoRoute,
   StartRoute: StartRoute,
   StatusRoute: StatusRoute,
   TermsRoute: TermsRoute,
@@ -3406,6 +3447,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicDemoResetRoute: ApiPublicDemoResetRoute,
   LovableEmailEventsRoute: LovableEmailEventsRoute,
   ApiPublicAffiliateClickRoute: ApiPublicAffiliateClickRoute,
+  ApiPublicAuthHmeSsoRoute: ApiPublicAuthHmeSsoRoute,
   ApiPublicAuthWalletCallbackRoute: ApiPublicAuthWalletCallbackRoute,
   ApiPublicAuthWalletChallengeRoute: ApiPublicAuthWalletChallengeRoute,
   ApiPublicAuthWalletExchangeRoute: ApiPublicAuthWalletExchangeRoute,

@@ -224,6 +224,31 @@ function AuthPage() {
     }
   }
 
+  function signInHme() {
+    const returnTo = `${window.location.origin}/sso`;
+    const url = `https://honest.money/sso-login?popup=1&return_to=${encodeURIComponent(returnTo)}`;
+    const popup = window.open(url, "hme-sso", "width=460,height=640");
+    if (!popup) {
+      window.location.href = url.replace("popup=1&", "");
+      return;
+    }
+    const onMsg = async (e: MessageEvent) => {
+      if (e.origin !== window.location.origin || e.data?.type !== "hme-sso") return;
+      window.removeEventListener("message", onMsg);
+      try {
+        const { finishHmeSso } = await import("./sso");
+        const { is_admin } = await finishHmeSso(String(e.data.token));
+        toast.success("Signed in");
+        navigate({ to: resolvePostAuthPath(is_admin, search.redirect) });
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Honest Money sign-in failed");
+      }
+    };
+    window.addEventListener("message", onMsg);
+  }
+
+
+
 
 
   return (
@@ -254,6 +279,7 @@ function AuthPage() {
           {mode === "choose" && (
             <ChooseMode
               onGoogle={() => void signInGoogle()}
+              onHme={signInHme}
               onEmail={() => setMode("email")}
               onWallet={() => setMode("wallet")}
             />
@@ -505,10 +531,12 @@ function formatTime(seconds: number): string {
 
 function ChooseMode({
   onGoogle,
+  onHme,
   onEmail,
   onWallet,
 }: {
   onGoogle: () => void;
+  onHme: () => void;
   onEmail: () => void;
   onWallet: () => void;
 }) {
@@ -521,6 +549,14 @@ function ChooseMode({
       >
         <GoogleGlyph className="h-5 w-5" />
         Continue with Google
+      </button>
+      <button
+        type="button"
+        onClick={onHme}
+        className="flex h-14 w-full items-center justify-center gap-3 rounded-lg border border-input bg-card text-base font-medium transition hover:bg-accent"
+      >
+        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">H</span>
+        Continue with Honest Money
       </button>
       <button
         type="button"
