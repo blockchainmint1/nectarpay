@@ -592,6 +592,21 @@ export type Database = {
         }
         Relationships: []
       }
+      hme_sso_nonces: {
+        Row: {
+          nonce: string
+          used_at: string
+        }
+        Insert: {
+          nonce: string
+          used_at?: string
+        }
+        Update: {
+          nonce?: string
+          used_at?: string
+        }
+        Relationships: []
+      }
       invoice_tap_nonces: {
         Row: {
           consumed_at: string | null
