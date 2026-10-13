@@ -328,6 +328,7 @@ export function Business({
             listing_visibility: "city_only",
             fiat_currency: "USD",
             mempool_accept_fast: true,
+            mempool_accept_slow: true,
             mempool_max_usd: 1000,
           })
           .select("id")
