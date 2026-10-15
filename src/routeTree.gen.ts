@@ -161,6 +161,7 @@ import { Route as ApiPublicV1InvoicesIdEmailRouteImport } from './routes/api.pub
 import { Route as ApiPublicV1InvoicesIdWebhooksRouteImport } from './routes/api.public.v1.invoices.$id.webhooks'
 import { Route as ApiPublicV1TerminalsInvoiceIdRouteImport } from './routes/api/public/v1/terminals/invoice.$id'
 import { Route as ApiPublicV1TerminalsInvoiceIdCancelRouteImport } from './routes/api/public/v1/terminals/invoice.$id.cancel'
+import { Route as ApiPublicV1TerminalsInvoiceIdCardPayRouteImport } from './routes/api/public/v1/terminals/invoice.$id.card-pay'
 import { Route as ApiPublicV1TerminalsInvoiceIdReceiptRouteImport } from './routes/api/public/v1/terminals/invoice.$id.receipt'
 
 const IndexRoute = IndexRouteImport.update({
@@ -989,6 +990,12 @@ const ApiPublicV1TerminalsInvoiceIdCancelRoute =
     path: '/cancel',
     getParentRoute: () => ApiPublicV1TerminalsInvoiceIdRoute,
   } as any)
+const ApiPublicV1TerminalsInvoiceIdCardPayRoute =
+  ApiPublicV1TerminalsInvoiceIdCardPayRouteImport.update({
+    id: '/card-pay',
+    path: '/card-pay',
+    getParentRoute: () => ApiPublicV1TerminalsInvoiceIdRoute,
+  } as any)
 const ApiPublicV1TerminalsInvoiceIdReceiptRoute =
   ApiPublicV1TerminalsInvoiceIdReceiptRouteImport.update({
     id: '/receipt',
@@ -1148,6 +1155,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/invoices/$id/webhooks': typeof ApiPublicV1InvoicesIdWebhooksRoute
   '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
   '/api/public/v1/terminals/invoice/$id/cancel': typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
+  '/api/public/v1/terminals/invoice/$id/card-pay': typeof ApiPublicV1TerminalsInvoiceIdCardPayRoute
   '/api/public/v1/terminals/invoice/$id/receipt': typeof ApiPublicV1TerminalsInvoiceIdReceiptRoute
 }
 export interface FileRoutesByTo {
@@ -1296,6 +1304,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/invoices/$id/webhooks': typeof ApiPublicV1InvoicesIdWebhooksRoute
   '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
   '/api/public/v1/terminals/invoice/$id/cancel': typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
+  '/api/public/v1/terminals/invoice/$id/card-pay': typeof ApiPublicV1TerminalsInvoiceIdCardPayRoute
   '/api/public/v1/terminals/invoice/$id/receipt': typeof ApiPublicV1TerminalsInvoiceIdReceiptRoute
 }
 export interface FileRoutesById {
@@ -1452,6 +1461,7 @@ export interface FileRoutesById {
   '/api/public/v1/invoices/$id/webhooks': typeof ApiPublicV1InvoicesIdWebhooksRoute
   '/api/public/v1/terminals/invoice/$id': typeof ApiPublicV1TerminalsInvoiceIdRouteWithChildren
   '/api/public/v1/terminals/invoice/$id/cancel': typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
+  '/api/public/v1/terminals/invoice/$id/card-pay': typeof ApiPublicV1TerminalsInvoiceIdCardPayRoute
   '/api/public/v1/terminals/invoice/$id/receipt': typeof ApiPublicV1TerminalsInvoiceIdReceiptRoute
 }
 export interface FileRouteTypes {
@@ -1608,6 +1618,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/invoices/$id/webhooks'
     | '/api/public/v1/terminals/invoice/$id'
     | '/api/public/v1/terminals/invoice/$id/cancel'
+    | '/api/public/v1/terminals/invoice/$id/card-pay'
     | '/api/public/v1/terminals/invoice/$id/receipt'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -1756,6 +1767,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/invoices/$id/webhooks'
     | '/api/public/v1/terminals/invoice/$id'
     | '/api/public/v1/terminals/invoice/$id/cancel'
+    | '/api/public/v1/terminals/invoice/$id/card-pay'
     | '/api/public/v1/terminals/invoice/$id/receipt'
   id:
     | '__root__'
@@ -1911,6 +1923,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/invoices/$id/webhooks'
     | '/api/public/v1/terminals/invoice/$id'
     | '/api/public/v1/terminals/invoice/$id/cancel'
+    | '/api/public/v1/terminals/invoice/$id/card-pay'
     | '/api/public/v1/terminals/invoice/$id/receipt'
   fileRoutesById: FileRoutesById
 }
@@ -3058,6 +3071,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1TerminalsInvoiceIdCancelRouteImport
       parentRoute: typeof ApiPublicV1TerminalsInvoiceIdRoute
     }
+    '/api/public/v1/terminals/invoice/$id/card-pay': {
+      id: '/api/public/v1/terminals/invoice/$id/card-pay'
+      path: '/card-pay'
+      fullPath: '/api/public/v1/terminals/invoice/$id/card-pay'
+      preLoaderRoute: typeof ApiPublicV1TerminalsInvoiceIdCardPayRouteImport
+      parentRoute: typeof ApiPublicV1TerminalsInvoiceIdRoute
+    }
     '/api/public/v1/terminals/invoice/$id/receipt': {
       id: '/api/public/v1/terminals/invoice/$id/receipt'
       path: '/receipt'
@@ -3371,6 +3391,7 @@ const ApiPublicV1WalletLinkRouteWithChildren =
 
 interface ApiPublicV1TerminalsInvoiceIdRouteChildren {
   ApiPublicV1TerminalsInvoiceIdCancelRoute: typeof ApiPublicV1TerminalsInvoiceIdCancelRoute
+  ApiPublicV1TerminalsInvoiceIdCardPayRoute: typeof ApiPublicV1TerminalsInvoiceIdCardPayRoute
   ApiPublicV1TerminalsInvoiceIdReceiptRoute: typeof ApiPublicV1TerminalsInvoiceIdReceiptRoute
 }
 
@@ -3378,6 +3399,8 @@ const ApiPublicV1TerminalsInvoiceIdRouteChildren: ApiPublicV1TerminalsInvoiceIdR
   {
     ApiPublicV1TerminalsInvoiceIdCancelRoute:
       ApiPublicV1TerminalsInvoiceIdCancelRoute,
+    ApiPublicV1TerminalsInvoiceIdCardPayRoute:
+      ApiPublicV1TerminalsInvoiceIdCardPayRoute,
     ApiPublicV1TerminalsInvoiceIdReceiptRoute:
       ApiPublicV1TerminalsInvoiceIdReceiptRoute,
   }
