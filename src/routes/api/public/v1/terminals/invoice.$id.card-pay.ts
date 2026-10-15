@@ -96,14 +96,12 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/card-
           // TSD must be on for this store's TXC network.
           const { data: cfg } = await supabaseAdmin
             .from("chain_configs")
-            .select("*")
+            .select("enabled, stables")
             .eq("store_id", inv.store_id)
             .eq("chain", "txc")
             .maybeSingle();
-          const c = cfg as Record<string, unknown> | null;
-          const tokens = (c?.["accepted_tokens"] ?? c?.["tokens"] ?? []) as unknown;
-          const hasTsd = Array.isArray(tokens) && tokens.map((t) => String(t).toUpperCase()).includes("TSD");
-          if (!c || c["enabled"] === false || !hasTsd) {
+          const hasTsd = (cfg?.stables ?? []).map((t) => t.toUpperCase()).includes("TSD");
+          if (!cfg || !cfg.enabled || !hasTsd) {
             return json({ status: "failed", reason: "This store doesn't accept TSD." });
           }
 

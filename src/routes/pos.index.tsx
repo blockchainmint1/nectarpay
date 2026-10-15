@@ -10,7 +10,7 @@ import { loadSettings, sha256, type PosSettings } from "@/lib/pos-settings";
 import { EVM_CHAIN_LABEL, evmChainsForStable } from "@/lib/chains/networks";
 import { qrToDataURL } from "@/lib/qr";
 import { buildPaymentUri } from "@/lib/payment-uri";
-import { NectarPrinter, Tangem, type ReceiptPayload, type ReceiptLine } from "@/lib/pos-native";
+import { NectarPrinter, NectarNfc, isNative, Tangem, type ReceiptPayload, type ReceiptLine } from "@/lib/pos-native";
 import { useServerFn } from "@tanstack/react-start";
 import { startTangemPayment, submitTangemPayment } from "@/lib/tangem-pay.functions";
 
@@ -112,7 +112,7 @@ function Splash({ label }: { label: string }) {
 
 // ─── Sale state machine ──────────────────────────────────────────────────
 
-type Screen = "amount" | "tip" | "chain" | "waiting" | "underpaid" | "paid" | "signature" | "email" | "cancelled" | "expired";
+type Screen = "amount" | "tip" | "chain" | "card" | "waiting" | "underpaid" | "paid" | "signature" | "email" | "cancelled" | "expired";
 
 interface Experience {
   tip_enabled: boolean;
@@ -197,7 +197,7 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
     setScreen("chain");
   };
 
-  const createInvoice = async (finalTip: number, option: string | null) => {
+  const createInvoice = async (finalTip: number, option: string | null, next: Screen = "waiting") => {
     if (subtotalCents <= 0) return;
     setBusy(true); setErr(null);
     try {
@@ -212,7 +212,7 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
         body: { amount_cents: finalTotal, currency: "USD", memo, option },
       });
       setInvoice(inv);
-      setScreen("waiting");
+      setScreen(next);
     } catch (e) {
       setErr((e as Error).message);
     } finally {
@@ -287,7 +287,18 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
             busy={busy}
             err={err}
             onPick={(opt) => createInvoice(finalTipCents, opt)}
+            onCard={() => createInvoice(finalTipCents, null, "card")}
             onBack={() => setScreen(hasTips ? "tip" : "amount")}
+          />
+        )}
+        {screen === "card" && invoice && (
+          <CardScreen
+            creds={creds}
+            invoiceId={invoice.id}
+            totalCents={subtotalCents + taxCents + finalTipCents}
+            onPaid={() => setScreen("waiting")}
+            onUseQr={() => setScreen("waiting")}
+            onCancel={onCancel}
           />
         )}
         {screen === "waiting" && invoice && (
@@ -490,8 +501,9 @@ function TipScreen({
 }
 
 function ChainScreen({
-  totalCents, options, optionsErr, busy, err, onPick, onBack,
+  totalCents, options, optionsErr, busy, err, onPick, onCard, onBack,
 }: {
+  onCard: () => void;
   totalCents: number;
   options: PaymentOption[];
   optionsErr: string | null;
@@ -532,6 +544,20 @@ function ChainScreen({
             <span className="ml-3 text-white/40 group-hover:text-amber-300">→</span>
           </button>
         ))}
+
+        {options.some((o) => o.chain === "txc" && (o.tokenSymbol ?? "").toUpperCase() === "TSD") && (
+          <button
+            disabled={busy}
+            onClick={onCard}
+            className="flex w-full items-center justify-between rounded-xl border-2 border-amber-400/50 bg-amber-400/[0.06] px-4 py-4 text-left transition hover:border-amber-400 disabled:opacity-40"
+          >
+            <div className="min-w-0 flex-1">
+              <div className="text-base font-bold">Tap HME card</div>
+              <div className="mt-0.5 text-[11px] text-white/50">Customer taps their Honest Money card. Pays in TSD.</div>
+            </div>
+            <span className="ml-3 text-amber-300">→</span>
+          </button>
+        )}
 
         {/* Pinned at the bottom: hand the choice to the customer on the QR page. */}
         <div className="mt-2 border-t border-white/10 pt-2">
@@ -576,6 +602,134 @@ function paymentUri(chain: string, address: string, amount: number | null, token
   return buildPaymentUri(chain, address, amount, tokenSymbol, { multiChainEvm: chain === "eth", label });
 }
 
+
+type CardReply = { status: string; txid?: string | null; reason?: string | null; payment_id?: string | null };
+
+function CardScreen({
+  creds, invoiceId, totalCents, onPaid, onUseQr, onCancel,
+}: {
+  creds: TerminalCreds; invoiceId: string; totalCents: number;
+  onPaid: () => void; onUseQr: () => void; onCancel: () => void;
+}) {
+  const [phase, setPhase] = useState<"tap" | "sending" | "pin" | "approval" | "error">("tap");
+  const [reason, setReason] = useState<string | null>(null);
+  const [pin, setPin] = useState("");
+  const uidRef = useRef<string | null>(null);
+  const busyRef = useRef(false);
+  const native = isNative();
+
+  const handle = (r: CardReply) => {
+    if (r.status === "paid") { onPaid(); return; }
+    if (r.status === "pin_required") { setPin(""); setReason(null); setPhase("pin"); return; }
+    if (r.status === "approval_required" || r.status === "sending") {
+      if (r.payment_id) { setPhase("approval"); poll(r.payment_id, Date.now()); return; }
+    }
+    setReason(r.reason || (r.status === "declined" ? "Card declined." : "Payment failed."));
+    uidRef.current = null;
+    setPhase("error");
+  };
+
+  const send = async (uid: string, pinValue?: string) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setPhase("sending");
+    try {
+      const r = await signedJson<CardReply>(creds, `/api/public/v1/terminals/invoice/${invoiceId}/card-pay`, {
+        method: "POST", body: { card_uid: uid, ...(pinValue ? { pin: pinValue } : {}) },
+      });
+      handle(r);
+    } catch (e) {
+      setReason((e as Error).message); setPhase("error");
+    } finally { busyRef.current = false; }
+  };
+
+  const pollRef = useRef(true);
+  useEffect(() => () => { pollRef.current = false; }, []);
+  const poll = (paymentId: string, startedAt: number) => {
+    const tick = async () => {
+      if (!pollRef.current) return;
+      if (Date.now() - startedAt > 15 * 60_000) { setReason("Approval timed out."); setPhase("error"); return; }
+      try {
+        const r = await signedJson<CardReply>(creds, `/api/public/v1/terminals/invoice/${invoiceId}/card-pay`, {
+          method: "POST", body: { payment_id: paymentId },
+        });
+        if (r.status === "approval_required" || r.status === "sending") { setTimeout(tick, 3000); return; }
+        handle(r);
+      } catch { setTimeout(tick, 3000); }
+    };
+    setTimeout(tick, 3000);
+  };
+
+  useEffect(() => {
+    let sub: { remove: () => Promise<void> } | null = null;
+    let alive = true;
+    void NectarNfc.start((e) => {
+      if (!e.uid || busyRef.current) return;
+      if (uidRef.current) return;
+      uidRef.current = e.uid;
+      void send(e.uid);
+    }).then((s) => { if (alive) sub = s; else void s.remove(); });
+    return () => { alive = false; if (sub) void sub.remove(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const press = (k: string) => {
+    if (k === "C") return setPin("");
+    if (k === "⌫") return setPin((p) => p.slice(0, -1));
+    setPin((p) => (p.length < 8 ? p + k : p));
+  };
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col items-center px-4 py-6 text-center">
+      <p className="text-[10px] font-bold tracking-[0.25em] text-white/50">HME CARD · TSD</p>
+      <div className="mt-1 text-4xl font-black tabular-nums">{fmt(totalCents)}</div>
+
+      <div className="mt-8 flex w-full max-w-sm flex-1 flex-col items-center justify-center gap-4">
+        {phase === "tap" && (
+          <>
+            <div className="flex size-32 items-center justify-center rounded-full border-4 border-amber-400/60 text-5xl animate-pulse">📶</div>
+            <p className="text-lg font-bold">Tap card on the terminal</p>
+            {!native && <p className="text-xs text-red-400">Card reading only works in the NectarPOS terminal app.</p>}
+          </>
+        )}
+        {phase === "sending" && <p className="text-lg font-bold">Sending payment…</p>}
+        {phase === "approval" && (
+          <>
+            <p className="text-lg font-bold">Waiting for the cardholder's approval…</p>
+            <p className="text-xs text-white/50">They'll get a message on Telegram.</p>
+          </>
+        )}
+        {phase === "pin" && (
+          <>
+            <p className="text-lg font-bold">Customer: enter your card PIN</p>
+            <div className="h-10 font-mono text-3xl tracking-[0.5em]">{"•".repeat(pin.length) || " "}</div>
+            <div className="grid w-full grid-cols-3 gap-2">
+              {["1","2","3","4","5","6","7","8","9","C","0","⌫"].map((k) => (
+                <button key={k} onClick={() => press(k)} className="h-14 rounded-lg bg-white/[0.06] text-xl font-bold hover:bg-white/10">{k}</button>
+              ))}
+            </div>
+            <button
+              disabled={pin.length < 4}
+              onClick={() => uidRef.current && send(uidRef.current, pin)}
+              className="h-12 w-full rounded-lg bg-amber-400 font-black text-black disabled:opacity-40"
+            >PAY</button>
+          </>
+        )}
+        {phase === "error" && (
+          <>
+            <p className="text-lg font-bold text-red-400">{reason}</p>
+            <button onClick={() => { setReason(null); setPhase("tap"); }} className="h-12 w-full rounded-lg bg-amber-400 font-black text-black">TRY AGAIN</button>
+          </>
+        )}
+      </div>
+
+      <div className="mt-4 flex w-full max-w-sm gap-2">
+        <button onClick={onCancel} className="h-11 flex-1 rounded-lg border border-white/15 text-xs font-bold tracking-widest text-white/60">CANCEL</button>
+        <button onClick={onUseQr} className="h-11 flex-1 rounded-lg border border-white/15 text-xs font-bold tracking-widest text-white/60">SHOW QR</button>
+      </div>
+    </div>
+  );
+}
 
 function WaitingScreen({
   invoice, status, onCancel, storeName,
