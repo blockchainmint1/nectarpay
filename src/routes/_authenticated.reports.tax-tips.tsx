@@ -122,8 +122,7 @@ function TaxTipsReport() {
         <p className="text-sm text-muted-foreground">
           Tax and tip amounts come from what the cashier rang up on the terminal, shown as a
           percentage of the pre-tax, pre-tip subtotal. Sales made through payment links or
-          emailed invoices don't carry this breakdown, so they won't appear here. The Tax &amp;
-          accounting report estimates tax across all sales from your store's tax rate instead.
+          emailed invoices don't carry this breakdown, so they won't appear here.
         </p>
       </Panel>
     </div>

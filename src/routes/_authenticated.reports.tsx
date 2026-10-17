@@ -42,7 +42,6 @@ const TABS = [
   { to: "/reports/locations", label: "Stores & devices" },
   { to: "/reports/invoices", label: "Customers & invoices" },
   { to: "/reports/settlement", label: "Settlement & fees" },
-  { to: "/reports/tax", label: "Tax & accounting" },
   { to: "/reports/tax-tips", label: "Tax & tips" },
 ] as const;
 
