@@ -29,7 +29,7 @@ const LINKS = [
   { to: "/reports/locations", label: "Stores & devices", body: "Volume per store, terminal and share link." },
   { to: "/reports/invoices", label: "Customers & invoices", body: "Payment requests, opens, and repeat payers." },
   { to: "/reports/settlement", label: "Settlement & fees", body: "What landed, and what card fees would have cost." },
-  { to: "/reports/tax", label: "Tax & accounting", body: "Monthly totals ready for your bookkeeper." },
+  { to: "/reports/tax-tips", label: "Tax & tips", body: "Tax and tip on every terminal sale, line by line." },
 ] as const;
 
 function SummaryReport() {
