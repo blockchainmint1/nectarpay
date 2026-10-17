@@ -433,5 +433,6 @@ export async function computeReports(
     settlement,
     savings: { periodUsd: round(cardFeeUsd), cardFeeUsd, nectarFeeUsd: 0 },
     tax,
+    taxTips,
   };
 }
