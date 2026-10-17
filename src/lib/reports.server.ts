@@ -73,6 +73,7 @@ type InvoiceRow = {
   updated_at: string;
   customer_email: string | null;
   buyer_email: string | null;
+  description: string | null;
   email_sent_at: string | null;
   first_viewed_at: string | null;
   stores: { id: string; name: string; tax_bps: number | null; tax_mode: string | null } | null;
@@ -86,7 +87,7 @@ async function fetchInvoices(
   let q = supabase
     .from("invoices")
     .select(
-      "id, store_id, chain, token_symbol, fiat_amount, fiat_currency, crypto_amount, status, created_at, updated_at, customer_email, buyer_email, email_sent_at, first_viewed_at, stores!inner(id, name, tax_bps, tax_mode), transactions(amount, token_symbol, confirmed_at)",
+      "id, store_id, chain, token_symbol, fiat_amount, fiat_currency, crypto_amount, status, created_at, updated_at, customer_email, buyer_email, description, email_sent_at, first_viewed_at, stores!inner(id, name, tax_bps, tax_mode), transactions(amount, token_symbol, confirmed_at)",
     )
     .gte("created_at", filters.from)
     .lte("created_at", filters.to)
@@ -372,6 +373,39 @@ export async function computeReports(
     }))
     .sort((a, b) => a.month.localeCompare(b.month));
 
+  // ---- tax & tips per transaction ---------------------------------------
+  // Terminal sales record "subtotal:<cents> tax:<cents> tip:<cents>" in the
+  // sale memo. Parse it back out for a per-transaction breakdown.
+  const memoPart = (desc: string | null, key: string): number | null => {
+    if (!desc) return null;
+    const m = desc.match(new RegExp(`(?:^|\\s)${key}:(\\d+)`));
+    return m ? Number(m[1]) / 100 : null;
+  };
+  const taxTips = paid
+    .map((r) => {
+      const subtotal = memoPart(r.description, "subtotal");
+      const taxCents = memoPart(r.description, "tax");
+      const tipCents = memoPart(r.description, "tip");
+      if (subtotal === null && taxCents === null && tipCents === null) return null;
+      const total = Number(r.fiat_amount ?? 0);
+      const base = subtotal ?? (total - (taxCents ?? 0) - (tipCents ?? 0));
+      return {
+        id: r.id,
+        date: r.created_at,
+        store: r.stores?.name ?? "Store",
+        currency: r.fiat_currency || "USD",
+        total: round(total),
+        subtotal: subtotal !== null ? round(subtotal) : null,
+        tax: taxCents !== null ? round(taxCents) : null,
+        taxPct: taxCents !== null && base > 0 ? round((taxCents / base) * 100, 2) : null,
+        tip: tipCents !== null ? round(tipCents) : null,
+        tipPct: tipCents !== null && base > 0 ? round((tipCents / base) * 100, 2) : null,
+      };
+    })
+    .filter((r): r is NonNullable<typeof r> => r !== null)
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 500);
+
   return {
     generated_at: new Date().toISOString(),
     currency,
@@ -399,5 +433,6 @@ export async function computeReports(
     settlement,
     savings: { periodUsd: round(cardFeeUsd), cardFeeUsd, nectarFeeUsd: 0 },
     tax,
+    taxTips,
   };
 }
