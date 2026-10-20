@@ -15,6 +15,13 @@
       "when": 1792496654347,
       "tag": "0001_cron_shared_secret",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792499404780,
+      "tag": "0002_hide_store_terminal_api_secrets",
+      "breakpoints": true
     }
   ]
 }
