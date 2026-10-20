@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { identifyEvmAsset } from "./evm-asset";
 import { ETH_NETWORK, BASE_NETWORK, BSC_NETWORK } from "./networks";
 

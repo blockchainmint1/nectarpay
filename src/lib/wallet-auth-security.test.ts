@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { authDomainFromRequest, publicOriginFromRequest, buildSignableMessage } from "./wallet-auth-shared";
 import { matchesWalletBrowser, walletBrowserCookieName, walletBrowserHash } from "./wallet-browser-binding.server";
 
