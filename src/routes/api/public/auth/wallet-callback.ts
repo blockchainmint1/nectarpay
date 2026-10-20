@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { randomBytes } from "crypto";
 import { z } from "zod";
-import { authDomainFromRequest } from "@/lib/wallet-auth-shared";
+import { authDomainFromRequest, matchesIssuedWalletMessage } from "@/lib/wallet-auth-shared";
 
 const CORS = {
   "access-control-allow-origin": "*",
@@ -121,7 +121,7 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
         }
 
         const message = ch.signable_message;
-        if (!message || (payload.message !== undefined && payload.message !== message)) {
+        if (!message || !matchesIssuedWalletMessage(message, payload.message)) {
           return Response.json({ error: "sign-in message mismatch; restart wallet sign-in" }, { status: 400, headers: CORS });
         }
 

@@ -25,6 +25,10 @@ export function buildSignableMessage(opts: {
   ].join("\n");
 }
 
+export function matchesIssuedWalletMessage(issued: string | null, submitted: string | undefined): boolean {
+  return !!issued && (submitted === undefined || submitted === issued);
+}
+
 /** base64url (no padding) — works in both browser and worker runtimes. */
 export function base64UrlEncode(input: string): string {
   // btoa expects latin1; encodeURIComponent → %XX → unescape gives utf-8 bytes

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { authDomainFromRequest, publicOriginFromRequest, buildSignableMessage } from "./wallet-auth-shared";
+import { authDomainFromRequest, publicOriginFromRequest, buildSignableMessage, matchesIssuedWalletMessage } from "./wallet-auth-shared";
 import { matchesWalletBrowser, walletBrowserCookieName, walletBrowserHash } from "./wallet-browser-binding.server";
 
 describe("wallet login domain and browser binding", () => {
@@ -31,7 +31,12 @@ describe("wallet login domain and browser binding", () => {
   });
   test("nonce-containing phishing messages differ from the exact issued message", () => {
     const message = buildSignableMessage({ nonce: "test-nonce", domain: "app.nectar-pay.com", issuedAt: "2026-10-20T12:00:00.000Z" });
-    expect(message).not.toBe("Claim your airdrop\nNonce: test-nonce");
-    expect(message.startsWith("app.nectar-pay.com wants you to sign in")).toBe(true);
+    expect(matchesIssuedWalletMessage(message, "Claim your airdrop\nNonce: test-nonce")).toBe(false);
+    expect(matchesIssuedWalletMessage(message, message.replace("app.nectar-pay.com", "evil.example"))).toBe(false);
+    expect(matchesIssuedWalletMessage(message, message + "\nClaim your reward")).toBe(false);
+    expect(matchesIssuedWalletMessage(message, message.replace("12:00:00", "11:00:00"))).toBe(false);
+    expect(matchesIssuedWalletMessage(message, message)).toBe(true);
+    expect(matchesIssuedWalletMessage(message, undefined)).toBe(true);
+    expect(matchesIssuedWalletMessage(null, undefined)).toBe(false);
   });
 });

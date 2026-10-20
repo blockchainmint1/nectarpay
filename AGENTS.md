@@ -12,3 +12,4 @@
 - EVM push notifications are hints: resolve assets by configured contracts and use the shared on-chain scanner and guarded transaction recorder before settlement, so token metadata cannot authorize payment.
 - Direct user grants on stores, terminals, and API keys must exclude secret reads; secret writes use authorized server operations (API-key fingerprint insertion is write-only), so team row visibility cannot reveal credentials.
 - Wallet login verifies the persisted server-issued message, uses allowlisted callback origins, and binds token polling/exchange to an HttpOnly browser cookie; conditional state transitions prevent replay.
+- Security regression tests run with the standalone Vitest configuration, not the application Vite plugins, so tests can exercise pure security helpers without starting SSR.
