@@ -3,6 +3,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { assertStoreSecretAccess } from "@/lib/store-secret-access.functions";
 
 function randomSecret(bytes = 32): string {
   const arr = new Uint8Array(bytes);
@@ -13,9 +14,7 @@ function randomSecret(bytes = 32): string {
 }
 
 async function assertOwnsStore(supabase: any, storeId: string) {
-  const { data, error } = await supabase.from("stores").select("id").eq("id", storeId).maybeSingle();
-  if (error) throw new Error(error.message);
-  if (!data) throw new Error("Store not found or not yours.");
+  await assertStoreSecretAccess(supabase, storeId);
 }
 
 export const getWebhookConfig = createServerFn({ method: "GET" })
