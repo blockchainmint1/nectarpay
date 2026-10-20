@@ -2524,6 +2524,7 @@ export type Database = {
       }
       wallet_login_challenges: {
         Row: {
+          browser_binding_hash: string | null
           consumed_at: string | null
           created_at: string
           expires_at: string
@@ -2531,6 +2532,7 @@ export type Database = {
           ip_address: string | null
           nonce: string
           one_time_token: string | null
+          signable_message: string | null
           signature: string | null
           signed_at: string | null
           status: Database["public"]["Enums"]["wallet_challenge_status"]
@@ -2538,6 +2540,7 @@ export type Database = {
           wallet_address: string | null
         }
         Insert: {
+          browser_binding_hash?: string | null
           consumed_at?: string | null
           created_at?: string
           expires_at?: string
@@ -2545,6 +2548,7 @@ export type Database = {
           ip_address?: string | null
           nonce: string
           one_time_token?: string | null
+          signable_message?: string | null
           signature?: string | null
           signed_at?: string | null
           status?: Database["public"]["Enums"]["wallet_challenge_status"]
@@ -2552,6 +2556,7 @@ export type Database = {
           wallet_address?: string | null
         }
         Update: {
+          browser_binding_hash?: string | null
           consumed_at?: string | null
           created_at?: string
           expires_at?: string
@@ -2559,6 +2564,7 @@ export type Database = {
           ip_address?: string | null
           nonce?: string
           one_time_token?: string | null
+          signable_message?: string | null
           signature?: string | null
           signed_at?: string | null
           status?: Database["public"]["Enums"]["wallet_challenge_status"]
