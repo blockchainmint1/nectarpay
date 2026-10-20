@@ -6,7 +6,7 @@ export const Route = createFileRoute("/api/public/cron/watcher")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const unauthorized = requireCronAuth(request);
+        const unauthorized = await requireCronAuth(request);
         if (unauthorized) return unauthorized;
         try {
           const results = await runWatcherTick();
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/api/public/cron/watcher")({
         }
       },
       GET: async ({ request }) => {
-        const unauthorized = requireCronAuth(request);
+        const unauthorized = await requireCronAuth(request);
         if (unauthorized) return unauthorized;
         const results = await runWatcherTick();
         return Response.json({ ok: true, results });

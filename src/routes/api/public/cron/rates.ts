@@ -6,7 +6,7 @@ export const Route = createFileRoute("/api/public/cron/rates")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const unauthorized = requireCronAuth(request);
+        const unauthorized = await requireCronAuth(request);
         if (unauthorized) return unauthorized;
         try {
           const result = await pollRates();
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/api/public/cron/rates")({
         }
       },
       GET: async ({ request }) => {
-        const unauthorized = requireCronAuth(request);
+        const unauthorized = await requireCronAuth(request);
         if (unauthorized) return unauthorized;
         const result = await pollRates();
         return Response.json({ ok: true, ...result });

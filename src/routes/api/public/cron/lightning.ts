@@ -16,7 +16,7 @@ export const Route = createFileRoute("/api/public/cron/lightning")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const unauthorized = requireCronAuth(request);
+        const unauthorized = await requireCronAuth(request);
         if (unauthorized) return unauthorized;
         try {
           return Response.json({ ok: true, ...(await run()) });
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/api/public/cron/lightning")({
         }
       },
       GET: async ({ request }) => {
-        const unauthorized = requireCronAuth(request);
+        const unauthorized = await requireCronAuth(request);
         if (unauthorized) return unauthorized;
         try {
           return Response.json({ ok: true, ...(await run()) });

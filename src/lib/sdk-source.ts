@@ -77,7 +77,12 @@ export const PAYHME_SDK_SOURCE = `/*! payhme.js v0.1 — non-custodial crypto ch
       modal.remove();
       if (handlers.onClose) handlers.onClose(reason);
     }
+    var frame = modal.querySelector("iframe");
+    var expectedOrigin;
+    try { expectedOrigin = new URL(url, window.location.href).origin; } catch (_) { expectedOrigin = ORIGIN; }
     function onMsg(e) {
+      if (e.origin !== expectedOrigin) return;
+      if (frame && e.source !== frame.contentWindow) return;
       if (!e.data || typeof e.data !== "object") return;
       if (e.data.source !== "payhme") return;
       if (e.data.type === "paid" && handlers.onSuccess) handlers.onSuccess(e.data);
