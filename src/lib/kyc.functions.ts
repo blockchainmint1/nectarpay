@@ -82,10 +82,16 @@ export const runBasicKyc = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: inv } = await supabaseAdmin
       .from("invoices")
-      .select("id, store_id")
+      .select("id, store_id, status, expires_at, kyc_status")
       .eq("id", data.invoiceId)
       .maybeSingle();
     if (!inv) throw new Error("Invoice not found");
+    // Only an open, unexpired sale that hasn't already passed screening can be
+    // (re)checked — a decided result can't be overwritten by someone else.
+    if (inv.status !== "pending" || new Date(inv.expires_at).getTime() < Date.now()) {
+      throw new Error("This invoice is no longer open.");
+    }
+    if (inv.kyc_status === "passed") throw new Error("Verification already completed.");
 
     const { data: store } = await supabaseAdmin
       .from("stores")
@@ -165,7 +171,7 @@ export const runBasicKyc = createServerFn({ method: "POST" })
       .from("invoices")
       .update({
         kyc_status: status,
-        buyer_email: data.email ?? null,
+        ...(data.email ? { buyer_email: data.email } : {}),
       })
       .eq("id", inv.id);
 
@@ -200,10 +206,16 @@ export const startAdvancedKyc = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: inv } = await supabaseAdmin
       .from("invoices")
-      .select("id, store_id")
+      .select("id, store_id, status, expires_at, kyc_status")
       .eq("id", data.invoiceId)
       .maybeSingle();
     if (!inv) throw new Error("Invoice not found");
+    // Only an open, unexpired sale that hasn't already passed screening can be
+    // (re)checked — a decided result can't be overwritten by someone else.
+    if (inv.status !== "pending" || new Date(inv.expires_at).getTime() < Date.now()) {
+      throw new Error("This invoice is no longer open.");
+    }
+    if (inv.kyc_status === "passed") throw new Error("Verification already completed.");
     const { data: store } = await supabaseAdmin
       .from("stores")
       .select("kyc_advanced_provider, kyc_advanced_api_key, kyc_advanced_app_token")
