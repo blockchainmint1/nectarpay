@@ -3,7 +3,7 @@
 export const WALLET_DEEP_LINK_SCHEME = "payhme";
 export const WALLET_CHALLENGE_TTL_SECONDS = 300; // 5 minutes
 export const WALLET_POLL_INTERVAL_MS = 2000;
-const WALLET_AUTH_PUBLIC_ORIGIN = "https://pay.honest.money";
+const WALLET_AUTH_PUBLIC_ORIGIN = "https://app.nectar-pay.com";
 
 /**
  * Human-readable, SIWE-flavored message the wallet displays and signs verbatim.
@@ -25,6 +25,10 @@ export function buildSignableMessage(opts: {
   ].join("\n");
 }
 
+export function matchesIssuedWalletMessage(issued: string | null, submitted: string | undefined): boolean {
+  return !!issued && (submitted === undefined || submitted === issued);
+}
+
 /** base64url (no padding) — works in both browser and worker runtimes. */
 export function base64UrlEncode(input: string): string {
   // btoa expects latin1; encodeURIComponent → %XX → unescape gives utf-8 bytes
@@ -37,104 +41,26 @@ export function base64UrlEncode(input: string): string {
   return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-function firstHeaderValue(value: string | null): string | null {
-  return value?.split(",")[0]?.trim().replace(/^"|"$/g, "") || null;
-}
-
-function forwardedHost(headers: Headers): string | null {
-  const forwarded = firstHeaderValue(headers.get("forwarded"));
-  const match = forwarded?.match(/(?:^|;)\s*host=([^;]+)/i);
-  return match?.[1]?.trim().replace(/^"|"$/g, "") || null;
-}
-
-function hostnameFromHost(host: string): string {
-  try {
-    return new URL(`https://${host}`).hostname;
-  } catch {
-    return host.split(":")[0] || host;
-  }
-}
-
-function isLocalHostname(hostname: string): boolean {
-  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "0.0.0.0";
-}
-
-function stableLovablePreviewOrigin(hostname: string): string | null {
-  if (!hostname.endsWith(".lovableproject.com")) return null;
-  const previewId = hostname.slice(0, -".lovableproject.com".length);
-  if (!/^[0-9a-f-]{36}$/i.test(previewId)) return null;
-  return `https://id-preview--${previewId}.lovable.app`;
-}
-
-function publicOrPreferredOrigin(origin: string): string {
-  try {
-    const parsed = new URL(origin);
-    const stablePreview = stableLovablePreviewOrigin(parsed.hostname);
-    if (stablePreview) return stablePreview;
-    if (isLocalHostname(parsed.hostname)) {
-      return WALLET_AUTH_PUBLIC_ORIGIN;
-    }
-    return parsed.origin;
-  } catch {
-    return origin;
-  }
-}
-
 export function publicOriginFromRequest(request: Request): string {
-  const url = new URL(request.url);
-  const origin = request.headers.get("origin");
-  if (origin) {
+  // Only explicitly owned deployments may receive a wallet callback.
+  const allowed = new Set([
+    WALLET_AUTH_PUBLIC_ORIGIN,
+    "https://nectarpay-app.lovable.app",
+    "https://id-preview--faa7c23e-4f75-4eed-8c8c-23234e4242f7.lovable.app",
+    "https://project--faa7c23e-4f75-4eed-8c8c-23234e4242f7.lovable.app",
+  ]);
+  for (const candidate of [request.url, request.headers.get("origin")]) {
+    if (!candidate) continue;
     try {
-      const parsed = new URL(origin);
-      if (!isLocalHostname(parsed.hostname)) return publicOrPreferredOrigin(parsed.origin);
-    } catch {
-      // Ignore malformed origin headers and fall through.
-    }
+      const origin = new URL(candidate).origin;
+      if (allowed.has(origin)) return origin;
+    } catch { /* Malformed/untrusted context never changes the destination. */ }
   }
-
-  const referer = request.headers.get("referer");
-  if (referer) {
-    try {
-      const parsed = new URL(referer);
-      if (!isLocalHostname(parsed.hostname)) return publicOrPreferredOrigin(parsed.origin);
-    } catch {
-      // Ignore malformed referer headers and fall through.
-    }
-  }
-
-  const host =
-    forwardedHost(request.headers) ??
-    firstHeaderValue(request.headers.get("x-forwarded-host")) ??
-    firstHeaderValue(request.headers.get("host"));
-  if (host) {
-    const hostname = hostnameFromHost(host);
-    if (!isLocalHostname(hostname)) {
-      const proto = firstHeaderValue(request.headers.get("x-forwarded-proto")) ?? "https";
-      return publicOrPreferredOrigin(`${proto}://${host}`);
-    }
-  }
-
-  return publicOrPreferredOrigin(url.origin);
+  return WALLET_AUTH_PUBLIC_ORIGIN;
 }
 
-export function authDomainFromRequest(request: Request): string {
-  const url = new URL(request.url);
-  const queryDomain = url.searchParams.get("domain");
-  if (queryDomain && !isLocalHostname(queryDomain)) return queryDomain;
-
-  try {
-    return new URL(publicOriginFromRequest(request)).hostname;
-  } catch {
-    // Fall through to raw host parsing.
-  }
-
-  const host =
-    forwardedHost(request.headers) ??
-    firstHeaderValue(request.headers.get("x-forwarded-host")) ??
-    firstHeaderValue(request.headers.get("host")) ??
-    url.host;
-
-  return hostnameFromHost(host);
+export function authDomainFromRequest(_request: Request): string {
+  return "app.nectar-pay.com";
 }
 
 export function buildDeepLink(opts: {

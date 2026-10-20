@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { matchesWalletBrowser } from "@/lib/wallet-browser-binding.server";
 
 const CORS = {
   "access-control-allow-origin": "*",
@@ -23,12 +24,15 @@ export const Route = createFileRoute("/api/public/auth/wallet-status")({
 
         const { data, error } = await supabaseAdmin
           .from("wallet_login_challenges")
-          .select("status, one_time_token, expires_at, wallet_address")
+          .select("status, one_time_token, expires_at, wallet_address, browser_binding_hash")
           .eq("id", id)
           .single();
 
         if (error || !data) {
           return Response.json({ status: "unknown" }, { status: 404, headers: CORS });
+        }
+        if (!matchesWalletBrowser(request, id, data.browser_binding_hash)) {
+          return Response.json({ error: "sign-in browser mismatch" }, { status: 403, headers: CORS });
         }
 
         if (new Date(data.expires_at).getTime() < Date.now() && data.status === "pending") {

@@ -284,6 +284,8 @@ export const saveStoreKycSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => SaveSettingsInput.parse(d))
   .handler(async ({ data, context }) => {
+    const { assertStoreSecretAccess } = await import("@/lib/store-secret-access.functions");
+    await assertStoreSecretAccess(context.supabase, data.storeId);
     const update: {
       kyc_level: typeof data.kycLevel;
       kyc_threshold_usd: number | null;
@@ -302,7 +304,8 @@ export const saveStoreKycSettings = createServerFn({ method: "POST" })
     if (data.kycAdvancedApiKey !== undefined) update.kyc_advanced_api_key = data.kycAdvancedApiKey;
     if (data.kycAdvancedAppToken !== undefined) update.kyc_advanced_app_token = data.kycAdvancedAppToken;
 
-    const { error } = await context.supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
       .from("stores")
       .update(update)
       .eq("id", data.storeId);

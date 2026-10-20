@@ -12,8 +12,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createHmac, timingSafeEqual } from "crypto";
 import { ETH_NETWORK, BASE_NETWORK, BSC_NETWORK, type EvmNetwork } from "@/lib/chains/networks";
-import { settleInvoice } from "@/lib/watcher.functions";
-import { getUsdRate } from "@/lib/rates.functions";
+import { scanEvmInvoiceNow } from "@/lib/watcher.functions";
+import { identifyEvmAsset } from "@/lib/chains/evm-asset";
 
 interface AlchemyActivity {
   fromAddress: string;
@@ -50,61 +50,6 @@ function verifySignature(body: string, signature: string, signingKey: string): b
   return timingSafeEqual(a, b);
 }
 
-async function recordAndSettle(
-  invoiceId: string,
-  txHash: string,
-  paidCrypto: number,
-  confirmations: number,
-  blockHeight: number | null,
-  isConfirmed: boolean,
-  tokenSymbol: string | null,
-  paidUsd: number,
-  amountDueUsd: number,
-): Promise<void> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data: existing } = await supabaseAdmin
-    .from("transactions")
-    .select("id")
-    .eq("invoice_id", invoiceId)
-    .eq("tx_hash", txHash)
-    .maybeSingle();
-  const now = new Date().toISOString();
-  if (existing) {
-    await supabaseAdmin
-      .from("transactions")
-      .update({ confirmations, block_height: blockHeight, confirmed_at: isConfirmed ? now : null })
-      .eq("id", existing.id);
-  } else {
-    await supabaseAdmin.from("transactions").insert({
-      invoice_id: invoiceId,
-      tx_hash: txHash,
-      amount: paidCrypto,
-      confirmations,
-      block_height: blockHeight,
-      first_seen_at: now,
-      confirmed_at: isConfirmed ? now : null,
-      token_symbol: tokenSymbol,
-    });
-  }
-  if (isConfirmed) {
-    await settleInvoice(invoiceId, paidUsd, amountDueUsd);
-  } else {
-    // Mark detected (pending → detected) so the terminal flips status fast.
-    const { data: inv } = await supabaseAdmin
-      .from("invoices")
-      .select("status")
-      .eq("id", invoiceId)
-      .maybeSingle();
-    if (inv?.status === "pending") {
-      await supabaseAdmin
-        .from("invoices")
-        .update({ status: "detected" })
-        .eq("id", invoiceId)
-        .eq("status", "pending");
-    }
-  }
-}
-
 export const Route = createFileRoute("/api/public/hooks/alchemy-activity")({
   server: {
     handlers: {
@@ -136,86 +81,31 @@ export const Route = createFileRoute("/api/public/hooks/alchemy-activity")({
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-        // Current tip for confirmation count.
-        const { data: cursor } = await supabaseAdmin
-          .from("watcher_cursors")
-          .select("last_height")
-          .eq("chain", netInfo.chain)
-          .maybeSingle();
-        const tipHint = Number(cursor?.last_height ?? 0);
+        const scanned = new Set<string>();
 
         for (const act of payload.event.activity ?? []) {
           try {
-            const isNative = act.category === "external" || act.category === "internal";
-            const rawValue = BigInt(act.rawContract.rawValue || "0");
-            const decimals = act.rawContract.decimals ?? (isNative ? 18 : 18);
-            const human = Number(rawValue) / 10 ** decimals;
-            const blockNum = parseInt(act.blockNum, 16);
-            const confirmations = Math.max(1, tipHint - blockNum + 1);
-
-            // Native → token_symbol IS NULL; chain may be the specific net or "eth"
-            // (the unified label the watcher also accepts).
-            // Stable → token_symbol matches; chain can be any of eth/base/bsc (one
-            // address backs all three for stables enabled on the shared xpub).
-            const matchChains = (
-              isNative ? [netInfo.chain, "eth"] : ["eth", "base", "bsc"]
-            ) as never[];
+            const asset = identifyEvmAsset(netInfo.net, act.category, act.rawContract?.address);
+            if (!asset) continue;
+            // Push notifications are hints only. The shared scanner reads the
+            // actual chain, checks contract/decimals/time and guarded recording.
+            const matchChains = (asset.isNative ? [netInfo.chain] : ["eth", "base", "bsc"]) as never[];
 
             const { data: candidates } = await supabaseAdmin
               .from("invoices")
-              .select("id, fiat_amount, status, token_symbol, chain, rate, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow)")
+              .select("id, token_symbol")
               .ilike("address", act.toAddress) // checksum-cased storage; case-insensitive match
               .in("chain", matchChains)
               .in("status", ["pending", "detected", "underpaid"]);
 
-            type InvRow = {
-              id: string;
-              fiat_amount: number;
-              status: string;
-              token_symbol: string | null;
-              chain: string;
-              rate: number | null;
-              stores: {
-                default_confirmations_required: number | null;
-                mempool_max_usd: number | null;
-                mempool_accept_fast: boolean | null;
-                mempool_accept_slow: boolean | null;
-              } | null;
-            };
-            const inv = ((candidates ?? []) as InvRow[]).find((c) =>
-              isNative
-                ? c.token_symbol == null
-                : (c.token_symbol ?? "").toUpperCase() === act.asset.toUpperCase(),
-            );
-            if (!inv) continue;
-
-            const lockedRate = inv.rate == null ? null : Number(inv.rate);
-            const usdRate = isNative
-              ? (lockedRate && lockedRate > 0 ? lockedRate : await getUsdRate(netInfo.chain))
-              : 1; // stables ~ $1
-            const paidUsd = human * usdRate;
-
-            // Confirmation requirement (mirrors watcher.functions.ts logic).
-            const fast = ["base", "bsc", "tron", "sol"].includes(inv.chain);
-            const tierOn = fast ? !!inv.stores?.mempool_accept_fast : !!inv.stores?.mempool_accept_slow;
-            const cap = inv.stores?.mempool_max_usd == null ? null : Number(inv.stores.mempool_max_usd);
-            const zeroConfOk = tierOn && (cap == null || cap <= 0 || paidUsd <= cap);
-            const required = zeroConfOk
-              ? 0
-              : inv.stores?.default_confirmations_required ?? netInfo.net.confirmationsRequired;
-            const isConfirmed = confirmations >= required;
-
-            await recordAndSettle(
-              inv.id,
-              act.hash,
-              human,
-              confirmations,
-              blockNum,
-              isConfirmed,
-              isNative ? null : act.asset,
-              paidUsd,
-              Number(inv.fiat_amount),
-            );
+            for (const inv of candidates ?? []) {
+              const matches = asset.isNative
+                ? inv.token_symbol == null
+                : (inv.token_symbol ?? "").toUpperCase() === asset.symbol.toUpperCase();
+              if (!matches || scanned.has(inv.id)) continue;
+              scanned.add(inv.id);
+              await scanEvmInvoiceNow(inv.id);
+            }
           } catch (e) {
             console.error("[alchemy-activity] activity processing failed:", e);
           }

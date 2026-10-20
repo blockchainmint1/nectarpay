@@ -15,6 +15,27 @@
       "when": 1792496654347,
       "tag": "0001_cron_shared_secret",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792499404780,
+      "tag": "0002_hide_store_terminal_api_secrets",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792499457112,
+      "tag": "0003_bind_wallet_login_challenges",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792499664009,
+      "tag": "0004_restrict_wallet_challenge_secrets",
+      "breakpoints": true
     }
   ]
 }

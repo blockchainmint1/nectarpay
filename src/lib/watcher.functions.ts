@@ -15,6 +15,7 @@ import { getTronBlockNumber, getTronTransfersTo } from "./chains/tron.server";
 import { getSolanaSlot, getSolanaCreditsTo } from "./chains/solana.server";
 import { notifyUser } from "./notify.server";
 import { getUsdRate } from "./rates.functions";
+import { identifyEvmAsset } from "./chains/evm-asset";
 
 const ADDRESS_WINDOW = 20; // BIP44 gap-limit-style lookahead per chain_config
 
@@ -173,7 +174,7 @@ export async function recordTransaction(
       .maybeSingle();
     if (creditPredatesInvoice(txTimeMs, invRow?.created_at ?? null)) {
       console.warn(`[watcher] tx ${txHash} predates invoice ${invoiceId}; ignoring`);
-      return;
+      return false;
     }
   }
 
@@ -197,12 +198,12 @@ export async function recordTransaction(
       .limit(1);
     if (claimed?.length) {
       console.warn(`[watcher] tx ${txHash} already credited to invoice ${claimed[0].invoice_id}; skipping ${invoiceId}`);
-      return;
+      return false;
     }
   }
 
   if (existing) {
-    await supabaseAdmin
+    const { error } = await supabaseAdmin
       .from("transactions")
       .update({
         confirmations,
@@ -210,8 +211,9 @@ export async function recordTransaction(
         confirmed_at: isConfirmed ? now : null,
       })
       .eq("id", existing.id);
+    if (error) throw new Error(error.message);
   } else {
-    await supabaseAdmin.from("transactions").insert({
+    const { error } = await supabaseAdmin.from("transactions").insert({
       invoice_id: invoiceId,
       tx_hash: txHash,
       amount,
@@ -221,7 +223,9 @@ export async function recordTransaction(
       confirmed_at: isConfirmed ? now : null,
       token_symbol: tokenSymbol,
     });
+    if (error) throw new Error(error.message);
   }
+  return true;
 }
 
 
@@ -545,23 +549,16 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
       const blockTime = Date.parse(t.metadata?.blockTimestamp ?? "");
       if (Number.isFinite(blockTime) && (blockTime < startsAfterMs || blockTime > endsBeforeMs)) continue;
 
-      const contractAddr = t.rawContract.address?.toLowerCase() ?? null;
-      const isNative = t.category === "external" || t.category === "internal";
-      const stable = contractAddr
-        ? net.stables.find((s) => s.address.toLowerCase() === contractAddr)
-        : null;
+      const asset = identifyEvmAsset(net, t.category, t.rawContract.address);
+      if (!asset) continue;
       if (token) {
-        if (!stable || stable.symbol.toUpperCase() !== token) continue;
-      } else if (!isNative) {
+        if (asset.isNative || asset.symbol.toUpperCase() !== token) continue;
+      } else if (!asset.isNative) {
         continue;
       }
 
       const raw = t.rawContract.value ?? t.rawContract.rawValue ?? "0";
-      const decimals = stable?.decimals ?? (typeof t.rawContract.decimals === "number"
-        ? t.rawContract.decimals
-        : t.rawContract.decimal
-          ? parseInt(t.rawContract.decimal, 16)
-          : 18);
+      const decimals = asset.decimals;
       const human = Number(BigInt(raw)) / 10 ** decimals;
       if (!Number.isFinite(human) || human <= 0) continue;
 
@@ -572,7 +569,8 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
       const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd, net.symbol);
       const isConfirmed = confirmations >= required;
 
-      await recordTransaction(inv.id, t.hash, human, confirmations, blockNum, isConfirmed, token ? token : null, Number.isFinite(blockTime) ? blockTime : null);
+      const recorded = await recordTransaction(inv.id, t.hash, human, confirmations, blockNum, isConfirmed, token ? token : null, Number.isFinite(blockTime) ? blockTime : null);
+      if (!recorded) continue;
       if (isConfirmed) {
         const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
         changed = settled.changed || changed;
