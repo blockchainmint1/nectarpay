@@ -131,5 +131,9 @@ export const getKitOrderPublic = createServerFn({ method: "GET" })
       invoice_status = inv?.status ?? null;
     }
 
-    return { ...order, invoice_status };
+    // Public lookup by order ID: never return full personal details.
+    const [local, domain] = (order.email ?? "").split("@");
+    const maskedEmail = local && domain ? `${local.slice(0, 1)}***@${domain}` : null;
+    const firstName = (order.full_name ?? "").trim().split(/\s+/)[0] || null;
+    return { ...order, email: maskedEmail, full_name: firstName, invoice_status };
   });

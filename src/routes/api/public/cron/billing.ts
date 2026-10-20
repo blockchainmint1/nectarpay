@@ -153,7 +153,7 @@ export const Route = createFileRoute("/api/public/cron/billing")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const unauthorized = requireCronAuth(request);
+        const unauthorized = await requireCronAuth(request);
         if (unauthorized) return unauthorized;
         try {
           const result = await rolloverBilling();
@@ -166,7 +166,7 @@ export const Route = createFileRoute("/api/public/cron/billing")({
         }
       },
       GET: async ({ request }) => {
-        const unauthorized = requireCronAuth(request);
+        const unauthorized = await requireCronAuth(request);
         if (unauthorized) return unauthorized;
         const result = await rolloverBilling();
         return Response.json({ ok: true, ...result });

@@ -141,7 +141,7 @@ async function enqueueTransactional(
     },
   });
   if (error) {
-    console.error("[leads] enqueue failed", { label, to, error });
+    console.error("[leads] enqueue failed", { label, error });
     await supabase.from("email_send_log").insert({
       message_id: messageId,
       template_name: label,

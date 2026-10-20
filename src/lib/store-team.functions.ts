@@ -150,7 +150,7 @@ export const inviteStoreUser = createServerFn({ method: "POST" })
       to: email,
       label: "store_invite",
       subject: `You've been invited to ${store.name} on Nectar-Pay`,
-      html: `<p>You've been given <strong>${ROLE_LABEL[data.role]}</strong> access to <strong>${store.name}</strong> on Nectar-Pay.</p>
+      html: `<p>You've been given <strong>${ROLE_LABEL[data.role]}</strong> access to <strong>${escHtml(store.name)}</strong> on Nectar-Pay.</p>
 <p><a href="${link}">Accept your invitation</a></p>
 <p>${ROLE_BLURB[data.role]}</p>
 <p>This link expires in 14 days. If you weren't expecting it, ignore this email.</p>`,
@@ -501,3 +501,7 @@ export const listSharedStores = createServerFn({ method: "GET" })
         name: (m as any).stores?.name ?? "Store",
       }));
   });
+
+function escHtml(s: string): string {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
