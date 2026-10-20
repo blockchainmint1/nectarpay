@@ -433,6 +433,24 @@ export type Database = {
           },
         ]
       }
+      cron_secret: {
+        Row: {
+          created_at: string
+          id: number
+          secret: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          secret?: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          secret?: string
+        }
+        Relationships: []
+      }
       demo_account_resets: {
         Row: {
           created_at: string
