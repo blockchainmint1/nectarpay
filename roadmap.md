@@ -1,5 +1,11 @@
 # Roadmap
 
+## Priority security audit fixes
+- [ ] Verify real EVM token contracts and use guarded payment recording for Alchemy notifications.
+- [ ] Hide store, API-key, and terminal secrets from direct user access while preserving authorized controls.
+- [ ] Bind wallet sign-in to the canonical NectarPay message and originating browser.
+- [ ] Run targeted regression tests and verify affected app flows.
+
 ## Merchant self-service account admin (/account)
 - [x] Change email address (double-confirm via branded email-change template)
 - [x] TOTP two-factor authentication: enroll (QR), verify, disable
