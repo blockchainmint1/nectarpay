@@ -141,41 +141,8 @@ export const createWalletLinkCode = createServerFn({ method: "POST" })
     const firstLink = (existingKeys ?? 0) === 0;
 
     if (!firstLink) {
-    const { data: challenge } = await supabaseAdmin
-      .from("sensitive_action_codes")
-      .select("id, code_hash, expires_at, attempts, consumed_at")
-      .eq("user_id", context.userId)
-      .eq("store_id", store.id)
-      .eq("action", ACTION)
-      .is("consumed_at", null)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (!challenge) throw new Error("Request a new email confirmation code.");
-    if (new Date(challenge.expires_at).getTime() < Date.now()) {
-      throw new Error("That code expired — request a new one.");
-    }
-    if (challenge.attempts >= MAX_ATTEMPTS) {
-      await supabaseAdmin
-        .from("sensitive_action_codes")
-        .update({ consumed_at: new Date().toISOString() })
-        .eq("id", challenge.id);
-      throw new Error("Too many wrong codes — request a new one.");
-    }
-    if (!data.verificationCode || !safeEqual(challenge.code_hash, sha256(data.verificationCode))) {
-      await supabaseAdmin
-        .from("sensitive_action_codes")
-        .update({ attempts: challenge.attempts + 1 })
-        .eq("id", challenge.id);
-      throw new Error("Incorrect code.");
-    }
-
-    // Burn the challenge before issuing the link token.
-    await supabaseAdmin
-      .from("sensitive_action_codes")
-      .update({ consumed_at: new Date().toISOString() })
-      .eq("id", challenge.id);
+      const { consumeWalletLinkChallenge } = await import("@/lib/wallet-link-challenge.server");
+      await consumeWalletLinkChallenge(context.userId, store.id, data.verificationCode);
     }
 
     const token = base64url(randomBytes(24)); // ~32 chars

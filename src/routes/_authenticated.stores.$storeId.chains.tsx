@@ -204,6 +204,7 @@ function ChainsPage() {
   });
 
   const [suggestStables, setSuggestStables] = useState(false);
+  const [vaultOpen, setVaultOpen] = useState(false);
 
   const { data: linkInfo, refetch: refetchLink } = useQuery({
     queryKey: ["wallet-link-status", storeId],
