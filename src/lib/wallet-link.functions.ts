@@ -10,12 +10,11 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { createHash, randomBytes, randomInt, timingSafeEqual } from "crypto";
+import { createHash, randomBytes, randomInt } from "crypto";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const ACTION = "wallet_link";
 const CODE_TTL_MS = 10 * 60_000;
-const MAX_ATTEMPTS = 5;
 /** Max codes a user can request per hour. */
 const MAX_REQUESTS_PER_HOUR = 5;
 
@@ -27,12 +26,6 @@ function sha256(s: string): string {
   return createHash("sha256").update(s).digest("hex");
 }
 
-function safeEqual(a: string, b: string): boolean {
-  const ab = Buffer.from(a);
-  const bb = Buffer.from(b);
-  if (ab.length !== bb.length) return false;
-  return timingSafeEqual(ab, bb);
-}
 
 /** Step 1 — email the signed-in merchant a 6-digit confirmation code. */
 export const requestWalletLinkVerification = createServerFn({ method: "POST" })
