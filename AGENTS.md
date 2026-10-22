@@ -13,3 +13,4 @@
 - Direct user grants on stores, terminals, and API keys must exclude secret reads; secret writes use authorized server operations (API-key fingerprint insertion is write-only), so team row visibility cannot reveal credentials.
 - Wallet login verifies the persisted server-issued message, uses allowlisted callback origins, and binds token polling/exchange to an HttpOnly browser cookie; conditional state transitions prevent replay.
 - Security regression tests run with the standalone Vitest configuration, not the application Vite plugins, so tests can exercise pure security helpers without starting SSR.
+- HME Vault links stores via its watch-only pairing QR (src/lib/vault-link/), always gated by the emailed wallet-link code (src/lib/wallet-link-challenge.server.ts); EVM is linked only from an account xpub, never a single address. Why: Vault is offline and every sale needs a fresh address from index 1.
