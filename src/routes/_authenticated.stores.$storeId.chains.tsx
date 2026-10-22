@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { createWalletLinkCode, requestWalletLinkVerification } from "@/lib/wallet-link.functions";
 import { getStoreBtcPayoutAddress } from "@/lib/chain-payout.functions";
 import { qrToDataURL } from "@/lib/qr";
+import { VaultLinkDialog } from "@/components/VaultLinkDialog";
 // Inlined client-safe validators (mirror src/lib/chains/derive.server.ts).
 function isXpubLike(s: string): boolean {
   return /^([xtuvyz]pub)[1-9A-HJ-NP-Za-km-z]{100,120}$/.test(s.trim());
@@ -203,6 +204,7 @@ function ChainsPage() {
   });
 
   const [suggestStables, setSuggestStables] = useState(false);
+  const [vaultOpen, setVaultOpen] = useState(false);
 
   const { data: linkInfo, refetch: refetchLink } = useQuery({
     queryKey: ["wallet-link-status", storeId],
@@ -292,6 +294,17 @@ function ChainsPage() {
         ethRow={rows.eth}
         onApplied={() => refetch()}
       />
+
+      <div className="mt-4 flex items-center justify-between gap-3 rounded-lg border p-4">
+        <div>
+          <p className="text-sm font-medium">Using an HME Vault?</p>
+          <p className="text-xs text-muted-foreground">Scan your offline Vault's pairing QR to load its view-only keys.</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => setVaultOpen(true)}>
+          <ShieldCheck className="mr-1 h-4 w-4" /> Link HME Vault
+        </Button>
+      </div>
+      <VaultLinkDialog storeId={storeId} open={vaultOpen} onOpenChange={setVaultOpen} onLinked={() => { refetch(); refetchLink(); }} />
 
       <StoreSettingsCard storeId={storeId} />
 
