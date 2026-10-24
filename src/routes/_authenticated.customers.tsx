@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const customersQuery = queryOptions({ queryKey: ["merchant-customers"], queryFn: () => getCustomers() });
 export const Route = createFileRoute("/_authenticated/customers")({
+  ssr: false,
   loader: ({ context }) => context.queryClient.ensureQueryData(customersQuery),
   head: () => ({ meta: [
     { title: "Customers · Nectar-Pay" },
