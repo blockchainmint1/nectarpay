@@ -40,7 +40,7 @@ export async function sendSesEmail(email: SesEmail): Promise<{ messageId: string
   if (suppressed) throw new SesSendError(409, "recipient_suppressed", null);
   const managedKey = process.env["LOVABLE_API_KEY"];
   if (!managedKey) throw new Error("Email opt-out verification is unavailable");
-  const subscription = await getEmailUnsubscribe({ recipient: email.to, domain: "notify.nectar-pay.com" }, { apiKey: managedKey, sendUrl: process.env["LOVABLE_SEND_URL"] });
+  const subscription = await getEmailUnsubscribe({ recipient: email.to, domain: "notify.nectar-pay.com" }, { apiKey: managedKey });
   if (!subscription.subscribed) throw new SesSendError(409, "recipient_suppressed", null);
   const client = new AwsClient({ accessKeyId, secretAccessKey, region, service: "ses", retries: 0 });
   const response = await client.fetch(`https://email.${region}.amazonaws.com/v2/email/outbound-emails`, {
