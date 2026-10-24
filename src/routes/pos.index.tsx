@@ -13,6 +13,8 @@ import { buildPaymentUri } from "@/lib/payment-uri";
 import { NectarPrinter, NectarNfc, isNative, Tangem, type ReceiptPayload, type ReceiptLine } from "@/lib/pos-native";
 import { useServerFn } from "@tanstack/react-start";
 import { startTangemPayment, submitTangemPayment } from "@/lib/tangem-pay.functions";
+import { Checkbox } from "@/components/ui/checkbox";
+import { marketingConsentText } from "@/lib/customers";
 
 function joinNets(names: string[]): string {
   if (names.length <= 1) return names.join("");
@@ -24,6 +26,11 @@ export const Route = createFileRoute("/pos/")({
   head: () => ({
     meta: [
       { title: "Nectar.Pay POS" },
+      { name: "description", content: "Nectar.Pay terminal checkout, crypto payments, and customer receipts." },
+      { property: "og:title", content: "Nectar.Pay POS" },
+      { property: "og:description", content: "Nectar.Pay terminal checkout and customer receipts." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "viewport", content: "width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" },
       { name: "theme-color", content: "#1a1108" },
       { name: "robots", content: "noindex" },
@@ -319,9 +326,10 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
         )}
         {screen === "email" && invoice && (
           <EmailReceiptScreen
+            storeName={storeName || "this store"}
             onSkip={() => setScreen("paid")}
-            onSubmit={async (email) => {
-              await signedJson(creds, `/api/public/v1/terminals/invoice/${invoice.id}/receipt`, { method: "POST", body: { email } });
+            onSubmit={async (email, marketingOptIn) => {
+              await signedJson(creds, `/api/public/v1/terminals/invoice/${invoice.id}/receipt`, { method: "POST", body: { email, marketing_opt_in: marketingOptIn } });
               setScreen("paid");
             }}
           />
@@ -1238,8 +1246,9 @@ function SignatureScreen({ onSubmit, onSkip }: { onSubmit: (dataUrl: string) => 
   );
 }
 
-function EmailReceiptScreen({ onSubmit, onSkip }: { onSubmit: (email: string) => void | Promise<void>; onSkip: () => void }) {
+function EmailReceiptScreen({ onSubmit, onSkip, storeName }: { onSubmit: (email: string, marketingOptIn: boolean) => void | Promise<void>; onSkip: () => void; storeName: string }) {
   const [email, setEmail] = useState("");
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [sendError, setSendError] = useState("");
   const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
@@ -1248,7 +1257,7 @@ function EmailReceiptScreen({ onSubmit, onSkip }: { onSubmit: (email: string) =>
     if (!valid || submitting) return;
     setSubmitting(true);
     setSendError("");
-    try { await onSubmit(email.trim().toLowerCase()); }
+    try { await onSubmit(email.trim().toLowerCase(), marketingOptIn); }
     catch (error) { setSendError(error instanceof Error ? error.message : "Receipt could not be sent. Please try again."); }
     finally { setSubmitting(false); }
   }
@@ -1265,11 +1274,16 @@ function EmailReceiptScreen({ onSubmit, onSkip }: { onSubmit: (email: string) =>
           type="email"
           inputMode="email"
           autoComplete="email"
+          maxLength={254}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="customer@example.com"
           className="w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-center text-base lowercase placeholder:text-white/20 focus:border-amber-400 focus:outline-none"
         />
+        <label className="mt-4 flex cursor-pointer items-start gap-3 text-left text-sm text-foreground">
+          <Checkbox aria-label={marketingConsentText(storeName)} checked={marketingOptIn} onCheckedChange={value => setMarketingOptIn(value === true)} />
+          <span>{marketingConsentText(storeName)}</span>
+        </label>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <button type="button" onClick={onSkip} className="h-11 rounded-lg border border-white/15 text-xs font-bold tracking-widest text-white/60 hover:bg-white/5">
             SKIP

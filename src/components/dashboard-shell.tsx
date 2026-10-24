@@ -12,6 +12,7 @@ import {
   UserRound,
   SearchCheck,
   BarChart3,
+  Users,
 } from "lucide-react";
 
 import { useAuth } from "@/lib/auth-context";
@@ -60,6 +61,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
           <NavItem to="/reports" icon={<BarChart3 className="h-4 w-4" />}>
             Reports
+          </NavItem>
+          <NavItem to="/customers" icon={<Users className="h-4 w-4" />}>
+            Customers
           </NavItem>
           <NavItem to="/notifications" icon={<Bell className="h-4 w-4" />}>
             Notifications
@@ -144,6 +148,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           ]}
           more={[
             { to: "/reports", label: "Reports", icon: <BarChart3 className="h-4 w-4" /> },
+            { to: "/customers", label: "Customers", icon: <Users className="h-4 w-4" /> },
             { to: "/notifications", label: "Notifications", icon: <Bell className="h-4 w-4" /> },
             { to: "/exports", label: "Exports", icon: <Download className="h-4 w-4" /> },
             { to: "/verify", label: "Verify payment", icon: <SearchCheck className="h-4 w-4" /> },
