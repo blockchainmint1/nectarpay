@@ -1,18 +1,9 @@
 import * as React from 'react'
 import { render } from '@react-email/render'
-import { sendSesEmail } from '../email/ses.server'
+import { sendSesEmail, SesSendError } from '../email/ses.server'
 import { TEMPLATES } from './registry'
 
-// Server-only: reads LOVABLE_API_KEY. Never import from client components.
-
-// Configuration baked in at scaffold time
-const SITE_NAME = "NectarPay App"
-// SENDER_DOMAIN is the verified sender subdomain FQDN (e.g., "notify.example.com").
-// It MUST match the subdomain delegated to Lovable's nameservers. NEVER use the root domain.
-const SENDER_DOMAIN = "notify.nectar-pay.com"
-// FROM_DOMAIN is the domain shown in the From: header (e.g., "example.com").
-// Can be the root domain when display_from_root is enabled — this is cosmetic only.
-const FROM_DOMAIN = "nectar-pay.com"
+// Server-only SES template delivery. Never import from client components.
 
 export type SendTemplateEmailResult =
   | { sent: true }
@@ -20,17 +11,13 @@ export type SendTemplateEmailResult =
 
 export interface SendTemplateEmailOptions {
   templateData?: Record<string, any>
-  /** Dedupes retries of the same logical send; defaults to a random UUID (no dedupe). */
+  /** Reserved for caller-level deduplication; SES does not dedupe sends. */
   idempotencyKey?: string
   replyTo?: string
 }
 
 /**
- * Renders a registered template and sends it through Lovable's managed email
- * API. Suppression, retries, and rate limits are enforced by Lovable
- * server-side. A suppressed recipient is an expected outcome
- * ({ sent: false }); any other failure throws — EmailAPIError exposes
- * .code and .status for branching.
+ * Renders a registered template and sends through SES, preserving existing opt-outs.
  */
 export async function sendTemplateEmail(
   templateName: string,
@@ -60,7 +47,11 @@ export async function sendTemplateEmail(
       ? template.subject(templateData)
       : template.subject
 
-  await sendSesEmail({ to: recipient, subject, html, text, replyTo: options.replyTo })
+  try { await sendSesEmail({ to: recipient, subject, html, text, replyTo: options.replyTo }) }
+  catch (error) {
+    if (error instanceof SesSendError && error.code === 'recipient_suppressed') return { sent: false, reason: 'recipient_suppressed' }
+    throw error
+  }
 
   return { sent: true }
 }
