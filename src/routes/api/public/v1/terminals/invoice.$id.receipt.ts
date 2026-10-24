@@ -5,6 +5,7 @@
 // Customer email is saved for merchant records; completed sales send a receipt.
 
 import { createFileRoute } from "@tanstack/react-router";
+import { customerContactSchema } from "@/lib/customers";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -33,11 +34,14 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/recei
           const auth = await verifyTerminalSignature(request, raw);
           if (!auth.ok) return json({ error: auth.error }, auth.status);
 
-          let body: { email?: unknown; signature_data_url?: unknown } = {};
+          let body: { email?: unknown; signature_data_url?: unknown; marketing_opt_in?: unknown } = {};
           try { body = raw ? JSON.parse(raw) : {}; } catch { return json({ error: "Invalid JSON" }, 400); }
 
           const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : null;
           const sig = typeof body.signature_data_url === "string" ? body.signature_data_url : null;
+          const contact = body.email !== undefined ? customerContactSchema.safeParse({ email: body.email, marketing_opt_in: body.marketing_opt_in }) : null;
+          if (contact && !contact.success) return json({ error: "Invalid email or signup preference" }, 400);
+          if (!contact && body.marketing_opt_in !== undefined) return json({ error: "Email required for signup preference" }, 400);
 
           if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             return json({ error: "Invalid email" }, 400);
@@ -71,6 +75,8 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/recei
           if (upErr) return json({ error: upErr.message }, 500);
 
           if (email) {
+            const { recordCustomerConsent } = await import("@/lib/customer-consent.server");
+            await recordCustomerConsent(inv.store_id, inv.id, email, contact?.success ? contact.data.marketing_opt_in : false, "pos");
             const { sendCustomerReceipt } = await import("@/lib/email/customer-receipt.server");
             const result = await sendCustomerReceipt(params.id);
             if (!result.sent) return json({ error: result.error ?? "Receipt was not sent" }, 502);

@@ -25,6 +25,7 @@ import { KycGate } from "@/components/kyc-gate";
 import { cn } from "@/lib/utils";
 import { qrToCanvas } from "@/lib/qr";
 import { buildPaymentUri } from "@/lib/payment-uri";
+import { CustomerContactForm } from "@/components/customer-contact-form";
 
 export const Route = createFileRoute("/i/$invoiceId")({
   head: ({ params }) => ({
@@ -32,6 +33,10 @@ export const Route = createFileRoute("/i/$invoiceId")({
       { title: `Pay invoice · Nectar.Pay` },
       { name: "description", content: `Complete crypto payment for invoice ${params.invoiceId.slice(0, 8)}.` },
       { name: "robots", content: "noindex" },
+      { property: "og:title", content: "Pay invoice · Nectar.Pay" },
+      { property: "og:description", content: "Complete your Nectar.Pay crypto payment and request an email receipt." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: CheckoutPage,
@@ -359,6 +364,10 @@ function CheckoutPage() {
                 )}
 
             </section>
+
+            {inv.id !== "demo" && store && ["pending", "detected", "underpaid", "confirmed", "overpaid"].includes(inv.status) && (
+              <CustomerContactForm key={inv.id} invoiceId={inv.id} storeName={store.name} paid={["confirmed", "overpaid"].includes(inv.status)} />
+            )}
 
             {/* footer trust strip */}
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">

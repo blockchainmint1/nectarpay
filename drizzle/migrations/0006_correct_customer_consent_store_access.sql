@@ -1,0 +1,1 @@
+ALTER POLICY "Store members read customer consent" ON public.customer_marketing_consents USING (public.store_access_level(store_id) >= 1);

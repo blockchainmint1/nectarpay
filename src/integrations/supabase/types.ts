@@ -451,6 +451,54 @@ export type Database = {
         }
         Relationships: []
       }
+      customer_marketing_consents: {
+        Row: {
+          consent_text: string
+          consented_at: string
+          email: string
+          id: string
+          invoice_id: string
+          revoked_at: string | null
+          source: string
+          store_id: string
+        }
+        Insert: {
+          consent_text: string
+          consented_at?: string
+          email: string
+          id?: string
+          invoice_id: string
+          revoked_at?: string | null
+          source: string
+          store_id: string
+        }
+        Update: {
+          consent_text?: string
+          consented_at?: string
+          email?: string
+          id?: string
+          invoice_id?: string
+          revoked_at?: string | null
+          source?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_marketing_consents_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_marketing_consents_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       demo_account_resets: {
         Row: {
           created_at: string
