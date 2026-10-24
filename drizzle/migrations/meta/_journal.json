@@ -43,6 +43,13 @@
       "when": 1792846757323,
       "tag": "0005_store_customer_marketing_consent",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792846811858,
+      "tag": "0006_correct_customer_consent_store_access",
+      "breakpoints": true
     }
   ]
 }
