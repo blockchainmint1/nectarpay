@@ -527,12 +527,12 @@ function ChainScreen({
         <div className="mt-1 text-4xl font-black tabular-nums">{fmt(totalCents)}</div>
       </div>
 
-      <div className="mx-auto mt-5 flex w-full max-w-md min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+      <div className="mx-auto mt-5 grid w-full max-w-md grid-cols-2 min-h-0 flex-1 items-start gap-2 overflow-y-auto">
         {optionsErr && (
-          <p className="text-center text-xs text-red-400">Couldn't load chains: {optionsErr}</p>
+          <p className="col-span-2 text-center text-xs text-red-400">Couldn't load chains: {optionsErr}</p>
         )}
         {options.length === 0 && !optionsErr && (
-          <p className="text-center text-xs text-white/50">
+          <p className="col-span-2 text-center text-xs text-white/50">
             No chains enabled for this store yet. Customer will pick on their phone.
           </p>
         )}
