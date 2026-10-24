@@ -2,9 +2,7 @@
 // Records customer email and/or captured signature on a paid invoice.
 // Body: { email?: string, signature_data_url?: string }
 //
-// If the store has email receipts enabled and an email is provided, we save it
-// on the invoice. Actual email send is handled separately (via the Lovable
-// email queue once email infra is set up by the merchant).
+// Customer email is saved for merchant records; completed sales send a receipt.
 
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -53,12 +51,13 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/recei
           // Confirm invoice belongs to this terminal's store before mutating.
           const { data: inv, error: invErr } = await supabaseAdmin
             .from("invoices")
-            .select("id, store_id")
+            .select("id, store_id, status")
             .eq("id", params.id)
             .maybeSingle();
           if (invErr) return json({ error: invErr.message }, 500);
           if (!inv) return json({ error: "Invoice not found" }, 404);
           if (inv.store_id !== auth.terminal.store_id) return json({ error: "Forbidden" }, 403);
+          if (!["confirmed", "overpaid"].includes(inv.status)) return json({ error: "Payment is not complete" }, 409);
 
           const patch: { customer_email?: string; signature_data_url?: string } = {};
           if (email !== null) patch.customer_email = email;
@@ -70,6 +69,12 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/recei
             .update(patch)
             .eq("id", params.id);
           if (upErr) return json({ error: upErr.message }, 500);
+
+          if (email) {
+            const { sendCustomerReceipt } = await import("@/lib/email/customer-receipt.server");
+            const result = await sendCustomerReceipt(params.id);
+            if (!result.sent) return json({ error: result.error ?? "Receipt was not sent" }, 502);
+          }
 
           return json({ ok: true });
         } catch (err) {
