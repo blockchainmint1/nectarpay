@@ -5,9 +5,10 @@
 - [x] Wire customer receipts after settlement/email capture; show failures on the terminal; six tests passed.
 - [ ] Real terminal receipt/inbox check: requires a paired terminal's completed sale and recipient confirmation; not exercised end-to-end yet.
 - [ ] All-auth SES switch: managed Cloud auth sending must remain intact; external transport is not supported here.
-- [ ] Build merchant customer list from historical sales, with store filters and CSV download.
-- [ ] Add separate, unchecked, store-specific marketing opt-in on POS receipts and customer checkout, with recorded consent.
-- [ ] Verify customer aggregation, consent rules, and merchant view.
+- [x] Build merchant customer list from historical sales, with store filters and CSV download.
+- [x] Add separate, unchecked, store-specific marketing opt-in on POS receipts and customer checkout, with recorded consent.
+- [x] Verify customer aggregation, consent rules, and merchant view: 17 tests passed; Bobby's signed-in view shows 78 customer records and 97 purchases; filters and CSV verified; checkout defaults unchecked.
+- [ ] Real POS/checkout consent submission with receipt delivery: requires a customer-approved email and completed terminal sale; automated consent-storage tests passed, but no real customer's preference was changed.
 
 ## Priority security audit fixes
 - [x] Verify real EVM token contracts and use guarded payment recording for Alchemy notifications.
