@@ -40,6 +40,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated.admin'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated.billing'
+import { Route as AuthenticatedCustomersRouteImport } from './routes/_authenticated.customers'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedExportsRouteImport } from './routes/_authenticated.exports'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated.notifications'
@@ -316,6 +317,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
 const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedCustomersRoute = AuthenticatedCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -1035,6 +1041,7 @@ export interface FileRoutesByFullPath {
   '/unsubscribe': typeof UnsubscribeRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/billing': typeof AuthenticatedBillingRoute
+  '/customers': typeof AuthenticatedCustomersRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exports': typeof AuthenticatedExportsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -1188,6 +1195,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/unsubscribe': typeof UnsubscribeRoute
   '/billing': typeof AuthenticatedBillingRoute
+  '/customers': typeof AuthenticatedCustomersRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exports': typeof AuthenticatedExportsRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -1341,6 +1349,7 @@ export interface FileRoutesById {
   '/unsubscribe': typeof UnsubscribeRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
+  '/_authenticated/customers': typeof AuthenticatedCustomersRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/exports': typeof AuthenticatedExportsRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -1498,6 +1507,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/admin'
     | '/billing'
+    | '/customers'
     | '/dashboard'
     | '/exports'
     | '/notifications'
@@ -1651,6 +1661,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/unsubscribe'
     | '/billing'
+    | '/customers'
     | '/dashboard'
     | '/exports'
     | '/notifications'
@@ -1803,6 +1814,7 @@ export interface FileRouteTypes {
     | '/unsubscribe'
     | '/_authenticated/admin'
     | '/_authenticated/billing'
+    | '/_authenticated/customers'
     | '/_authenticated/dashboard'
     | '/_authenticated/exports'
     | '/_authenticated/notifications'
@@ -2223,6 +2235,13 @@ declare module '@tanstack/react-router' {
       path: '/billing'
       fullPath: '/billing'
       preLoaderRoute: typeof AuthenticatedBillingRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/customers': {
+      id: '/_authenticated/customers'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof AuthenticatedCustomersRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/dashboard': {
@@ -3253,6 +3272,7 @@ const AuthenticatedStoresStoreIdRouteWithChildren =
 interface AuthenticatedRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
+  AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExportsRoute: typeof AuthenticatedExportsRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
@@ -3272,6 +3292,7 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
+  AuthenticatedCustomersRoute: AuthenticatedCustomersRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExportsRoute: AuthenticatedExportsRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
