@@ -1,5 +1,11 @@
 # Roadmap
 
+## SES and customer receipts
+- [ ] Move app email delivery to verified AWS SES and verify an actual send.
+- [ ] Send customer receipts after settlement/email capture; show failures on the terminal.
+- [ ] All-auth SES switch: managed Cloud auth sending must remain intact; external transport is not supported here.
+- [ ] Marketing opt-in: confirm a separate, unchecked, store-specific consent flow before adding it.
+
 ## Priority security audit fixes
 - [x] Verify real EVM token contracts and use guarded payment recording for Alchemy notifications.
 - [x] Hide store, API-key, and terminal secrets from direct user access while preserving authorized controls.
