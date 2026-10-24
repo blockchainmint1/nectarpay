@@ -541,15 +541,15 @@ function ChainScreen({
             key={opt.key}
             disabled={busy}
             onClick={() => onPick(opt.key)}
-            className="group flex w-full items-center justify-between rounded-xl border-2 border-white/15 bg-white/[0.03] px-4 py-4 text-left transition hover:border-amber-400/60 hover:bg-amber-400/[0.05] disabled:opacity-40"
+            className="group flex w-full items-center justify-between rounded-xl border-2 border-white/15 bg-white/[0.03] px-3 py-3 text-left transition hover:border-amber-400/60 hover:bg-amber-400/[0.05] disabled:opacity-40"
           >
             <div className="min-w-0 flex-1">
-              <div className="text-base font-bold">{opt.label}</div>
+              <div className="text-sm font-bold leading-tight">{opt.label}</div>
               <div className="mt-0.5 font-mono text-[10px] uppercase tracking-widest text-white/40">
                 {opt.tokenSymbol ? `${opt.tokenSymbol} · ${opt.chain}` : opt.chain}
               </div>
             </div>
-            <span className="ml-3 text-white/40 group-hover:text-amber-300">→</span>
+            <span className="ml-2 text-white/40 group-hover:text-amber-300">→</span>
           </button>
         ))}
 
@@ -557,10 +557,10 @@ function ChainScreen({
           <button
             disabled={busy}
             onClick={onCard}
-            className="flex w-full items-center justify-between rounded-xl border-2 border-amber-400/50 bg-amber-400/[0.06] px-4 py-4 text-left transition hover:border-amber-400 disabled:opacity-40"
+            className="col-span-2 flex w-full items-center justify-between rounded-xl border-2 border-amber-400/50 bg-amber-400/[0.06] px-3 py-3 text-left transition hover:border-amber-400 disabled:opacity-40"
           >
             <div className="min-w-0 flex-1">
-              <div className="text-base font-bold">Tap HME card</div>
+              <div className="text-sm font-bold">Tap HME card</div>
               <div className="mt-0.5 text-[11px] text-white/50">Customer taps their Honest Money card. Pays in TSD.</div>
             </div>
             <span className="ml-3 text-amber-300">→</span>
@@ -568,7 +568,7 @@ function ChainScreen({
         )}
 
         {/* Pinned at the bottom: hand the choice to the customer on the QR page. */}
-        <div className="mt-2 border-t border-white/10 pt-2">
+        <div className="col-span-2 mt-2 border-t border-white/10 pt-2">
           <button
             disabled={busy}
             onClick={() => onPick(null)}
