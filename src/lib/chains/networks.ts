@@ -138,7 +138,7 @@ export const TXC_NETWORK: BtcLikeNetwork = {
   // Omni Layer tokens on TEXITcoin. Texas Stable Dollar is property #39,
   // managed + divisible (8 decimals), sent as Class C OP_RETURN simple sends.
   omniStables: [
-    { symbol: "TSD", propertyId: 39, decimals: 8, label: "Texas Stable Dollar (TSD) on TXC" },
+    { symbol: "TSD", propertyId: 39, decimals: 8, label: "Texas Stable Dollar" },
   ],
 };
 
