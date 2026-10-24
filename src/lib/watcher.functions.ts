@@ -313,6 +313,14 @@ export async function settleInvoice(
   }
 
   const store = inv.stores as { name: string | null; owner_id: string; webhook_url: string | null; webhook_secret: string | null } | null;
+  if (isPaid) {
+    try {
+      const { sendCustomerReceipt } = await import("./email/customer-receipt.server");
+      await sendCustomerReceipt(invoiceId);
+    } catch (error) {
+      console.error("[receipt] settlement receipt failed", { invoiceId, message: error instanceof Error ? error.message : "send failed" });
+    }
+  }
   const ownerId = store?.owner_id;
   if (ownerId) {
     const currency = (inv.fiat_currency || "USD").toUpperCase();

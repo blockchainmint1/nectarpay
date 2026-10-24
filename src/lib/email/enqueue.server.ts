@@ -1,13 +1,5 @@
-// Server-side helper for sending app emails through Lovable's managed email
-// API. Delivery, retries, suppression and unsubscribe handling are enforced by
-// Lovable server-side; we keep writing our own email_send_log rows so the app's
-// reporting keeps working.
-
-import { EmailAPIError, sendLovableEmail } from "@lovable.dev/email-js";
-
-const SITE_NAME = "NectarPay";
-const SENDER_DOMAIN = "notify.nectar-pay.com";
-const FROM_DOMAIN = "nectar-pay.com";
+// App emails use SES; Cloud sign-in emails retain their managed auth handler.
+import { sendSesEmail } from "./ses.server";
 
 export interface EnqueueEmailArgs {
   to: string;
@@ -26,47 +18,9 @@ export async function enqueueAppEmail(
   const messageId = crypto.randomUUID();
   const to = args.to.trim();
 
-  const apiKey = process.env["LOVABLE_API_KEY"];
-  if (!apiKey) {
-    console.error("[email] LOVABLE_API_KEY is not configured", { label: args.label });
-    const { error } = await supabaseAdmin.from("email_send_log").insert({
-      message_id: messageId,
-      template_name: args.label,
-      recipient_email: to,
-      status: "failed",
-      error_message: "LOVABLE_API_KEY is not configured",
-    });
-    if (error) console.error("[email] send log insert failed", { code: error.code, message: error.message });
-    return { ok: false, error: "email_not_configured" };
-  }
-
   try {
-    await sendLovableEmail(
-      {
-        to,
-        from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
-        sender_domain: SENDER_DOMAIN,
-        subject: args.subject,
-        html: args.html,
-        text: args.text,
-        purpose: "transactional",
-        label: args.label,
-        idempotency_key: args.idempotencyKey ?? messageId,
-      },
-      { apiKey, sendUrl: process.env["LOVABLE_SEND_URL"] },
-    );
+    await sendSesEmail({ to, subject: args.subject, html: args.html, text: args.text });
   } catch (err) {
-    if (err instanceof EmailAPIError && err.code === "recipient_suppressed") {
-      const { error } = await supabaseAdmin.from("email_send_log").insert({
-        message_id: messageId,
-        template_name: args.label,
-        recipient_email: to,
-        status: "suppressed",
-      });
-      if (error) console.error("[email] send log insert failed", { code: error.code, message: error.message });
-      return { ok: false, error: "email_suppressed" };
-    }
-
     const message = err instanceof Error ? err.message : "send failed";
     console.error("[email] send failed", { label: args.label, message });
     const { error } = await supabaseAdmin.from("email_send_log").insert({

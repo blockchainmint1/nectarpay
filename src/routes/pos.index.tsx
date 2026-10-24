@@ -321,7 +321,7 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
           <EmailReceiptScreen
             onSkip={() => setScreen("paid")}
             onSubmit={async (email) => {
-              try { await signedJson(creds, `/api/public/v1/terminals/invoice/${invoice.id}/receipt`, { method: "POST", body: { email } }); } catch { /* non-fatal */ }
+              await signedJson(creds, `/api/public/v1/terminals/invoice/${invoice.id}/receipt`, { method: "POST", body: { email } });
               setScreen("paid");
             }}
           />
@@ -1241,12 +1241,16 @@ function SignatureScreen({ onSubmit, onSkip }: { onSubmit: (dataUrl: string) => 
 function EmailReceiptScreen({ onSubmit, onSkip }: { onSubmit: (email: string) => void | Promise<void>; onSkip: () => void }) {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [sendError, setSendError] = useState("");
   const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
   async function go() {
     if (!valid || submitting) return;
     setSubmitting(true);
-    await onSubmit(email.trim().toLowerCase());
+    setSendError("");
+    try { await onSubmit(email.trim().toLowerCase()); }
+    catch (error) { setSendError(error instanceof Error ? error.message : "Receipt could not be sent. Please try again."); }
+    finally { setSubmitting(false); }
   }
 
   return (
@@ -1274,6 +1278,7 @@ function EmailReceiptScreen({ onSubmit, onSkip }: { onSubmit: (email: string) =>
             {submitting ? "…" : "SEND"}
           </button>
         </div>
+        {sendError && <p role="alert" className="mt-3 text-sm text-destructive">{sendError}</p>}
       </form>
     </div>
   );

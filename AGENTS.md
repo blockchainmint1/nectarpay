@@ -14,3 +14,4 @@
 - Wallet login verifies the persisted server-issued message, uses allowlisted callback origins, and binds token polling/exchange to an HttpOnly browser cookie; conditional state transitions prevent replay.
 - Security regression tests run with the standalone Vitest configuration, not the application Vite plugins, so tests can exercise pure security helpers without starting SSR.
 - HME Vault links stores via its watch-only pairing QR (src/lib/vault-link/), always gated by the emailed wallet-link code (src/lib/wallet-link-challenge.server.ts); EVM is linked only from an account xpub, never a single address. Why: Vault is offline and every sale needs a fresh address from index 1.
+- App emails use a single server-only SES transport, while Cloud auth retains its managed signed handler; this preserves sign-in verification while honoring the app sender choice.
