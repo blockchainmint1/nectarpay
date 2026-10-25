@@ -25,6 +25,7 @@ import { createWalletLinkCode, requestWalletLinkVerification } from "@/lib/walle
 import { getStoreBtcPayoutAddress } from "@/lib/chain-payout.functions";
 import { qrToDataURL } from "@/lib/qr";
 import { VaultLinkDialog } from "@/components/VaultLinkDialog";
+import { WalletChangeHistory, useWalletChangeHistory, walletHistoryDate } from "@/components/WalletChangeHistory";
 // Inlined client-safe validators (mirror src/lib/chains/derive.server.ts).
 function isXpubLike(s: string): boolean {
   return /^([xtuvyz]pub)[1-9A-HJ-NP-Za-km-z]{100,120}$/.test(s.trim());
@@ -43,7 +44,14 @@ function maskSecret(s: string): string {
 
 
 export const Route = createFileRoute("/_authenticated/stores/$storeId/chains")({
-  head: () => ({ meta: [{ title: "Chains · Nectar.Pay" }] }),
+  head: () => ({ meta: [
+    { title: "Store chains & wallet history · Nectar.Pay" },
+    { name: "description", content: "Manage your store's payment networks and review its wallet-key change history." },
+    { property: "og:title", content: "Store chains & wallet history · Nectar.Pay" },
+    { property: "og:description", content: "Payment network settings and wallet-key history for your Nectar.Pay store." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: ChainsPage,
 });
 
@@ -184,6 +192,8 @@ function emptyRow(chain: ChainKey): Row {
 
 function ChainsPage() {
   const { storeId } = Route.useParams();
+  const walletHistory = useWalletChangeHistory(storeId);
+  const lastWalletChange = walletHistory.data?.pages[0]?.rows[0];
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["chain-configs", storeId],
@@ -221,6 +231,12 @@ function ChainsPage() {
     },
   });
   const isLinked = !!linkInfo;
+
+  function refreshWalletData() {
+    void refetch();
+    void refetchLink();
+    void walletHistory.refetch();
+  }
 
   useEffect(() => {
     if (!data) return;
@@ -265,23 +281,23 @@ function ChainsPage() {
           How address derivation &amp; rotation works →
         </a>
       </p>
-
+      {lastWalletChange && (
+        <a href="#wallet-change-history" className="mt-3 inline-block text-xs text-primary underline underline-offset-4">
+          Wallet last updated: {walletHistoryDate(lastWalletChange.created_at)}
+        </a>
+      )}
 
       {isLinked ? (
         <WalletLinkedCard
           storeId={storeId}
           linkedAt={linkInfo?.used_at ?? null}
-          onRelinked={() => {
-            refetch();
-            refetchLink();
-          }}
+          onRelinked={refreshWalletData}
         />
       ) : (
         <WalletLinkCard
           storeId={storeId}
           onLinked={() => {
-            refetch();
-            refetchLink();
+            refreshWalletData();
             setSuggestStables(true);
           }}
         />
@@ -292,7 +308,7 @@ function ChainsPage() {
         onOpenChange={setSuggestStables}
         storeId={storeId}
         ethRow={rows.eth}
-        onApplied={() => refetch()}
+        onApplied={refreshWalletData}
       />
 
       <div className="mt-4 flex items-center justify-between gap-3 rounded-lg border p-4">
@@ -304,7 +320,7 @@ function ChainsPage() {
           <ShieldCheck className="mr-1 h-4 w-4" /> Link HME Vault
         </Button>
       </div>
-      <VaultLinkDialog storeId={storeId} open={vaultOpen} onOpenChange={setVaultOpen} onLinked={() => { refetch(); refetchLink(); }} />
+      <VaultLinkDialog storeId={storeId} open={vaultOpen} onOpenChange={setVaultOpen} onLinked={refreshWalletData} />
 
       <StoreSettingsCard storeId={storeId} />
 
@@ -320,7 +336,7 @@ function ChainsPage() {
               row={rows[meta.key]}
               storeId={storeId}
               onChange={(r) => setRows((prev) => ({ ...prev, [meta.key]: r }))}
-              onSaved={() => refetch()}
+              onSaved={refreshWalletData}
               xpubLocked={isLinked}
               lightning={
                 meta.key === "btc"
@@ -336,7 +352,7 @@ function ChainsPage() {
                 storeId={storeId}
                 ethRow={rows.eth}
                 zcuRow={(data ?? []).find((r) => r.chain === "zcu") ?? null}
-                onSaved={() => refetch()}
+                onSaved={refreshWalletData}
               />
             )}
             </Fragment>
@@ -345,6 +361,7 @@ function ChainsPage() {
         </div>
 
       )}
+      <WalletChangeHistory history={walletHistory} />
     </div>
   );
 }
