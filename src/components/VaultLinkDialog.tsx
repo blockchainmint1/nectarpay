@@ -145,7 +145,7 @@ export function VaultLinkDialog({ storeId, open, onOpenChange, onLinked }: { sto
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-h-[90dvh] max-w-md overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Link HME Vault</DialogTitle>
           <DialogDescription>
@@ -176,15 +176,23 @@ export function VaultLinkDialog({ storeId, open, onOpenChange, onLinked }: { sto
         {info && (
           <div className="space-y-4">
             <div className="rounded-md border p-3 text-sm">
-              <p className="mb-2 font-medium">Check these match your Vault (first sale address for each coin):</p>
+              <p className="mb-2 font-medium">Compare with your Vault</p>
               <ul className="space-y-2">
                 {info.addresses.map((a) => (
                   <li key={a.chain}>
                     <div className="text-muted-foreground">{LABEL[a.chain] ?? a.chain}</div>
-                    <code className="break-all text-xs">{a.address}</code>
+                    {a.comparisonAddress && (
+                      <div className="mt-1">
+                        <div className="text-xs text-muted-foreground">Address #0 · comparison only</div>
+                        <code className="block break-all text-xs">{a.comparisonAddress}</code>
+                      </div>
+                    )}
+                    <div className="mt-1 text-xs text-muted-foreground">Address #1 · first sale</div>
+                    <code className="block break-all text-xs">{a.address}</code>
                   </li>
                 ))}
               </ul>
+              <p className="mt-3 text-xs text-muted-foreground">Address #0 is reserved: never used for sales or monitored for payments.</p>
               {info.evmAddressOnly && (
                 <p className="mt-3 text-xs text-muted-foreground">
                   ETH, Base, BSC and ZCU aren't linked yet: this Vault version shares only one address, and every sale needs a fresh one. Those stay as they are.
