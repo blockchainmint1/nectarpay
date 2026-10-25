@@ -9,16 +9,8 @@ import { parseVaultPairing, type VaultStoreChain } from "@/lib/vault-link/pairin
 const Input = z.object({ storeId: z.string().uuid(), pairing: z.string().min(10).max(20_000) });
 
 async function previewAddresses(keys: Partial<Record<VaultStoreChain, string>>) {
-  const { deriveBtcLikeAddress, deriveEvmAddress } = await import("@/lib/chains/derive.server");
-  const { BTC_NETWORK, TXC_NETWORK, LTC_NETWORK, DOGE_NETWORK, ETH_NETWORK } = await import("@/lib/chains/networks");
-  const nets = { btc: BTC_NETWORK, txc: TXC_NETWORK, ltc: LTC_NETWORK, doge: DOGE_NETWORK } as const;
-  const out: { chain: VaultStoreChain; address: string }[] = [];
-  for (const [chain, xpub] of Object.entries(keys) as [VaultStoreChain, string][]) {
-    // Index 1: address #0 is never handed out or monitored.
-    const address = chain === "eth" ? deriveEvmAddress(xpub, ETH_NETWORK, 1) : deriveBtcLikeAddress(xpub, nets[chain], 1);
-    out.push({ chain, address });
-  }
-  return out;
+  const { vaultPreviewAddresses } = await import("@/lib/vault-link/preview.server");
+  return vaultPreviewAddresses(keys);
 }
 
 async function assertOwnStore(supabase: { from: (t: "stores") => any }, storeId: string) {
