@@ -17,3 +17,4 @@
 - App emails use a single server-only SES transport, while Cloud auth retains its managed signed handler; this preserves sign-in verification while honoring the app sender choice.
 - Customer lists aggregate all paid invoice history through the authenticated caller's RLS-scoped client, grouped by store and normalized email with currency-separated totals; marketing consent is stored separately and written only by validated checkout or paired-terminal operations so receipt capture never implies consent.
 - The customer-list route disables SSR because the existing merchant layout hydrates its browser session before displaying children; its authenticated loader must not run without that browser bearer token.
+- Wallet-change history reads the existing trigger-backed chain_config_audit through the caller's RLS-scoped client, paginated newest-first; wallet saves refresh it without adding a second audit writer, so every linking path shares one durable record.
