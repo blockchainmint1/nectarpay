@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { CountryRegionFields } from "@/components/store/CountryRegionFields";
 
 const CATEGORIES = ["Restaurant", "Bar", "Cafe", "Retail", "Grocery", "Services", "Health & Beauty", "Auto", "Lodging", "Online", "Other"];
 const LOGO_TYPES = ["image/png", "image/jpeg", "image/webp"];
