@@ -11,6 +11,7 @@ import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 import { Button } from "@/components/ui/button";
 import { WALLET_POLL_INTERVAL_MS } from "@/lib/wallet-auth-shared";
 import { qrToString } from "@/lib/qr";
+import { openHmeConnection } from "@/lib/hme-auth";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
@@ -70,6 +71,8 @@ function AuthPage() {
   const [qrSvg, setQrSvg] = useState<string>("");
   const [remaining, setRemaining] = useState<number>(0);
   const cancelled = useRef(false);
+  const hmeCleanup = useRef<(() => void) | undefined>(undefined);
+  useEffect(() => () => hmeCleanup.current?.(), []);
 
   // Already signed in → bounce (admins to /admin)
   useEffect(() => {
@@ -229,26 +232,11 @@ function AuthPage() {
   }
 
   function signInHme() {
-    const returnTo = `${window.location.origin}/sso`;
-    const url = `https://honest.money/sso-login?popup=1&return_to=${encodeURIComponent(returnTo)}`;
-    const popup = window.open(url, "hme-sso", "width=460,height=640");
-    if (!popup) {
-      window.location.href = url.replace("popup=1&", "");
-      return;
-    }
-    const onMsg = async (e: MessageEvent) => {
-      if (e.origin !== window.location.origin || e.source !== popup || e.data?.type !== "hme-sso") return;
-      window.removeEventListener("message", onMsg);
-      try {
-        const { finishHmeSso } = await import("@/lib/hme-auth");
-        const { is_admin } = await finishHmeSso(String(e.data.token));
-        toast.success("Signed in");
-        navigate({ to: resolvePostAuthPath(is_admin, search.redirect) });
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Honest Money sign-in failed");
-      }
-    };
-    window.addEventListener("message", onMsg);
+    hmeCleanup.current?.();
+    hmeCleanup.current = openHmeConnection(({ is_admin }) => {
+      toast.success("Signed in");
+      navigate({ to: resolvePostAuthPath(is_admin, search.redirect) });
+    }, message => toast.error(message));
   }
 
 

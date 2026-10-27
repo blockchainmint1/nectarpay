@@ -1,13 +1,14 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
 import { finishHmeSso } from "@/lib/hme-auth";
+import { hmeChannelName, validHmeFlow } from "@/lib/hme-popup";
 
 // Return address for Honest Money SSO. In popup mode we hand the ticket back
 // to the opener (the /auth page) and close; otherwise we finish sign-in here.
 export const Route = createFileRoute("/sso")({
-  validateSearch: z.object({ token: z.string().optional(), popup: z.string().optional() }),
+  validateSearch: z.object({ token: z.string().optional(), popup: z.string().optional(), flow: z.string().optional() }),
   head: () => ({
     meta: [
       { title: "Signing in with Honest Money · Nectar.Pay" },
@@ -23,9 +24,10 @@ export const Route = createFileRoute("/sso")({
 });
 
 function SsoPage() {
-  const { token } = Route.useSearch();
+  const { token, flow } = Route.useSearch();
   const navigate = useNavigate();
   const [msg, setMsg] = useState("Signing you in…");
+  const finishing = useRef(false);
 
   useEffect(() => {
     if (!token) {
@@ -33,6 +35,40 @@ function SsoPage() {
       return;
     }
     window.history.replaceState(null, "", "/sso");
+    if (validHmeFlow(flow)) {
+      const channel = typeof BroadcastChannel === "undefined" ? undefined : new BroadcastChannel(hmeChannelName(flow));
+      const message = { type: "hme-sso", flow, token };
+      const acknowledge = (data: unknown) => {
+        if (!data || typeof data !== "object") return;
+        const ack = data as Record<string, unknown>;
+        if (ack.type === "hme-sso-ack" && ack.flow === flow) {
+          setMsg("Returning to NectarPay…");
+          window.close();
+        }
+      };
+      const onMessage = (event: MessageEvent) => {
+        if (event.origin === window.location.origin && event.source === window.opener) acknowledge(event.data);
+      };
+      if (channel) channel.onmessage = event => acknowledge(event.data);
+      window.addEventListener("message", onMessage);
+      const send = () => {
+        channel?.postMessage(message);
+        try { window.opener?.postMessage(message, window.location.origin); } catch { /* channel survives lost opener */ }
+      };
+      send();
+      const retry = window.setInterval(send, 500);
+      const timeout = window.setTimeout(() => {
+        window.clearInterval(retry);
+        channel?.close();
+        setMsg("Could not reach your NectarPay window. Close this popup and try signing in again.");
+      }, 15000);
+      return () => {
+        window.clearInterval(retry);
+        window.clearTimeout(timeout);
+        window.removeEventListener("message", onMessage);
+        channel?.close();
+      };
+    }
     if (window.opener && window.opener !== window) {
       try {
         window.opener.postMessage({ type: "hme-sso", token }, window.location.origin);
@@ -40,10 +76,12 @@ function SsoPage() {
         return;
       } catch { /* fall through */ }
     }
+    if (finishing.current) return;
+    finishing.current = true;
     finishHmeSso(token)
       .then(({ is_admin }) => navigate({ to: is_admin ? "/admin" : "/dashboard" }))
       .catch((e) => setMsg(e instanceof Error ? e.message : "Sign-in failed"));
-  }, [token, navigate]);
+  }, [token, flow, navigate]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
