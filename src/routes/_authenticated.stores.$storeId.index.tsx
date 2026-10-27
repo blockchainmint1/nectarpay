@@ -60,7 +60,7 @@ function StoreDetailPage() {
           <div className="min-w-0">
             <h1 className="truncate text-3xl font-semibold tracking-tight">{store?.name ?? "…"}</h1>
             <p className="mt-1 truncate text-sm text-muted-foreground">
-              /stores/{storeSlug} · {store?.website || "No website set"} · {store?.fiat_currency}
+              {store?.website || "No website set"} · {store?.fiat_currency}
             </p>
           </div>
         </div>

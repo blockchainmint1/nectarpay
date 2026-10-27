@@ -75,6 +75,8 @@ export function StoreInfoForm({ storeId, storeSlug }: { storeId: string; storeSl
       business_postal_code: store.business_postal_code ?? "",
       business_hours: store.business_hours ?? "",
       business_phone: store.business_phone ?? "",
+      website: store.website ?? "",
+      business_email: store.business_email ?? "",
       business_presence: (store.business_presence as Presence) ?? "physical",
       business_category: store.business_category ?? "",
       business_description: store.business_description ?? "",
@@ -97,6 +99,8 @@ export function StoreInfoForm({ storeId, storeSlug }: { storeId: string; storeSl
           business_postal_code: form.business_postal_code || null,
           business_hours: form.business_hours || null,
           business_phone: form.business_phone || null,
+          website: form.website.trim() ? (/^https?:\/\//i.test(form.website.trim()) ? form.website.trim() : `https://${form.website.trim()}`) : null,
+          business_email: form.business_email.trim() || null,
           business_presence: form.business_presence,
           business_category: form.business_category || null,
           business_description: form.business_description || null,
@@ -233,6 +237,14 @@ export function StoreInfoForm({ storeId, storeSlug }: { storeId: string; storeSl
             <div>
               <Label htmlFor="si-phone">Phone</Label>
               <Input id="si-phone" type="tel" value={form.business_phone} onChange={(e) => set("business_phone", e.target.value)} placeholder="(555) 123-4567" />
+            </div>
+            <div>
+              <Label htmlFor="si-website">Website</Label>
+              <Input id="si-website" type="url" value={form.website} onChange={(e) => set("website", e.target.value)} placeholder="https://example.com" />
+            </div>
+            <div>
+              <Label htmlFor="si-email">Public email</Label>
+              <Input id="si-email" type="email" value={form.business_email} onChange={(e) => set("business_email", e.target.value)} placeholder="hello@example.com" />
             </div>
             <div>
               <Label>Where do you sell?</Label>
