@@ -161,6 +161,15 @@ export const NectarNfc = {
     if (!p) throw new Error("NFC not available on this device");
     return await p.transceive({ apduHex });
   },
+  /**
+   * Re-arm continuous tag listening after another NFC user (e.g. the Tangem
+   * SDK, which runs its own reader-mode session and disables ours when done).
+   */
+  async rearm(): Promise<void> {
+    const p = cap()?.Plugins.NectarNfc;
+    if (!p) return;
+    try { await p.startReader(); } catch { /* ignore */ }
+  },
 };
 
 export const Tangem = {
@@ -170,12 +179,20 @@ export const Tangem = {
   async scan(): Promise<TangemScanResult> {
     const p = cap()?.Plugins.Tangem;
     if (!p) throw new Error("Tangem NFC is only available in the NectarPOS Android app");
-    return await p.scan();
+    try {
+      return await p.scan();
+    } finally {
+      void NectarNfc.rearm();
+    }
   },
   async signHash(input: { cardId: string; publicKey: string; hash: string }): Promise<TangemSignResult> {
     const p = cap()?.Plugins.Tangem;
     if (!p) throw new Error("Tangem NFC is only available in the NectarPOS Android app");
-    return await p.signHash(input);
+    try {
+      return await p.signHash(input);
+    } finally {
+      void NectarNfc.rearm();
+    }
   },
 };
 

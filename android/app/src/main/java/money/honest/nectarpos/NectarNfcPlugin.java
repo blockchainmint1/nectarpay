@@ -58,6 +58,18 @@ public class NectarNfcPlugin extends Plugin {
             call.reject("NFC is turned off in Android settings — turn it on and tap again.");
             return;
         }
+        // Re-arm reader mode: Tangem SDK sessions run their own reader mode
+        // and disable ours when they finish, so every startReader call (the
+        // web app makes one after each Tangem operation) restores continuous
+        // listening without waiting for an activity pause/resume.
+        android.app.Activity act = getActivity();
+        if (act != null) {
+            act.runOnUiThread(() -> adapter.enableReaderMode(act,
+                tag -> NectarNfcPlugin.handleTag(tag),
+                NfcAdapter.FLAG_READER_NFC_A | NfcAdapter.FLAG_READER_NFC_B
+                    | NfcAdapter.FLAG_READER_NFC_F | NfcAdapter.FLAG_READER_NFC_V,
+                null));
+        }
         JSObject ret = new JSObject();
         ret.put("started", true);
         call.resolve(ret);
