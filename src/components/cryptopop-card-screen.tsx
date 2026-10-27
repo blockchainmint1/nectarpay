@@ -74,12 +74,14 @@ export function CryptoPopCardScreen({ creds, invoiceId, totalCents, onPaid, onUs
     let stopped = false;
     let subscription: { remove: () => Promise<void> } | undefined;
     void NectarNfc.start(event => {
-      if (stopped || !event.uid || busy.current || uid.current) return;
+      if (stopped || busy.current || uid.current) return;
+      if (!event.uid) { setReason("Couldn't read that card — try tapping again."); return; }
+      setReason(null);
       uid.current = event.uid;
       void send(event.uid);
     }, message => { if (!stopped) { setReason(message); setPhase("error"); } }).then(sub => {
       if (stopped) void sub.remove(); else subscription = sub;
-    }).catch(() => { if (!stopped) { setReason("Could not start the NFC reader."); setPhase("error"); } });
+    }).catch((e) => { if (!stopped) { setReason(e instanceof Error && e.message ? e.message : "Could not start the NFC reader."); setPhase("error"); } });
     return () => { stopped = true; if (subscription) void subscription.remove(); };
   }, [creds, invoiceId]);
 

@@ -256,7 +256,7 @@ public class NectarNfcPlugin extends Plugin {
         int len = clean.length() / 2;
         byte[] out = new byte[len];
         for (int i = 0; i < len; i++) {
-            out[i] = (byte) Integer.parseInt(clean.substring(i * 2), 16);
+            out[i] = (byte) Integer.parseInt(clean.substring(i * 2, i * 2 + 2), 16);
         }
         return out;
     }
