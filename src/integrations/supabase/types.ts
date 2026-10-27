@@ -321,6 +321,51 @@ export type Database = {
         }
         Relationships: []
       }
+      card_payment_events: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          http_status: number | null
+          id: string
+          invoice_id: string
+          payment_id: string | null
+          reason: string | null
+          status: string | null
+          step: string
+          store_id: string | null
+          terminal_id: string | null
+          txid: string | null
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          http_status?: number | null
+          id?: string
+          invoice_id: string
+          payment_id?: string | null
+          reason?: string | null
+          status?: string | null
+          step: string
+          store_id?: string | null
+          terminal_id?: string | null
+          txid?: string | null
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          http_status?: number | null
+          id?: string
+          invoice_id?: string
+          payment_id?: string | null
+          reason?: string | null
+          status?: string | null
+          step?: string
+          store_id?: string | null
+          terminal_id?: string | null
+          txid?: string | null
+        }
+        Relationships: []
+      }
       chain_config_audit: {
         Row: {
           action: string

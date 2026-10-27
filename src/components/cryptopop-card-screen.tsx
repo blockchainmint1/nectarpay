@@ -7,11 +7,12 @@ import { CARD_APPROVAL_TIMEOUT_MS, CARD_POLL_INTERVAL_MS, type CardReply } from 
 
 export function CryptoPopCardScreen({ creds, invoiceId, totalCents, initialUid, onPaid, onUseQr, onCancel }: {
   creds: TerminalCreds; invoiceId: string; totalCents: number; initialUid?: string | null;
-  onPaid: () => void; onUseQr: () => void; onCancel: () => void;
+  onPaid: (txid: string) => void; onUseQr: () => void; onCancel: () => void;
 }) {
-  const [phase, setPhase] = useState<"tap" | "sending" | "pin" | "approval" | "error">("tap");
+  const [phase, setPhase] = useState<"tap" | "sending" | "pin" | "approval" | "confirming" | "error">("tap");
   const [reason, setReason] = useState<string | null>(null);
   const [pin, setPin] = useState("");
+  const [txid, setTxid] = useState<string | null>(null);
   const [payment, setPayment] = useState<{ id: string; token: string; started: number } | null>(null);
   const uid = useRef<string | null>(null);
   const busy = useRef(false);
@@ -20,7 +21,7 @@ export function CryptoPopCardScreen({ creds, invoiceId, totalCents, initialUid, 
 
   function handle(reply: CardReply) {
     if (!alive.current) return;
-    if (reply.status === "sent" && reply.txid) { setPayment(null); onPaid(); return; }
+    if (reply.status === "sent" && reply.txid) { setPayment(null); setTxid(reply.txid); setPhase("confirming"); onPaid(reply.txid); return; }
     if (reply.status === "pin_required") { setPin(""); setReason(reply.reason); setPhase("pin"); return; }
     if ((reply.status === "approval_required" || reply.status === "sending") && reply.payment_id && reply.poll_token) {
       const next = { id: reply.payment_id, token: reply.poll_token, started: Date.now() };
@@ -101,7 +102,7 @@ export function CryptoPopCardScreen({ creds, invoiceId, totalCents, initialUid, 
     else setPin(current => current.length < 8 ? current + key : current);
   }
 
-  const pending = phase === "sending" || phase === "approval";
+  const pending = phase === "sending" || phase === "approval" || phase === "confirming";
   return (
     <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto bg-background px-4 py-6 text-center text-foreground">
       <p className="text-xs font-semibold text-muted-foreground">CryptoPOP CARD · TSD</p>
@@ -109,6 +110,7 @@ export function CryptoPopCardScreen({ creds, invoiceId, totalCents, initialUid, 
       <div className="my-6 flex w-full max-w-sm flex-1 flex-col items-center justify-center gap-4">
         {phase === "tap" && <><Nfc className="size-24 text-primary" /><p className="text-lg font-bold">Tap your CryptoPOP card</p>{reason && <p role="alert" className="text-sm text-destructive">{reason}</p>}{!isNative() && <p className="text-xs text-destructive">NFC reader unavailable on this device.</p>}</>}
         {phase === "sending" && <><LoaderCircle className="size-12 animate-spin motion-reduce:animate-none text-primary" /><p className="text-lg font-bold">Sending payment…</p></>}
+        {phase === "confirming" && <><LoaderCircle className="size-12 animate-spin motion-reduce:animate-none text-primary" /><p className="text-lg font-bold">Payment sent — confirming…</p><p className="text-sm text-muted-foreground">No need to tap again. This usually takes a few seconds.</p>{txid && <p className="font-mono text-xs text-muted-foreground">Ref {txid.slice(0, 8)}…{txid.slice(-6)}</p>}</>}
         {phase === "approval" && <><p className="text-lg font-bold">Waiting for the cardholder’s approval…</p><p className="text-sm text-muted-foreground">Approve or decline in Telegram.</p></>}
         {phase === "pin" && <>
           <p className="text-lg font-bold">Enter your card PIN</p>
