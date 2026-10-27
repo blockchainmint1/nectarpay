@@ -1,5 +1,8 @@
 # Roadmap
 
+## Store info save failure
+- [ ] Restore authenticated access to the new public-email field without exposing store secrets; verify saving through the signed-in store page.
+
 ## SES and customer receipts
 - [x] Move app email delivery to verified AWS SES; SES accepted one connection-check email to Bobby.
 - [x] Wire customer receipts after settlement/email capture; show failures on the terminal; six tests passed.
