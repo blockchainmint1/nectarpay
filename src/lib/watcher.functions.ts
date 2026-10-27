@@ -424,7 +424,7 @@ export async function settleInvoice(
   return { status: newStatus, changed: true, paidUsd: paidAmountUsd };
 }
 
-export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean> {
+export async function scanBtcLikeInvoiceNow(invoiceId: string, hintTxid?: string | null): Promise<boolean> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
@@ -439,7 +439,13 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
   // Omni Layer token invoice (e.g. TSD on TEXITcoin) — credits come from the
   // OP_RETURN payload, not the native value of the output.
   const omni = inv.token_symbol ? getOmniToken(chainKey, inv.token_symbol as string) : null;
-  const [tip, txs] = await Promise.all([getTipHeight(net), getAddressTxs(net, inv.address)]);
+  // A partner-reported txid is only a hint: we fetch that exact tx from the
+  // chain ourselves and it must still pass the same address/amount checks.
+  const hinted = hintTxid && /^[0-9a-f]{64}$/i.test(hintTxid) && net.indexer !== "blockbook"
+    ? fetch(`${net.esploraBase}/tx/${hintTxid}`).then((r) => (r.ok ? (r.json() as Promise<EsploraTx>) : null)).catch(() => null)
+    : Promise.resolve(null);
+  const [tip, addrTxs, hintTx] = await Promise.all([getTipHeight(net), getAddressTxs(net, inv.address), hinted]);
+  const txs = hintTx && !addrTxs.some((t) => t.txid === hintTx.txid) ? [...addrTxs, hintTx] : addrTxs;
   const credits = omni
     ? extractOmniIncoming(txs, inv.address, omni.propertyId, omni.decimals, tip).map((c) => ({
         ...c,
