@@ -218,7 +218,8 @@ export function StoreInfoForm({ storeId, storeSlug }: { storeId: string; storeSl
                     <div className="text-sm font-medium">{o.t}</div>
                     <div className="text-xs text-muted-foreground">{o.d}</div>
                   </button>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
