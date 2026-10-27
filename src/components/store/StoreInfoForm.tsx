@@ -188,24 +188,38 @@ export function StoreInfoForm({ storeId, storeSlug }: { storeId: string; storeSl
               <Switch checked={form.listed} onCheckedChange={(v) => set("listed", v)} aria-label="Public listing" />
             </div>
             {form.listed && (
-              <div className="mt-4 grid gap-2 sm:grid-cols-2">
+              <div className="mt-4 grid gap-2 sm:grid-cols-3">
                 {([
                   { v: "city_only", t: "City pin only", d: "Anonymous pin near your city. No name or address." },
                   { v: "full", t: "Full listing", d: "Name, address, logo, phone and description." },
-                ] as const).map((o) => (
+                  { v: "online", t: "Online business", d: "Name, logo, website and description. No street address or map pin." },
+                ] as const).map((o) => {
+                  const isOnline = form.business_presence === "online";
+                  const active =
+                    o.v === "online" ? form.visibility === "full" && isOnline
+                    : o.v === "full" ? form.visibility === "full" && !isOnline
+                    : form.visibility === "city_only";
+                  return (
                   <button
                     key={o.v}
                     type="button"
-                    onClick={() => set("visibility", o.v)}
+                    onClick={() =>
+                      setForm((f) =>
+                        o.v === "online"
+                          ? { ...f, visibility: "full", business_presence: "online" }
+                          : { ...f, visibility: o.v, business_presence: f.business_presence === "online" ? "physical" : f.business_presence },
+                      )
+                    }
                     className={cn(
                       "rounded-md border p-3 text-left transition-colors",
-                      form.visibility === o.v ? "border-primary bg-primary/10" : "border-border hover:bg-accent/40",
+                      active ? "border-primary bg-primary/10" : "border-border hover:bg-accent/40",
                     )}
                   >
                     <div className="text-sm font-medium">{o.t}</div>
                     <div className="text-xs text-muted-foreground">{o.d}</div>
                   </button>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

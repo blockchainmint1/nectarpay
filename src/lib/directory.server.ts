@@ -5,7 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 export type DirectoryStore = {
   id: string;
   slug: string | null;
-  listing: "full" | "city_only";
+  listing: "full" | "online" | "city_only";
   status: "live";
   name: string | null;
   category: string | null;

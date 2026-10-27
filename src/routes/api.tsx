@@ -26,7 +26,7 @@ const SAMPLE = `{
   "stores": [{
     "id": "dedc6db9-c547-45ed-920a-a5c325d49507",   // permanent, never changes
     "slug": "blakes-bbq",
-    "listing": "full",            // "full" | "city_only"
+    "listing": "full",            // "full" | "online" | "city_only"
     "status": "live",
     "name": "Blake's BBQ",
     "category": "Restaurant",
