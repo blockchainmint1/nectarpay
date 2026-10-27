@@ -49,7 +49,27 @@ function NfcInspector() {
   const [probeResults, setProbeResults] = useState<ProbeResult[]>([]);
   const [customApdu, setCustomApdu] = useState("00A4040007A000000812010101");
   const [customResp, setCustomResp] = useState<ApduResponse | null>(null);
+  const [uidQr, setUidQr] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const subRef = useRef<{ remove: () => Promise<void> } | null>(null);
+
+  const uid = event?.uid ?? null;
+  const uidText = uid ? uid.toUpperCase().replace(/\s+/g, "") : null;
+
+  useEffect(() => {
+    let cancelled = false;
+    setUidQr(null);
+    setCopied(false);
+    if (!uidText) return;
+    qrToDataURL(uidText, { margin: 2, width: 260, errorCorrectionLevel: "M" })
+      .then((url) => {
+        if (!cancelled) setUidQr(url);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [uidText]);
 
   useEffect(() => {
     setNative(isNative());
