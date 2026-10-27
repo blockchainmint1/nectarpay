@@ -48,8 +48,8 @@ export const Route = createFileRoute("/api/public/v1/pay/$invoiceId")({
           const auth = await verifyTapHandoff(params.invoiceId, nonce);
           if (!auth.ok) return json({ error: auth.error }, auth.status);
 
-          const { getPublicInvoice } = await import("@/lib/checkout.functions");
-          const result = await getPublicInvoice({ data: { id: params.invoiceId } });
+          const { readPublicInvoice } = await import("@/lib/checkout.server");
+          const result = await readPublicInvoice({ id: params.invoiceId });
           if (!result.found) return json({ error: "Invoice not found." }, 404);
 
           const inv = result.invoice;
@@ -110,9 +110,9 @@ export const Route = createFileRoute("/api/public/v1/pay/$invoiceId")({
 
           // Reuse the existing selectInvoiceChain logic (no-op if invoice
           // was already pinned to the same option).
-          const { selectInvoiceChain } = await import("@/lib/checkout.functions");
+          const { selectPublicInvoiceChain } = await import("@/lib/checkout.server");
           try {
-            await selectInvoiceChain({ data: { id: params.invoiceId, option: v.data.option } });
+            await selectPublicInvoiceChain({ id: params.invoiceId, option: v.data.option });
           } catch (e) {
             return json({ error: e instanceof Error ? e.message : "Could not select chain." }, 400);
           }
