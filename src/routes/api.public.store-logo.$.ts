@@ -13,6 +13,10 @@ export const Route = createFileRoute("/api/public/store-logo/$")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data, error } = await supabaseAdmin.storage.from("store-logos").download(path);
         if (error || !data) return new Response("Not found", { status: 404 });
+        // Raster images only — never serve SVG/HTML from our own origin.
+        if (!["image/png", "image/jpeg", "image/webp"].includes(data.type)) {
+          return new Response("Unsupported", { status: 415 });
+        }
         return new Response(data, {
           headers: {
             "Content-Type": data.type || "image/png",
