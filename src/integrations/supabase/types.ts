@@ -1945,7 +1945,7 @@ export type Database = {
           tsd_instant?: boolean
           tsd_instant_max_usd?: number | null
           updated_at?: string
-          url_slug: string
+          url_slug?: string
           usdc_payout_address_eth?: string | null
           webhook_secret?: string | null
           webhook_secret_hash?: string | null

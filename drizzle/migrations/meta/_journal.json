@@ -57,6 +57,13 @@
       "when": 1793098674897,
       "tag": "0007_store_slug_profile_logo",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793098945155,
+      "tag": "0008_store_slug_default",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,1 @@
+ALTER TABLE public.stores ALTER COLUMN url_slug SET DEFAULT '';
