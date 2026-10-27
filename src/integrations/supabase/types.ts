@@ -1809,6 +1809,7 @@ export type Database = {
           business_city: string | null
           business_country: string | null
           business_description: string | null
+          business_email: string | null
           business_hours: string | null
           business_lat: number | null
           business_lng: number | null
@@ -1887,6 +1888,7 @@ export type Database = {
           business_city?: string | null
           business_country?: string | null
           business_description?: string | null
+          business_email?: string | null
           business_hours?: string | null
           business_lat?: number | null
           business_lng?: number | null
@@ -1965,6 +1967,7 @@ export type Database = {
           business_city?: string | null
           business_country?: string | null
           business_description?: string | null
+          business_email?: string | null
           business_hours?: string | null
           business_lat?: number | null
           business_lng?: number | null
