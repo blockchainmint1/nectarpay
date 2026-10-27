@@ -4,7 +4,8 @@
 // into a small ring buffer, and exposes a hidden button to view them on
 // device (Android APK has no easy way to see console output without adb).
 //
-// Trigger: tap the top-left corner of the header 5 times within 3 seconds.
+// Trigger: tap the bottom-right corner 3 times within 2 seconds, or use
+// POS Settings → "Show debug log". The tap-target is invisible on purpose.
 
 import { useEffect, useRef, useState } from "react";
 
@@ -86,12 +87,13 @@ export function PosDebugLog() {
 
   return (
     <>
-      {/* Corner tap-target: bottom-right, faint dot. Tap 3× within 2s. */}
+      {/* Corner tap-target: invisible, same footprint as before. Tap 3× within 2s. */}
       <button
         onClick={onCorner}
         aria-label="Debug log"
-        className="fixed bottom-1 right-1 z-[9998] size-8 rounded-full bg-white/5 text-[10px] text-white/30 hover:bg-white/10"
-      >···</button>
+        tabIndex={-1}
+        className="fixed bottom-1 right-1 z-[9998] size-8 opacity-0"
+      />
       {open && (
         <div className="fixed inset-0 z-[9999] flex flex-col bg-black text-white">
           <div className="flex items-center justify-between border-b border-white/10 px-3 py-2">
