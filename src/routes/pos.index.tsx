@@ -285,6 +285,7 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
     setSubtotalCents(0); setTipBps(0); setCustomTipCents(null);
     setInvoice(null); setStatus(null); setErr(null);
     setFinalTipCents(0);
+    setTappedUid(null);
     setScreen("amount");
   };
 
@@ -320,7 +321,7 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
             busy={busy}
             err={err}
             onPick={(opt) => createInvoice(finalTipCents, opt)}
-            onCard={() => createInvoice(finalTipCents, null, "card")}
+            onCard={() => { setTappedUid(null); void createInvoice(finalTipCents, null, "card"); }}
             onBack={() => setScreen(hasTips ? "tip" : "amount")}
           />
         )}
@@ -329,6 +330,7 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
             creds={creds}
             invoiceId={invoice.id}
             totalCents={subtotalCents + taxCents + finalTipCents}
+            initialUid={tappedUid}
             onPaid={() => setScreen("waiting")}
             onUseQr={() => setScreen("waiting")}
             onCancel={onCancel}
@@ -587,7 +589,7 @@ function ChainScreen({
           >
             <div className="min-w-0 flex-1">
               <div className="text-sm font-bold">Tap CryptoPOP card</div>
-              <div className="mt-0.5 text-[11px] text-white/50">Pay with your CryptoPOP card in TSD.</div>
+              <div className="mt-0.5 text-[11px] text-white/50">Just tap the card on this screen — or press here.</div>
             </div>
             <span className="ml-3 text-amber-300">→</span>
           </button>

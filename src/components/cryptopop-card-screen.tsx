@@ -5,8 +5,8 @@ import { NectarNfc, isNative } from "@/lib/pos-native";
 import { signedJson, type TerminalCreds } from "@/lib/pos-client";
 import { CARD_APPROVAL_TIMEOUT_MS, CARD_POLL_INTERVAL_MS, type CardReply } from "@/lib/cryptopop-card";
 
-export function CryptoPopCardScreen({ creds, invoiceId, totalCents, onPaid, onUseQr, onCancel }: {
-  creds: TerminalCreds; invoiceId: string; totalCents: number;
+export function CryptoPopCardScreen({ creds, invoiceId, totalCents, initialUid, onPaid, onUseQr, onCancel }: {
+  creds: TerminalCreds; invoiceId: string; totalCents: number; initialUid?: string | null;
   onPaid: () => void; onUseQr: () => void; onCancel: () => void;
 }) {
   const [phase, setPhase] = useState<"tap" | "sending" | "pin" | "approval" | "error">("tap");
