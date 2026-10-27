@@ -1,7 +1,7 @@
 # Roadmap
 
 ## Honest Money popup return
-- [ ] Restore the popup-to-main-window handoff when the browser removes the opener, and verify callback handling.
+- [x] Fix numeric popup=1 validation and restore the popup-to-main-window handoff when the browser removes the opener; real browser callback closes the popup and reports rejected diagnostic tickets in the parent; 13 tests passed.
 - [ ] Verify a real Honest Money sign-in after publishing; requires the member's email-code approval.
 
 ## HME credential cutover and referral review
