@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_deactivations: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          performed_by: string | null
+          reason: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          performed_by?: string | null
+          reason?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          performed_by?: string | null
+          reason?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       affiliate_attributions: {
         Row: {
           affiliate_id: string
@@ -273,6 +303,24 @@ export type Database = {
           },
         ]
       }
+      api_rate_counters: {
+        Row: {
+          hits: number
+          key_id: string
+          window_start: string
+        }
+        Insert: {
+          hits?: number
+          key_id: string
+          window_start: string
+        }
+        Update: {
+          hits?: number
+          key_id?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       chain_config_audit: {
         Row: {
           action: string
@@ -384,6 +432,102 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      cron_secret: {
+        Row: {
+          created_at: string
+          id: number
+          secret: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          secret?: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          secret?: string
+        }
+        Relationships: []
+      }
+      customer_marketing_consents: {
+        Row: {
+          consent_text: string
+          consented_at: string
+          email: string
+          id: string
+          invoice_id: string
+          revoked_at: string | null
+          source: string
+          store_id: string
+        }
+        Insert: {
+          consent_text: string
+          consented_at?: string
+          email: string
+          id?: string
+          invoice_id: string
+          revoked_at?: string | null
+          source: string
+          store_id: string
+        }
+        Update: {
+          consent_text?: string
+          consented_at?: string
+          email?: string
+          id?: string
+          invoice_id?: string
+          revoked_at?: string | null
+          source?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_marketing_consents_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_marketing_consents_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demo_account_resets: {
+        Row: {
+          created_at: string
+          deleted_summary: Json | null
+          email: string
+          id: string
+          token_hash: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_summary?: Json | null
+          email: string
+          id?: string
+          token_hash: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_summary?: Json | null
+          email?: string
+          id?: string
+          token_hash?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       derived_addresses: {
         Row: {
@@ -514,6 +658,60 @@ export type Database = {
         }
         Relationships: []
       }
+      hme_member_links: {
+        Row: {
+          created_at: string
+          member_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          member_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          member_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      hme_signup_events: {
+        Row: {
+          created_at: string
+          ref: string | null
+          sent_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          ref?: string | null
+          sent_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          ref?: string | null
+          sent_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      hme_sso_nonces: {
+        Row: {
+          nonce: string
+          used_at: string
+        }
+        Insert: {
+          nonce: string
+          used_at?: string
+        }
+        Update: {
+          nonce?: string
+          used_at?: string
+        }
+        Relationships: []
+      }
       invoice_tap_nonces: {
         Row: {
           consumed_at: string | null
@@ -560,14 +758,18 @@ export type Database = {
           customer_email: string | null
           derivation_index: number | null
           description: string | null
+          email_send_count: number
+          email_sent_at: string | null
           expires_at: string
           external_order_id: string | null
           fiat_amount: number
           fiat_currency: string
+          first_viewed_at: string | null
           id: string
           kyc_level_override: Database["public"]["Enums"]["kyc_level"] | null
           kyc_reference: string | null
           kyc_status: Database["public"]["Enums"]["kyc_status"]
+          last_viewed_at: string | null
           rate: number | null
           redirect_url: string | null
           signature_data_url: string | null
@@ -575,6 +777,7 @@ export type Database = {
           store_id: string
           token_symbol: string | null
           updated_at: string
+          view_count: number
         }
         Insert: {
           address?: string | null
@@ -586,14 +789,18 @@ export type Database = {
           customer_email?: string | null
           derivation_index?: number | null
           description?: string | null
+          email_send_count?: number
+          email_sent_at?: string | null
           expires_at: string
           external_order_id?: string | null
           fiat_amount: number
           fiat_currency: string
+          first_viewed_at?: string | null
           id?: string
           kyc_level_override?: Database["public"]["Enums"]["kyc_level"] | null
           kyc_reference?: string | null
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
+          last_viewed_at?: string | null
           rate?: number | null
           redirect_url?: string | null
           signature_data_url?: string | null
@@ -601,6 +808,7 @@ export type Database = {
           store_id: string
           token_symbol?: string | null
           updated_at?: string
+          view_count?: number
         }
         Update: {
           address?: string | null
@@ -612,14 +820,18 @@ export type Database = {
           customer_email?: string | null
           derivation_index?: number | null
           description?: string | null
+          email_send_count?: number
+          email_sent_at?: string | null
           expires_at?: string
           external_order_id?: string | null
           fiat_amount?: number
           fiat_currency?: string
+          first_viewed_at?: string | null
           id?: string
           kyc_level_override?: Database["public"]["Enums"]["kyc_level"] | null
           kyc_reference?: string | null
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
+          last_viewed_at?: string | null
           rate?: number | null
           redirect_url?: string | null
           signature_data_url?: string | null
@@ -627,6 +839,7 @@ export type Database = {
           store_id?: string
           token_symbol?: string | null
           updated_at?: string
+          view_count?: number
         }
         Relationships: [
           {
@@ -864,6 +1077,169 @@ export type Database = {
         }
         Relationships: []
       }
+      lightning_credits: {
+        Row: {
+          amount_sats: number
+          created_at: string
+          id: string
+          invoice_id: string | null
+          lightning_invoice_id: string | null
+          store_id: string
+          sweep_id: string | null
+        }
+        Insert: {
+          amount_sats: number
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          lightning_invoice_id?: string | null
+          store_id: string
+          sweep_id?: string | null
+        }
+        Update: {
+          amount_sats?: number
+          created_at?: string
+          id?: string
+          invoice_id?: string | null
+          lightning_invoice_id?: string | null
+          store_id?: string
+          sweep_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lightning_credits_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lightning_credits_lightning_invoice_id_fkey"
+            columns: ["lightning_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "lightning_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lightning_credits_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lightning_credits_sweep_id_fkey"
+            columns: ["sweep_id"]
+            isOneToOne: false
+            referencedRelation: "lightning_sweeps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lightning_invoices: {
+        Row: {
+          amount_paid_sats: number
+          amount_sats: number
+          created_at: string
+          expires_at: string | null
+          id: string
+          invoice_id: string | null
+          payment_hash: string
+          payment_request: string
+          settled_at: string | null
+          state: string
+          store_id: string
+        }
+        Insert: {
+          amount_paid_sats?: number
+          amount_sats: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          invoice_id?: string | null
+          payment_hash: string
+          payment_request: string
+          settled_at?: string | null
+          state?: string
+          store_id: string
+        }
+        Update: {
+          amount_paid_sats?: number
+          amount_sats?: number
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          invoice_id?: string | null
+          payment_hash?: string
+          payment_request?: string
+          settled_at?: string | null
+          state?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lightning_invoices_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lightning_invoices_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lightning_sweeps: {
+        Row: {
+          address: string
+          amount_sats: number
+          completed_at: string | null
+          created_at: string
+          error: string | null
+          fee_sats: number | null
+          id: string
+          status: string
+          store_id: string
+          txid: string | null
+        }
+        Insert: {
+          address: string
+          amount_sats: number
+          completed_at?: string | null
+          created_at?: string
+          error?: string | null
+          fee_sats?: number | null
+          id?: string
+          status?: string
+          store_id: string
+          txid?: string | null
+        }
+        Update: {
+          address?: string
+          amount_sats?: number
+          completed_at?: string | null
+          created_at?: string
+          error?: string | null
+          fee_sats?: number | null
+          id?: string
+          status?: string
+          store_id?: string
+          txid?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lightning_sweeps_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       markets: {
         Row: {
           active: boolean
@@ -1095,6 +1471,24 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       pos_releases: {
         Row: {
           apk_path: string
@@ -1130,6 +1524,9 @@ export type Database = {
           affiliate_id: string | null
           avatar_url: string | null
           created_at: string
+          deactivated_at: string | null
+          deactivated_by: string | null
+          deactivated_reason: string | null
           email: string | null
           full_name: string | null
           onboarding_completed_at: string | null
@@ -1142,6 +1539,9 @@ export type Database = {
           affiliate_id?: string | null
           avatar_url?: string | null
           created_at?: string
+          deactivated_at?: string | null
+          deactivated_by?: string | null
+          deactivated_reason?: string | null
           email?: string | null
           full_name?: string | null
           onboarding_completed_at?: string | null
@@ -1154,6 +1554,9 @@ export type Database = {
           affiliate_id?: string | null
           avatar_url?: string | null
           created_at?: string
+          deactivated_at?: string | null
+          deactivated_by?: string | null
+          deactivated_reason?: string | null
           email?: string | null
           full_name?: string | null
           onboarding_completed_at?: string | null
@@ -1163,6 +1566,74 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      public_terminals: {
+        Row: {
+          active: boolean
+          allow_custom_amount: boolean
+          created_at: string
+          created_by: string | null
+          cta_label: string | null
+          currency: string | null
+          id: string
+          is_donation: boolean
+          max_amount: number
+          min_amount: number
+          preset_amounts: number[]
+          slug: string
+          store_id: string
+          subtitle: string | null
+          title: string | null
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          active?: boolean
+          allow_custom_amount?: boolean
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          currency?: string | null
+          id?: string
+          is_donation?: boolean
+          max_amount?: number
+          min_amount?: number
+          preset_amounts?: number[]
+          slug: string
+          store_id: string
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          active?: boolean
+          allow_custom_amount?: boolean
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string | null
+          currency?: string | null
+          id?: string
+          is_donation?: boolean
+          max_amount?: number
+          min_amount?: number
+          preset_amounts?: number[]
+          slug?: string
+          store_id?: string
+          subtitle?: string | null
+          title?: string | null
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_terminals_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rates_cache: {
         Row: {
@@ -1185,6 +1656,188 @@ export type Database = {
         }
         Relationships: []
       }
+      sensitive_action_codes: {
+        Row: {
+          action: string
+          attempts: number
+          code_hash: string
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          store_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          attempts?: number
+          code_hash: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          store_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          attempts?: number
+          code_hash?: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          store_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sensitive_action_codes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string | null
+          role: Database["public"]["Enums"]["store_member_role"]
+          store_id: string
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["store_member_role"]
+          store_id: string
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["store_member_role"]
+          store_id?: string
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_invites_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_members: {
+        Row: {
+          created_at: string
+          id: string
+          invited_by: string | null
+          role: Database["public"]["Enums"]["store_member_role"]
+          store_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["store_member_role"]
+          store_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          role?: Database["public"]["Enums"]["store_member_role"]
+          store_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_members_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_notification_prefs: {
+        Row: {
+          created_at: string
+          email_address: string | null
+          email_enabled: boolean
+          enabled: boolean
+          events: Json
+          id: string
+          store_id: string
+          telegram_chat_id: string | null
+          telegram_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_address?: string | null
+          email_enabled?: boolean
+          enabled?: boolean
+          events?: Json
+          id?: string
+          store_id: string
+          telegram_chat_id?: string | null
+          telegram_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_address?: string | null
+          email_enabled?: boolean
+          enabled?: boolean
+          events?: Json
+          id?: string
+          store_id?: string
+          telegram_chat_id?: string | null
+          telegram_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_notification_prefs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stores: {
         Row: {
           admin_market: string | null
@@ -1195,14 +1848,21 @@ export type Database = {
           business_city: string | null
           business_country: string | null
           business_description: string | null
+          business_email: string | null
+          business_hours: string | null
           business_lat: number | null
           business_lng: number | null
           business_logo_url: string | null
+          business_phone: string | null
+          business_postal_code: string | null
+          business_presence: string
           business_region: string | null
           created_at: string
+          deactivated_at: string | null
           default_allowed_chains: string[] | null
           default_confirmations_required: number
           default_display_currency: string | null
+          evm_address_rotation: boolean
           ext_ref_label: string | null
           ext_ref_mode: string
           ext_ref_required: boolean
@@ -1218,6 +1878,7 @@ export type Database = {
           kyc_level: Database["public"]["Enums"]["kyc_level"]
           kyc_threshold_usd: number | null
           listing_visibility: string
+          ln_sweep_threshold_sats: number
           mempool_accept_fast: boolean
           mempool_accept_slow: boolean
           mempool_max_usd: number | null
@@ -1250,6 +1911,7 @@ export type Database = {
           tsd_instant: boolean
           tsd_instant_max_usd: number | null
           updated_at: string
+          url_slug: string
           usdc_payout_address_eth: string | null
           webhook_secret: string | null
           webhook_secret_hash: string | null
@@ -1265,14 +1927,21 @@ export type Database = {
           business_city?: string | null
           business_country?: string | null
           business_description?: string | null
+          business_email?: string | null
+          business_hours?: string | null
           business_lat?: number | null
           business_lng?: number | null
           business_logo_url?: string | null
+          business_phone?: string | null
+          business_postal_code?: string | null
+          business_presence?: string
           business_region?: string | null
           created_at?: string
+          deactivated_at?: string | null
           default_allowed_chains?: string[] | null
           default_confirmations_required?: number
           default_display_currency?: string | null
+          evm_address_rotation?: boolean
           ext_ref_label?: string | null
           ext_ref_mode?: string
           ext_ref_required?: boolean
@@ -1288,6 +1957,7 @@ export type Database = {
           kyc_level?: Database["public"]["Enums"]["kyc_level"]
           kyc_threshold_usd?: number | null
           listing_visibility?: string
+          ln_sweep_threshold_sats?: number
           mempool_accept_fast?: boolean
           mempool_accept_slow?: boolean
           mempool_max_usd?: number | null
@@ -1320,6 +1990,7 @@ export type Database = {
           tsd_instant?: boolean
           tsd_instant_max_usd?: number | null
           updated_at?: string
+          url_slug?: string
           usdc_payout_address_eth?: string | null
           webhook_secret?: string | null
           webhook_secret_hash?: string | null
@@ -1335,14 +2006,21 @@ export type Database = {
           business_city?: string | null
           business_country?: string | null
           business_description?: string | null
+          business_email?: string | null
+          business_hours?: string | null
           business_lat?: number | null
           business_lng?: number | null
           business_logo_url?: string | null
+          business_phone?: string | null
+          business_postal_code?: string | null
+          business_presence?: string
           business_region?: string | null
           created_at?: string
+          deactivated_at?: string | null
           default_allowed_chains?: string[] | null
           default_confirmations_required?: number
           default_display_currency?: string | null
+          evm_address_rotation?: boolean
           ext_ref_label?: string | null
           ext_ref_mode?: string
           ext_ref_required?: boolean
@@ -1358,6 +2036,7 @@ export type Database = {
           kyc_level?: Database["public"]["Enums"]["kyc_level"]
           kyc_threshold_usd?: number | null
           listing_visibility?: string
+          ln_sweep_threshold_sats?: number
           mempool_accept_fast?: boolean
           mempool_accept_slow?: boolean
           mempool_max_usd?: number | null
@@ -1390,6 +2069,7 @@ export type Database = {
           tsd_instant?: boolean
           tsd_instant_max_usd?: number | null
           updated_at?: string
+          url_slug?: string
           usdc_payout_address_eth?: string | null
           webhook_secret?: string | null
           webhook_secret_hash?: string | null
@@ -1949,6 +2629,7 @@ export type Database = {
       }
       wallet_login_challenges: {
         Row: {
+          browser_binding_hash: string | null
           consumed_at: string | null
           created_at: string
           expires_at: string
@@ -1956,6 +2637,7 @@ export type Database = {
           ip_address: string | null
           nonce: string
           one_time_token: string | null
+          signable_message: string | null
           signature: string | null
           signed_at: string | null
           status: Database["public"]["Enums"]["wallet_challenge_status"]
@@ -1963,6 +2645,7 @@ export type Database = {
           wallet_address: string | null
         }
         Insert: {
+          browser_binding_hash?: string | null
           consumed_at?: string | null
           created_at?: string
           expires_at?: string
@@ -1970,6 +2653,7 @@ export type Database = {
           ip_address?: string | null
           nonce: string
           one_time_token?: string | null
+          signable_message?: string | null
           signature?: string | null
           signed_at?: string | null
           status?: Database["public"]["Enums"]["wallet_challenge_status"]
@@ -1977,6 +2661,7 @@ export type Database = {
           wallet_address?: string | null
         }
         Update: {
+          browser_binding_hash?: string | null
           consumed_at?: string | null
           created_at?: string
           expires_at?: string
@@ -1984,6 +2669,7 @@ export type Database = {
           ip_address?: string | null
           nonce?: string
           one_time_token?: string | null
+          signable_message?: string | null
           signature?: string | null
           signed_at?: string | null
           status?: Database["public"]["Enums"]["wallet_challenge_status"]
@@ -2074,15 +2760,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      delete_email: {
-        Args: { message_id: number; queue_name: string }
-        Returns: boolean
-      }
-      email_queue_dispatch: { Args: never; Returns: undefined }
-      enqueue_email: {
-        Args: { payload: Json; queue_name: string }
-        Returns: number
-      }
+      api_rate_hit: { Args: { _key_id: string }; Returns: number }
       get_merchant_map_pins: {
         Args: never
         Returns: {
@@ -2100,6 +2778,7 @@ export type Database = {
           website: string
         }[]
       }
+      get_public_directory: { Args: { _since?: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2109,26 +2788,11 @@ export type Database = {
       }
       increment_affiliate_click: { Args: { _code: string }; Returns: undefined }
       is_subscription_active: { Args: { _user_id: string }; Returns: boolean }
-      move_to_dlq: {
-        Args: {
-          dlq_name: string
-          message_id: number
-          payload: Json
-          source_queue: string
-        }
-        Returns: number
-      }
       next_txc_deposit_index: { Args: never; Returns: number }
       owns_store: { Args: { _store_id: string }; Returns: boolean }
       purge_expired_wallet_challenges: { Args: never; Returns: undefined }
-      read_email_batch: {
-        Args: { batch_size: number; queue_name: string; vt: number }
-        Returns: {
-          message: Json
-          msg_id: number
-          read_ct: number
-        }[]
-      }
+      store_access_level: { Args: { _store_id: string }; Returns: number }
+      store_slugify: { Args: { _name: string }; Returns: string }
       txc_balance: { Args: { _user_id: string }; Returns: number }
     }
     Enums: {
@@ -2147,6 +2811,7 @@ export type Database = {
         | "ltc"
         | "bch"
         | "dash"
+        | "lightning"
       invoice_status:
         | "pending"
         | "detected"
@@ -2159,6 +2824,7 @@ export type Database = {
       kyc_level: "none" | "basic" | "advanced"
       kyc_provider: "none" | "sumsub" | "persona" | "didit" | "veriff"
       kyc_status: "not_required" | "pending" | "passed" | "failed"
+      store_member_role: "viewer" | "manager" | "admin"
       tangem_pay_intent_status:
         | "pending"
         | "signed"
@@ -2182,12 +2848,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2211,11 +2877,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2236,11 +2902,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2261,11 +2927,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2278,11 +2944,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -2309,6 +2975,7 @@ export const Constants = {
         "ltc",
         "bch",
         "dash",
+        "lightning",
       ],
       invoice_status: [
         "pending",
@@ -2323,6 +2990,7 @@ export const Constants = {
       kyc_level: ["none", "basic", "advanced"],
       kyc_provider: ["none", "sumsub", "persona", "didit", "veriff"],
       kyc_status: ["not_required", "pending", "passed", "failed"],
+      store_member_role: ["viewer", "manager", "admin"],
       tangem_pay_intent_status: [
         "pending",
         "signed",

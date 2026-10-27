@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { randomBytes } from "crypto";
 import { z } from "zod";
-import { authDomainFromRequest } from "@/lib/wallet-auth-shared";
+import { authDomainFromRequest, matchesIssuedWalletMessage } from "@/lib/wallet-auth-shared";
 
 const CORS = {
   "access-control-allow-origin": "*",
@@ -40,19 +40,15 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const { data: ch, error } = await supabaseAdmin
           .from("wallet_login_challenges")
-          .select("id, nonce, status, expires_at, created_at")
+          .select("id, nonce, status, expires_at, created_at, signable_message")
           .eq("id", id)
           .single();
         if (error || !ch) {
           return Response.json({ error: "unknown challenge" }, { status: 404, headers: CORS });
         }
-        const { buildSignableMessage } = await import("@/lib/wallet-auth-shared");
         const domain = authDomainFromRequest(request);
-        const message = buildSignableMessage({
-          nonce: ch.nonce,
-          domain,
-          issuedAt: ch.created_at,
-        });
+        const message = ch.signable_message;
+        if (!message) return Response.json({ error: "please restart wallet sign-in" }, { status: 410, headers: CORS });
         return Response.json(
           {
             id: ch.id,
@@ -91,7 +87,7 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
         const signature = payload.signature.replace(/\s+/g, "");
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { buildSignableMessage, verifyTxcSignature, looksLikeTxcAddress } =
+        const { verifyTxcSignature, looksLikeTxcAddress } =
           await import("@/lib/wallet-signature.server");
 
         if (!looksLikeTxcAddress(address)) {
@@ -102,7 +98,7 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
         // wallet's native QR-envelope flow posts back by nonce.
         let challengeQuery = supabaseAdmin
           .from("wallet_login_challenges")
-          .select("id, nonce, status, expires_at, created_at");
+          .select("id, nonce, status, expires_at, created_at, signable_message");
         challengeQuery =
           "id" in payload
             ? challengeQuery.eq("id", payload.id)
@@ -124,17 +120,9 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
           return Response.json({ error: "challenge expired" }, { status: 410, headers: CORS });
         }
 
-        const message =
-          "message" in payload && payload.message
-            ? payload.message
-            : buildSignableMessage({
-                nonce: ch.nonce,
-                domain: authDomainFromRequest(request),
-                issuedAt: ch.created_at,
-              });
-
-        if (!message.includes(`Nonce: ${ch.nonce}`)) {
-          return Response.json({ error: "nonce mismatch" }, { status: 400, headers: CORS });
+        const message = ch.signable_message;
+        if (!message || !matchesIssuedWalletMessage(message, payload.message)) {
+          return Response.json({ error: "sign-in message mismatch; restart wallet sign-in" }, { status: 400, headers: CORS });
         }
 
         const ok = verifyTxcSignature({ address, message, signature });
@@ -169,7 +157,7 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
 
         const oneTimeToken = randomBytes(32).toString("hex");
 
-        const { error: upErr } = await supabaseAdmin
+        const { data: signedRows, error: upErr } = await supabaseAdmin
           .from("wallet_login_challenges")
           .update({
             status: "signed",
@@ -179,7 +167,9 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
             signed_at: new Date().toISOString(),
           })
           .eq("id", ch.id)
-          .eq("status", "pending"); // race guard
+          .eq("status", "pending")
+          .gt("expires_at", new Date().toISOString())
+          .select("id"); // atomic race + expiry guard
 
         if (upErr) {
           console.error("[wallet-callback] update failed:", upErr);
@@ -188,6 +178,8 @@ export const Route = createFileRoute("/api/public/auth/wallet-callback")({
             { status: 500, headers: CORS },
           );
         }
+
+        if (!signedRows?.length) return Response.json({ error: "challenge already used or expired" }, { status: 409, headers: CORS });
 
         return Response.json({ ok: true }, { headers: CORS });
       },

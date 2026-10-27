@@ -15,7 +15,8 @@ export type ChainKind =
   | "isk"
   | "zcu"
   | "tron"
-  | "sol";
+  | "sol"
+  | "lightning";
 
 /** Omni Layer token issued on a BTC-like chain (Class C / OP_RETURN sends). */
 export interface OmniToken {
@@ -137,7 +138,7 @@ export const TXC_NETWORK: BtcLikeNetwork = {
   // Omni Layer tokens on TEXITcoin. Texas Stable Dollar is property #39,
   // managed + divisible (8 decimals), sent as Class C OP_RETURN simple sends.
   omniStables: [
-    { symbol: "TSD", propertyId: 39, decimals: 8, label: "Texas Stable Dollar (TSD) on TXC" },
+    { symbol: "TSD", propertyId: 39, decimals: 8, label: "Texas Stable Dollar" },
   ],
 };
 
@@ -292,6 +293,24 @@ export const BSC_NETWORK: EvmNetwork = {
 /** EVM networks that share a derivation path — one xpub covers all of them. */
 export const EVM_NETWORKS: EvmNetwork[] = [ETH_NETWORK, BASE_NETWORK, BSC_NETWORK];
 
+/**
+ * ZCU (Zero Chill Units) — go-ethereum fork, Scrypt PoW. Uses the same EVM
+ * derivation as ETH (same seed → same 0x addresses) but is watched over its
+ * own public RPC, not Alchemy, so it is deliberately NOT in EVM_NETWORKS.
+ * Native coin only — no stablecoins. Specs: zerochill.com/build
+ */
+export const ZCU_NETWORK: EvmNetwork = {
+  kind: "evm",
+  symbol: "zcu",
+  name: "Zero Chill Units",
+  chainId: 90031273,
+  rpcUrl: () => "https://node-zcu.honest.money",
+  explorerTx: (t) => `https://mempool.zerochill.com/tx/${t}`,
+  explorerAddr: (a) => `https://mempool.zerochill.com/address/${a}`,
+  stables: [],
+  confirmationsRequired: 6,
+};
+
 export const TRON_NETWORK: TronNetwork = {
   kind: "tron",
   symbol: "tron",
@@ -435,6 +454,23 @@ export function getStable(chain: ChainKind, symbol: string): StableMeta | null {
 }
 
 
+export interface LightningNetwork {
+  kind: "lightning";
+  symbol: ChainKind;
+  name: string;
+  decimals: number;
+}
+
+/** Shared-node Lightning. No per-merchant address derivation: each invoice is
+ * a BOLT-11 payment request issued by the Nectar.Pay node, and settled sats
+ * are swept on-chain to the merchant's own Bitcoin address. */
+export const LIGHTNING_NETWORK: LightningNetwork = {
+  kind: "lightning",
+  symbol: "lightning",
+  name: "Bitcoin Lightning",
+  decimals: 8,
+};
+
 export const ALL_NETWORKS = {
   btc: BTC_NETWORK,
   txc: TXC_NETWORK,
@@ -445,12 +481,19 @@ export const ALL_NETWORKS = {
   eth: ETH_NETWORK,
   base: BASE_NETWORK,
   bsc: BSC_NETWORK,
+  zcu: ZCU_NETWORK,
   tron: TRON_NETWORK,
   sol: SOL_NETWORK,
+  lightning: LIGHTNING_NETWORK,
 } as const;
 
 export function getNetwork(chain: ChainKind) {
-  return (ALL_NETWORKS as Record<string, BtcLikeNetwork | EvmNetwork | TronNetwork | SolanaNetwork>)[
+  return (ALL_NETWORKS as Record<string, BtcLikeNetwork | EvmNetwork | TronNetwork | SolanaNetwork | LightningNetwork>)[
     chain
   ];
 }
+
+/** Every chain the platform can derive addresses for. Single source of truth
+ * for API/checkout chain validation — keep in sync with ALL_NETWORKS. */
+export const SUPPORTED_CHAINS = Object.keys(ALL_NETWORKS) as ChainKind[];
+export const VALID_CHAIN_SET: ReadonlySet<string> = new Set(SUPPORTED_CHAINS);

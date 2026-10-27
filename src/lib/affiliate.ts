@@ -46,6 +46,9 @@ export function captureAffiliateFromUrl() {
   if (typeof window === "undefined") return;
   try {
     const url = new URL(window.location.href);
+    // hm.js runs once on document load; preserve its 30-day last-click rule on app navigation too.
+    const hmeRef = (url.searchParams.get("ref") ?? "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 40);
+    if (hmeRef) setCookie("hm_ref", hmeRef, 60 * 60 * 24 * 30);
     const ref =
       url.searchParams.get("r") ||
       url.searchParams.get("ref") ||
@@ -90,7 +93,10 @@ export function captureAffiliateFromUrl() {
 
 export function readAffiliateSnapshot(): AffiliateSnapshot | null {
   if (typeof window === "undefined") return null;
-  const id = readCookie(COOKIE) || localStorage.getItem(COOKIE);
+  // Honest Money uses last click; legacy local attribution remains first touch.
+  const id =
+    readCookie("hm_ref") ||
+    readCookie(COOKIE) || localStorage.getItem(COOKIE);
   if (!id || !AFFILIATE_ID_RE.test(id)) return null;
   let utm: { source?: string; medium?: string; campaign?: string } = {};
   try {

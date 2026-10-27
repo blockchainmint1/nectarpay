@@ -237,21 +237,33 @@ function QrScanner({
     let raf = 0;
     let cancelled = false;
     let detector: { detect: (s: CanvasImageSource) => Promise<Array<{ rawValue: string }>> } | null = null;
+    let jsQR: typeof import("jsqr").default | null = null;
 
     async function start() {
+      // iOS WKWebView only exposes mediaDevices in a secure context.
       if (!navigator.mediaDevices?.getUserMedia) {
-        onError("Camera not available on this device.");
+        onError(
+          window.isSecureContext === false
+            ? "Camera needs a secure (https) connection. Reopen the app and try again."
+            : "Camera not available on this device. Type the code instead.",
+        );
         return;
       }
-      if (!window.BarcodeDetector) {
-        onError("This browser can't scan QR codes. Type the code instead.");
-        return;
+      // Safari / iOS WKWebView has no BarcodeDetector — fall back to jsQR.
+      if (window.BarcodeDetector) {
+        try {
+          detector = new window.BarcodeDetector({ formats: ["qr_code"] });
+        } catch {
+          detector = null;
+        }
       }
-      try {
-        detector = new window.BarcodeDetector({ formats: ["qr_code"] });
-      } catch {
-        onError("QR scanning not supported on this device.");
-        return;
+      if (!detector) {
+        try {
+          jsQR = (await import("jsqr")).default;
+        } catch {
+          onError("QR scanning not supported on this device. Type the code instead.");
+          return;
+        }
       }
       try {
         stream = await navigator.mediaDevices.getUserMedia({
@@ -259,7 +271,15 @@ function QrScanner({
           audio: false,
         });
       } catch (e) {
-        onError((e as Error).message || "Camera permission denied.");
+        const err = e as Error;
+        const denied = err.name === "NotAllowedError" || err.name === "SecurityError";
+        onError(
+          denied
+            ? "Camera permission denied. Enable camera for NectarPay in Settings."
+            : err.name === "NotFoundError"
+              ? "No camera found on this device."
+              : err.message || "Could not start the camera.",
+        );
         return;
       }
       if (cancelled) {
@@ -269,17 +289,38 @@ function QrScanner({
       const v = videoRef.current;
       if (!v) return;
       v.srcObject = stream;
+      v.setAttribute("playsinline", "true");
       await v.play().catch(() => {});
       setStatus("Point the camera at the QR code");
 
       const tick = async () => {
-        if (cancelled || !v || !detector) return;
+        if (cancelled || !v) return;
         if (v.readyState >= 2 && v.videoWidth > 0) {
           try {
-            const results = await detector.detect(v);
-            if (results.length > 0 && results[0].rawValue) {
-              onResult(results[0].rawValue);
-              return;
+            if (detector) {
+              const results = await detector.detect(v);
+              if (results.length > 0 && results[0].rawValue) {
+                onResult(results[0].rawValue);
+                return;
+              }
+            } else if (jsQR) {
+              const c = canvasRef.current;
+              if (c) {
+                const w = Math.min(v.videoWidth, 640);
+                const h = Math.round((v.videoHeight / v.videoWidth) * w);
+                c.width = w;
+                c.height = h;
+                const ctx = c.getContext("2d", { willReadFrequently: true });
+                if (ctx) {
+                  ctx.drawImage(v, 0, 0, w, h);
+                  const img = ctx.getImageData(0, 0, w, h);
+                  const found = jsQR(img.data, w, h, { inversionAttempts: "dontInvert" });
+                  if (found?.data) {
+                    onResult(found.data);
+                    return;
+                  }
+                }
+              }
             }
           } catch { /* keep looping */ }
         }
@@ -295,6 +336,7 @@ function QrScanner({
       stream?.getTracks().forEach((t) => t.stop());
     };
   }, [onError, onResult]);
+
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-black">

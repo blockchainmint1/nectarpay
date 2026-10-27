@@ -1,16 +1,12 @@
 package money.honest.nectarpos;
 
 import android.Manifest;
-import android.app.PendingIntent;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.nfc.NfcAdapter;
-import android.nfc.Tag;
 import android.os.Build;
 import android.os.Bundle;
 import android.webkit.PermissionRequest;
-import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
 
@@ -20,18 +16,17 @@ import com.getcapacitor.BridgeActivity;
 
 
 /**
- * Hosts the Capacitor bridge plus NFC foreground dispatch.
+ * Hosts the Capacitor bridge plus NFC reader mode.
  *
- * Some Senraise firmwares route NFC intents to whichever activity is on
- * top; foreground dispatch is the reliable way to ensure our activity
- * receives every tag scan while the POS is on screen.
+ * Reader mode (not foreground dispatch) keeps the terminal listening for
+ * tags continuously: some Senraise firmwares route NFC intents to whichever
+ * activity is on top and stop re-arming foreground dispatch after the first
+ * tag, which produced "tap works once, then the terminal goes deaf".
+ * Reader mode delivers every tag straight to our callback instead.
  */
 public class MainActivity extends BridgeActivity {
 
     private NfcAdapter nfcAdapter;
-    private PendingIntent nfcPendingIntent;
-    private IntentFilter[] nfcIntentFilters;
-    private String[][] nfcTechLists;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -45,37 +40,21 @@ public class MainActivity extends BridgeActivity {
         installCameraPermissionBridge();
         ensureCameraPermission();
 
-
         nfcAdapter = NfcAdapter.getDefaultAdapter(this);
-        if (nfcAdapter != null) {
-            int flags = Build.VERSION.SDK_INT >= 31
-                ? PendingIntent.FLAG_MUTABLE
-                : 0;
-            nfcPendingIntent = PendingIntent.getActivity(
-                this, 0,
-                new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
-                flags);
-
-            IntentFilter ndef = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
-            IntentFilter tech = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
-            IntentFilter tag  = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
-            nfcIntentFilters = new IntentFilter[] { ndef, tech, tag };
-            nfcTechLists = new String[][] {
-                new String[] { android.nfc.tech.Ndef.class.getName() },
-                new String[] { android.nfc.tech.NdefFormatable.class.getName() },
-                new String[] { android.nfc.tech.MifareClassic.class.getName() },
-                new String[] { android.nfc.tech.MifareUltralight.class.getName() },
-                new String[] { android.nfc.tech.IsoDep.class.getName() },
-            };
-        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
         if (nfcAdapter != null) {
-            nfcAdapter.enableForegroundDispatch(this, nfcPendingIntent,
-                nfcIntentFilters, nfcTechLists);
+            nfcAdapter.enableReaderMode(
+                this,
+                tag -> NectarNfcPlugin.handleTag(tag),
+                NfcAdapter.FLAG_READER_NFC_A
+                    | NfcAdapter.FLAG_READER_NFC_B
+                    | NfcAdapter.FLAG_READER_NFC_F
+                    | NfcAdapter.FLAG_READER_NFC_V,
+                null);
         }
     }
 
@@ -83,7 +62,7 @@ public class MainActivity extends BridgeActivity {
     public void onPause() {
         super.onPause();
         if (nfcAdapter != null) {
-            nfcAdapter.disableForegroundDispatch(this);
+            nfcAdapter.disableReaderMode(this);
         }
     }
 
@@ -91,6 +70,8 @@ public class MainActivity extends BridgeActivity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
+        // Cold-start launches from the manifest's NDEF filter still arrive
+        // as intents; reader mode covers everything while we are foregrounded.
         String action = intent.getAction();
         if (action != null && (
             action.equals(NfcAdapter.ACTION_NDEF_DISCOVERED) ||
@@ -126,7 +107,6 @@ public class MainActivity extends BridgeActivity {
             }
         });
     }
-
 
     /**
      * Request Android runtime camera permission at boot. WebView's

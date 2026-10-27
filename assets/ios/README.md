@@ -3,14 +3,16 @@
 ## App icon
 
 `AppIcon.appiconset/` holds the single-size (1024×1024, no alpha) icon Xcode 15+
-expects. After `bun run ios:merchant:add`, copy it over the generated set:
+expects. `bun run sync:merchant` (or `bun run ios:prepare`) copies it over Capacitor's
+default grey placeholder automatically — no manual step needed. Manual equivalent:
 
 ```bash
 rm -rf ios/App/App/Assets.xcassets/AppIcon.appiconset
 cp -R assets/ios/AppIcon.appiconset ios/App/App/Assets.xcassets/
 ```
 
-Then in Xcode: target → General → App Icons Source = `AppIcon`.
+In Xcode confirm: target → General → App Icons Source = `AppIcon`, then Archive
+again — the icon is native, so a live web reload will not change it.
 
 ## App Store Connect screenshots
 

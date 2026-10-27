@@ -1,0 +1,111 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791719579523,
+      "tag": "0000_migration",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792496654347,
+      "tag": "0001_cron_shared_secret",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792499404780,
+      "tag": "0002_hide_store_terminal_api_secrets",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792499457112,
+      "tag": "0003_bind_wallet_login_challenges",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792499664009,
+      "tag": "0004_restrict_wallet_challenge_secrets",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792846757323,
+      "tag": "0005_store_customer_marketing_consent",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792846811858,
+      "tag": "0006_correct_customer_consent_store_access",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793098674897,
+      "tag": "0007_store_slug_profile_logo",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793098945155,
+      "tag": "0008_store_slug_default",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793099174400,
+      "tag": "0009_store_new_column_grants",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793099466445,
+      "tag": "0010_public_directory",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793100243279,
+      "tag": "0011_directory_online_business",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793100421307,
+      "tag": "0012_store_business_email",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793102230881,
+      "tag": "0013_store_business_email_column_access",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793103358689,
+      "tag": "0014_hme_identity_and_signup_delivery",
+      "breakpoints": true
+    }
+  ]
+}

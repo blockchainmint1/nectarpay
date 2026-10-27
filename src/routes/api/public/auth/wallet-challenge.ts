@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { randomBytes } from "crypto";
+import { walletBrowserHash, walletBrowserCookieName } from "@/lib/wallet-browser-binding.server";
 import {
   authDomainFromRequest,
   buildDeepLink,
@@ -24,6 +25,9 @@ export const Route = createFileRoute("/api/public/auth/wallet-challenge")({
         );
 
         const nonce = randomBytes(24).toString("hex");
+        const browserToken = randomBytes(32).toString("hex");
+        const issuedAt = new Date().toISOString();
+        const message = buildSignableMessage({ nonce, domain: authDomainFromRequest(request), issuedAt });
         const ua = request.headers.get("user-agent")?.slice(0, 256) ?? null;
         const ip =
           request.headers.get("cf-connecting-ip") ??
@@ -32,7 +36,8 @@ export const Route = createFileRoute("/api/public/auth/wallet-challenge")({
 
         const { data, error } = await supabaseAdmin
           .from("wallet_login_challenges")
-          .insert({ nonce, ip_address: ip, user_agent: ua })
+          .insert({ nonce, ip_address: ip, user_agent: ua, created_at: issuedAt,
+            signable_message: message, browser_binding_hash: walletBrowserHash(browserToken) })
           .select("id, nonce, expires_at, created_at")
           .single();
 
@@ -45,12 +50,6 @@ export const Route = createFileRoute("/api/public/auth/wallet-challenge")({
         }
 
         const origin = publicOriginFromRequest(request);
-        const domain = authDomainFromRequest(request);
-        const message = buildSignableMessage({
-          nonce: data.nonce,
-          domain,
-          issuedAt: data.created_at ?? new Date().toISOString(),
-        });
         const deepLink = buildDeepLink({
           challengeId: data.id,
           nonce: data.nonce,
@@ -76,7 +75,8 @@ export const Route = createFileRoute("/api/public/auth/wallet-challenge")({
             deep_link: deepLink,
             qr_data: qrData,
           },
-          { headers: CORS },
+          { headers: { ...CORS, "cache-control": "no-store",
+            "set-cookie": `${walletBrowserCookieName(data.id)}=${browserToken}; HttpOnly; SameSite=Strict; Path=/api/public/auth; Max-Age=300${new URL(request.url).protocol === "https:" ? "; Secure" : ""}` } },
         );
       },
     },

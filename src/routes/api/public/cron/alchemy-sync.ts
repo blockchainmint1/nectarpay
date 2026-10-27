@@ -13,7 +13,7 @@ export const Route = createFileRoute("/api/public/cron/alchemy-sync")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const unauthorized = requireCronAuth(request);
+        const unauthorized = await requireCronAuth(request);
         if (unauthorized) return unauthorized;
         if (!process.env.ALCHEMY_AUTH_TOKEN) {
           return Response.json(
@@ -32,7 +32,7 @@ export const Route = createFileRoute("/api/public/cron/alchemy-sync")({
         }
       },
       GET: async ({ request }) => {
-        const unauthorized = requireCronAuth(request);
+        const unauthorized = await requireCronAuth(request);
         if (unauthorized) return unauthorized;
         if (!process.env.ALCHEMY_AUTH_TOKEN) {
           return Response.json(

@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.block_lightning_when_disabled() FROM PUBLIC, anon, authenticated;

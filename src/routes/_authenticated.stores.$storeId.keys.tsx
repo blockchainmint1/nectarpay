@@ -1,3 +1,4 @@
+import { useStoreRef } from "@/lib/store-ref";
 import { useState, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/stores/$storeId/keys")({
 });
 
 function KeysPage() {
-  const { storeId } = Route.useParams();
+  const { storeId, storeSlug } = useStoreRef();
   const list = useServerFn(listApiKeys);
   const create = useServerFn(createApiKey);
   const revoke = useServerFn(revokeApiKey);
@@ -51,10 +52,10 @@ function KeysPage() {
   });
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 md:px-8">
+    <div className="mx-auto max-w-[90rem] px-4 py-10 md:px-8">
       <Link
         to="/stores/$storeId"
-        params={{ storeId }}
+        params={{ storeId: storeSlug }}
         className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="h-4 w-4" /> Back to store
@@ -70,6 +71,20 @@ function KeysPage() {
         Use these to authenticate server-side calls to <code>/api/public/v1/*</code>. We store only a
         hash — the full secret is shown once at creation.
       </p>
+
+      <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-4">
+        <div className="text-xs font-medium text-primary">API base URL</div>
+        <code className="mt-1 block break-all font-mono text-sm">https://app.nectar-pay.com</code>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Keys only authenticate against this host. Pointing them at{" "}
+          <code className="font-mono">nectar-pay.com</code> (the marketing site) returns{" "}
+          <code className="font-mono">401 Invalid API key</code>. Verify a key with:
+        </p>
+        <code className="mt-2 block overflow-x-auto whitespace-pre rounded-md border border-border bg-background/60 px-3 py-2 font-mono text-[11px]">
+{`curl -s https://app.nectar-pay.com/api/public/v1/me \\
+  -H "Authorization: Bearer sk_live_..."`}
+        </code>
+      </div>
 
       {/* Create */}
       <div className="mt-8 rounded-lg border border-border bg-card/60 p-5">

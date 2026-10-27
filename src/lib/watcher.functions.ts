@@ -4,7 +4,8 @@
 //   2) Poll the chain for incoming credits to those addresses
 //   3) Match credits to open invoices, mark paid/underpaid, emit notifications & webhooks
 
-import { BTC_NETWORK, TXC_NETWORK, ETH_NETWORK, getNetwork, isBtcLikeChain, type BtcLikeNetwork, type ChainKind, EVM_NETWORKS, TRON_NETWORK, SOL_NETWORK, isFastFinality, type EvmNetwork } from "./chains/networks";
+import { BTC_NETWORK, TXC_NETWORK, ETH_NETWORK, getNetwork, isBtcLikeChain, type BtcLikeNetwork, type ChainKind, EVM_NETWORKS, TRON_NETWORK, SOL_NETWORK, ZCU_NETWORK, isFastFinality, type EvmNetwork } from "./chains/networks";
+import { getZcuBlockNumber, getZcuTransfersTo } from "./chains/zcu.server";
 import { deriveBtcLikeAddress, deriveEvmAddress, deriveTronAddress } from "./chains/derive.server";
 import { extractIncoming, getAddressTxs, getTipHeight } from "./chains/btc-like.server";
 import { extractOmniIncoming } from "./chains/omni.server";
@@ -14,8 +15,34 @@ import { getTronBlockNumber, getTronTransfersTo } from "./chains/tron.server";
 import { getSolanaSlot, getSolanaCreditsTo } from "./chains/solana.server";
 import { notifyUser } from "./notify.server";
 import { getUsdRate } from "./rates.functions";
+import { identifyEvmAsset } from "./chains/evm-asset";
 
 const ADDRESS_WINDOW = 20; // BIP44 gap-limit-style lookahead per chain_config
+
+/**
+ * Clock-skew / propagation grace. A payment can legitimately land a couple of
+ * minutes "before" the invoice row if node timestamps drift or the customer
+ * pre-broadcast, but nothing older than this can belong to the invoice.
+ */
+const PRE_INVOICE_GRACE_MS = 10 * 60 * 1000;
+
+/**
+ * True when an on-chain credit happened BEFORE the invoice was created.
+ * Addresses get reused/recycled (EVM especially), so an old transaction on the
+ * same address must never settle a new invoice.
+ *
+ * `txTimeMs == null` means mempool / unknown time — that's a live payment, keep it.
+ */
+export function creditPredatesInvoice(
+  txTimeMs: number | null | undefined,
+  invoiceCreatedAt: string | null | undefined,
+): boolean {
+  if (txTimeMs == null || !Number.isFinite(txTimeMs) || txTimeMs <= 0) return false;
+  if (!invoiceCreatedAt) return false;
+  const created = Date.parse(invoiceCreatedAt);
+  if (!Number.isFinite(created)) return false;
+  return txTimeMs < created - PRE_INVOICE_GRACE_MS;
+}
 
 export interface WatcherResult {
   chain: string;
@@ -132,8 +159,25 @@ export async function recordTransaction(
   blockHeight: number | null,
   isConfirmed: boolean,
   tokenSymbol: string | null = null,
+  /** On-chain time of the credit in ms (null = mempool/unknown). */
+  txTimeMs: number | null = null,
 ) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  // Backstop: never credit an invoice with money that moved before the invoice
+  // existed. Every chain path passes the on-chain time; this is the last gate.
+  if (txTimeMs != null) {
+    const { data: invRow } = await supabaseAdmin
+      .from("invoices")
+      .select("created_at")
+      .eq("id", invoiceId)
+      .maybeSingle();
+    if (creditPredatesInvoice(txTimeMs, invRow?.created_at ?? null)) {
+      console.warn(`[watcher] tx ${txHash} predates invoice ${invoiceId}; ignoring`);
+      return false;
+    }
+  }
+
   const { data: existing } = await supabaseAdmin
     .from("transactions")
     .select("id")
@@ -141,8 +185,25 @@ export async function recordTransaction(
     .eq("tx_hash", txHash)
     .maybeSingle();
   const now = new Date().toISOString();
+
+  // Cross-invoice guard: a single on-chain tx can only pay ONE invoice. EVM
+  // addresses get recycled, so a later invoice on the same address can
+  // re-discover an older tx — never link it to a second invoice.
+  if (!existing) {
+    const { data: claimed } = await supabaseAdmin
+      .from("transactions")
+      .select("id, invoice_id")
+      .eq("tx_hash", txHash)
+      .neq("invoice_id", invoiceId)
+      .limit(1);
+    if (claimed?.length) {
+      console.warn(`[watcher] tx ${txHash} already credited to invoice ${claimed[0].invoice_id}; skipping ${invoiceId}`);
+      return false;
+    }
+  }
+
   if (existing) {
-    await supabaseAdmin
+    const { error } = await supabaseAdmin
       .from("transactions")
       .update({
         confirmations,
@@ -150,8 +211,9 @@ export async function recordTransaction(
         confirmed_at: isConfirmed ? now : null,
       })
       .eq("id", existing.id);
+    if (error) throw new Error(error.message);
   } else {
-    await supabaseAdmin.from("transactions").insert({
+    const { error } = await supabaseAdmin.from("transactions").insert({
       invoice_id: invoiceId,
       tx_hash: txHash,
       amount,
@@ -161,7 +223,9 @@ export async function recordTransaction(
       confirmed_at: isConfirmed ? now : null,
       token_symbol: tokenSymbol,
     });
+    if (error) throw new Error(error.message);
   }
+  return true;
 }
 
 
@@ -205,46 +269,120 @@ export async function settleInvoice(
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
-    .select("id, status, store_id, chain, address, fiat_amount, fiat_currency, external_order_id, token_symbol, rate, stores(owner_id, webhook_url, webhook_secret)")
+    .select("id, status, store_id, chain, address, fiat_amount, fiat_currency, external_order_id, token_symbol, rate, stores(name, owner_id, webhook_url, webhook_secret)")
     .eq("id", invoiceId)
     .single();
-  if (!inv || ["confirmed", "expired", "cancelled"].includes(inv.status)) {
+  if (!inv || ["confirmed", "overpaid", "expired", "cancelled"].includes(inv.status)) {
     return { status: inv?.status ?? "unknown", changed: false, paidUsd: 0 };
   }
 
   const lockedRate = inv.rate == null ? null : Number(inv.rate);
   const paidAmountUsd = await totalPaidUsdForInvoice(inv.id, inv.token_symbol ?? null, lockedRate);
-  const isPaid = paidAmountUsd + 0.005 >= amountDueUsd;
-  const newStatus: "confirmed" | "underpaid" | typeof inv.status = isPaid
-    ? "confirmed"
-    : paidAmountUsd > 0
-      ? "underpaid"
-      : inv.status;
+
+  // Shortfall cushion: accept a payment that lands within 1% of the invoice
+  // total, capped at $25 so a large invoice can't give away a big amount.
+  const shortTolerance = Math.min(amountDueUsd * 0.01, 25) + 0.005;
+  // Overage flag: anything more than 1% (and at least $1) above the total is
+  // still treated as paid, but recorded as an overpayment so it can be seen.
+  const overTolerance = Math.max(amountDueUsd * 0.01, 1);
+  const isPaid = paidAmountUsd + shortTolerance >= amountDueUsd;
+  const isOverpaid = isPaid && paidAmountUsd > amountDueUsd + overTolerance;
+  const shortfallUsd = Math.max(amountDueUsd - paidAmountUsd, 0);
+  const overageUsd = Math.max(paidAmountUsd - amountDueUsd, 0);
+  const newStatus: "confirmed" | "overpaid" | "underpaid" | typeof inv.status = isOverpaid
+    ? "overpaid"
+    : isPaid
+      ? "confirmed"
+      : paidAmountUsd > 0
+        ? "underpaid"
+        : inv.status;
   if (newStatus === inv.status) return { status: newStatus, changed: false, paidUsd: paidAmountUsd };
 
 
-  await supabaseAdmin
+  // Atomic claim: only flip the row if it's still in a pre-settlement state.
+  // Two watcher runs can race the same invoice — the loser updates 0 rows and
+  // must NOT send notifications/webhooks again.
+  const { data: claimedRows } = await supabaseAdmin
     .from("invoices")
     .update({ status: newStatus })
-    .eq("id", invoiceId);
+    .eq("id", invoiceId)
+    .not("status", "in", '("confirmed","overpaid","expired","cancelled")')
+    .select("id");
+  if (!claimedRows?.length) {
+    return { status: newStatus, changed: false, paidUsd: paidAmountUsd };
+  }
 
-  const store = inv.stores as { owner_id: string; webhook_url: string | null; webhook_secret: string | null } | null;
+  const store = inv.stores as { name: string | null; owner_id: string; webhook_url: string | null; webhook_secret: string | null } | null;
+  if (isPaid) {
+    try {
+      const { sendCustomerReceipt } = await import("./email/customer-receipt.server");
+      await sendCustomerReceipt(invoiceId);
+    } catch (error) {
+      console.error("[receipt] settlement receipt failed", { invoiceId, message: error instanceof Error ? error.message : "send failed" });
+    }
+  }
   const ownerId = store?.owner_id;
   if (ownerId) {
+    const currency = (inv.fiat_currency || "USD").toUpperCase();
+    const formatMoney = (amount: number) =>
+      new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount);
+    const storeName = store.name?.trim() || "Your store";
+    const chainLabel = inv.chain?.toUpperCase() || "Crypto";
+    const paymentMethod = inv.token_symbol
+      ? `${inv.token_symbol.toUpperCase()} on ${chainLabel}`
+      : chainLabel;
+    const shortAccepted = isPaid && !isOverpaid && shortfallUsd > 0.005;
+    const event = isOverpaid ? "invoice_overpaid" : isPaid ? "invoice_paid" : "invoice_underpaid";
+    const subject = isOverpaid
+      ? `⚠️ ${storeName} was overpaid · ${formatMoney(overageUsd)} extra`
+      : isPaid
+        ? `🎉 ${storeName} made a sale · ${formatMoney(paidAmountUsd)}`
+        : `${storeName} received an underpayment`;
+    const text = isOverpaid
+      ? `${storeName}: invoice ${invoiceId.slice(0, 8)} received ${formatMoney(paidAmountUsd)} against ${formatMoney(amountDueUsd)} via ${paymentMethod} — ${formatMoney(overageUsd)} more than expected. The sale is marked paid; the overage needs review.`
+      : isPaid
+        ? `${storeName} made a sale! Invoice ${invoiceId.slice(0, 8)} was paid in full (${formatMoney(paidAmountUsd)} of ${formatMoney(amountDueUsd)}) via ${paymentMethod}.${shortAccepted ? ` Accepted within tolerance — ${formatMoney(shortfallUsd)} short.` : ""}`
+        : `${storeName}: invoice ${invoiceId.slice(0, 8)} received only ${formatMoney(paidAmountUsd)} of ${formatMoney(amountDueUsd)} via ${paymentMethod}.`;
     await notifyUser(ownerId, {
-      event: isPaid ? "invoice_paid" : "invoice_underpaid",
-      subject: isPaid ? `Invoice paid · $${amountDueUsd.toFixed(2)}` : `Invoice underpaid`,
-      text: isPaid
-        ? `Invoice ${invoiceId.slice(0, 8)} was paid in full ($${paidAmountUsd.toFixed(2)} of $${amountDueUsd.toFixed(2)}).`
-        : `Invoice ${invoiceId.slice(0, 8)} received only $${paidAmountUsd.toFixed(2)} of $${amountDueUsd.toFixed(2)}.`,
-      metadata: { invoiceId },
+      event,
+      subject,
+      text,
+      storeId: inv.store_id,
+      metadata: {
+        storeName,
+        invoiceId: invoiceId.slice(0, 8),
+        invoiceUuid: invoiceId,
+        amountDue: formatMoney(amountDueUsd),
+        amountReceived: formatMoney(paidAmountUsd),
+        paymentMethod,
+        orderId: inv.external_order_id,
+        differenceLabel: isOverpaid
+          ? `${formatMoney(overageUsd)} over`
+          : shortAccepted
+            ? `${formatMoney(shortfallUsd)} short (accepted)`
+            : !isPaid
+              ? `${formatMoney(shortfallUsd)} short`
+              : null,
+      },
     });
   }
 
   // Outbound signed webhook to the merchant's server, if configured.
-  if (store?.webhook_url && store.webhook_secret && (newStatus === "confirmed" || newStatus === "underpaid")) {
+  if (
+    store?.webhook_url &&
+    store.webhook_secret &&
+    (newStatus === "confirmed" || newStatus === "overpaid" || newStatus === "underpaid")
+  ) {
     const { deliverWebhook } = await import("./webhooks.server");
-    const eventType = newStatus === "confirmed" ? "invoice.paid" : "invoice.underpaid";
+    // Settled invoices (confirmed/overpaid) get their own event AND a final
+    // `invoice.confirmed`, which every store plugin settles orders on.
+    const eventTypes: ("invoice.paid" | "invoice.underpaid" | "invoice.overpaid" | "invoice.confirmed")[] =
+      newStatus === "underpaid"
+        ? ["invoice.underpaid"]
+        : newStatus === "overpaid"
+          ? ["invoice.overpaid", "invoice.confirmed"]
+          : ["invoice.paid", "invoice.confirmed"];
+    for (const eventType of eventTypes) {
     const eventId = (crypto as { randomUUID: () => string }).randomUUID();
     const result = await deliverWebhook({
       url: store.webhook_url,
@@ -269,11 +407,12 @@ export async function settleInvoice(
     if (!result.ok) {
       console.error(`webhook delivery failed (invoice ${inv.id}):`, result.status, result.error);
     }
+    }
   }
 
   // If this invoice backs a Terminal Kit checkout, forward the order to
   // BlockchainMint for fulfillment as soon as it confirms.
-  if (newStatus === "confirmed") {
+  if (newStatus === "confirmed" || newStatus === "overpaid") {
     try {
       const { forwardKitOrderToBmForInvoice } = await import("./bm-fulfillment.server");
       await forwardKitOrderToBmForInvoice(inv.id);
@@ -289,7 +428,7 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
-    .select("id, store_id, chain, address, token_symbol, fiat_amount, status, rate, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd)")
+    .select("id, store_id, chain, address, token_symbol, fiat_amount, status, rate, created_at, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd)")
     .eq("id", invoiceId)
     .maybeSingle();
   if (!inv || !inv.address || !isBtcLikeChain(inv.chain)) return false;
@@ -320,7 +459,9 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string): Promise<boolean>
     const paidUsd = paidCrypto * usdRate;
     const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd, chainKey, inv.token_symbol);
     const isConfirmed = credit.confirmations >= required;
-    await recordTransaction(inv.id, credit.txid, paidCrypto, credit.confirmations, null, isConfirmed);
+    const creditTimeMs = credit.blockTime == null ? null : credit.blockTime * 1000;
+    if (creditPredatesInvoice(creditTimeMs, inv.created_at)) continue;
+    await recordTransaction(inv.id, credit.txid, paidCrypto, credit.confirmations, null, isConfirmed, null, creditTimeMs);
     if (isConfirmed) {
       const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
       changed = settled.changed || changed;
@@ -416,23 +557,16 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
       const blockTime = Date.parse(t.metadata?.blockTimestamp ?? "");
       if (Number.isFinite(blockTime) && (blockTime < startsAfterMs || blockTime > endsBeforeMs)) continue;
 
-      const contractAddr = t.rawContract.address?.toLowerCase() ?? null;
-      const isNative = t.category === "external" || t.category === "internal";
-      const stable = contractAddr
-        ? net.stables.find((s) => s.address.toLowerCase() === contractAddr)
-        : null;
+      const asset = identifyEvmAsset(net, t.category, t.rawContract.address);
+      if (!asset) continue;
       if (token) {
-        if (!stable || stable.symbol.toUpperCase() !== token) continue;
-      } else if (!isNative) {
+        if (asset.isNative || asset.symbol.toUpperCase() !== token) continue;
+      } else if (!asset.isNative) {
         continue;
       }
 
       const raw = t.rawContract.value ?? t.rawContract.rawValue ?? "0";
-      const decimals = stable?.decimals ?? (typeof t.rawContract.decimals === "number"
-        ? t.rawContract.decimals
-        : t.rawContract.decimal
-          ? parseInt(t.rawContract.decimal, 16)
-          : 18);
+      const decimals = asset.decimals;
       const human = Number(BigInt(raw)) / 10 ** decimals;
       if (!Number.isFinite(human) || human <= 0) continue;
 
@@ -443,7 +577,8 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
       const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd, net.symbol);
       const isConfirmed = confirmations >= required;
 
-      await recordTransaction(inv.id, t.hash, human, confirmations, blockNum, isConfirmed, token ? token : null);
+      const recorded = await recordTransaction(inv.id, t.hash, human, confirmations, blockNum, isConfirmed, token ? token : null, Number.isFinite(blockTime) ? blockTime : null);
+      if (!recorded) continue;
       if (isConfirmed) {
         const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
         changed = settled.changed || changed;
@@ -462,6 +597,8 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
  * payment activity — `underpaid` invoices keep their lock because real
  * money landed on that address.
  */
+const UNDERPAID_CUTOFF_MS = 24 * 60 * 60 * 1000;
+
 async function expireStaleInvoices(): Promise<number> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const nowIso = new Date().toISOString();
@@ -475,7 +612,19 @@ async function expireStaleInvoices(): Promise<number> {
     console.error("[watcher] expireStaleInvoices failed:", error);
     return 0;
   }
-  return data?.length ?? 0;
+
+  // Hard 24h cutoff for underpaid invoices: after that they stop absorbing
+  // later on-chain funds (sweeps, re-used addresses, late partial payments).
+  const cutoffIso = new Date(Date.now() - UNDERPAID_CUTOFF_MS).toISOString();
+  const { data: stale, error: staleErr } = await supabaseAdmin
+    .from("invoices")
+    .update({ status: "expired" })
+    .eq("status", "underpaid")
+    .lt("updated_at", cutoffIso)
+    .select("id");
+  if (staleErr) console.error("[watcher] underpaid cutoff failed:", staleErr);
+
+  return (data?.length ?? 0) + (stale?.length ?? 0);
 }
 
 export async function runWatcherTick(): Promise<WatcherResult[]> {
@@ -520,7 +669,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
         const cfgByStoreId = new Map(configList.map((c) => [c.store_id, c]));
         const { data: openInvoices } = await supabaseAdmin
           .from("invoices")
-          .select("id, store_id, address, token_symbol, fiat_amount, status, rate, crypto_amount")
+          .select("id, store_id, address, token_symbol, fiat_amount, status, rate, crypto_amount, created_at")
           .eq("chain", chain as ChainKind)
           .in("store_id", configList.map((c) => c.store_id))
           .in("status", ["pending", "detected", "underpaid"])
@@ -542,7 +691,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             cfg.store_id,
             cfg.xpub,
             (i) => deriveBtcLikeAddress(cfg.xpub!, net, i),
-            0,
+            1,
             (cfg.next_address_index ?? 0) + ADDRESS_WINDOW,
           );
         }
@@ -573,6 +722,8 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             const paidUsd = paidCrypto * usdRate;
             const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, paidUsd, chain, inv.token_symbol);
             const isConfirmed = credit.confirmations >= required;
+            const creditTimeMs = credit.blockTime == null ? null : credit.blockTime * 1000;
+            if (creditPredatesInvoice(creditTimeMs, inv.created_at)) continue;
             await recordTransaction(
               inv.id,
               credit.txid,
@@ -580,6 +731,8 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               credit.confirmations,
               null,
               isConfirmed,
+              null,
+              creditTimeMs,
             );
             if (isConfirmed) {
               const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
@@ -630,7 +783,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             cfg.store_id,
             cfg.xpub,
             (i) => deriveEvmAddress(cfg.xpub!, ETH_NETWORK, i),
-            0,
+            1,
             (cfg.next_address_index ?? 0) + ADDRESS_WINDOW,
           );
         }
@@ -662,7 +815,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               ) as never[];
               const invQuery = supabaseAdmin
                 .from("invoices")
-                .select("id, fiat_amount, status, chain, token_symbol")
+                .select("id, fiat_amount, status, chain, token_symbol, created_at")
                 .ilike("address", t.to) // EVM addresses are stored checksum-cased; match case-insensitively
                 .in("chain", matchChains)
                 .in("status", ["pending", "detected", "underpaid"]);
@@ -680,7 +833,8 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               const cfg = configList[0];
               const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, usd, net.symbol);
               const isConfirmed = confirmations >= required;
-              await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed, t.asset);
+              if (creditPredatesInvoice(t.blockTimeMs ?? null, inv.created_at)) continue;
+              await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed, t.asset, t.blockTimeMs ?? null);
               if (isConfirmed) {
                 const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
                 if (settled.changed) r.invoicesUpdated++;
@@ -725,7 +879,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               cfg.store_id,
               cfg.xpub,
               (i) => deriveTronAddress(cfg.xpub!, i),
-              0,
+              1,
               (cfg.next_address_index ?? 0) + ADDRESS_WINDOW,
             );
           } else if (cfg.xpub_or_address) {
@@ -752,7 +906,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           for (const t of credits) {
             const { data: candidates } = await supabaseAdmin
               .from("invoices")
-              .select("id, fiat_amount, status, token_symbol, crypto_amount")
+              .select("id, fiat_amount, status, token_symbol, crypto_amount, created_at")
               .eq("address", a.address)
               .eq("chain", "tron")
               .in("status", ["pending", "detected", "underpaid"]);
@@ -770,7 +924,8 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             });
             if (!inv) continue;
             const usd = t.isNative ? human * (await getUsdRate("TRX")) : human;
-            await recordTransaction(inv.id, t.txHash, human, net.confirmationsRequired, null, true, t.asset);
+            if (creditPredatesInvoice(t.blockTime ?? null, inv.created_at)) continue;
+            await recordTransaction(inv.id, t.txHash, human, net.confirmationsRequired, null, true, t.asset, t.blockTime ?? null);
             const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
             if (settled.changed) r.invoicesUpdated++;
           }
@@ -782,6 +937,62 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           .from("watcher_cursors")
           .update({ last_height: tip, last_run_at: new Date().toISOString(), last_status: "ok", last_error: null })
           .eq("chain", "tron");
+      } else if (chain === "zcu") {
+        // ZCU: native coin only, scanned block-by-block over the public node.
+        const net = ZCU_NETWORK;
+        const tip = await getZcuBlockNumber(net);
+        const { data: openInvoices } = await supabaseAdmin
+          .from("invoices")
+          .select("address")
+          .eq("chain", "zcu")
+          .in("store_id", configList.map((c) => c.store_id))
+          .in("status", ["pending", "detected", "underpaid"])
+          .not("address", "is", null);
+        const addrList = Array.from(new Set((openInvoices ?? []).map((a) => a.address as string).filter(Boolean)));
+        r.addresses = addrList.length;
+
+        const { data: cursor } = await supabaseAdmin
+          .from("watcher_cursors").select("last_height").eq("chain", "zcu").maybeSingle();
+        // Re-scan a small overlap so confirmation counts keep advancing; cap
+        // per tick so a long gap catches up over several runs.
+        const MAX_BLOCKS = 300;
+        let fromBlock = cursor?.last_height ? Number(cursor.last_height) - 12 : tip - 50;
+        fromBlock = Math.max(0, Math.max(fromBlock, tip - 2000));
+        const toBlock = Math.min(tip, fromBlock + MAX_BLOCKS);
+
+        if (addrList.length) {
+          const transfers = await getZcuTransfersTo(net, addrList, fromBlock, toBlock);
+          r.credits += transfers.length;
+          for (const t of transfers) {
+            const { data: candidates } = await supabaseAdmin
+              .from("invoices")
+              .select("id, fiat_amount, status, created_at, token_symbol")
+              .ilike("address", t.to)
+              .eq("chain", "zcu")
+              .in("status", ["pending", "detected", "underpaid"]);
+            const inv = (candidates ?? []).find((c) => c.token_symbol == null);
+            if (!inv) continue;
+            if (creditPredatesInvoice(t.blockTimeMs, inv.created_at)) continue;
+            const human = Number(BigInt(t.rawValue)) / 1e18;
+            const usd = human * (await getUsdRate("zcu"));
+            const confirmations = tip - t.blockNum + 1;
+            const cfg = configList[0];
+            const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, usd, "zcu");
+            const isConfirmed = confirmations >= required;
+            await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed, "ZCU", t.blockTimeMs);
+            if (isConfirmed) {
+              const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
+              if (settled.changed) r.invoicesUpdated++;
+            } else if (await markInvoiceDetected(inv.id)) {
+              r.invoicesUpdated++;
+            }
+          }
+        }
+
+        await supabaseAdmin.from("watcher_cursors").upsert(
+          { chain: "zcu", last_height: addrList.length ? toBlock : tip, last_run_at: new Date().toISOString(), last_status: "ok", last_error: null },
+          { onConflict: "chain" },
+        );
       } else if (chain === "sol") {
         // Solana: single-address mode only (no xpub derivation for ed25519 keys).
         // Invoices are matched by memo containing the invoice id prefix (first 8 chars).
@@ -820,6 +1031,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               status: string;
               token_symbol: string | null;
               crypto_amount: number | null;
+              created_at: string;
             };
             const human = Number(BigInt(c.rawValue)) / 10 ** c.decimals;
             const matchToken = (row: InvMatch) =>
@@ -831,7 +1043,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               const prefix = c.memo.trim().slice(0, 8);
               const { data } = await supabaseAdmin
                 .from("invoices")
-                .select("id, fiat_amount, status, token_symbol, crypto_amount")
+                .select("id, fiat_amount, status, token_symbol, crypto_amount, created_at")
                 .eq("store_id", a.store_id)
                 .eq("chain", "sol")
                 .ilike("id", `${prefix}%`);
@@ -840,7 +1052,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             if (!inv) {
               const { data } = await supabaseAdmin
                 .from("invoices")
-                .select("id, fiat_amount, status, token_symbol, crypto_amount")
+                .select("id, fiat_amount, status, token_symbol, crypto_amount, created_at")
                 .eq("address", a.address)
                 .eq("chain", "sol")
                 .in("status", ["pending", "detected", "underpaid"])
@@ -851,7 +1063,9 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             if (!inv) continue;
             const usd = c.isNative ? human * (await getUsdRate("SOL")) : human;
             const isConfirmed = c.confirmations >= net.confirmationsRequired;
-            await recordTransaction(inv.id, c.signature, human, c.confirmations, c.slot, isConfirmed, c.asset);
+            const solTimeMs = c.blockTime == null ? null : c.blockTime * 1000;
+            if (creditPredatesInvoice(solTimeMs, inv.created_at)) continue;
+            await recordTransaction(inv.id, c.signature, human, c.confirmations, c.slot, isConfirmed, c.asset, solTimeMs);
             const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
             if (settled.changed) r.invoicesUpdated++;
           }

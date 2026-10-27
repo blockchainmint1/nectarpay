@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { timingSafeEqual } from "crypto";
 import { z } from "zod";
+import { matchesWalletBrowser } from "@/lib/wallet-browser-binding.server";
 
 const CORS = {
   "access-control-allow-origin": "*",
@@ -43,12 +44,15 @@ export const Route = createFileRoute("/api/public/auth/wallet-exchange")({
 
         const { data: ch, error: chErr } = await supabaseAdmin
           .from("wallet_login_challenges")
-          .select("id, status, one_time_token, wallet_address, expires_at")
+          .select("id, status, one_time_token, wallet_address, expires_at, browser_binding_hash")
           .eq("id", id)
           .single();
 
         if (chErr || !ch || !ch.one_time_token || !ch.wallet_address) {
           return Response.json({ error: "unknown" }, { status: 404, headers: CORS });
+        }
+        if (!matchesWalletBrowser(request, id, ch.browser_binding_hash)) {
+          return Response.json({ error: "sign-in browser mismatch" }, { status: 403, headers: CORS });
         }
         if (ch.status !== "signed") {
           return Response.json({ error: "not ready" }, { status: 409, headers: CORS });
@@ -58,6 +62,16 @@ export const Route = createFileRoute("/api/public/auth/wallet-exchange")({
         }
         if (!eqConstantTime(ch.one_time_token, token)) {
           return Response.json({ error: "bad token" }, { status: 401, headers: CORS });
+        }
+
+        // Claim before any account or session side effects. Exactly one exchange wins.
+        const { data: consumed, error: claimError } = await supabaseAdmin
+          .from("wallet_login_challenges")
+          .update({ status: "consumed", one_time_token: null, consumed_at: new Date().toISOString() })
+          .eq("id", id).eq("status", "signed").eq("one_time_token", token)
+          .gt("expires_at", new Date().toISOString()).select("id");
+        if (claimError || !consumed?.length) {
+          return Response.json({ error: "sign-in already used or expired; please restart" }, { status: 409, headers: CORS });
         }
 
         const address = ch.wallet_address;
@@ -114,21 +128,11 @@ export const Route = createFileRoute("/api/public/auth/wallet-exchange")({
           .maybeSingle();
         const isAdmin = isConfiguredAdmin || Boolean(adminRole);
 
-        // 3. Update last_login + mark challenge consumed
-        await Promise.all([
-          supabaseAdmin
+        // 3. Update last_login (the challenge was already atomically consumed).
+        await supabaseAdmin
             .from("wallet_accounts")
             .update({ last_login_at: new Date().toISOString() })
-            .eq("wallet_address", address),
-          supabaseAdmin
-            .from("wallet_login_challenges")
-            .update({
-              status: "consumed",
-              one_time_token: null,
-              consumed_at: new Date().toISOString(),
-            })
-            .eq("id", id),
-        ]);
+            .eq("wallet_address", address);
 
         // 4. Generate a magic link → client uses token_hash to verify and get a session
         const link = await supabaseAdmin.auth.admin.generateLink({

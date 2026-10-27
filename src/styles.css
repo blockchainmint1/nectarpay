@@ -417,3 +417,7 @@ html {
 .np-buzzy-float { animation: np-buzzy-float 5.5s var(--np-ease-out) infinite; will-change: transform; }
 @media (prefers-reduced-motion: reduce) { .np-buzzy-float { animation: none; } }
 
+
+/* Inside the virtual-terminal iframe: no inner scrollbar track */
+html.embedded-frame { scrollbar-width: none; scrollbar-gutter: auto; }
+html.embedded-frame::-webkit-scrollbar { width: 0; height: 0; }

@@ -7,6 +7,8 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.IsoDep;
 import android.nfc.tech.Ndef;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Parcelable;
 
 import com.getcapacitor.JSObject;
@@ -23,11 +25,10 @@ import java.nio.charset.StandardCharsets;
 /**
  * Bridges the terminal's NFC reader to the web app.
  *
- * The web app calls `NectarNfc.startReader()` when the "Tap to pay" screen
- * opens; the plugin registers itself as the current listener. When
- * MainActivity's foreground dispatch receives a tag it calls
- * `handleTagIntent(...)` which parses the NDEF and emits a `tagScanned`
- * event with the routed payload.
+ * MainActivity enables reader mode when the POS is foregrounded; every
+ * discovered tag arrives via `handleTag(...)` and is emitted as a
+ * `tagScanned` event with the routed payload. Cold-start NDEF intents
+ * still arrive through `handleTagIntent(...)`.
  *
  * The last-seen Tag is cached so JS can call `transceive({ apduHex })` to
  * probe secure-element cards (Tangem, EMV, etc). Cached Tag handles are
@@ -38,6 +39,7 @@ public class NectarNfcPlugin extends Plugin {
 
     private static NectarNfcPlugin active;
     private static Tag lastTag;
+    private static final Handler main = new Handler(Looper.getMainLooper());
 
     @Override
     public void load() {
@@ -47,6 +49,15 @@ public class NectarNfcPlugin extends Plugin {
     @PluginMethod
     public void startReader(PluginCall call) {
         active = this;
+        NfcAdapter adapter = NfcAdapter.getDefaultAdapter(getContext());
+        if (adapter == null) {
+            call.reject("This device has no NFC hardware.");
+            return;
+        }
+        if (!adapter.isEnabled()) {
+            call.reject("NFC is turned off in Android settings — turn it on and tap again.");
+            return;
+        }
         JSObject ret = new JSObject();
         ret.put("started", true);
         call.resolve(ret);
@@ -96,15 +107,56 @@ public class NectarNfcPlugin extends Plugin {
         }
     }
 
-    /** Called by MainActivity when a tag intent arrives while foregrounded. */
+    /** Reader-mode callback from MainActivity; runs on a binder thread. */
+    static void handleTag(Tag tag) {
+        if (active == null || tag == null) return;
+        JSONArray records = new JSONArray();
+        Ndef ndef = Ndef.get(tag);
+        if (ndef != null) {
+            NdefMessage msg = ndef.getCachedNdefMessage();
+            if (msg == null) {
+                try {
+                    ndef.connect();
+                    msg = ndef.getNdefMessage();
+                } catch (Throwable ignored) {
+                } finally {
+                    try { ndef.close(); } catch (Throwable ignored) {}
+                }
+            }
+            if (msg != null) {
+                for (NdefRecord r : msg.getRecords()) putRecord(records, r);
+            }
+        }
+        emit(NfcAdapter.ACTION_TAG_DISCOVERED, tag, records);
+    }
+
+    /** Called by MainActivity when a cold-start tag intent arrives. */
     static void handleTagIntent(Intent intent) {
         if (active == null) return;
-        try {
-            String action = intent.getAction();
-            Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
-            Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-            lastTag = tag;
+        Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        JSONArray records = new JSONArray();
+        Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+        if (rawMsgs != null) {
+            for (Parcelable p : rawMsgs) {
+                NdefMessage msg = (NdefMessage) p;
+                for (NdefRecord r : msg.getRecords()) putRecord(records, r);
+            }
+        } else if (tag != null) {
+            Ndef ndef = Ndef.get(tag);
+            if (ndef != null) {
+                NdefMessage cached = ndef.getCachedNdefMessage();
+                if (cached != null) {
+                    for (NdefRecord r : cached.getRecords()) putRecord(records, r);
+                }
+            }
+        }
+        emit(intent.getAction(), tag, records);
+    }
 
+    /** Builds the tagScanned event and notifies JS on the main thread. */
+    private static void emit(String action, Tag tag, JSONArray records) {
+        lastTag = tag;
+        try {
             String uid = null;
             JSONArray techList = new JSONArray();
             JSONObject isoInfo = null;
@@ -124,26 +176,6 @@ public class NectarNfcPlugin extends Plugin {
                 }
             }
 
-            JSONArray records = new JSONArray();
-            if (rawMsgs != null) {
-                for (Parcelable p : rawMsgs) {
-                    NdefMessage msg = (NdefMessage) p;
-                    for (NdefRecord r : msg.getRecords()) {
-                        records.put(recordToJson(r));
-                    }
-                }
-            } else if (tag != null) {
-                Ndef ndef = Ndef.get(tag);
-                if (ndef != null) {
-                    NdefMessage cached = ndef.getCachedNdefMessage();
-                    if (cached != null) {
-                        for (NdefRecord r : cached.getRecords()) {
-                            records.put(recordToJson(r));
-                        }
-                    }
-                }
-            }
-
             JSONObject parsed = NdefRouter.route(records);
             JSObject event = new JSObject();
             event.put("action", action);
@@ -152,12 +184,24 @@ public class NectarNfcPlugin extends Plugin {
             if (isoInfo != null) event.put("isoDep", JSObject.fromJSONObject(isoInfo));
             event.put("records", records);
             event.put("parsed", JSObject.fromJSONObject(parsed));
-            active.notifyListeners("tagScanned", event);
+            main.post(() -> {
+                NectarNfcPlugin a = active;
+                if (a != null) a.notifyListeners("tagScanned", event);
+            });
         } catch (Throwable t) {
             JSObject err = new JSObject();
-            err.put("error", t.getMessage());
-            active.notifyListeners("tagError", err);
+            err.put("error", String.valueOf(t.getMessage()));
+            main.post(() -> {
+                NectarNfcPlugin a = active;
+                if (a != null) a.notifyListeners("tagError", err);
+            });
         }
+    }
+
+    private static void putRecord(JSONArray records, NdefRecord r) {
+        try {
+            records.put(recordToJson(r));
+        } catch (Throwable ignored) {}
     }
 
     private static JSONObject recordToJson(NdefRecord r) throws org.json.JSONException {

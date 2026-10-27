@@ -11,11 +11,12 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "sync:terminal": "cap sync",
-    "sync:merchant": "NECTAR_APP=merchant cap sync",
+    "sync:merchant": "NECTAR_APP=merchant cap sync && bash scripts/ios-prepare.sh || true",
     "ios:merchant:add": "NECTAR_APP=merchant cap add ios",
     "ios:merchant": "NECTAR_APP=merchant cap open ios",
     "android:merchant:add": "NECTAR_APP=merchant cap add android",
-    "android:merchant": "NECTAR_APP=merchant cap open android"
+    "android:merchant": "NECTAR_APP=merchant cap open android",
+    "ios:prepare": "bash scripts/ios-prepare.sh"
   },
   "dependencies": {
     "@aparajita/capacitor-biometric-auth": "^10.0.0",
@@ -33,7 +34,7 @@
     "@fontsource/jetbrains-mono": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",
     "@lovable.dev/cloud-auth-js": "^1.1.2",
-    "@lovable.dev/email-js": "^0.0.4",
+    "@lovable.dev/email-js": "0.1.0",
     "@lovable.dev/webhooks-js": "^0.0.1",
     "@noble/hashes": "^1.8.0",
     "@noble/secp256k1": "^3.1.0",
@@ -71,19 +72,22 @@
     "@supabase/supabase-js": "^2.108.2",
     "@tailwindcss/vite": "^4.2.1",
     "@tanstack/react-query": "^5.83.0",
-    "@tanstack/react-router": "^1.168.25",
-    "@tanstack/react-start": "^1.167.50",
-    "@tanstack/router-plugin": "^1.167.28",
+    "@tanstack/react-router": "1.170.41",
+    "@tanstack/react-start": "1.168.60",
+    "@tanstack/router-plugin": "1.168.42",
     "@types/leaflet": "^1.9.21",
+    "aws4fetch": "^1.0.20",
     "bs58": "^6.0.0",
     "bs58check": "^4.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "country-region-data": "^4.1.0",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "ethers": "^6.17.0",
     "input-otp": "^1.4.2",
+    "jsqr": "^1.4.0",
     "leaflet": "^1.9.4",
     "leaflet.heat": "^0.2.0",
     "lucide-react": "^0.575.0",
@@ -97,6 +101,7 @@
     "react-leaflet": "^5.0.0",
     "react-resizable-panels": "^4.6.5",
     "recharts": "^2.15.4",
+    "seroval-plugins": "1.6.8",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.1",
@@ -108,12 +113,14 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
-    "@lovable.dev/vite-tanstack-config": "2.8.5",
+    "@lovable.dev/vite-tanstack-config": "2.26.5",
     "@types/node": "^22.16.5",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.2.0",
+    "drizzle-kit": "0.x",
+    "drizzle-orm": "0.x",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.6",
@@ -121,22 +128,24 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
     "nitro": "3.0.260603-beta",
+    "postgres": "^3.4.9",
     "prettier": "^3.7.3",
-    "seroval": "^1.6.0",
+    "seroval": "1.6.8",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
-    "vite": "^8.0.16"
+    "vite": "^8.0.16",
+    "vitest": "^5.0.5"
   },
   "pnpm": {
     "overrides": {
       "entities": "4.5.0",
-      "seroval": "1.6.0"
+      "seroval": "1.6.8"
     }
   },
   "overrides": {
-    "seroval": "1.6.0"
+    "seroval": "1.6.8"
   },
   "resolutions": {
-    "seroval": "1.6.0"
+    "seroval": "1.6.8"
   }
 }

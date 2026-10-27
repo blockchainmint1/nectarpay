@@ -11,6 +11,7 @@ import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 import { Button } from "@/components/ui/button";
 import { WALLET_POLL_INTERVAL_MS } from "@/lib/wallet-auth-shared";
 import { qrToString } from "@/lib/qr";
+import { openHmeConnection } from "@/lib/hme-auth";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
@@ -24,12 +25,16 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Sign in with TXC Wallet · Nectar.Pay" },
+      { title: "Sign in · Nectar.Pay" },
       {
         name: "description",
         content:
-          "Scan with your TEXITcoin wallet to sign in. Nectar.Pay is wallet-only — no email, no password, no custody.",
+          "Sign in to Nectar.Pay with Google, email, a TXC wallet, or your connected Honest Money account.",
       },
+      { property: "og:title", content: "Sign in · Nectar.Pay" },
+      { property: "og:description", content: "Access your Nectar.Pay stores with Google, email, TXC wallet, or Honest Money." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
           { property: "og:url", content: "https://app.nectar-pay.com/auth" },
 ],
     links: [{ rel: "canonical", href: "https://app.nectar-pay.com/auth" }],
@@ -66,6 +71,8 @@ function AuthPage() {
   const [qrSvg, setQrSvg] = useState<string>("");
   const [remaining, setRemaining] = useState<number>(0);
   const cancelled = useRef(false);
+  const hmeCleanup = useRef<(() => void) | undefined>(undefined);
+  useEffect(() => () => hmeCleanup.current?.(), []);
 
   // Already signed in → bounce (admins to /admin)
   useEffect(() => {
@@ -224,6 +231,16 @@ function AuthPage() {
     }
   }
 
+  function signInHme() {
+    hmeCleanup.current?.();
+    hmeCleanup.current = openHmeConnection(({ is_admin }) => {
+      toast.success("Signed in");
+      navigate({ to: resolvePostAuthPath(is_admin, search.redirect) });
+    }, message => toast.error(message));
+  }
+
+
+
 
 
   return (
@@ -254,6 +271,7 @@ function AuthPage() {
           {mode === "choose" && (
             <ChooseMode
               onGoogle={() => void signInGoogle()}
+              onHme={signInHme}
               onEmail={() => setMode("email")}
               onWallet={() => setMode("wallet")}
             />
@@ -505,10 +523,12 @@ function formatTime(seconds: number): string {
 
 function ChooseMode({
   onGoogle,
+  onHme,
   onEmail,
   onWallet,
 }: {
   onGoogle: () => void;
+  onHme: () => void;
   onEmail: () => void;
   onWallet: () => void;
 }) {
@@ -521,6 +541,14 @@ function ChooseMode({
       >
         <GoogleGlyph className="h-5 w-5" />
         Continue with Google
+      </button>
+      <button
+        type="button"
+        onClick={onHme}
+        className="flex h-14 w-full items-center justify-center gap-3 rounded-lg border border-input bg-card text-base font-medium transition hover:bg-accent"
+      >
+        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">H</span>
+        Continue with Honest Money
       </button>
       <button
         type="button"
@@ -558,7 +586,7 @@ function EmailSignIn({
   const [code, setCode] = useState("");
   const [verifying, setVerifying] = useState(false);
 
-  async function sendMagicLink() {
+  async function sendCode() {
     const trimmed = email.trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
       toast.error("Enter a valid email");
@@ -577,7 +605,7 @@ function EmailSignIn({
       if (error) throw error;
       setSent(true);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not send magic link");
+      toast.error(e instanceof Error ? e.message : "Could not send your code");
     } finally {
       setBusy(false);
     }
@@ -613,10 +641,10 @@ function EmailSignIn({
           <Mail className="mx-auto h-10 w-10 text-primary" />
           <p className="mt-3 text-base font-medium">Check your inbox</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            We sent a sign-in email to <strong className="text-foreground">{email.trim()}</strong>.
+            We sent a sign-in code to <strong className="text-foreground">{email.trim()}</strong>.
           </p>
           <p className="mt-3 text-[11px] text-muted-foreground">
-            Tap the link on this device, or type the code below.
+            Open the email on any device and type the code below.
           </p>
         </div>
         <div className="rounded-xl border border-input bg-card p-4">
@@ -640,7 +668,7 @@ function EmailSignIn({
           <Button
             size="lg"
             onClick={verifyCode}
-            disabled={verifying || code.length < 8}
+            disabled={verifying || code.length < 6}
             className="mt-3 h-12 w-full text-base"
           >
             {verifying ? "Verifying…" : "Sign in with code"}
@@ -682,11 +710,11 @@ function EmailSignIn({
       </label>
       <Button
         size="lg"
-        onClick={sendMagicLink}
+        onClick={sendCode}
         disabled={busy || !email.trim()}
         className="h-14 w-full text-base"
       >
-        {busy ? "Sending…" : "Send magic link"} <ArrowRight className="ml-2 h-5 w-5" />
+        {busy ? "Sending…" : "Email me a sign-in code"} <ArrowRight className="ml-2 h-5 w-5" />
       </Button>
       <button
         type="button"
@@ -696,7 +724,7 @@ function EmailSignIn({
         ← Back to sign-in options
       </button>
       <p className="pt-2 text-center text-[11px] text-muted-foreground">
-        No password. We&apos;ll email you a code and a one-tap login link.
+        No password. We&apos;ll email you a short code — check it on any device.
       </p>
     </div>
   );

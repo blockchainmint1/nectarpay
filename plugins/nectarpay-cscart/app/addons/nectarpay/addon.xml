@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<addon scheme="3.0">
+    <id>nectarpay</id>
+    <version>1.0</version>
+    <name>NectarPay crypto payments</name>
+    <description>Non-custodial crypto checkout (BTC, TEXITcoin, stablecoins) via NectarPay. Funds settle straight to your wallet.</description>
+    <status>active</status>
+    <has_settings>N</has_settings>
+</addon>

@@ -12,6 +12,7 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
+import { VALID_CHAIN_SET } from "@/lib/chains/networks";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -26,7 +27,7 @@ function json(body: unknown, status = 200) {
   });
 }
 
-const VALID_CHAINS = new Set(["btc", "txc", "eth", "base", "bsc", "tron", "sol", "doge", "ltc", "bch", "dash", "isk", "zcu"]);
+const VALID_CHAINS = VALID_CHAIN_SET;
 const VALID_STABLES = new Set(["USDC", "USDT", "PYUSD", "DAI", "TSD"]);
 
 const SelectBody = z.object({
@@ -47,8 +48,8 @@ export const Route = createFileRoute("/api/public/v1/pay/$invoiceId")({
           const auth = await verifyTapHandoff(params.invoiceId, nonce);
           if (!auth.ok) return json({ error: auth.error }, auth.status);
 
-          const { getPublicInvoice } = await import("@/lib/checkout.functions");
-          const result = await getPublicInvoice({ data: { id: params.invoiceId } });
+          const { readPublicInvoice } = await import("@/lib/checkout.server");
+          const result = await readPublicInvoice({ id: params.invoiceId });
           if (!result.found) return json({ error: "Invoice not found." }, 404);
 
           const inv = result.invoice;
@@ -109,9 +110,9 @@ export const Route = createFileRoute("/api/public/v1/pay/$invoiceId")({
 
           // Reuse the existing selectInvoiceChain logic (no-op if invoice
           // was already pinned to the same option).
-          const { selectInvoiceChain } = await import("@/lib/checkout.functions");
+          const { selectPublicInvoiceChain } = await import("@/lib/checkout.server");
           try {
-            await selectInvoiceChain({ data: { id: params.invoiceId, option: v.data.option } });
+            await selectPublicInvoiceChain({ id: params.invoiceId, option: v.data.option });
           } catch (e) {
             return json({ error: e instanceof Error ? e.message : "Could not select chain." }, 400);
           }

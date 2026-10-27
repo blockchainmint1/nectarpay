@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { getAdminOverview } from "@/lib/admin.functions";
+import { ZcuPriceCard } from "@/components/admin/zcu-price-card";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   component: AdminOverview,
@@ -38,6 +39,8 @@ function AdminOverview() {
         <Stat label="Stores" value={data.store_count} />
         <Stat label="Invoices" value={data.invoice_count} />
       </div>
+
+      <ZcuPriceCard />
 
       <section>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-muted-foreground">

@@ -17,13 +17,39 @@ function hash160(pubkey: Uint8Array): Uint8Array {
   return ripemd160(sha256(pubkey));
 }
 
+// Known extended-public-key version bytes → normalized to standard xpub (0x0488B21E).
+// @scure/bip32 only accepts the Bitcoin mainnet version bytes, so ypub/zpub/etc.
+// must have their 4-byte prefix swapped before parsing. The payload is unchanged.
+const XPUB_VERSION_BYTES: Record<string, number> = {
+  xpub: 0x0488b21e,
+  ypub: 0x049d7cb2,
+  zpub: 0x02aa7ed3,
+  vpub: 0x045f1cf6,
+  upub: 0x044a5262,
+  tpub: 0x043587cf,
+};
+const STANDARD_XPUB_VERSION = 0x0488b21e;
+
+function normalizeToXpub(key: string): string {
+  const prefix = key.trim().slice(0, 4);
+  const version = XPUB_VERSION_BYTES[prefix];
+  if (!version || version === STANDARD_XPUB_VERSION) return key.trim();
+  const decoded = b58check.decode(key.trim());
+  const out = new Uint8Array(decoded);
+  out[0] = (STANDARD_XPUB_VERSION >>> 24) & 0xff;
+  out[1] = (STANDARD_XPUB_VERSION >>> 16) & 0xff;
+  out[2] = (STANDARD_XPUB_VERSION >>> 8) & 0xff;
+  out[3] = STANDARD_XPUB_VERSION & 0xff;
+  return b58check.encode(out);
+}
+
 /** Derive an address at `m/<receiveBranch>/<index>` from an xpub for a BTC-like chain. */
 export function deriveBtcLikeAddress(
   xpub: string,
   network: BtcLikeNetwork,
   index: number,
 ): string {
-  const root = HDKey.fromExtendedKey(xpub);
+  const root = HDKey.fromExtendedKey(normalizeToXpub(xpub));
   const child = root.deriveChild(network.receiveBranch).deriveChild(index);
   if (!child.publicKey) throw new Error("Failed to derive public key");
   const h160 = hash160(child.publicKey);

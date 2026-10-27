@@ -74,3 +74,23 @@ Bump `CFBundleShortVersionString` / `CFBundleVersion` for each upload.
 - Rosetta is not needed; Capacitor 8 pods build native on Apple Silicon.
 - Do NOT use `capacitor.config.ts` for iOS — that one is the Senraise Android
   terminal build (NFC/printer/Tangem) and will not compile for iOS.
+
+## Camera / QR scanner (TestFlight "Camera not available")
+
+WKWebView hides `navigator.mediaDevices` entirely unless the app declares
+`NSCameraUsageDescription`. Symptom in TestFlight: "Camera not available on
+this device" when opening the pairing QR scanner.
+
+Fix (run on the Mac, after `cap add ios` and after any `cap sync`):
+
+```bash
+bun run ios:prepare      # PlistBuddy-patches ios/App/App/Info.plist
+```
+
+`bun run sync:merchant` now runs this automatically. Verify in Xcode:
+App target → Info → *Privacy - Camera Usage Description* is present, then
+archive and upload a new build (Info.plist changes require a rebuild —
+the live-loaded web UI alone can't fix it).
+
+The web scanner also falls back to jsQR on iOS, since Safari/WKWebView has
+no `BarcodeDetector`.

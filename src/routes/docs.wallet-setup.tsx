@@ -98,7 +98,7 @@ function WalletSetupGuide() {
               <div className="font-medium">UTXO chains — xpub</div>
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
-              BTC, TXC, DOGE, ISK, ZCU. We use BIP32 to derive a fresh receive
+              BTC, TXC, DOGE, ISK. We use BIP32 to derive a fresh receive
               address per invoice from your extended public key.
             </p>
             <div className="mt-3 text-xs text-muted-foreground">
@@ -313,14 +313,14 @@ function WalletSetupGuide() {
         {/* ZCU */}
         <ChainSection
           id="zcu"
-          title="ZCU"
+          title="ZCU (Zero Chill Units)"
           kind="xpub"
-          tagline="Honest.Money ecosystem coin. Wallet flow mirrors Bitcoin Core."
+          tagline="Ethereum-style coin (chain ID 90031273). Uses your EVM wallet — nothing new to set up."
         >
           <Steps>
-            <li>Open ZCU Core → <em>Window → Console</em> → <code className="font-mono text-xs">listdescriptors</code>.</li>
-            <li>Copy the xpub portion of the receive descriptor (between <code>pkh(</code> and the next <code>/</code>).</li>
-            <li>Paste into Nectar.Pay → <em>Stores → Chains → ZCU → xpub</em>.</li>
+            <li>Set up your EVM wallet first (the Ethereum section above).</li>
+            <li>In Nectar.Pay → <em>Stores → Chains</em>, find the <em>ZCU</em> box right under EVM and switch on <em>Accept ZCU</em>.</li>
+            <li>Payments land on the same 0x addresses as your ETH payments. To see them, add ZCU Mainnet to MetaMask (RPC <code className="font-mono text-xs">https://node-zcu.honest.money</code>, chain ID <code className="font-mono text-xs">90031273</code>) — details at <a className="text-primary underline" href="https://zerochill.com/build">zerochill.com/build</a>.</li>
           </Steps>
         </ChainSection>
 

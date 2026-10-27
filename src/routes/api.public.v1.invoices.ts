@@ -14,7 +14,7 @@ import { deriveInvoiceAddress } from "@/lib/invoice-derive.server";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 } as const;
 
@@ -26,7 +26,7 @@ function json(body: unknown, status = 200, extra: Record<string, string> = {}) {
 }
 
 const Body = z.object({
-  chain: z.enum(["btc", "txc", "eth", "base", "tron", "sol", "doge", "ltc", "bch", "dash", "isk", "zcu"]).optional().nullable(),
+  chain: z.enum(["btc", "txc", "eth", "base", "tron", "sol", "doge", "ltc", "bch", "dash", "isk", "zcu", "lightning"]).optional().nullable(),
   amount: z.number().positive().max(1_000_000),
   currency: z.string().min(3).max(8).default("USD"),
   order_id: z.string().max(128).nullable().optional(),
@@ -45,6 +45,74 @@ export const Route = createFileRoute("/api/public/v1/invoices")({
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
+
+      // List invoices for the key's store.
+      // GET /api/public/v1/invoices?status=&chain=&order_id=&since=&until=&limit=&offset=
+      GET: async ({ request }) => {
+        try {
+          const { authenticateApiKey } = await import("@/lib/api-key-auth.server");
+          const auth = await authenticateApiKey(request);
+          if ("error" in auth) return auth.error;
+          const { keyRow, supabaseAdmin } = auth;
+
+          const url = new URL(request.url);
+          const limit = Math.min(Math.max(Number(url.searchParams.get("limit") ?? 50) || 50, 1), 200);
+          const offset = Math.max(Number(url.searchParams.get("offset") ?? 0) || 0, 0);
+
+          let q = supabaseAdmin
+            .from("invoices")
+            .select(
+              "id, chain, token_symbol, status, fiat_amount, fiat_currency, crypto_amount, rate, address, expires_at, created_at, updated_at, external_order_id, description, buyer_email",
+              { count: "exact" },
+            )
+            .eq("store_id", keyRow.store_id);
+
+          const csv = (v: string) => v.split(",").map((s) => s.trim()).filter(Boolean);
+          const status = url.searchParams.get("status");
+          if (status) q = q.in("status", csv(status) as never[]);
+          const chain = url.searchParams.get("chain");
+          if (chain) q = q.in("chain", csv(chain) as never[]);
+          const orderId = url.searchParams.get("order_id");
+          if (orderId) q = q.eq("external_order_id", orderId);
+          const since = url.searchParams.get("since");
+          if (since) q = q.gte("created_at", since);
+          const until = url.searchParams.get("until");
+          if (until) q = q.lte("created_at", until);
+
+          const { data: rows, count, error } = await q
+            .order("created_at", { ascending: false })
+            .range(offset, offset + limit - 1);
+          if (error) return json({ error: error.message }, 400);
+
+          const origin = new URL(request.url).origin;
+          return json({
+            total: count ?? null,
+            limit,
+            offset,
+            invoices: (rows ?? []).map((r) => ({
+              id: r.id,
+              status: r.status,
+              chain: r.chain,
+              token: r.token_symbol,
+              fiat_amount: Number(r.fiat_amount),
+              fiat_currency: r.fiat_currency,
+              crypto_amount: r.crypto_amount == null ? null : Number(r.crypto_amount),
+              rate: r.rate == null ? null : Number(r.rate),
+              address: r.address,
+              order_id: r.external_order_id,
+              description: r.description,
+              buyer_email: r.buyer_email,
+              created_at: r.created_at,
+              updated_at: r.updated_at,
+              expires_at: r.expires_at,
+              checkout_url: `${origin}/i/${r.id}`,
+            })),
+          });
+        } catch (err) {
+          return json({ error: err instanceof Error ? err.message : "Server error" }, 500);
+        }
+      },
+
       POST: async ({ request }) => {
         try {
           // ---- Authn: Bearer sk_live_<prefix>_<secret> ----
@@ -62,7 +130,7 @@ export const Route = createFileRoute("/api/public/v1/invoices")({
             .eq("prefix", prefix)
             .maybeSingle();
           if (!keyRow || keyRow.revoked_at || keyRow.secret_hash !== keyHash) {
-            return json({ error: "Invalid API key." }, 401);
+            return json({ error: "Invalid API key. Keys authenticate only against https://app.nectar-pay.com — check your API base URL.", api_base: "https://app.nectar-pay.com" }, 401);
           }
 
           const raw = await request.json().catch(() => null);
@@ -155,6 +223,11 @@ export const Route = createFileRoute("/api/public/v1/invoices")({
             .select("id")
             .single();
           if (insErr || !inserted) return json({ error: insErr?.message ?? "Insert failed." }, 500);
+
+          if (body.chain === "lightning") {
+            const { linkLightningInvoice } = await import("@/lib/lightning.server");
+            await linkLightningInvoice(derived.address, inserted.id).catch(() => undefined);
+          }
 
           await supabaseAdmin.from("api_keys").update({ last_used_at: new Date().toISOString() }).eq("id", keyRow.id);
 

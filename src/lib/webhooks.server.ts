@@ -6,7 +6,7 @@ import { createHmac } from "crypto";
 
 export interface WebhookEvent {
   id: string;                 // unique event id (uuid)
-  type: "invoice.paid" | "invoice.underpaid" | "invoice.confirmed";
+  type: "invoice.paid" | "invoice.underpaid" | "invoice.overpaid" | "invoice.confirmed";
   created_at: string;         // ISO timestamp
   data: {
     invoice_id: string;

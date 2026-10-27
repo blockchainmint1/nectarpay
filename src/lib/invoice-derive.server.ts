@@ -28,8 +28,29 @@ export async function deriveInvoiceAddress(
   chain: ChainKind,
   fiatAmount: number,
   tokenSymbol: string | null = null,
+  invoiceId: string | null = null,
 ): Promise<DeriveResult> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  // Lightning has no derived address — we ask the shared node for a BOLT-11
+  // payment request and store that string where an address would go.
+  if (chain === "lightning") {
+    const { createLightningInvoice } = await import("@/lib/lightning.server");
+    const ln = await createLightningInvoice(storeId, fiatAmount, invoiceId);
+    const { data: lnCfg } = await supabaseAdmin
+      .from("chain_configs")
+      .select("id")
+      .eq("store_id", storeId)
+      .eq("chain", "lightning")
+      .maybeSingle();
+    return {
+      address: ln.paymentRequest,
+      cryptoAmount: ln.btcAmount,
+      rate: ln.rate,
+      index: 0,
+      chainConfigId: lnCfg?.id ?? "",
+    };
+  }
 
   const { data: cfg } = await supabaseAdmin
     .from("chain_configs")
@@ -56,12 +77,24 @@ export async function deriveInvoiceAddress(
   }
 
   let address: string;
-  let index = cfg.next_address_index ?? 0;
+  // Index 0 is never handed out or monitored — it's the account's "public"
+  // address (payout hints, wallet UIs, manual sends), so derivation for
+  // invoices always starts at 1.
+  let index = Math.max(1, cfg.next_address_index ?? 0);
   let recycledEvmAddress = false;
+  let evmSharedAddress = false;
   const xpub = cfg.xpub ?? cfg.xpub_or_address;
 
   if (net.kind === "btc-like") {
     address = deriveBtcLikeAddress(xpub, net, index);
+  } else if (net.kind === "evm" && !(await evmRotationEnabled(supabaseAdmin, storeId))) {
+    // Rotation switched off by the merchant: every EVM invoice is paid to the
+    // single first receive address (index 1). Cheaper to sweep (one address,
+    // one gas payment), at the cost of address privacy. Concurrent invoices are
+    // told apart by the amount nonce below, same as Solana.
+    index = 1;
+    address = deriveEvmAddress(xpub, net, 1);
+    evmSharedAddress = true;
   } else if (net.kind === "evm") {
     // EVM is account-based — each derived address must be swept individually
     // (gas per address per token). When an invoice expires unpaid, the index
@@ -104,7 +137,7 @@ export async function deriveInvoiceAddress(
   // in decimal places 3–5 (e.g. 69.65 USDT → 69.65042 USDT) so the watcher can
   // match incoming payments by (address, token, amount±tolerance).
   const isSharedAddress =
-    net.kind === "solana" || (net.kind === "tron" && xpub.startsWith("T"));
+    net.kind === "solana" || (net.kind === "tron" && xpub.startsWith("T")) || evmSharedAddress;
   let cryptoAmount: number;
   if (isSharedAddress) {
     cryptoAmount = await applyAmountNonce(
@@ -123,7 +156,19 @@ export async function deriveInvoiceAddress(
   //   - recycled EVM addresses (counter already advanced when first derived;
   //     derived_addresses row already exists)
   const isStaticShared =
-    net.kind === "solana" || (net.kind === "tron" && xpub.startsWith("T"));
+    net.kind === "solana" || (net.kind === "tron" && xpub.startsWith("T")) || evmSharedAddress;
+  if (evmSharedAddress) {
+    // No counter bump, but the shared address must still be registered so the
+    // watcher and Alchemy webhooks cover it.
+    await supabaseAdmin
+      .from("derived_addresses")
+      .upsert({
+        chain_config_id: cfg.id,
+        store_id: storeId,
+        address,
+        address_index: index,
+      }, { onConflict: "chain_config_id,address_index" });
+  }
   if (!isStaticShared && !recycledEvmAddress) {
     await supabaseAdmin
       .from("chain_configs")
@@ -149,7 +194,7 @@ export async function deriveInvoiceAddress(
   // promises die when the request returns, so fire-and-forget silently
   // dropped registrations. The cron watcher remains the safety net if this
   // still fails. Skip if no auth token configured.
-  if (net.kind === "evm" && process.env.ALCHEMY_AUTH_TOKEN) {
+  if (net.kind === "evm" && chain !== "zcu" && process.env.ALCHEMY_AUTH_TOKEN) {
     try {
       const { registerEvmAddressEverywhere } = await import("./alchemy-notify.server");
       await Promise.race([
@@ -254,6 +299,7 @@ async function findRecyclableEvmAddress(
     .eq("store_id", storeId)
     .eq("chain", chain)
     .not("address", "is", null)
+    .gte("address_index", 1) // index 0 is never handed out
     .lt("created_at", cutoffIso)
     .order("created_at", { ascending: true })
     .limit(100);
@@ -273,6 +319,9 @@ async function findRecyclableEvmAddress(
   for (const c of (candidates ?? []) as Array<{ address: string; address_index: number | null }>) {
     if (seen.has(c.address)) continue;
     seen.add(c.address);
+
+    // Never recycle index 0.
+    if ((c.address_index ?? 0) < 1) continue;
 
     // Must be derivable from the current xpub.
     if (!validAddresses.has(c.address.toLowerCase())) continue;
@@ -300,3 +349,19 @@ async function findRecyclableEvmAddress(
 
 
 
+
+/**
+ * Per-store switch: when off, EVM invoices all use the first receive address
+ * (index 1) instead of rotating through derived addresses. Defaults to on.
+ */
+async function evmRotationEnabled(
+  admin: { from: (t: string) => any },
+  storeId: string,
+): Promise<boolean> {
+  const { data } = await admin
+    .from("stores")
+    .select("evm_address_rotation")
+    .eq("id", storeId)
+    .maybeSingle();
+  return (data as { evm_address_rotation?: boolean } | null)?.evm_address_rotation !== false;
+}

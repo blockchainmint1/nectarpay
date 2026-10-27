@@ -5,8 +5,8 @@ import { createFileRoute } from "@tanstack/react-router";
  *   app.nectar-pay.com/pos-apk-ipfs → dedicated Pinata gateway (or public ipfs.io)
  */
 export const APK_IPFS_CID =
-  "bafybeifyk6nbm22moiyjzmu3jldngc3jqkrsayfcl72xfz5jzmbhzd77ui";
-export const APK_IPFS_FILENAME = "nectar-pos-0.1.202608020933.apk";
+  "Qmbfx5azQ1dEZbhsHfWSs8pXyMCPQGMCGVPS6AJRKi9PP6";
+export const APK_IPFS_FILENAME = "nectar-pos-0.1.202608041122.apk";
 
 export const Route = createFileRoute("/pos-apk-ipfs")({
   server: {

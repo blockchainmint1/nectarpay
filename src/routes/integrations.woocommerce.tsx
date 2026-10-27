@@ -43,16 +43,16 @@ function WooPage() {
 
         <div className="mt-8 flex flex-wrap gap-3">
           <Button asChild>
-            <a href="/plugins/txc-pay-woocommerce.zip">
+            <a href="/plugins/nectarpay-woocommerce.zip" download>
               <Download className="mr-1 h-4 w-4" /> Download plugin
             </a>
           </Button>
           <Button asChild variant="outline">
-            <Link to="/auth" search={{ mode: "signup" }}>Create an account first</Link>
+            <Link to="/auth" search={{ mode: "choose" }}>Create an account first</Link>
           </Button>
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          Plugin zip becomes available after phase 7 of the rollout. Reach out if you want early access.
+          Works with WooCommerce 6.0+ (incl. HPOS). Source ships in the zip under MIT.
         </p>
 
         <div className="mt-12 space-y-8">
@@ -64,7 +64,7 @@ function WooPage() {
           <Step
             n={2}
             title="Paste your API key"
-            body="WooCommerce → Settings → Payments → Nectar.Pay. Paste the API key and webhook secret from your Nectar.Pay dashboard."
+            body="WooCommerce → Settings → Payments → NectarPay. Paste the API key and webhook secret from your NectarPay dashboard, then set your store's webhook URL to https://your-shop/?wc-api=nectarpay."
           />
           <Step
             n={3}

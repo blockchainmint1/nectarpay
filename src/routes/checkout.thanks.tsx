@@ -65,7 +65,7 @@ function ThanksPage() {
               </h2>
               <dl className="mt-4 space-y-2 text-sm">
                 <Row label="Order ID" value={data.id.slice(0, 8).toUpperCase()} />
-                <Row label="Email" value={data.email} />
+                <Row label="Email" value={data.email ?? "—"} />
                 <Row
                   label="Ship to"
                   value={`${data.ship_city}, ${data.ship_country}`}

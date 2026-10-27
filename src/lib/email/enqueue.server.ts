@@ -1,0 +1,276 @@
+// App emails use SES; Cloud sign-in emails retain their managed auth handler.
+import { sendSesEmail } from "./ses.server";
+
+export interface EnqueueEmailArgs {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  /** Short label used for logging/reporting, e.g. "invoice_paid". */
+  label: string;
+  idempotencyKey?: string;
+}
+
+export async function enqueueAppEmail(
+  args: EnqueueEmailArgs,
+): Promise<{ ok: boolean; error?: string }> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const messageId = crypto.randomUUID();
+  const to = args.to.trim();
+
+  try {
+    await sendSesEmail({ to, subject: args.subject, html: args.html, text: args.text });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "send failed";
+    console.error("[email] send failed", { label: args.label, message });
+    const { error } = await supabaseAdmin.from("email_send_log").insert({
+      message_id: messageId,
+      template_name: args.label,
+      recipient_email: to,
+      status: "failed",
+      error_message: message.slice(0, 500),
+    });
+    if (error) console.error("[email] send log insert failed", { code: error.code, message: error.message });
+    return { ok: false, error: message };
+  }
+
+  const { error } = await supabaseAdmin.from("email_send_log").insert({
+    message_id: messageId,
+    template_name: args.label,
+    recipient_email: to,
+    status: "sent",
+  });
+  if (error) console.error("[email] send log insert failed", { code: error.code, message: error.message });
+
+  return { ok: true };
+}
+
+export interface PaymentAlertEmailData {
+  status: "paid" | "underpaid" | "overpaid";
+  storeName: string;
+  invoiceId: string;
+  amountDue: string;
+  amountReceived: string;
+  paymentMethod: string;
+  orderId?: string | null;
+  /** Human label for the gap, e.g. "$12.40 over" or "$1.24 short (accepted)". */
+  differenceLabel?: string | null;
+  /** Full invoice UUID — used to deep-link the button to this exact sale. */
+  invoiceUuid?: string | null;
+}
+
+export interface BillingAlertEmailData {
+  status: "renewed" | "payment_due" | "blocked";
+  planName: string;
+  priceUsd?: string;
+  txcCharged?: string;
+  txcNeeded?: string;
+  txcBalance?: string;
+  nextRenewal?: string;
+  graceEnds?: string;
+}
+
+/** Friendly NectarPay receipt/warning for subscription billing events. */
+export function renderBillingAlertEmail(data: BillingAlertEmailData): string {
+  const renewed = data.status === "renewed";
+  const blocked = data.status === "blocked";
+  const eyebrow = renewed ? "RENEWAL COMPLETE" : blocked ? "ACCOUNT PAUSED" : "ACTION NEEDED";
+  const headline = renewed
+    ? "You’re all set for another month!"
+    : blocked
+      ? "Let’s get you back up and running"
+      : "Your plan needs a quick top-up";
+  const intro = renewed
+    ? `Your NectarPay ${data.planName} plan renewed successfully. Thanks for building the future of honest payments with us.`
+    : blocked
+      ? `Your NectarPay ${data.planName} plan is paused because its renewal balance is still short. Top up your TXC balance and we’ll get you moving again.`
+      : `We couldn’t renew your NectarPay ${data.planName} plan from your current TXC balance. Add TXC before the date below to keep everything running smoothly.`;
+  const accent = renewed ? "#F6A21E" : "#D97706";
+  const panelBg = renewed ? "#FFF8E8" : "#FFF4E5";
+  const statusLabel = renewed ? "Paid with TEXITcoin" : blocked ? "Service paused" : "Top-up required";
+  const rows = [
+    detailRow("Plan", `${data.planName} plan`),
+    data.priceUsd ? detailRow("Monthly price", data.priceUsd) : "",
+    data.txcCharged ? detailRow("TXC charged", data.txcCharged) : "",
+    data.txcNeeded ? detailRow("TXC needed", data.txcNeeded) : "",
+    data.txcBalance ? detailRow("TXC balance", data.txcBalance) : "",
+    data.nextRenewal ? detailRow("Next renewal", data.nextRenewal) : "",
+    data.graceEnds ? detailRow("Top up by", data.graceEnds) : "",
+  ].join("");
+
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#2B3242;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(headline)} ${renewed && data.nextRenewal ? `Next renewal: ${escapeHtml(data.nextRenewal)}.` : ""}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;background:#ffffff;"><tr><td align="center" style="padding:32px 16px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;border:1px solid #E7E1D2;border-radius:12px;overflow:hidden;">
+      <tr><td style="background:#0D1B33;padding:24px 32px;border-bottom:4px solid ${accent};">
+        <div style="font-size:22px;line-height:1;font-weight:900;color:#ffffff;">Nectar<span style="color:#F6A21E;">Pay</span></div>
+        <div style="margin-top:8px;font-size:12px;line-height:1.4;color:#B7C0D4;">Honest money · Real merchants</div>
+      </td></tr>
+      <tr><td style="padding:36px 32px 30px;background:#ffffff;">
+        <div style="font-size:12px;line-height:1.4;font-weight:800;letter-spacing:1.5px;color:${accent};">${eyebrow}</div>
+        <h1 style="margin:8px 0 10px;font-size:30px;line-height:1.15;color:#0D1B33;">${headline}</h1>
+        <p style="margin:0 0 26px;font-size:16px;line-height:1.55;color:#4B5563;">${escapeHtml(intro)}</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;background:${panelBg};border:1px solid #F2D7A3;border-radius:10px;">
+          <tr><td align="center" style="padding:23px 20px;">
+            <div style="font-size:13px;font-weight:700;color:#6A7182;">${statusLabel}</div>
+            <div style="margin-top:5px;font-size:30px;line-height:1.15;font-weight:900;color:#0D1B33;">${escapeHtml(renewed ? data.priceUsd ?? `${data.planName} plan` : data.txcNeeded ?? `${data.planName} plan`)}</div>
+          </td></tr>
+        </table>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;margin-top:24px;border-collapse:collapse;">${rows}</table>
+        <div style="margin-top:28px;text-align:center;"><a href="https://app.nectar-pay.com/billing" style="display:inline-block;padding:14px 24px;border-radius:8px;background:#F6A21E;color:#0D1B33;font-size:15px;font-weight:800;text-decoration:none;">${renewed ? "View billing details" : "Top up & manage billing"}</a></div>
+        <p style="margin:22px 0 0;text-align:center;font-size:12px;line-height:1.5;color:#6A7182;">Questions? Just reply to this email — we’re happy to help.</p>
+      </td></tr>
+      <tr><td style="padding:20px 28px;background:#FAF8F3;border-top:1px solid #E7E1D2;text-align:center;">
+        <p style="margin:0 0 7px;font-size:12px;color:#6A7182;">Part of the <a href="https://honest.money" style="color:#B96A00;text-decoration:none;">honest.money ecosystem</a></p>
+        <p style="margin:0;font-size:11px;color:#6A7182;"><a href="https://app.nectar-pay.com/terms" style="color:#6A7182;">Terms</a> &nbsp;·&nbsp; <a href="https://app.nectar-pay.com/privacy" style="color:#6A7182;">Privacy</a> &nbsp;·&nbsp; <a href="https://app.nectar-pay.com/manifesto" style="color:#6A7182;">Manifesto</a></p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
+/** Polished receipt-style email for merchant payment notifications. */
+export function renderPaymentAlertEmail(data: PaymentAlertEmailData): string {
+  const paid = data.status === "paid";
+  const over = data.status === "overpaid";
+  const eyebrow = paid
+    ? "PAYMENT RECEIVED"
+    : over
+      ? "OVERPAYMENT RECEIVED"
+      : "PAYMENT NEEDS ATTENTION";
+  const headline = paid
+    ? "You made a sale!"
+    : over
+      ? "You made a sale — and then some"
+      : "A payment came in short";
+  const intro = paid
+    ? `Great news — ${data.storeName} just received a payment.`
+    : over
+      ? `${data.storeName} received more than the invoice asked for. The sale is marked paid, but the extra amount needs a look.`
+      : `${data.storeName} received a payment, but it did not cover the full invoice.`;
+  const accent = paid ? "#F6A21E" : "#D97706";
+  const badgeBg = paid ? "#FFF7E8" : "#FFF4E5";
+  const statusLabel = paid ? "Paid in full" : over ? "Overpaid" : "Underpaid";
+  const differenceRow = data.differenceLabel
+    ? detailRow("Difference", data.differenceLabel)
+    : "";
+  const orderRow = data.orderId
+    ? detailRow("Order reference", data.orderId)
+    : "";
+  const saleUrl = data.invoiceUuid
+    ? `https://app.nectar-pay.com/sales/${encodeURIComponent(data.invoiceUuid)}`
+    : "https://app.nectar-pay.com/dashboard";
+  const ctaLabel = data.invoiceUuid ? "View this sale" : "View sale in NectarPay";
+
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#2B3242;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(headline)} ${escapeHtml(data.amountReceived)} at ${escapeHtml(data.storeName)}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;background:#ffffff;"><tr><td align="center" style="padding:32px 16px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;border:1px solid #E7E1D2;border-radius:12px;overflow:hidden;">
+      <tr><td style="background:#0D1B33;padding:24px 32px;border-bottom:4px solid ${accent};">
+        <div style="font-size:22px;line-height:1;font-weight:900;color:#ffffff;">Nectar<span style="color:#F6A21E;">Pay</span></div>
+        <div style="margin-top:8px;font-size:12px;line-height:1.4;color:#B7C0D4;">Payment notification for ${escapeHtml(data.storeName)}</div>
+      </td></tr>
+      <tr><td style="padding:36px 32px 30px;background:#ffffff;">
+        <div style="font-size:12px;line-height:1.4;font-weight:800;letter-spacing:1.5px;color:${accent};">${eyebrow}</div>
+        <h1 style="margin:8px 0 10px;font-size:30px;line-height:1.15;color:#0D1B33;">${headline}</h1>
+        <p style="margin:0 0 26px;font-size:16px;line-height:1.55;color:#4B5563;">${escapeHtml(intro)}</p>
+
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;background:${badgeBg};border:1px solid #F2D7A3;border-radius:10px;">
+          <tr><td align="center" style="padding:24px 20px;">
+            <div style="font-size:13px;font-weight:700;color:#6A7182;">${statusLabel}</div>
+            <div style="margin-top:5px;font-size:38px;line-height:1.1;font-weight:900;color:#0D1B33;">${escapeHtml(data.amountReceived)}</div>
+          </td></tr>
+        </table>
+
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;margin-top:24px;border-collapse:collapse;">
+          ${detailRow("Store", data.storeName)}
+          ${detailRow("Invoice", data.invoiceId)}
+          ${detailRow("Payment method", data.paymentMethod)}
+          ${detailRow("Invoice total", data.amountDue)}
+          ${differenceRow}
+          ${orderRow}
+        </table>
+
+        <div style="margin-top:28px;text-align:center;">
+          <a href="${saleUrl}" style="display:inline-block;padding:14px 24px;border-radius:8px;background:#F6A21E;color:#0D1B33;font-size:15px;font-weight:800;text-decoration:none;">${ctaLabel}</a>
+        </div>
+        <p style="margin:22px 0 0;text-align:center;font-size:12px;line-height:1.5;color:#6A7182;">This notification was sent by NectarPay for ${escapeHtml(data.storeName)}.</p>
+      </td></tr>
+      <tr><td style="padding:20px 28px;background:#FAF8F3;border-top:1px solid #E7E1D2;text-align:center;">
+        <p style="margin:0 0 7px;font-size:12px;color:#6A7182;">Part of the <a href="https://honest.money" style="color:#B96A00;text-decoration:none;">honest.money ecosystem</a></p>
+        <p style="margin:0;font-size:11px;color:#6A7182;"><a href="https://app.nectar-pay.com/terms" style="color:#6A7182;">Terms</a> &nbsp;·&nbsp; <a href="https://app.nectar-pay.com/privacy" style="color:#6A7182;">Privacy</a> &nbsp;·&nbsp; <a href="https://app.nectar-pay.com/manifesto" style="color:#6A7182;">Manifesto</a></p>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
+function detailRow(label: string, value: string): string {
+  return `<tr><td style="padding:11px 0;border-bottom:1px solid #E7E1D2;font-size:13px;color:#6A7182;">${escapeHtml(label)}</td><td align="right" style="padding:11px 0;border-bottom:1px solid #E7E1D2;font-size:13px;font-weight:700;color:#2B3242;">${escapeHtml(value)}</td></tr>`;
+}
+
+/** Branded security email for the wallet-key step-up code. */
+export function renderWalletLinkVerificationEmail(storeName: string, code: string): string {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#2B3242;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Use ${escapeHtml(code)} to confirm the wallet change for ${escapeHtml(storeName)}. Expires in 10 minutes.</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;background:#ffffff;"><tr><td align="center" style="padding:32px 16px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;border:1px solid #E7E1D2;border-radius:12px;overflow:hidden;">
+      <tr><td style="background:#0D1B33;padding:24px 32px;border-bottom:4px solid #F6A21E;">
+        <div style="font-size:22px;line-height:1;font-weight:900;color:#ffffff;">Nectar<span style="color:#F6A21E;">Pay</span></div>
+        <div style="margin-top:8px;font-size:12px;line-height:1.4;color:#B7C0D4;">Security confirmation for ${escapeHtml(storeName)}</div>
+      </td></tr>
+      <tr><td style="padding:36px 32px 30px;background:#ffffff;">
+        <div style="font-size:12px;line-height:1.4;font-weight:800;letter-spacing:1.5px;color:#E8880C;">WALLET SECURITY</div>
+        <h1 style="margin:8px 0 10px;font-size:30px;line-height:1.15;color:#0D1B33;">Confirm your wallet change</h1>
+        <p style="margin:0 0 24px;font-size:16px;line-height:1.55;color:#4B5563;">Enter this one-time code in NectarPay to approve new wallet keys for <strong style="color:#0D1B33;">${escapeHtml(storeName)}</strong>.</p>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;background:#FFF8E8;border:1px solid #F2D7A3;border-radius:10px;">
+          <tr><td align="center" style="padding:24px 16px;">
+            <div style="font-size:12px;font-weight:800;letter-spacing:1.5px;color:#B96A00;">YOUR CONFIRMATION CODE</div>
+            <div style="margin-top:10px;font-family:Menlo,Consolas,'Courier New',monospace;font-size:38px;line-height:1;font-weight:900;letter-spacing:8px;color:#0D1B33;">${escapeHtml(code)}</div>
+            <div style="margin-top:12px;font-size:12px;color:#6A7182;">Expires in 10 minutes · Works once</div>
+          </td></tr>
+        </table>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;margin-top:24px;background:#FFF4E5;border-left:4px solid #D97706;">
+          <tr><td style="padding:16px 18px;font-size:13px;line-height:1.55;color:#594516;"><strong style="color:#7C4A03;">Didn’t request this?</strong><br>Do not share this code. Sign in, change your password, and contact support immediately—wallet changes can redirect payouts.</td></tr>
+        </table>
+        <div style="margin-top:28px;text-align:center;"><a href="https://app.nectar-pay.com/dashboard" style="display:inline-block;padding:14px 24px;border-radius:8px;background:#F6A21E;color:#0D1B33;font-size:15px;font-weight:800;text-decoration:none;">Open NectarPay</a></div>
+        <p style="margin:20px 0 0;text-align:center;font-size:12px;line-height:1.5;color:#6A7182;">NectarPay will never ask you to send this code by email, text, or chat.</p>
+      </td></tr>
+      ${emailFooter()}
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
+/** Branded fallback for merchant security and operational alerts. */
+export function renderAlertEmail(subject: string, lines: string[]): string {
+  const paragraphs = lines
+    .filter((line) => line.trim())
+    .map((line) => `<p style="margin:0 0 12px;font-size:15px;line-height:1.55;color:#4B5563;">${escapeHtml(line)}</p>`)
+    .join("");
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#2B3242;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(subject)}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;background:#ffffff;"><tr><td align="center" style="padding:32px 16px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;border:1px solid #E7E1D2;border-radius:12px;overflow:hidden;">
+      <tr><td style="background:#0D1B33;padding:24px 32px;border-bottom:4px solid #F6A21E;"><div style="font-size:22px;line-height:1;font-weight:900;color:#ffffff;">Nectar<span style="color:#F6A21E;">Pay</span></div><div style="margin-top:8px;font-size:12px;color:#B7C0D4;">Account notification</div></td></tr>
+      <tr><td style="padding:36px 32px 30px;background:#ffffff;"><div style="font-size:12px;font-weight:800;letter-spacing:1.5px;color:#E8880C;">ACCOUNT UPDATE</div><h1 style="margin:8px 0 20px;font-size:28px;line-height:1.2;color:#0D1B33;">${escapeHtml(subject)}</h1>${paragraphs}<div style="margin-top:28px;text-align:center;"><a href="https://app.nectar-pay.com/dashboard" style="display:inline-block;padding:14px 24px;border-radius:8px;background:#F6A21E;color:#0D1B33;font-size:15px;font-weight:800;text-decoration:none;">Open NectarPay</a></div></td></tr>
+      ${emailFooter()}
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
+function emailFooter(): string {
+  return `<tr><td style="padding:20px 28px;background:#FAF8F3;border-top:1px solid #E7E1D2;text-align:center;">
+    <p style="margin:0 0 7px;font-size:12px;color:#6A7182;">Part of the <a href="https://honest.money" style="color:#B96A00;text-decoration:none;">honest.money ecosystem</a></p>
+    <p style="margin:0;font-size:11px;color:#6A7182;"><a href="https://app.nectar-pay.com/terms" style="color:#6A7182;">Terms</a> &nbsp;·&nbsp; <a href="https://app.nectar-pay.com/privacy" style="color:#6A7182;">Privacy</a> &nbsp;·&nbsp; <a href="https://app.nectar-pay.com/manifesto" style="color:#6A7182;">Manifesto</a></p>
+  </td></tr>`;
+}
+
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}

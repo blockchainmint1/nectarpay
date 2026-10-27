@@ -49,15 +49,15 @@ function PrestaShopPage() {
             </a>
           </Button>
           <Button asChild variant="outline">
-            <Link to="/auth" search={{ mode: "signup" }}>
+            <Link to="/auth" search={{ mode: "choose" }}>
               Create an account first
             </Link>
           </Button>
         </div>
         <p className="mt-2 text-xs text-muted-foreground">
-          Module zip becomes available after phase 7 of the rollout — the PHP source is already in
-          our repo. Reach out via <Link to="/help" className="underline">help</Link> for
-          early access.
+          Works with PrestaShop 1.7.6 → 8.2 (tested on 8.1 and 8.2). Source ships in the zip under
+          MIT. See all platforms on the <Link to="/integrations" className="underline">integrations
+          index</Link>.
         </p>
 
         <div className="mt-12 space-y-8">

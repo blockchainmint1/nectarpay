@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, UsersRound, Store as StoreIcon, Receipt, BookOpen, LogOut, ArrowLeft, Smartphone } from "lucide-react";
+import { LayoutDashboard, UsersRound, Store as StoreIcon, Receipt, BookOpen, Radar, LogOut, ArrowLeft, Smartphone, SearchCheck, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -43,8 +43,12 @@ function AdminLayout() {
           <NavItem to="/admin" exact icon={<LayoutDashboard className="h-4 w-4" />}>Overview</NavItem>
           <NavItem to="/admin/crm" icon={<UsersRound className="h-4 w-4" />}>CRM</NavItem>
           <NavItem to="/admin/merchants" icon={<StoreIcon className="h-4 w-4" />}>Merchants</NavItem>
+          <NavItem to="/admin/setup" icon={<StoreIcon className="h-4 w-4" />}>Unfinished setups</NavItem>
           <NavItem to="/admin/invoices" icon={<Receipt className="h-4 w-4" />}>Invoices</NavItem>
+          <NavItem to="/admin/verify" icon={<SearchCheck className="h-4 w-4" />}>Verify address</NavItem>
+          <NavItem to="/admin/lightning" icon={<Zap className="h-4 w-4" />}>Lightning</NavItem>
           <NavItem to="/admin/updates" icon={<Smartphone className="h-4 w-4" />}>POS Updates</NavItem>
+          <NavItem to="/admin/prospector" icon={<Radar className="h-4 w-4" />}>Prospector</NavItem>
           <NavItem to="/admin/knowledge" icon={<BookOpen className="h-4 w-4" />}>Knowledge</NavItem>
         </nav>
 
@@ -103,6 +107,9 @@ function AdminLayout() {
             { to: "/admin/invoices", label: "Invoices", icon: <Receipt className="h-5 w-5" /> },
           ]}
           more={[
+            { to: "/admin/verify", label: "Verify address", icon: <SearchCheck className="h-4 w-4" /> },
+            { to: "/admin/lightning", label: "Lightning", icon: <Zap className="h-4 w-4" /> },
+            { to: "/admin/prospector", label: "Prospector", icon: <Radar className="h-4 w-4" /> },
             { to: "/admin/updates", label: "POS Updates", icon: <Smartphone className="h-4 w-4" /> },
             { to: "/admin/knowledge", label: "Knowledge", icon: <BookOpen className="h-4 w-4" /> },
             { to: "/dashboard", label: "Merchant view", icon: <ArrowLeft className="h-4 w-4" /> },

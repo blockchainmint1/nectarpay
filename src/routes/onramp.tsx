@@ -274,7 +274,7 @@ function KitSection() {
               "Bluetooth thermal receipt printer",
               "Nectar.Pay POS app (iOS & Android)",
               "Merchant dashboard with live settlement feed",
-              "Includes first-year merchant fee $228",
+              "Includes first-year merchant fee $300",
             ].map((f) => (
               <li key={f} className="flex items-start gap-2">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[color:var(--np-honey-400)]" />
@@ -298,7 +298,7 @@ function KitSection() {
             <div className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
               TERMINAL KIT + FIRST YEAR SERVICE
             </div>
-            <span className="text-4xl font-bold">$727</span>
+            <span className="text-4xl font-bold">$799</span>
           </div>
           <div className="mt-3 flex items-baseline justify-between text-sm text-muted-foreground">
             <span>now</span>

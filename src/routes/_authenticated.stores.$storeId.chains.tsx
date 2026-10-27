@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useStoreRef } from "@/lib/store-ref";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -21,8 +22,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { createWalletLinkCode } from "@/lib/wallet-link.functions";
+import { createWalletLinkCode, requestWalletLinkVerification } from "@/lib/wallet-link.functions";
+import { getStoreBtcPayoutAddress } from "@/lib/chain-payout.functions";
 import { qrToDataURL } from "@/lib/qr";
+import { VaultLinkDialog } from "@/components/VaultLinkDialog";
+import { WalletChangeHistory, useWalletChangeHistory, walletHistoryDate } from "@/components/WalletChangeHistory";
 // Inlined client-safe validators (mirror src/lib/chains/derive.server.ts).
 function isXpubLike(s: string): boolean {
   return /^([xtuvyz]pub)[1-9A-HJ-NP-Za-km-z]{100,120}$/.test(s.trim());
@@ -41,16 +45,23 @@ function maskSecret(s: string): string {
 
 
 export const Route = createFileRoute("/_authenticated/stores/$storeId/chains")({
-  head: () => ({ meta: [{ title: "Chains · Nectar.Pay" }] }),
+  head: () => ({ meta: [
+    { title: "Store chains & wallet history · Nectar.Pay" },
+    { name: "description", content: "Manage your store's payment networks and review its wallet-key change history." },
+    { property: "og:title", content: "Store chains & wallet history · Nectar.Pay" },
+    { property: "og:description", content: "Payment network settings and wallet-key history for your Nectar.Pay store." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: ChainsPage,
 });
 
-type ChainKey = "btc" | "txc" | "eth" | "ltc" | "bch" | "doge" | "dash" | "tron" | "sol";
+type ChainKey = "btc" | "txc" | "eth" | "ltc" | "bch" | "doge" | "dash" | "tron" | "sol" | "lightning";
 
 type ChainMeta = {
   key: ChainKey;
   name: string;
-  inputKind: "xpub" | "xpub-or-address" | "address";
+  inputKind: "xpub" | "xpub-or-address" | "address" | "btc-address";
   placeholder?: string;
   hint: string;
 };
@@ -119,7 +130,18 @@ const CHAINS: ChainMeta[] = [
     placeholder: "Solana public key (base58)",
     hint: "Single static receive address. Ed25519 + rent-exempt accounts make per-invoice derivation impractical; reconcile via order_id.",
   },
+  {
+    key: "lightning",
+    name: "Bitcoin Lightning",
+    inputKind: "btc-address",
+    placeholder: "bc1q… payout address (optional)",
+    hint: "Instant, near-zero-fee Bitcoin. Payments arrive on the Nectar.Pay node and are paid out on-chain once your balance crosses your payout threshold. Leave the address blank to have each payout sent to a fresh address from your linked Bitcoin wallet above — or enter a fixed bc1q… address to override.",
+  },
 ];
+
+function isBtcAddressLike(v: string): boolean {
+  return /^(bc1[a-z0-9]{25,87}|[13][a-km-zA-HJ-NP-Z1-9]{25,39})$/.test(v.trim());
+}
 
 
 
@@ -170,7 +192,9 @@ function emptyRow(chain: ChainKey): Row {
 }
 
 function ChainsPage() {
-  const { storeId } = Route.useParams();
+  const { storeId, storeSlug } = useStoreRef();
+  const walletHistory = useWalletChangeHistory(storeId);
+  const lastWalletChange = walletHistory.data?.pages[0]?.rows[0];
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["chain-configs", storeId],
@@ -191,6 +215,7 @@ function ChainsPage() {
   });
 
   const [suggestStables, setSuggestStables] = useState(false);
+  const [vaultOpen, setVaultOpen] = useState(false);
 
   const { data: linkInfo, refetch: refetchLink } = useQuery({
     queryKey: ["wallet-link-status", storeId],
@@ -207,6 +232,12 @@ function ChainsPage() {
     },
   });
   const isLinked = !!linkInfo;
+
+  function refreshWalletData() {
+    void refetch();
+    void refetchLink();
+    void walletHistory.refetch();
+  }
 
   useEffect(() => {
     if (!data) return;
@@ -229,10 +260,10 @@ function ChainsPage() {
 
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 md:px-8">
+    <div className="mx-auto max-w-[90rem] px-4 py-10 md:px-8">
       <Link
         to="/stores/$storeId"
-        params={{ storeId }}
+        params={{ storeId: storeSlug }}
         className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="h-4 w-4" /> Back to store
@@ -246,24 +277,28 @@ function ChainsPage() {
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
         Configure how each chain receives payments. We never hold keys — you provide an xpub (for
-        unique per-invoice addresses) or a single static receive address.
+        unique per-invoice addresses) or a single static receive address.{" "}
+        <a href="/docs/address-rotation" className="text-primary underline">
+          How address derivation &amp; rotation works →
+        </a>
       </p>
+      {lastWalletChange && (
+        <a href="#wallet-change-history" className="mt-3 inline-block text-xs text-primary underline underline-offset-4">
+          Wallet last updated: {walletHistoryDate(lastWalletChange.created_at)}
+        </a>
+      )}
 
       {isLinked ? (
         <WalletLinkedCard
           storeId={storeId}
           linkedAt={linkInfo?.used_at ?? null}
-          onRelinked={() => {
-            refetch();
-            refetchLink();
-          }}
+          onRelinked={refreshWalletData}
         />
       ) : (
         <WalletLinkCard
           storeId={storeId}
           onLinked={() => {
-            refetch();
-            refetchLink();
+            refreshWalletData();
             setSuggestStables(true);
           }}
         />
@@ -274,8 +309,19 @@ function ChainsPage() {
         onOpenChange={setSuggestStables}
         storeId={storeId}
         ethRow={rows.eth}
-        onApplied={() => refetch()}
+        onApplied={refreshWalletData}
       />
+
+      <div className="mt-4 flex items-center justify-between gap-3 rounded-lg border p-4">
+        <div>
+          <p className="text-sm font-medium">Using an HME Vault?</p>
+          <p className="text-xs text-muted-foreground">Scan your offline Vault's pairing QR to load its view-only keys.</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => setVaultOpen(true)}>
+          <ShieldCheck className="mr-1 h-4 w-4" /> Link HME Vault
+        </Button>
+      </div>
+      <VaultLinkDialog storeId={storeId} open={vaultOpen} onOpenChange={setVaultOpen} onLinked={refreshWalletData} />
 
       <StoreSettingsCard storeId={storeId} />
 
@@ -284,20 +330,111 @@ function ChainsPage() {
         <div className="mt-8 text-sm text-muted-foreground">Loading…</div>
       ) : (
         <div className="mt-6 space-y-4">
-          {CHAINS.map((meta) => (
+          {CHAINS.filter((c) => c.key !== "lightning").map((meta) => (
+            <Fragment key={meta.key}>
             <ChainCard
-              key={meta.key}
               meta={meta}
               row={rows[meta.key]}
               storeId={storeId}
               onChange={(r) => setRows((prev) => ({ ...prev, [meta.key]: r }))}
-              onSaved={() => refetch()}
+              onSaved={refreshWalletData}
               xpubLocked={isLinked}
+              lightning={
+                meta.key === "btc"
+                  ? {
+                      row: rows.lightning,
+                      onChange: (r: Row) => setRows((prev) => ({ ...prev, lightning: r })),
+                    }
+                  : undefined
+              }
             />
+            {meta.key === "eth" && (
+              <ZcuCard
+                storeId={storeId}
+                ethRow={rows.eth}
+                zcuRow={(data ?? []).find((r) => r.chain === "zcu") ?? null}
+                onSaved={refreshWalletData}
+              />
+            )}
+            </Fragment>
           ))}
+
         </div>
 
       )}
+      <WalletChangeHistory history={walletHistory} />
+    </div>
+  );
+}
+
+/**
+ * ZCU (Zero Chill Units) rides on the merchant's EVM wallet: same seed, same
+ * 0x addresses. Turning it on copies the EVM xpub into a "zcu" chain config;
+ * native ZCU only, priced like ETH (not a stablecoin). Off by default.
+ */
+function ZcuCard({
+  storeId,
+  ethRow,
+  zcuRow,
+  onSaved,
+}: {
+  storeId: string;
+  ethRow: Row;
+  zcuRow: { id: string; enabled: boolean } | null;
+  onSaved: () => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const enabled = !!zcuRow?.enabled;
+  const ethXpub = ethRow.xpub ?? (isXpubLike(ethRow.xpub_or_address) ? ethRow.xpub_or_address : null);
+
+  async function toggle(next: boolean) {
+    if (next && !ethXpub) {
+      toast.error("Add your EVM wallet (xpub) above first — ZCU uses the same wallet.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error } = next
+        ? await supabase.from("chain_configs").upsert(
+            {
+              store_id: storeId,
+              chain: "zcu",
+              network: "mainnet",
+              xpub: ethXpub,
+              xpub_or_address: ethXpub!,
+              enabled: true,
+              stables: [],
+            },
+            { onConflict: "store_id,chain" },
+          )
+        : await supabase.from("chain_configs").update({ enabled: false }).eq("id", zcuRow!.id);
+      if (error) throw new Error(error.message);
+      toast.success(next ? "ZCU is on — customers can now pay with ZCU." : "ZCU is off.");
+      onSaved();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Save failed.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="ml-4 rounded-lg border border-dashed border-border bg-card/40 p-4">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <div className="text-sm font-medium">ZCU (Zero Chill Units)</div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Ethereum-style coin that uses your EVM wallet above — same addresses, nothing new to
+            set up. Customers pay in native ZCU at the live price.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="enabled-zcu" className="text-xs text-muted-foreground">
+            Accept ZCU
+          </Label>
+          <Switch id="enabled-zcu" checked={enabled} disabled={saving} onCheckedChange={toggle} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -308,7 +445,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("stores")
-        .select("default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd, preferred_evm_chain")
+        .select("default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd, preferred_evm_chain, evm_address_rotation")
         .eq("id", storeId)
         .single();
       if (error) throw error;
@@ -323,6 +460,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
   const [tsdInstant, setTsdInstant] = useState<boolean>(true);
   const [tsdCap, setTsdCap] = useState<string>("250");
   const [preferredEvm, setPreferredEvm] = useState<string>("base");
+  const [evmRotation, setEvmRotation] = useState<boolean>(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -337,6 +475,9 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
       setTsdCap(cap == null ? "" : String(cap));
     }
     setPreferredEvm(((data as { preferred_evm_chain?: string }).preferred_evm_chain) ?? "base");
+    setEvmRotation(
+      (data as { evm_address_rotation?: boolean | null }).evm_address_rotation !== false,
+    );
   }, [data]);
 
 
@@ -359,6 +500,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
           tsd_instant: tsdInstant,
           tsd_instant_max_usd: tsdCap.trim() === "" ? null : Number(tsdCap),
           preferred_evm_chain: preferredEvm,
+          evm_address_rotation: evmRotation,
         })
         .eq("id", storeId);
       if (error) throw error;
@@ -382,7 +524,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
         Account-wide settings — applied to every chain on this store.
       </p>
 
-      <div className="mt-4 grid gap-4 md:grid-cols-[160px_1fr_auto] md:items-end">
+      <div className="mt-4 grid gap-4 md:grid-cols-2 md:items-end">
         <div>
           <Label htmlFor="default-confs" className="text-xs">Confirmations required</Label>
           <Input
@@ -408,10 +550,6 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
             below. Blank = no cap (any amount).
           </p>
         </div>
-        <Button onClick={onSave} disabled={saving}>
-          <Save className="mr-2 h-4 w-4" />
-          {saving ? "Saving…" : "Save"}
-        </Button>
       </div>
 
       <div className="mt-5 grid gap-3 border-t border-primary/15 pt-4 sm:grid-cols-2">
@@ -482,6 +620,29 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
           When a customer scans the QR, their wallet auto-fills the token and amount for this chain (one-tap pay). The same address still works on the other EVM chains — customers on those chains just pick their network in-wallet.
         </p>
       </div>
+
+      <div className="mt-5 border-t border-primary/15 pt-4">
+        <label className="flex items-start gap-3">
+          <Switch checked={evmRotation} onCheckedChange={setEvmRotation} className="mt-0.5" />
+          <div>
+            <div className="text-sm font-medium">Rotate EVM receive addresses</div>
+            <p className="text-xs text-muted-foreground">
+              On: every Ethereum / Base / BSC order gets its own address — best privacy, but each
+              one has to be moved to your main address separately (a network fee per address).
+              Off: all EVM orders are paid to your first address, so everything pools in one place
+              and you pay one fee to move it. We tell overlapping orders apart by a tiny unique
+              amount adjustment. Leave it on if you take a lot of orders at once.
+            </p>
+          </div>
+        </label>
+      </div>
+
+      <div className="mt-5 flex justify-end border-t border-primary/15 pt-4">
+        <Button onClick={onSave} disabled={saving}>
+          <Save className="mr-2 h-4 w-4" />
+          {saving ? "Saving…" : "Save"}
+        </Button>
+      </div>
     </div>
   );
 }
@@ -494,6 +655,7 @@ function ChainCard({
   onChange,
   onSaved,
   xpubLocked = false,
+  lightning,
 }: {
   meta: ChainMeta;
   row: Row;
@@ -501,6 +663,7 @@ function ChainCard({
   onChange: (r: Row) => void;
   onSaved: () => void;
   xpubLocked?: boolean;
+  lightning?: { row: Row; onChange: (r: Row) => void };
 }) {
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -510,11 +673,17 @@ function ChainCard({
 
   const value = meta.inputKind === "xpub" ? row.xpub ?? "" : row.xpub_or_address;
 
+
   const validation = useMemo(() => {
     const v = value.trim();
     if (!v) return { ok: false, msg: "" };
     if (meta.inputKind === "xpub") {
       return isXpubLike(v) ? { ok: true, msg: "" } : { ok: false, msg: "Doesn't look like an xpub." };
+    }
+    if (meta.inputKind === "btc-address") {
+      return isBtcAddressLike(v)
+        ? { ok: true, msg: "" }
+        : { ok: false, msg: "Not a valid Bitcoin address." };
     }
     if (meta.inputKind === "address") {
       return isSolanaAddressLike(v)
@@ -535,6 +704,67 @@ function ChainCard({
 
   async function onSave() {
     const v = value.trim();
+
+    // Never configured and left disabled: nothing to persist. Without this,
+    // Save on an empty/never-saved chain card errors out.
+    if (!persisted && !row.enabled) {
+      toast.success(`${meta.name} is off.`);
+      onSaved();
+      return;
+    }
+
+    // Already saved and the address field isn't being edited: only the
+    // toggles changed, so update those in place and skip re-validating a
+    // value the merchant can't even see/edit (legacy formats would block it).
+    if (persisted && row.id && !showInput) {
+
+      setSaving(true);
+      try {
+        const { error } = await supabase
+          .from("chain_configs")
+          .update({ enabled: row.enabled, stables: row.stables })
+          .eq("id", row.id!);
+        if (error) throw new Error(error.message || error.details || error.hint || "Save failed.");
+        toast.success(`${meta.name} saved.`);
+        onSaved();
+      } catch (e) {
+        console.error("save chain failed", e);
+        toast.error(e instanceof Error ? e.message : "Save failed.");
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
+
+    // Lightning payout address is OPTIONAL: blank means "derive a fresh
+    // payout address from my linked Bitcoin xpub at each sweep."
+    if (!v && meta.inputKind === "btc-address") {
+      setSaving(true);
+      try {
+        const payload = {
+          store_id: storeId,
+          chain: meta.key,
+          network: "mainnet",
+          xpub: null,
+          xpub_or_address: "",
+          enabled: row.enabled,
+          stables: row.stables,
+        };
+        const { error } = await supabase
+          .from("chain_configs")
+          .upsert(payload, { onConflict: "store_id,chain" });
+        if (error) throw new Error(error.message || "Save failed.");
+        toast.success(`${meta.name} saved — payouts will go to fresh addresses from your linked Bitcoin wallet.`);
+        onSaved();
+      } catch (e) {
+        console.error("save chain failed", e);
+        toast.error(e instanceof Error ? e.message : "Save failed.");
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
+
     if (!v) {
       toast.error("Enter an xpub or address first.");
       return;
@@ -549,11 +779,12 @@ function ChainCard({
         store_id: storeId,
         chain: meta.key,
         network: "mainnet",
-        xpub: meta.inputKind === "address" ? null : (isXpubLike(v) ? v : null),
+        xpub: meta.inputKind === "address" || meta.inputKind === "btc-address" ? null : (isXpubLike(v) ? v : null),
         xpub_or_address: v,
         enabled: row.enabled,
         stables: row.stables,
       };
+
 
       const { error } = await supabase
         .from("chain_configs")
@@ -593,12 +824,14 @@ function ChainCard({
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
+      <div className="mt-4">
         {showInput ? (
 
           <div>
             <Label htmlFor={`val-${meta.key}`} className="text-xs">
-              {meta.inputKind === "address"
+              {meta.inputKind === "btc-address"
+                ? "Bitcoin payout address"
+                : meta.inputKind === "address"
                 ? "Receive address"
                 : meta.inputKind === "xpub"
                 ? "Extended public key (xpub)"
@@ -620,7 +853,7 @@ function ChainCard({
         ) : (
           <div>
             <Label className="text-xs">
-              {meta.inputKind === "address" ? "Receive address" : "Saved"}
+              {meta.inputKind === "btc-address" ? "Bitcoin payout address" : meta.inputKind === "address" ? "Receive address" : "Saved"}
             </Label>
             <div className="flex items-center gap-2 rounded-md border border-border bg-background/40 px-3 py-2">
               <code className="flex-1 truncate font-mono text-xs text-muted-foreground">
@@ -658,11 +891,6 @@ function ChainCard({
             </div>
           </div>
         )}
-
-        <Button onClick={onSave} disabled={saving}>
-          <Save className="mr-2 h-4 w-4" />
-          {saving ? "Saving…" : "Save"}
-        </Button>
       </div>
 
       {STABLES_BY_CHAIN[meta.key] && STABLES_BY_CHAIN[meta.key]!.length > 0 && (
@@ -713,19 +941,188 @@ function ChainCard({
           </p>
         </div>
       )}
+
+      <div className="mt-4 flex justify-end">
+        <Button onClick={onSave} disabled={saving}>
+          <Save className="mr-2 h-4 w-4" />
+          {saving ? "Saving…" : "Save"}
+        </Button>
+      </div>
+
+      {lightning && (
+        <LightningSection
+          storeId={storeId}
+          row={lightning.row}
+          onChange={lightning.onChange}
+          onSaved={onSaved}
+          btcXpub={meta.inputKind === "xpub" ? row.xpub ?? row.xpub_or_address ?? "" : ""}
+        />
+      )}
     </div>
   );
 }
 
+function LightningSection({
+  storeId,
+  row,
+  onChange,
+  onSaved,
+  btcXpub,
+}: {
+  storeId: string;
+  row: Row;
+  onChange: (r: Row) => void;
+  onSaved: () => void;
+  btcXpub: string;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [prefilling, setPrefilling] = useState(false);
+  const derive = useServerFn(getStoreBtcPayoutAddress);
+  const address = row.xpub_or_address ?? "";
+  const valid = !address.trim() || isBtcAddressLike(address);
+
+  async function prefill() {
+    setPrefilling(true);
+    try {
+      const res = await derive({ data: { storeId } });
+      if (!res.address) {
+        toast.error("Save a Bitcoin xpub above first — we derive the payout address from it.");
+        return;
+      }
+      onChange({ ...row, xpub_or_address: res.address, xpub: null });
+      toast.success("Filled with your first Bitcoin address (m/0/0).");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not derive an address.");
+    } finally {
+      setPrefilling(false);
+    }
+  }
+
+  // Auto-prefill once: Lightning on, no address saved yet, BTC xpub present.
+  const [autoTried, setAutoTried] = useState(false);
+  useEffect(() => {
+    if (autoTried) return;
+    if (!btcXpub || address.trim()) return;
+    setAutoTried(true);
+    derive({ data: { storeId } })
+      .then((res) => {
+        if (res.address) onChange({ ...row, xpub_or_address: res.address, xpub: null });
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [btcXpub, address, autoTried]);
+
+  async function save() {
+    const v = address.trim();
+    if (v && !isBtcAddressLike(v)) {
+      toast.error("Not a valid Bitcoin address.");
+      return;
+    }
+    setSaving(true);
+    try {
+      if (row.id) {
+        const { error } = await supabase
+          .from("chain_configs")
+          .update({ enabled: row.enabled, xpub_or_address: v, xpub: null })
+          .eq("id", row.id);
+        if (error) throw new Error(error.message);
+      } else {
+        const { error } = await supabase.from("chain_configs").upsert(
+          {
+            store_id: storeId,
+            chain: "lightning",
+            network: "mainnet",
+            xpub: null,
+            xpub_or_address: v,
+            enabled: row.enabled,
+            stables: row.stables,
+          },
+          { onConflict: "store_id,chain" },
+        );
+        if (error) throw new Error(error.message);
+      }
+      toast.success("Lightning settings saved.");
+      onSaved();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Save failed.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="mt-4 rounded-md border border-primary/30 bg-primary/5 p-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <Sparkles className="h-3.5 w-3.5 text-primary" /> Bitcoin Lightning
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Instant, near-zero-fee Bitcoin. Payments arrive on the Nectar.Pay node and are paid out
+            on-chain once your balance crosses the payout threshold.
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <Label htmlFor="enabled-lightning" className="text-xs text-muted-foreground">
+            Accept Lightning
+          </Label>
+          <Switch
+            id="enabled-lightning"
+            checked={row.enabled}
+            onCheckedChange={(checked) => onChange({ ...row, enabled: checked })}
+          />
+        </div>
+      </div>
+
+      <div className="mt-3 grid gap-3 md:grid-cols-[1fr_auto_auto] md:items-end">
+        <div>
+          <Label htmlFor="ln-payout" className="text-xs">
+            Bitcoin payout address
+          </Label>
+          <Input
+            id="ln-payout"
+            value={address}
+            onChange={(e) => onChange({ ...row, xpub_or_address: e.target.value, xpub: null })}
+            placeholder="bc1q… (pre-filled from your Bitcoin xpub)"
+            spellCheck={false}
+            autoComplete="off"
+            className="font-mono text-xs"
+          />
+          {!valid && <p className="mt-1 text-xs text-destructive">Not a valid Bitcoin address.</p>}
+        </div>
+        <Button type="button" variant="outline" onClick={prefill} disabled={prefilling}>
+          <RefreshCw className={cn("mr-2 h-4 w-4", prefilling && "animate-spin")} />
+          Use my Bitcoin address
+        </Button>
+        <Button type="button" onClick={save} disabled={saving}>
+          <Save className="mr-2 h-4 w-4" />
+          {saving ? "Saving…" : "Save"}
+        </Button>
+      </div>
+      <p className="mt-2 text-[11px] text-muted-foreground">
+        Pre-filled with address #0 derived from your Bitcoin xpub above. Change it to any bc1q…
+        address you control.
+      </p>
+    </div>
+  );
+}
+
+
 function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () => void }) {
   const createCode = useServerFn(createWalletLinkCode);
+  const requestVerification = useServerFn(requestWalletLinkVerification);
   const [token, setToken] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [linkUrl, setLinkUrl] = useState<string | null>(null);
   const [now, setNow] = useState<number>(() => Date.now());
   const [busy, setBusy] = useState(false);
   const [linked, setLinked] = useState(false);
   const [allowNewWallet, setAllowNewWallet] = useState(false);
+  const [sendingCode, setSendingCode] = useState(false);
+  const [sentTo, setSentTo] = useState<string | null>(null);
+  const [verificationCode, setVerificationCode] = useState("");
+
 
   // Tick once a second for countdown.
   useEffect(() => {
@@ -757,11 +1154,24 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
     return () => clearInterval(i);
   }, [token, expired, linked, storeId, onLinked]);
 
+  async function onSendVerification() {
+    setSendingCode(true);
+    try {
+      const res = await requestVerification({ data: { storeId } });
+      setSentTo(res.sent_to);
+      toast.success(`Confirmation code sent to ${res.sent_to}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not send the confirmation code.");
+    } finally {
+      setSendingCode(false);
+    }
+  }
+
   async function onGenerate() {
     setBusy(true);
     setLinked(false);
     try {
-      const result = await createCode({ data: { storeId, allowNewWallet } });
+      const result = await createCode({ data: { storeId, allowNewWallet, verificationCode } });
       // QR ALWAYS points at the canonical production host. Beekeeper
       // allowlists nectar-pay.com — a preview/staging origin would be
       // rejected as "Bad manifest" even though our payload is well-formed.
@@ -770,8 +1180,9 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
       const canonical =
         (import.meta.env.VITE_PUBLIC_SITE_URL as string | undefined)?.replace(/\/$/, "") ||
         "https://app.nectar-pay.com";
-      const linkUrl = `${canonical}/api/public/v1/wallet-link?token=${encodeURIComponent(result.token)}`;
-      const qr = await qrToDataURL(linkUrl, { width: 320, margin: 1 });
+      const url = `${canonical}/api/public/v1/wallet-link?token=${encodeURIComponent(result.token)}`;
+      const qr = await qrToDataURL(url, { width: 320, margin: 1 });
+      setLinkUrl(url);
       setQrDataUrl(qr);
       setToken(result.token);
       setExpiresAt(new Date(result.expires_at).getTime());
@@ -786,7 +1197,10 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
     setToken(null);
     setExpiresAt(null);
     setQrDataUrl(null);
+    setLinkUrl(null);
     setLinked(false);
+    setSentTo(null);
+    setVerificationCode("");
   }
 
   return (
@@ -819,19 +1233,69 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
                   register this wallet to your account on first use.
                 </span>
               </label>
-              <Button className="mt-3" onClick={onGenerate} disabled={busy}>
-                <Smartphone className="mr-2 h-4 w-4" />
-                {busy ? "Generating…" : "Generate link code"}
-              </Button>
+              <div className="mt-4 rounded-md border border-border bg-background/50 p-3">
+                <div className="flex items-center gap-2 text-xs font-medium">
+                  <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                  Email confirmation required
+                </div>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Changing the wallet keys on a store moves where your money lands, so we email
+                  you a 6-digit code first. It expires in 10 minutes.
+                </p>
+
+                <Button
+                  className="mt-3"
+                  variant="outline"
+                  size="sm"
+                  onClick={onSendVerification}
+                  disabled={sendingCode}
+                >
+                  {sendingCode ? "Sending…" : sentTo ? "Resend code" : "Email me a confirmation code"}
+                </Button>
+
+                <div className="mt-3 text-[11px] text-muted-foreground">
+                  {sentTo ? (
+                    <>
+                      Code sent to <span className="text-foreground">{sentTo}</span>. Enter it below.
+                    </>
+                  ) : (
+                    <>Already have a code from an earlier email? Enter it below — no need to resend.</>
+                  )}
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <Input
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    value={verificationCode}
+                    onChange={(e) =>
+                      setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                    }
+                    placeholder="123456"
+                    className="h-9 w-32 text-center font-mono tracking-[0.3em]"
+                  />
+                  <Button onClick={onGenerate} disabled={busy || verificationCode.length !== 6}>
+                    <Smartphone className="mr-2 h-4 w-4" />
+                    {busy ? "Generating…" : "Confirm & get link QR"}
+                  </Button>
+                </div>
+
+              </div>
             </>
           )}
 
 
           {token && qrDataUrl && (
             <div className="mt-4 flex flex-col items-start gap-4 sm:flex-row">
-              <div className="rounded-md border border-border bg-white p-2">
+              <div className="shrink-0 self-start rounded-md border border-border bg-white p-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={qrDataUrl} alt="Wallet link QR" className="h-48 w-48" />
+                <img
+                  src={qrDataUrl}
+                  alt="Wallet link QR"
+                  width={192}
+                  height={192}
+                  style={{ width: 192, height: 192, display: "block" }}
+                />
               </div>
               <div className="flex-1 text-xs">
                 {linked ? (
@@ -848,6 +1312,28 @@ function WalletLinkCard({ storeId, onLinked }: { storeId: string; onLinked: () =
                       Expires in {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, "0")}
                     </div>
                   </>
+                )}
+                {!linked && !expired && linkUrl && (
+                  <div className="mt-3">
+                    <div className="text-[11px] text-muted-foreground">
+                      Can't scan? Paste this link into Beekeeper:
+                    </div>
+                    <div className="mt-1 flex items-center gap-2">
+                      <code className="block max-w-full flex-1 truncate rounded border border-border bg-background/60 px-2 py-1 font-mono text-[10px]">
+                        {linkUrl}
+                      </code>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          void navigator.clipboard.writeText(linkUrl);
+                          toast.success("Link copied");
+                        }}
+                      >
+                        Copy
+                      </Button>
+                    </div>
+                  </div>
                 )}
                 <Button variant="ghost" size="sm" className="mt-3" onClick={reset}>
                   <RefreshCw className="mr-2 h-3 w-3" />
@@ -999,7 +1485,8 @@ function WalletLinkedCard({
               Re-link Beekeeper wallet?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Replacing xpubs requires a fresh signature from your Beekeeper wallet. Anyone
+              Replacing xpubs requires a 6-digit code emailed to you, plus a fresh signature
+              from your Beekeeper wallet. Anyone
               scanning the next QR can overwrite the xpubs on this store, so only generate it
               when you're ready to scan from the wallet that owns the funds.
             </AlertDialogDescription>

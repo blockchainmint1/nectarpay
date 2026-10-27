@@ -127,7 +127,6 @@ async function enqueueTransactional(
   const { error } = await supabase.rpc("enqueue_email", {
     queue_name: "transactional_emails",
     payload: {
-      run_id: messageId,
       message_id: messageId,
       idempotency_key: messageId,
       to,
@@ -142,7 +141,7 @@ async function enqueueTransactional(
     },
   });
   if (error) {
-    console.error("[leads] enqueue failed", { label, to, error });
+    console.error("[leads] enqueue failed", { label, error });
     await supabase.from("email_send_log").insert({
       message_id: messageId,
       template_name: label,

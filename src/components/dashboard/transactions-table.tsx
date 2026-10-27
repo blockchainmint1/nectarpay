@@ -1,7 +1,7 @@
 import { Fragment, useState, useEffect } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { ArrowUpDown, ArrowUp, ArrowDown, Search, ChevronLeft, ChevronRight, ExternalLink, Store, ChevronDown, ChevronRight as ChevronRightIcon } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, Search, ChevronLeft, ChevronRight, ExternalLink, Store, ChevronDown, ChevronRight as ChevronRightIcon, Link2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { ALL_NETWORKS } from "@/lib/chains/networks";
 
 type SortKey = "first_seen_at" | "amount" | "confirmations";
 type SortDir = "asc" | "desc";
@@ -42,13 +43,14 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
   const [searchInput, setSearchInput] = useState("");
   const search = useDebounced(searchInput, 300);
   const [storeFilter, setStoreFilter] = useState<string>("all");
+  const [chainFilter, setChainFilter] = useState<string>("all");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
 
   const storeList = stores ?? [];
 
   const query = useQuery({
-    queryKey: ["dashboard-transactions", userId, page, pageSize, sortKey, sortDir, search, storeFilter],
+    queryKey: ["dashboard-transactions", userId, page, pageSize, sortKey, sortDir, search, storeFilter, chainFilter],
     queryFn: async () => {
       const from = page * pageSize;
       const to = from + pageSize - 1;
@@ -70,6 +72,10 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
 
       if (storeFilter !== "all") {
         q = q.eq("invoice.store_id", storeFilter);
+      }
+
+      if (chainFilter !== "all") {
+        q = q.eq("invoice.chain", chainFilter);
       }
 
       const { data, error, count } = await q;
@@ -147,6 +153,26 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
               </SelectContent>
             </Select>
           )}
+          <Select
+            value={chainFilter}
+            onValueChange={(v) => {
+              setChainFilter(v);
+              setPage(0);
+            }}
+          >
+            <SelectTrigger className="h-9 w-[180px]">
+              <Link2 className="mr-1 h-3.5 w-3.5 text-muted-foreground" />
+              <SelectValue placeholder="All chains" />
+            </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All chains</SelectItem>
+                {Object.entries(ALL_NETWORKS).map(([k, net]) => (
+                  <SelectItem key={k} value={k}>
+                    {net.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+          </Select>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>Rows per page</span>
@@ -180,6 +206,7 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
               <th className="px-4 py-2.5">Store</th>
               <th className="px-4 py-2.5">Order ID</th>
               <th className="px-4 py-2.5">Tx hash</th>
+              <th className="px-4 py-2.5">Chain</th>
               <th className="px-4 py-2.5 text-right"><SortHead k="amount" align="right">Amount</SortHead></th>
               <th className="px-4 py-2.5 text-right">Value</th>
               <th className="px-4 py-2.5 text-right"><SortHead k="confirmations" align="right">Conf.</SortHead></th>
@@ -188,16 +215,17 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
           </thead>
           <tbody>
             {query.isLoading ? (
-              <tr><td colSpan={9} className="p-8 text-center text-muted-foreground">Loading…</td></tr>
+              <tr><td colSpan={10} className="p-8 text-center text-muted-foreground">Loading…</td></tr>
             ) : query.error ? (
-              <tr><td colSpan={9} className="p-8 text-center text-destructive">Failed to load transactions</td></tr>
+              <tr><td colSpan={10} className="p-8 text-center text-destructive">Failed to load transactions</td></tr>
             ) : (query.data?.rows ?? []).length === 0 ? (
-              <tr><td colSpan={9} className="p-8 text-center text-muted-foreground">No transactions yet</td></tr>
+              <tr><td colSpan={10} className="p-8 text-center text-muted-foreground">No transactions yet</td></tr>
             ) : (
               query.data!.rows.map((r: any) => {
                 const inv = Array.isArray(r.invoice) ? r.invoice[0] : r.invoice;
                 const store = inv ? (Array.isArray(inv.store) ? inv.store[0] : inv.store) : null;
-                const symbol = r.token_symbol || tickerForChain(inv?.chain);
+                const symbol = r.token_symbol || inv?.token_symbol || tickerForChain(inv?.chain);
+                const chainLabel = inv?.chain ? (ALL_NETWORKS[inv.chain as keyof typeof ALL_NETWORKS]?.name ?? inv.chain.toUpperCase()) : "—";
                 const fiatCurrency = inv?.fiat_currency || "USD";
                 const fiatVal = inv?.fiat_amount != null ? Number(inv.fiat_amount) : null;
                 const isOpen = expanded.has(r.id);
@@ -232,6 +260,9 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
                       <td className="px-4 py-2.5 font-mono text-xs">
                         <span title={r.tx_hash}>{r.tx_hash.slice(0, 10)}…{r.tx_hash.slice(-6)}</span>
                       </td>
+                      <td className="px-4 py-2.5 whitespace-nowrap text-muted-foreground">
+                        {chainLabel}
+                      </td>
                       <td className="px-4 py-2.5 text-right font-mono tabular-nums whitespace-nowrap">
                         <span title={String(r.amount)}>{formatCryptoAmount(r.amount, symbol)}</span>
                         {symbol ? <span className="ml-1 text-xs text-muted-foreground">{symbol}</span> : null}
@@ -259,7 +290,7 @@ export function TransactionsTable({ userId, stores }: { userId: string | undefin
                     {isOpen && (
                       <tr className="border-b border-border/60 bg-muted/10">
                         <td></td>
-                        <td colSpan={8} className="px-4 py-4">
+                        <td colSpan={9} className="px-4 py-4">
                           <TransactionDetails row={r} invoice={inv} store={store} symbol={symbol} />
                         </td>
                       </tr>

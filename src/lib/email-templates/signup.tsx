@@ -1,12 +1,23 @@
 import * as React from 'react'
-import { Button, Link, Section, Text } from '@react-email/components'
-import { EmailShell, EmailHr, styles } from './_brand'
+
+import {
+  Body,
+  
+  Container,
+  Head,
+  Heading,
+  Html,
+  Link,
+  Preview,
+  Text,
+} from '@react-email/components'
 
 interface SignupEmailProps {
   siteName: string
   siteUrl: string
   recipient: string
   confirmationUrl: string
+  token?: string
 }
 
 export const SignupEmail = ({
@@ -14,33 +25,91 @@ export const SignupEmail = ({
   siteUrl,
   recipient,
   confirmationUrl,
+  token,
 }: SignupEmailProps) => (
-  <EmailShell
-    preview={`Confirm your email for ${siteName}`}
-    siteName={siteName}
-  >
-    <Text style={styles.h1}>Welcome to the hive</Text>
-    <Text style={styles.text}>
-      Thanks for signing up for{' '}
-      <Link href={siteUrl} style={styles.link}>
-        <strong>{siteName}</strong>
-      </Link>
-      . One quick step — confirm{' '}
-      <Link href={`mailto:${recipient}`} style={styles.link}>
-        {recipient}
-      </Link>{' '}
-      is really yours.
-    </Text>
-    <Section style={styles.buttonWrap}>
-      <Button style={styles.button} href={confirmationUrl}>
-        Confirm my email
-      </Button>
-    </Section>
-    <EmailHr style={styles.hr} />
-    <Text style={styles.small}>
-      Didn't create an account? You can safely ignore this email.
-    </Text>
-  </EmailShell>
+  <Html lang="en" dir="ltr">
+    <Head>
+      <style>{darkModeCss}</style>
+    </Head>
+    <Preview>Confirm your email for {siteName}</Preview>
+    <Body style={main}>
+      <Container style={container}>
+        <Heading style={h1}>Confirm your email</Heading>
+        <Text style={text}>
+          Thanks for signing up for{' '}
+          <Link href={siteUrl} style={link}>
+            <strong>{siteName}</strong>
+          </Link>
+          !
+        </Text>
+        <Text style={text}>
+          Type this code into {siteName} to confirm {recipient} and finish signing
+          in:
+        </Text>
+        {token ? (
+          <Text className="dm-code" style={codeBox}>
+            {token}
+          </Text>
+        ) : null}
+        <Text style={text}>
+          On the same device? You can also{' '}
+          <Link href={confirmationUrl} style={link}>
+            confirm with this link
+          </Link>
+          .
+        </Text>
+        <Text style={footer}>
+          If you didn't create an account, you can safely ignore this email.
+        </Text>
+      </Container>
+    </Body>
+  </Html>
 )
 
 export default SignupEmail
+
+const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
+const container = { padding: '20px 25px' }
+const h1 = {
+  fontSize: '22px',
+  fontWeight: 'bold' as const,
+  color: '#000000',
+  margin: '0 0 20px',
+}
+const text = {
+  fontSize: '14px',
+  color: '#55575d',
+  lineHeight: '1.5',
+  margin: '0 0 25px',
+}
+const link = { color: 'inherit', textDecoration: 'underline' }
+const button = {
+  backgroundColor: '#000000',
+  color: '#ffffff',
+  fontSize: '14px',
+  border: '1px solid #000000',
+  borderRadius: '8px',
+  padding: '12px 20px',
+  textDecoration: 'none',
+}
+const codeBox = {
+  fontSize: '34px',
+  fontWeight: 'bold' as const,
+  letterSpacing: '10px',
+  color: '#000000',
+  backgroundColor: '#f4f4f5',
+  border: '1px solid #e4e4e7',
+  borderRadius: '10px',
+  padding: '18px 12px',
+  textAlign: 'center' as const,
+  margin: '0 0 24px',
+}
+const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+// Rendered as a text child, which React may HTML-escape: keep this CSS free of >, &, and quotes.
+const darkModeCss = `
+  @media (prefers-color-scheme: dark) {
+  .dm-code { background-color: #1c1c1f !important; color: #ffffff !important; border-color: #333338 !important; }
+  }
+  [data-ogsc] .dm-code { background-color: #1c1c1f !important; color: #ffffff !important; }
+  [data-ogsb] .dm-code { background-color: #1c1c1f !important; color: #ffffff !important; }
+`
