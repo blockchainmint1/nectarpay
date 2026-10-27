@@ -50,6 +50,13 @@
       "when": 1792846811858,
       "tag": "0006_correct_customer_consent_store_access",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793098674897,
+      "tag": "0007_store_slug_profile_logo",
+      "breakpoints": true
     }
   ]
 }

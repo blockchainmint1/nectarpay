@@ -1812,6 +1812,8 @@ export type Database = {
           business_lat: number | null
           business_lng: number | null
           business_logo_url: string | null
+          business_phone: string | null
+          business_presence: string
           business_region: string | null
           created_at: string
           deactivated_at: string | null
@@ -1867,6 +1869,7 @@ export type Database = {
           tsd_instant: boolean
           tsd_instant_max_usd: number | null
           updated_at: string
+          url_slug: string
           usdc_payout_address_eth: string | null
           webhook_secret: string | null
           webhook_secret_hash: string | null
@@ -1885,6 +1888,8 @@ export type Database = {
           business_lat?: number | null
           business_lng?: number | null
           business_logo_url?: string | null
+          business_phone?: string | null
+          business_presence?: string
           business_region?: string | null
           created_at?: string
           deactivated_at?: string | null
@@ -1940,6 +1945,7 @@ export type Database = {
           tsd_instant?: boolean
           tsd_instant_max_usd?: number | null
           updated_at?: string
+          url_slug: string
           usdc_payout_address_eth?: string | null
           webhook_secret?: string | null
           webhook_secret_hash?: string | null
@@ -1958,6 +1964,8 @@ export type Database = {
           business_lat?: number | null
           business_lng?: number | null
           business_logo_url?: string | null
+          business_phone?: string | null
+          business_presence?: string
           business_region?: string | null
           created_at?: string
           deactivated_at?: string | null
@@ -2013,6 +2021,7 @@ export type Database = {
           tsd_instant?: boolean
           tsd_instant_max_usd?: number | null
           updated_at?: string
+          url_slug?: string
           usdc_payout_address_eth?: string | null
           webhook_secret?: string | null
           webhook_secret_hash?: string | null
@@ -2734,6 +2743,7 @@ export type Database = {
       owns_store: { Args: { _store_id: string }; Returns: boolean }
       purge_expired_wallet_challenges: { Args: never; Returns: undefined }
       store_access_level: { Args: { _store_id: string }; Returns: number }
+      store_slugify: { Args: { _name: string }; Returns: string }
       txc_balance: { Args: { _user_id: string }; Returns: number }
     }
     Enums: {
