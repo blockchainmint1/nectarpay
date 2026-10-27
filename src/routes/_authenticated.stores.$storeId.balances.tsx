@@ -96,6 +96,7 @@ function ChainBalanceCard({
   nextIndex: number;
   configured: boolean;
 }) {
+  const { storeSlug } = useStoreRef();
   const [open, setOpen] = useState(false);
   const [start, setStart] = useState(1);
   const load = useServerFn(getChainBalances);
