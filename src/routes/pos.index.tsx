@@ -151,6 +151,7 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
   const [optionsErr, setOptionsErr] = useState<string | null>(null);
   const [finalTipCents, setFinalTipCents] = useState(0);
   const [tappedUid, setTappedUid] = useState<string | null>(null);
+  const [cardSent, setCardSent] = useState(false);
   const [experience, setExperience] = useState<Experience>(DEFAULT_EXPERIENCE);
   const [storeName, setStoreName] = useState<string | null>(null);
   const [receiptCfg, setReceiptCfg] = useState<ReceiptConfig>(DEFAULT_RECEIPT);
@@ -285,7 +286,7 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
     setSubtotalCents(0); setTipBps(0); setCustomTipCents(null);
     setInvoice(null); setStatus(null); setErr(null);
     setFinalTipCents(0);
-    setTappedUid(null);
+    setTappedUid(null); setCardSent(false);
     setScreen("amount");
   };
 
@@ -321,7 +322,7 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
             busy={busy}
             err={err}
             onPick={(opt) => createInvoice(finalTipCents, opt)}
-            onCard={() => { setTappedUid(null); void createInvoice(finalTipCents, null, "card"); }}
+            onCard={() => { setTappedUid(null); setCardSent(false); void createInvoice(finalTipCents, null, "card"); }}
             onBack={() => setScreen(hasTips ? "tip" : "amount")}
           />
         )}
