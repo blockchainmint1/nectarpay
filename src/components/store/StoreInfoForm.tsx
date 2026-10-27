@@ -29,6 +29,8 @@ type Form = {
   business_postal_code: string;
   business_hours: string;
   business_phone: string;
+  website: string;
+  business_email: string;
   business_presence: Presence;
   business_category: string;
   business_description: string;
@@ -37,7 +39,7 @@ type Form = {
 
 const EMPTY: Form = {
   name: "", listed: false, visibility: "city_only", business_address: "", business_city: "",
-  business_region: "", business_country: "", business_postal_code: "", business_hours: "", business_phone: "", business_presence: "physical",
+  business_region: "", business_country: "", business_postal_code: "", business_hours: "", business_phone: "", website: "", business_email: "", business_presence: "physical",
   business_category: "", business_description: "", business_logo_url: "",
 };
 
@@ -53,7 +55,7 @@ export function StoreInfoForm({ storeId, storeSlug }: { storeId: string; storeSl
     queryFn: async () => {
       const { data, error } = await supabase
         .from("stores")
-        .select("id, name, listing_visibility, business_address, business_city, business_region, business_country, business_postal_code, business_hours, business_phone, business_presence, business_category, business_description, business_logo_url")
+        .select("id, name, listing_visibility, business_address, business_city, business_region, business_country, business_postal_code, business_hours, business_phone, website, business_email, business_presence, business_category, business_description, business_logo_url")
         .eq("id", storeId)
         .maybeSingle();
       if (error) throw error;
