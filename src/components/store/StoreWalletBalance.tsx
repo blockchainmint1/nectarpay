@@ -58,7 +58,7 @@ export function StoreWalletBalance({ storeId, storeSlug }: { storeId: string; st
       <div className="mt-1 text-2xl font-semibold tabular-nums">
         {data ? `$${data.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "Scanning…"}
       </div>
-      <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+      <div className="mt-1 flex items-center justify-between gap-3 text-xs text-muted-foreground">
         <span>
           {data ? `${data.chains} chain${data.chains === 1 ? "" : "s"} scanned` : "Checking every chain"}
           {data?.failed ? ` · ${data.failed} unavailable` : ""}
