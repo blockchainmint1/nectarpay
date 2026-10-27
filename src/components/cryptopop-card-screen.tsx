@@ -46,6 +46,16 @@ export function CryptoPopCardScreen({ creds, invoiceId, totalCents, initialUid, 
     } finally { busy.current = false; }
   }
 
+  // A card tapped on the payment-chooser screen arrives as initialUid:
+  // send it immediately instead of asking the customer to tap twice.
+  useEffect(() => {
+    if (initialUid && !uid.current && !busy.current && !payment) {
+      uid.current = initialUid;
+      void send(initialUid);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialUid]);
+
   useEffect(() => {
     if (!payment) return;
     const pendingPayment = payment;
