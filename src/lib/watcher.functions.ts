@@ -7,7 +7,7 @@
 import { BTC_NETWORK, TXC_NETWORK, ETH_NETWORK, getNetwork, isBtcLikeChain, type BtcLikeNetwork, type ChainKind, EVM_NETWORKS, TRON_NETWORK, SOL_NETWORK, ZCU_NETWORK, isFastFinality, type EvmNetwork } from "./chains/networks";
 import { getZcuBlockNumber, getZcuTransfersTo } from "./chains/zcu.server";
 import { deriveBtcLikeAddress, deriveEvmAddress, deriveTronAddress } from "./chains/derive.server";
-import { extractIncoming, getAddressTxs, getTipHeight } from "./chains/btc-like.server";
+import { extractIncoming, getAddressTxs, getTipHeight, type EsploraTx } from "./chains/btc-like.server";
 import { extractOmniIncoming } from "./chains/omni.server";
 import { getOmniToken } from "./chains/networks";
 import { getBlockNumber, getTransfersTo } from "./chains/evm.server";
