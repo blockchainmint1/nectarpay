@@ -1,5 +1,11 @@
 # Roadmap
 
+## CryptoPOP NFC checkout
+- [ ] Connect server-signed CryptoPOP card payment requests and approval status checks.
+- [ ] Add PIN collection, waiting-for-owner, and failure states to NFC checkout.
+- [ ] Test invoice currency/coin constraints, signatures, and checkout states.
+- [ ] Configure the shared NFC_PAY_SECRET and verify a real funded-card tap; requires the matching CryptoPOP secret and live card approval.
+
 ## Honest Money popup return
 - [x] Fix numeric popup=1 validation and restore the popup-to-main-window handoff when the browser removes the opener; real browser callback closes the popup and reports rejected diagnostic tickets in the parent; 13 tests passed.
 - [ ] Verify a real Honest Money sign-in after publishing; requires the member's email-code approval.
