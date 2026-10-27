@@ -18,7 +18,7 @@ function StoresIndex() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("stores")
-        .select("id, name, website, fiat_currency, created_at, owner_id")
+        .select("id, url_slug, name, website, fiat_currency, created_at, owner_id")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
@@ -50,7 +50,7 @@ function StoresIndex() {
             <li key={s.id}>
               <Link
                 to="/stores/$storeId"
-                params={{ storeId: s.id }}
+                params={{ storeId: s.url_slug || s.id }}
                 className="flex items-center justify-between px-5 py-4 hover:bg-accent"
               >
                 <div className="flex items-center gap-3">
