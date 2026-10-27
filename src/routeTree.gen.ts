@@ -114,6 +114,7 @@ import { Route as AuthenticatedStoresStoreIdKeysRouteImport } from './routes/_au
 import { Route as AuthenticatedStoresStoreIdKycRouteImport } from './routes/_authenticated.stores.$storeId.kyc'
 import { Route as AuthenticatedStoresStoreIdListingRouteImport } from './routes/_authenticated.stores.$storeId.listing'
 import { Route as AuthenticatedStoresStoreIdPosSettingsRouteImport } from './routes/_authenticated.stores.$storeId.pos-settings'
+import { Route as AuthenticatedStoresStoreIdPromoteRouteImport } from './routes/_authenticated.stores.$storeId.promote'
 import { Route as AuthenticatedStoresStoreIdShareLinksRouteImport } from './routes/_authenticated.stores.$storeId.share-links'
 import { Route as AuthenticatedStoresStoreIdTangemRouteImport } from './routes/_authenticated.stores.$storeId.tangem'
 import { Route as AuthenticatedStoresStoreIdTerminalsRouteImport } from './routes/_authenticated.stores.$storeId.terminals'
@@ -730,6 +731,12 @@ const AuthenticatedStoresStoreIdPosSettingsRoute =
     path: '/pos-settings',
     getParentRoute: () => AuthenticatedStoresStoreIdRoute,
   } as any)
+const AuthenticatedStoresStoreIdPromoteRoute =
+  AuthenticatedStoresStoreIdPromoteRouteImport.update({
+    id: '/promote',
+    path: '/promote',
+    getParentRoute: () => AuthenticatedStoresStoreIdRoute,
+  } as any)
 const AuthenticatedStoresStoreIdShareLinksRoute =
   AuthenticatedStoresStoreIdShareLinksRouteImport.update({
     id: '/share-links',
@@ -1118,6 +1125,7 @@ export interface FileRoutesByFullPath {
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/stores/$storeId/listing': typeof AuthenticatedStoresStoreIdListingRoute
   '/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
+  '/stores/$storeId/promote': typeof AuthenticatedStoresStoreIdPromoteRoute
   '/stores/$storeId/share-links': typeof AuthenticatedStoresStoreIdShareLinksRoute
   '/stores/$storeId/tangem': typeof AuthenticatedStoresStoreIdTangemRoute
   '/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
@@ -1269,6 +1277,7 @@ export interface FileRoutesByTo {
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/stores/$storeId/listing': typeof AuthenticatedStoresStoreIdListingRoute
   '/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
+  '/stores/$storeId/promote': typeof AuthenticatedStoresStoreIdPromoteRoute
   '/stores/$storeId/share-links': typeof AuthenticatedStoresStoreIdShareLinksRoute
   '/stores/$storeId/tangem': typeof AuthenticatedStoresStoreIdTangemRoute
   '/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
@@ -1428,6 +1437,7 @@ export interface FileRoutesById {
   '/_authenticated/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/_authenticated/stores/$storeId/listing': typeof AuthenticatedStoresStoreIdListingRoute
   '/_authenticated/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
+  '/_authenticated/stores/$storeId/promote': typeof AuthenticatedStoresStoreIdPromoteRoute
   '/_authenticated/stores/$storeId/share-links': typeof AuthenticatedStoresStoreIdShareLinksRoute
   '/_authenticated/stores/$storeId/tangem': typeof AuthenticatedStoresStoreIdTangemRoute
   '/_authenticated/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
@@ -1587,6 +1597,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId/kyc'
     | '/stores/$storeId/listing'
     | '/stores/$storeId/pos-settings'
+    | '/stores/$storeId/promote'
     | '/stores/$storeId/share-links'
     | '/stores/$storeId/tangem'
     | '/stores/$storeId/terminals'
@@ -1738,6 +1749,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId/kyc'
     | '/stores/$storeId/listing'
     | '/stores/$storeId/pos-settings'
+    | '/stores/$storeId/promote'
     | '/stores/$storeId/share-links'
     | '/stores/$storeId/tangem'
     | '/stores/$storeId/terminals'
@@ -1896,6 +1908,7 @@ export interface FileRouteTypes {
     | '/_authenticated/stores/$storeId/kyc'
     | '/_authenticated/stores/$storeId/listing'
     | '/_authenticated/stores/$storeId/pos-settings'
+    | '/_authenticated/stores/$storeId/promote'
     | '/_authenticated/stores/$storeId/share-links'
     | '/_authenticated/stores/$storeId/tangem'
     | '/_authenticated/stores/$storeId/terminals'
@@ -2768,6 +2781,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStoresStoreIdPosSettingsRouteImport
       parentRoute: typeof AuthenticatedStoresStoreIdRoute
     }
+    '/_authenticated/stores/$storeId/promote': {
+      id: '/_authenticated/stores/$storeId/promote'
+      path: '/promote'
+      fullPath: '/stores/$storeId/promote'
+      preLoaderRoute: typeof AuthenticatedStoresStoreIdPromoteRouteImport
+      parentRoute: typeof AuthenticatedStoresStoreIdRoute
+    }
     '/_authenticated/stores/$storeId/share-links': {
       id: '/_authenticated/stores/$storeId/share-links'
       path: '/share-links'
@@ -3255,6 +3275,7 @@ interface AuthenticatedStoresStoreIdRouteChildren {
   AuthenticatedStoresStoreIdKycRoute: typeof AuthenticatedStoresStoreIdKycRoute
   AuthenticatedStoresStoreIdListingRoute: typeof AuthenticatedStoresStoreIdListingRoute
   AuthenticatedStoresStoreIdPosSettingsRoute: typeof AuthenticatedStoresStoreIdPosSettingsRoute
+  AuthenticatedStoresStoreIdPromoteRoute: typeof AuthenticatedStoresStoreIdPromoteRoute
   AuthenticatedStoresStoreIdShareLinksRoute: typeof AuthenticatedStoresStoreIdShareLinksRoute
   AuthenticatedStoresStoreIdTangemRoute: typeof AuthenticatedStoresStoreIdTangemRoute
   AuthenticatedStoresStoreIdTerminalsRoute: typeof AuthenticatedStoresStoreIdTerminalsRoute
@@ -3275,6 +3296,8 @@ const AuthenticatedStoresStoreIdRouteChildren: AuthenticatedStoresStoreIdRouteCh
       AuthenticatedStoresStoreIdListingRoute,
     AuthenticatedStoresStoreIdPosSettingsRoute:
       AuthenticatedStoresStoreIdPosSettingsRoute,
+    AuthenticatedStoresStoreIdPromoteRoute:
+      AuthenticatedStoresStoreIdPromoteRoute,
     AuthenticatedStoresStoreIdShareLinksRoute:
       AuthenticatedStoresStoreIdShareLinksRoute,
     AuthenticatedStoresStoreIdTangemRoute:
