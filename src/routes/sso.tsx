@@ -37,7 +37,6 @@ function SsoPage() {
       return;
     }
     const { token: callbackToken, flow: callbackFlow } = callback;
-    window.history.replaceState(null, "", "/sso");
     if (validHmeFlow(callbackFlow)) {
       const channel = typeof BroadcastChannel === "undefined" ? undefined : new BroadcastChannel(hmeChannelName(callbackFlow));
       const message = { type: "hme-sso", flow: callbackFlow, token: callbackToken };
@@ -47,6 +46,7 @@ function SsoPage() {
         if (ack.type === "hme-sso-ack" && ack.flow === callbackFlow) {
           setMsg("Returning to NectarPay…");
           window.close();
+          window.history.replaceState(null, "", "/sso");
         }
       };
       const onMessage = (event: MessageEvent) => {
@@ -81,6 +81,7 @@ function SsoPage() {
     }
     if (finishing.current) return;
     finishing.current = true;
+    window.history.replaceState(null, "", "/sso");
     finishHmeSso(callbackToken)
       .then(({ is_admin }) => navigate({ to: is_admin ? "/admin" : "/dashboard" }))
       .catch((e) => setMsg(e instanceof Error ? e.message : "Sign-in failed"));
