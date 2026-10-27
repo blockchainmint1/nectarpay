@@ -9,8 +9,9 @@
 
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Zap } from "lucide-react";
+import { ArrowLeft, Copy, Zap } from "lucide-react";
 import { NectarNfc, isNative, type TagEvent, type ApduResponse } from "@/lib/pos-native";
+import { qrToDataURL } from "@/lib/qr";
 
 export const Route = createFileRoute("/pos/nfc-inspect")({
   head: () => ({
