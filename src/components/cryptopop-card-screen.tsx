@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Contactless, Delete, LoaderCircle, X } from "lucide-react";
+import { Nfc, Delete, LoaderCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NectarNfc, isNative } from "@/lib/pos-native";
 import { signedJson, type TerminalCreds } from "@/lib/pos-client";
@@ -23,7 +23,8 @@ export function CryptoPopCardScreen({ creds, invoiceId, totalCents, onPaid, onUs
     if (reply.status === "sent" && reply.txid) { setPayment(null); onPaid(); return; }
     if (reply.status === "pin_required") { setPin(""); setReason(reply.reason); setPhase("pin"); return; }
     if ((reply.status === "approval_required" || reply.status === "sending") && reply.payment_id && reply.poll_token) {
-      setPayment(current => current ?? { id: reply.payment_id as string, token: reply.poll_token as string, started: Date.now() });
+      const next = { id: reply.payment_id, token: reply.poll_token, started: Date.now() };
+      setPayment(current => current ?? next);
       setPhase(reply.status === "sending" ? "sending" : "approval");
       return;
     }
@@ -47,16 +48,17 @@ export function CryptoPopCardScreen({ creds, invoiceId, totalCents, onPaid, onUs
 
   useEffect(() => {
     if (!payment) return;
+    const pendingPayment = payment;
     let stopped = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
     async function tick() {
       if (stopped) return;
-      if (Date.now() - payment.started >= CARD_APPROVAL_TIMEOUT_MS) {
+      if (Date.now() - pendingPayment.started >= CARD_APPROVAL_TIMEOUT_MS) {
         setPayment(null); setReason("Approval timed out. Check the sale before retrying."); setPhase("error"); uid.current = null; return;
       }
       try {
         const reply = await signedJson<CardReply>(creds, `/api/public/v1/terminals/invoice/${invoiceId}/card-pay`, {
-          method: "POST", body: { payment_id: payment.id, poll_token: payment.token },
+          method: "POST", body: { payment_id: pendingPayment.id, poll_token: pendingPayment.token },
         });
         if (stopped) return;
         if (reply.status !== "approval_required" && reply.status !== "sending") { handle(reply); return; }
@@ -93,7 +95,7 @@ export function CryptoPopCardScreen({ creds, invoiceId, totalCents, onPaid, onUs
       <p className="text-xs font-semibold text-muted-foreground">CryptoPOP CARD · TSD</p>
       <div className="mt-1 text-4xl font-bold tabular-nums">{(totalCents / 100).toLocaleString("en-US", { style: "currency", currency: "USD" })}</div>
       <div className="my-6 flex w-full max-w-sm flex-1 flex-col items-center justify-center gap-4">
-        {phase === "tap" && <><Contactless className="size-24 text-primary" /><p className="text-lg font-bold">Tap your CryptoPOP card</p>{!isNative() && <p className="text-xs text-destructive">NFC reader unavailable on this device.</p>}</>}
+        {phase === "tap" && <><Nfc className="size-24 text-primary" /><p className="text-lg font-bold">Tap your CryptoPOP card</p>{!isNative() && <p className="text-xs text-destructive">NFC reader unavailable on this device.</p>}</>}
         {phase === "sending" && <><LoaderCircle className="size-12 animate-spin motion-reduce:animate-none text-primary" /><p className="text-lg font-bold">Sending payment…</p></>}
         {phase === "approval" && <><p className="text-lg font-bold">Waiting for the cardholder’s approval…</p><p className="text-sm text-muted-foreground">Approve or decline in Telegram.</p></>}
         {phase === "pin" && <>
