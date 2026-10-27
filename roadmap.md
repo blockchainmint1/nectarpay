@@ -1,5 +1,10 @@
 # Roadmap
 
+## HME credential cutover and referral review
+- [ ] Check the replaced ecosystem key and deleted HMAC secret against current Honest Money instructions.
+- [ ] Align SSO verification and permanent member matching without disrupting existing sign-in methods.
+- [ ] Align referral capture and server-side signup reporting; verify safe checks and document remaining external blockers.
+
 ## Store info save failure
 - [x] Restore authenticated access to the new public-email field without exposing store secrets; six tests passed, and Bobby's Nectar-Pay store saved successfully and read back after reload.
 
