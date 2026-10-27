@@ -97,7 +97,7 @@ export function CryptoPopCardScreen({ creds, invoiceId, totalCents, onPaid, onUs
       <p className="text-xs font-semibold text-muted-foreground">CryptoPOP CARD · TSD</p>
       <div className="mt-1 text-4xl font-bold tabular-nums">{(totalCents / 100).toLocaleString("en-US", { style: "currency", currency: "USD" })}</div>
       <div className="my-6 flex w-full max-w-sm flex-1 flex-col items-center justify-center gap-4">
-        {phase === "tap" && <><Nfc className="size-24 text-primary" /><p className="text-lg font-bold">Tap your CryptoPOP card</p>{!isNative() && <p className="text-xs text-destructive">NFC reader unavailable on this device.</p>}</>}
+        {phase === "tap" && <><Nfc className="size-24 text-primary" /><p className="text-lg font-bold">Tap your CryptoPOP card</p>{reason && <p role="alert" className="text-sm text-destructive">{reason}</p>}{!isNative() && <p className="text-xs text-destructive">NFC reader unavailable on this device.</p>}</>}
         {phase === "sending" && <><LoaderCircle className="size-12 animate-spin motion-reduce:animate-none text-primary" /><p className="text-lg font-bold">Sending payment…</p></>}
         {phase === "approval" && <><p className="text-lg font-bold">Waiting for the cardholder’s approval…</p><p className="text-sm text-muted-foreground">Approve or decline in Telegram.</p></>}
         {phase === "pin" && <>

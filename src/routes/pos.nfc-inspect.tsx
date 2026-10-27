@@ -54,16 +54,20 @@ function NfcInspector() {
     setNative(isNative());
     let cancelled = false;
     (async () => {
-      const sub = await NectarNfc.start(
-        (e) => {
-          if (cancelled) return;
-          setEvent(e);
-          setProbeResults([]);
-          setError(null);
-        },
-        (msg) => !cancelled && setError(msg),
-      );
-      subRef.current = sub;
+      try {
+        const sub = await NectarNfc.start(
+          (e) => {
+            if (cancelled) return;
+            setEvent(e);
+            setProbeResults([]);
+            setError(null);
+          },
+          (msg) => !cancelled && setError(msg),
+        );
+        subRef.current = sub;
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error && e.message ? e.message : "Could not start the NFC reader.");
+      }
     })();
     return () => {
       cancelled = true;
