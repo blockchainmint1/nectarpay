@@ -64,6 +64,13 @@
       "when": 1793098945155,
       "tag": "0008_store_slug_default",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793099174400,
+      "tag": "0009_store_new_column_grants",
+      "breakpoints": true
     }
   ]
 }
