@@ -31,6 +31,7 @@ import { Route as OnrampRouteImport } from './routes/onramp'
 import { Route as PosRouteImport } from './routes/pos'
 import { Route as PosApkRouteImport } from './routes/pos-apk'
 import { Route as PosApkIpfsRouteImport } from './routes/pos-apk-ipfs'
+import { Route as PosApkNewRouteImport } from './routes/pos-apk-new'
 import { Route as PosBuildIdRouteImport } from './routes/pos-build-id'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SignupRouteImport } from './routes/signup'
@@ -63,6 +64,7 @@ import { Route as IntegrationsPrestashopRouteImport } from './routes/integration
 import { Route as IntegrationsWoocommerceRouteImport } from './routes/integrations.woocommerce'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as PayInvoiceIdRouteImport } from './routes/pay.$invoiceId'
+import { Route as PosApkNewDownloadRouteImport } from './routes/pos-apk-new.download'
 import { Route as PosIndexRouteImport } from './routes/pos.index'
 import { Route as PosHistoryRouteImport } from './routes/pos.history'
 import { Route as PosNfcInspectRouteImport } from './routes/pos.nfc-inspect'
@@ -280,6 +282,11 @@ const PosApkIpfsRoute = PosApkIpfsRouteImport.update({
   path: '/pos-apk-ipfs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PosApkNewRoute = PosApkNewRouteImport.update({
+  id: '/pos-apk-new',
+  path: '/pos-apk-new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PosBuildIdRoute = PosBuildIdRouteImport.update({
   id: '/pos-build-id',
   path: '/pos-build-id',
@@ -441,6 +448,11 @@ const PayInvoiceIdRoute = PayInvoiceIdRouteImport.update({
   id: '/pay/$invoiceId',
   path: '/pay/$invoiceId',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PosApkNewDownloadRoute = PosApkNewDownloadRouteImport.update({
+  id: '/download',
+  path: '/download',
+  getParentRoute: () => PosApkNewRoute,
 } as any)
 const PosIndexRoute = PosIndexRouteImport.update({
   id: '/',
@@ -1069,6 +1081,7 @@ export interface FileRoutesByFullPath {
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
   '/pos-apk-ipfs': typeof PosApkIpfsRoute
+  '/pos-apk-new': typeof PosApkNewRouteWithChildren
   '/pos-build-id': typeof PosBuildIdRoute
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
@@ -1100,6 +1113,7 @@ export interface FileRoutesByFullPath {
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/invite/$token': typeof InviteTokenRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
+  '/pos-apk-new/download': typeof PosApkNewDownloadRoute
   '/pos/history': typeof PosHistoryRoute
   '/pos/nfc-inspect': typeof PosNfcInspectRoute
   '/pos/pair': typeof PosPairRoute
@@ -1230,6 +1244,7 @@ export interface FileRoutesByTo {
   '/onramp': typeof OnrampRoute
   '/pos-apk': typeof PosApkRoute
   '/pos-apk-ipfs': typeof PosApkIpfsRoute
+  '/pos-apk-new': typeof PosApkNewRouteWithChildren
   '/pos-build-id': typeof PosBuildIdRoute
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
@@ -1259,6 +1274,7 @@ export interface FileRoutesByTo {
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/invite/$token': typeof InviteTokenRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
+  '/pos-apk-new/download': typeof PosApkNewDownloadRoute
   '/pos/history': typeof PosHistoryRoute
   '/pos/nfc-inspect': typeof PosNfcInspectRoute
   '/pos/pair': typeof PosPairRoute
@@ -1389,6 +1405,7 @@ export interface FileRoutesById {
   '/pos': typeof PosRouteWithChildren
   '/pos-apk': typeof PosApkRoute
   '/pos-apk-ipfs': typeof PosApkIpfsRoute
+  '/pos-apk-new': typeof PosApkNewRouteWithChildren
   '/pos-build-id': typeof PosBuildIdRoute
   '/privacy': typeof PrivacyRoute
   '/signup': typeof SignupRoute
@@ -1420,6 +1437,7 @@ export interface FileRoutesById {
   '/integrations/woocommerce': typeof IntegrationsWoocommerceRoute
   '/invite/$token': typeof InviteTokenRoute
   '/pay/$invoiceId': typeof PayInvoiceIdRoute
+  '/pos-apk-new/download': typeof PosApkNewDownloadRoute
   '/pos/history': typeof PosHistoryRoute
   '/pos/nfc-inspect': typeof PosNfcInspectRoute
   '/pos/pair': typeof PosPairRoute
@@ -1553,6 +1571,7 @@ export interface FileRouteTypes {
     | '/pos'
     | '/pos-apk'
     | '/pos-apk-ipfs'
+    | '/pos-apk-new'
     | '/pos-build-id'
     | '/privacy'
     | '/signup'
@@ -1584,6 +1603,7 @@ export interface FileRouteTypes {
     | '/integrations/woocommerce'
     | '/invite/$token'
     | '/pay/$invoiceId'
+    | '/pos-apk-new/download'
     | '/pos/history'
     | '/pos/nfc-inspect'
     | '/pos/pair'
@@ -1714,6 +1734,7 @@ export interface FileRouteTypes {
     | '/onramp'
     | '/pos-apk'
     | '/pos-apk-ipfs'
+    | '/pos-apk-new'
     | '/pos-build-id'
     | '/privacy'
     | '/signup'
@@ -1743,6 +1764,7 @@ export interface FileRouteTypes {
     | '/integrations/woocommerce'
     | '/invite/$token'
     | '/pay/$invoiceId'
+    | '/pos-apk-new/download'
     | '/pos/history'
     | '/pos/nfc-inspect'
     | '/pos/pair'
@@ -1872,6 +1894,7 @@ export interface FileRouteTypes {
     | '/pos'
     | '/pos-apk'
     | '/pos-apk-ipfs'
+    | '/pos-apk-new'
     | '/pos-build-id'
     | '/privacy'
     | '/signup'
@@ -1903,6 +1926,7 @@ export interface FileRouteTypes {
     | '/integrations/woocommerce'
     | '/invite/$token'
     | '/pay/$invoiceId'
+    | '/pos-apk-new/download'
     | '/pos/history'
     | '/pos/nfc-inspect'
     | '/pos/pair'
@@ -2036,6 +2060,7 @@ export interface RootRouteChildren {
   PosRoute: typeof PosRouteWithChildren
   PosApkRoute: typeof PosApkRoute
   PosApkIpfsRoute: typeof PosApkIpfsRoute
+  PosApkNewRoute: typeof PosApkNewRouteWithChildren
   PosBuildIdRoute: typeof PosBuildIdRoute
   PrivacyRoute: typeof PrivacyRoute
   SignupRoute: typeof SignupRoute
@@ -2217,6 +2242,13 @@ declare module '@tanstack/react-router' {
       path: '/pos-apk-ipfs'
       fullPath: '/pos-apk-ipfs'
       preLoaderRoute: typeof PosApkIpfsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pos-apk-new': {
+      id: '/pos-apk-new'
+      path: '/pos-apk-new'
+      fullPath: '/pos-apk-new'
+      preLoaderRoute: typeof PosApkNewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pos-build-id': {
@@ -2442,6 +2474,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/pay/$invoiceId'
       preLoaderRoute: typeof PayInvoiceIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/pos-apk-new/download': {
+      id: '/pos-apk-new/download'
+      path: '/download'
+      fullPath: '/pos-apk-new/download'
+      preLoaderRoute: typeof PosApkNewDownloadRouteImport
+      parentRoute: typeof PosApkNewRoute
     }
     '/pos/': {
       id: '/pos/'
@@ -3612,6 +3651,18 @@ const PosRouteChildren: PosRouteChildren = {
 
 const PosRouteWithChildren = PosRoute._addFileChildren(PosRouteChildren)
 
+interface PosApkNewRouteChildren {
+  PosApkNewDownloadRoute: typeof PosApkNewDownloadRoute
+}
+
+const PosApkNewRouteChildren: PosApkNewRouteChildren = {
+  PosApkNewDownloadRoute: PosApkNewDownloadRoute,
+}
+
+const PosApkNewRouteWithChildren = PosApkNewRoute._addFileChildren(
+  PosApkNewRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
@@ -3635,6 +3686,7 @@ const rootRouteChildren: RootRouteChildren = {
   PosRoute: PosRouteWithChildren,
   PosApkRoute: PosApkRoute,
   PosApkIpfsRoute: PosApkIpfsRoute,
+  PosApkNewRoute: PosApkNewRouteWithChildren,
   PosBuildIdRoute: PosBuildIdRoute,
   PrivacyRoute: PrivacyRoute,
   SignupRoute: SignupRoute,
