@@ -1,6 +1,7 @@
 # Roadmap
 
 ## HME credential cutover and referral review
+- [ ] Use Bobby's corrected HME_ECOSYSTEM key for safe connection checks; never inspect or display its value.
 - [ ] Check the replaced ecosystem key and deleted HMAC secret against current Honest Money instructions.
 - [ ] Align SSO verification and permanent member matching without disrupting existing sign-in methods.
 - [ ] Align referral capture and server-side signup reporting; verify safe checks and document remaining external blockers.
