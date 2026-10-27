@@ -60,6 +60,18 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/card-
             if (error) console.error("[card-pay] event log failed", error.message);
           };
 
+          // CryptoPOP's txid is a hint: check that exact tx on-chain right away
+          // (same address/amount/settlement rules) instead of waiting for the watcher.
+          const verifySent = async (r: { status?: string; txid?: string | null }) => {
+            if (r.status !== "sent" || !r.txid) return;
+            const { scanBtcLikeInvoiceNow } = await import("@/lib/watcher.functions");
+            for (let i = 0; i < 3; i++) {
+              const changed = await scanBtcLikeInvoiceNow(inv.id, r.txid).catch(() => false);
+              if (changed) return;
+              await new Promise((ok) => setTimeout(ok, 700));
+            }
+          };
+
           // Poll an existing payment.
           if ("payment_id" in parsed.data) {
             const pid = parsed.data.payment_id;
@@ -71,6 +83,7 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/card-
               });
               const r = normalizeCardReply(await res.json().catch(() => ({})), res.ok);
               await record("poll", res.status, { ...r, payment_id: pid }, started);
+              await verifySent(r);
               return json({ ...r, payment_id: pid, poll_token: parsed.data.poll_token });
             } catch (e) {
               await record("poll", null, { status: "error", reason: e instanceof Error ? `${e.name}: ${e.message}` : "unknown", payment_id: pid }, started);
@@ -110,6 +123,7 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/card-
           }
           const r = normalizeCardReply(await res.json().catch(() => ({})), res.ok);
           await record(step, res.status, r, started);
+          await verifySent(r);
           if (!res.ok) console.error("[card-pay] CryptoPOP request failed", res.status);
           return json({ ...r, ...(r.payment_id ? { poll_token: issueCardPollToken(secret, inv.id, auth.terminal.id, r.payment_id) } : {}) });
         } catch (err) {
