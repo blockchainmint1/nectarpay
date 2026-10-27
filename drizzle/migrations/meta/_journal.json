@@ -71,6 +71,13 @@
       "when": 1793099174400,
       "tag": "0009_store_new_column_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793099466445,
+      "tag": "0010_public_directory",
+      "breakpoints": true
     }
   ]
 }
