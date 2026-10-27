@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as ApiRouteImport } from './routes/api'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BrandRouteImport } from './routes/brand'
 import { Route as CashOutRouteImport } from './routes/cash-out'
@@ -18,6 +19,7 @@ import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DemoResetRouteImport } from './routes/demo-reset'
+import { Route as DirectoryRouteImport } from './routes/directory'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as KycRouteImport } from './routes/kyc'
@@ -132,6 +134,7 @@ import { Route as ApiPublicCronWatcherRouteImport } from './routes/api/public/cr
 import { Route as ApiPublicHooksAlchemyActivityRouteImport } from './routes/api/public/hooks/alchemy-activity'
 import { Route as ApiPublicStoreLogoSplatRouteImport } from './routes/api.public.store-logo.$'
 import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
+import { Route as ApiPublicV1DirectoryRouteImport } from './routes/api/public/v1/directory'
 import { Route as ApiPublicV1InvoicesRouteImport } from './routes/api.public.v1.invoices'
 import { Route as ApiPublicV1LinksRouteImport } from './routes/api.public.v1.links'
 import { Route as ApiPublicV1LiveStatsRouteImport } from './routes/api/public/v1/live-stats'
@@ -176,6 +179,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiRoute = ApiRouteImport.update({
+  id: '/api',
+  path: '/api',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -209,6 +217,11 @@ const CompareRoute = CompareRouteImport.update({
 const DemoResetRoute = DemoResetRouteImport.update({
   id: '/demo-reset',
   path: '/demo-reset',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DirectoryRoute = DirectoryRouteImport.update({
+  id: '/directory',
+  path: '/directory',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsRoute = DocsRouteImport.update({
@@ -614,9 +627,9 @@ const AuthenticatedStoresNewRoute = AuthenticatedStoresNewRouteImport.update({
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const ApiPublicDemoResetRoute = ApiPublicDemoResetRouteImport.update({
-  id: '/api/public/demo-reset',
-  path: '/api/public/demo-reset',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/demo-reset',
+  path: '/public/demo-reset',
+  getParentRoute: () => ApiRoute,
 } as any)
 const LovableEmailEventsRoute = LovableEmailEventsRouteImport.update({
   id: '/lovable/email/events',
@@ -756,121 +769,126 @@ const AuthenticatedStoresStoreIdTerminalsRoute =
     getParentRoute: () => AuthenticatedStoresStoreIdRoute,
   } as any)
 const ApiPublicAffiliateClickRoute = ApiPublicAffiliateClickRouteImport.update({
-  id: '/api/public/affiliate/click',
-  path: '/api/public/affiliate/click',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/affiliate/click',
+  path: '/public/affiliate/click',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicAuthHmeSsoRoute = ApiPublicAuthHmeSsoRouteImport.update({
-  id: '/api/public/auth/hme-sso',
-  path: '/api/public/auth/hme-sso',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/auth/hme-sso',
+  path: '/public/auth/hme-sso',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicAuthWalletCallbackRoute =
   ApiPublicAuthWalletCallbackRouteImport.update({
-    id: '/api/public/auth/wallet-callback',
-    path: '/api/public/auth/wallet-callback',
-    getParentRoute: () => rootRouteImport,
+    id: '/public/auth/wallet-callback',
+    path: '/public/auth/wallet-callback',
+    getParentRoute: () => ApiRoute,
   } as any)
 const ApiPublicAuthWalletChallengeRoute =
   ApiPublicAuthWalletChallengeRouteImport.update({
-    id: '/api/public/auth/wallet-challenge',
-    path: '/api/public/auth/wallet-challenge',
-    getParentRoute: () => rootRouteImport,
+    id: '/public/auth/wallet-challenge',
+    path: '/public/auth/wallet-challenge',
+    getParentRoute: () => ApiRoute,
   } as any)
 const ApiPublicAuthWalletExchangeRoute =
   ApiPublicAuthWalletExchangeRouteImport.update({
-    id: '/api/public/auth/wallet-exchange',
-    path: '/api/public/auth/wallet-exchange',
-    getParentRoute: () => rootRouteImport,
+    id: '/public/auth/wallet-exchange',
+    path: '/public/auth/wallet-exchange',
+    getParentRoute: () => ApiRoute,
   } as any)
 const ApiPublicAuthWalletStatusRoute =
   ApiPublicAuthWalletStatusRouteImport.update({
-    id: '/api/public/auth/wallet-status',
-    path: '/api/public/auth/wallet-status',
-    getParentRoute: () => rootRouteImport,
+    id: '/public/auth/wallet-status',
+    path: '/public/auth/wallet-status',
+    getParentRoute: () => ApiRoute,
   } as any)
 const ApiPublicCronAlchemySyncRoute =
   ApiPublicCronAlchemySyncRouteImport.update({
-    id: '/api/public/cron/alchemy-sync',
-    path: '/api/public/cron/alchemy-sync',
-    getParentRoute: () => rootRouteImport,
+    id: '/public/cron/alchemy-sync',
+    path: '/public/cron/alchemy-sync',
+    getParentRoute: () => ApiRoute,
   } as any)
 const ApiPublicCronBillingRoute = ApiPublicCronBillingRouteImport.update({
-  id: '/api/public/cron/billing',
-  path: '/api/public/cron/billing',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/cron/billing',
+  path: '/public/cron/billing',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicCronLightningRoute = ApiPublicCronLightningRouteImport.update({
-  id: '/api/public/cron/lightning',
-  path: '/api/public/cron/lightning',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/cron/lightning',
+  path: '/public/cron/lightning',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicCronRatesRoute = ApiPublicCronRatesRouteImport.update({
-  id: '/api/public/cron/rates',
-  path: '/api/public/cron/rates',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/cron/rates',
+  path: '/public/cron/rates',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicCronWatcherRoute = ApiPublicCronWatcherRouteImport.update({
-  id: '/api/public/cron/watcher',
-  path: '/api/public/cron/watcher',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/cron/watcher',
+  path: '/public/cron/watcher',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicHooksAlchemyActivityRoute =
   ApiPublicHooksAlchemyActivityRouteImport.update({
-    id: '/api/public/hooks/alchemy-activity',
-    path: '/api/public/hooks/alchemy-activity',
-    getParentRoute: () => rootRouteImport,
+    id: '/public/hooks/alchemy-activity',
+    path: '/public/hooks/alchemy-activity',
+    getParentRoute: () => ApiRoute,
   } as any)
 const ApiPublicStoreLogoSplatRoute = ApiPublicStoreLogoSplatRouteImport.update({
-  id: '/api/public/store-logo/$',
-  path: '/api/public/store-logo/$',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/store-logo/$',
+  path: '/public/store-logo/$',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicTelegramWebhookRoute =
   ApiPublicTelegramWebhookRouteImport.update({
-    id: '/api/public/telegram/webhook',
-    path: '/api/public/telegram/webhook',
-    getParentRoute: () => rootRouteImport,
+    id: '/public/telegram/webhook',
+    path: '/public/telegram/webhook',
+    getParentRoute: () => ApiRoute,
   } as any)
+const ApiPublicV1DirectoryRoute = ApiPublicV1DirectoryRouteImport.update({
+  id: '/public/v1/directory',
+  path: '/public/v1/directory',
+  getParentRoute: () => ApiRoute,
+} as any)
 const ApiPublicV1InvoicesRoute = ApiPublicV1InvoicesRouteImport.update({
-  id: '/api/public/v1/invoices',
-  path: '/api/public/v1/invoices',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/v1/invoices',
+  path: '/public/v1/invoices',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicV1LinksRoute = ApiPublicV1LinksRouteImport.update({
-  id: '/api/public/v1/links',
-  path: '/api/public/v1/links',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/v1/links',
+  path: '/public/v1/links',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicV1LiveStatsRoute = ApiPublicV1LiveStatsRouteImport.update({
-  id: '/api/public/v1/live-stats',
-  path: '/api/public/v1/live-stats',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/v1/live-stats',
+  path: '/public/v1/live-stats',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicV1LookupRoute = ApiPublicV1LookupRouteImport.update({
-  id: '/api/public/v1/lookup',
-  path: '/api/public/v1/lookup',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/v1/lookup',
+  path: '/public/v1/lookup',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicV1MeRoute = ApiPublicV1MeRouteImport.update({
-  id: '/api/public/v1/me',
-  path: '/api/public/v1/me',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/v1/me',
+  path: '/public/v1/me',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicV1RatesRoute = ApiPublicV1RatesRouteImport.update({
-  id: '/api/public/v1/rates',
-  path: '/api/public/v1/rates',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/v1/rates',
+  path: '/public/v1/rates',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicV1StoreRoute = ApiPublicV1StoreRouteImport.update({
-  id: '/api/public/v1/store',
-  path: '/api/public/v1/store',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/v1/store',
+  path: '/public/v1/store',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicV1WalletLinkRoute = ApiPublicV1WalletLinkRouteImport.update({
-  id: '/api/public/v1/wallet-link',
-  path: '/api/public/v1/wallet-link',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/v1/wallet-link',
+  path: '/public/v1/wallet-link',
+  getParentRoute: () => ApiRoute,
 } as any)
 const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   id: '/lovable/email/auth/preview',
@@ -926,9 +944,9 @@ const AuthenticatedAdminKnowledgeTrainingSalesRepsRoute =
   } as any)
 const ApiPublicV1HooksAffiliateSaleRoute =
   ApiPublicV1HooksAffiliateSaleRouteImport.update({
-    id: '/api/public/v1/hooks/affiliate-sale',
-    path: '/api/public/v1/hooks/affiliate-sale',
-    getParentRoute: () => rootRouteImport,
+    id: '/public/v1/hooks/affiliate-sale',
+    path: '/public/v1/hooks/affiliate-sale',
+    getParentRoute: () => ApiRoute,
   } as any)
 const ApiPublicV1InvoicesIdRoute = ApiPublicV1InvoicesIdRouteImport.update({
   id: '/$id',
@@ -941,44 +959,44 @@ const ApiPublicV1LinksSlugRoute = ApiPublicV1LinksSlugRouteImport.update({
   getParentRoute: () => ApiPublicV1LinksRoute,
 } as any)
 const ApiPublicV1PayInvoiceIdRoute = ApiPublicV1PayInvoiceIdRouteImport.update({
-  id: '/api/public/v1/pay/$invoiceId',
-  path: '/api/public/v1/pay/$invoiceId',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/v1/pay/$invoiceId',
+  path: '/public/v1/pay/$invoiceId',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicV1StatsLiveRoute = ApiPublicV1StatsLiveRouteImport.update({
-  id: '/api/public/v1/stats/live',
-  path: '/api/public/v1/stats/live',
-  getParentRoute: () => rootRouteImport,
+  id: '/public/v1/stats/live',
+  path: '/public/v1/stats/live',
+  getParentRoute: () => ApiRoute,
 } as any)
 const ApiPublicV1TerminalsHeartbeatRoute =
   ApiPublicV1TerminalsHeartbeatRouteImport.update({
-    id: '/api/public/v1/terminals/heartbeat',
-    path: '/api/public/v1/terminals/heartbeat',
-    getParentRoute: () => rootRouteImport,
+    id: '/public/v1/terminals/heartbeat',
+    path: '/public/v1/terminals/heartbeat',
+    getParentRoute: () => ApiRoute,
   } as any)
 const ApiPublicV1TerminalsInvoiceRoute =
   ApiPublicV1TerminalsInvoiceRouteImport.update({
-    id: '/api/public/v1/terminals/invoice',
-    path: '/api/public/v1/terminals/invoice',
-    getParentRoute: () => rootRouteImport,
+    id: '/public/v1/terminals/invoice',
+    path: '/public/v1/terminals/invoice',
+    getParentRoute: () => ApiRoute,
   } as any)
 const ApiPublicV1TerminalsInvoicesRoute =
   ApiPublicV1TerminalsInvoicesRouteImport.update({
-    id: '/api/public/v1/terminals/invoices',
-    path: '/api/public/v1/terminals/invoices',
-    getParentRoute: () => rootRouteImport,
+    id: '/public/v1/terminals/invoices',
+    path: '/public/v1/terminals/invoices',
+    getParentRoute: () => ApiRoute,
   } as any)
 const ApiPublicV1TerminalsOptionsRoute =
   ApiPublicV1TerminalsOptionsRouteImport.update({
-    id: '/api/public/v1/terminals/options',
-    path: '/api/public/v1/terminals/options',
-    getParentRoute: () => rootRouteImport,
+    id: '/public/v1/terminals/options',
+    path: '/public/v1/terminals/options',
+    getParentRoute: () => ApiRoute,
   } as any)
 const ApiPublicV1TerminalsPairRoute =
   ApiPublicV1TerminalsPairRouteImport.update({
-    id: '/api/public/v1/terminals/pair',
-    path: '/api/public/v1/terminals/pair',
-    getParentRoute: () => rootRouteImport,
+    id: '/public/v1/terminals/pair',
+    path: '/public/v1/terminals/pair',
+    getParentRoute: () => ApiRoute,
   } as any)
 const ApiPublicV1WalletLinkStatusRoute =
   ApiPublicV1WalletLinkStatusRouteImport.update({
@@ -1025,6 +1043,7 @@ const ApiPublicV1TerminalsInvoiceIdReceiptRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api': typeof ApiRouteWithChildren
   '/auth': typeof AuthRoute
   '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
@@ -1032,6 +1051,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/demo-reset': typeof DemoResetRoute
+  '/directory': typeof DirectoryRoute
   '/docs': typeof DocsRouteWithChildren
   '/help': typeof HelpRoute
   '/kyc': typeof KycRoute
@@ -1143,6 +1163,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/store-logo/$': typeof ApiPublicStoreLogoSplatRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
+  '/api/public/v1/directory': typeof ApiPublicV1DirectoryRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
   '/api/public/v1/links': typeof ApiPublicV1LinksRouteWithChildren
   '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
@@ -1183,6 +1204,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api': typeof ApiRouteWithChildren
   '/auth': typeof AuthRoute
   '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
@@ -1190,6 +1212,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/demo-reset': typeof DemoResetRoute
+  '/directory': typeof DirectoryRoute
   '/docs': typeof DocsRouteWithChildren
   '/help': typeof HelpRoute
   '/kyc': typeof KycRoute
@@ -1295,6 +1318,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/store-logo/$': typeof ApiPublicStoreLogoSplatRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
+  '/api/public/v1/directory': typeof ApiPublicV1DirectoryRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
   '/api/public/v1/links': typeof ApiPublicV1LinksRouteWithChildren
   '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
@@ -1337,6 +1361,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/api': typeof ApiRouteWithChildren
   '/auth': typeof AuthRoute
   '/brand': typeof BrandRoute
   '/cash-out': typeof CashOutRoute
@@ -1344,6 +1369,7 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRouteWithChildren
   '/compare': typeof CompareRoute
   '/demo-reset': typeof DemoResetRoute
+  '/directory': typeof DirectoryRoute
   '/docs': typeof DocsRouteWithChildren
   '/help': typeof HelpRoute
   '/kyc': typeof KycRoute
@@ -1455,6 +1481,7 @@ export interface FileRoutesById {
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/store-logo/$': typeof ApiPublicStoreLogoSplatRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
+  '/api/public/v1/directory': typeof ApiPublicV1DirectoryRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
   '/api/public/v1/links': typeof ApiPublicV1LinksRouteWithChildren
   '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
@@ -1497,6 +1524,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/api'
     | '/auth'
     | '/brand'
     | '/cash-out'
@@ -1504,6 +1532,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/compare'
     | '/demo-reset'
+    | '/directory'
     | '/docs'
     | '/help'
     | '/kyc'
@@ -1615,6 +1644,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/alchemy-activity'
     | '/api/public/store-logo/$'
     | '/api/public/telegram/webhook'
+    | '/api/public/v1/directory'
     | '/api/public/v1/invoices'
     | '/api/public/v1/links'
     | '/api/public/v1/live-stats'
@@ -1655,6 +1685,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/api'
     | '/auth'
     | '/brand'
     | '/cash-out'
@@ -1662,6 +1693,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/compare'
     | '/demo-reset'
+    | '/directory'
     | '/docs'
     | '/help'
     | '/kyc'
@@ -1767,6 +1799,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/alchemy-activity'
     | '/api/public/store-logo/$'
     | '/api/public/telegram/webhook'
+    | '/api/public/v1/directory'
     | '/api/public/v1/invoices'
     | '/api/public/v1/links'
     | '/api/public/v1/live-stats'
@@ -1808,6 +1841,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/api'
     | '/auth'
     | '/brand'
     | '/cash-out'
@@ -1815,6 +1849,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/compare'
     | '/demo-reset'
+    | '/directory'
     | '/docs'
     | '/help'
     | '/kyc'
@@ -1926,6 +1961,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/alchemy-activity'
     | '/api/public/store-logo/$'
     | '/api/public/telegram/webhook'
+    | '/api/public/v1/directory'
     | '/api/public/v1/invoices'
     | '/api/public/v1/links'
     | '/api/public/v1/live-stats'
@@ -1968,6 +2004,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  ApiRoute: typeof ApiRouteWithChildren
   AuthRoute: typeof AuthRoute
   BrandRoute: typeof BrandRoute
   CashOutRoute: typeof CashOutRoute
@@ -1975,6 +2012,7 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRouteWithChildren
   CompareRoute: typeof CompareRoute
   DemoResetRoute: typeof DemoResetRoute
+  DirectoryRoute: typeof DirectoryRoute
   DocsRoute: typeof DocsRouteWithChildren
   HelpRoute: typeof HelpRoute
   KycRoute: typeof KycRoute
@@ -2007,41 +2045,10 @@ export interface RootRouteChildren {
   SdkPayhmeDotjsRoute: typeof SdkPayhmeDotjsRoute
   TSlugRoute: typeof TSlugRoute
   IntegrationsIndexRoute: typeof IntegrationsIndexRoute
-  ApiPublicDemoResetRoute: typeof ApiPublicDemoResetRoute
   LovableEmailEventsRoute: typeof LovableEmailEventsRoute
-  ApiPublicAffiliateClickRoute: typeof ApiPublicAffiliateClickRoute
-  ApiPublicAuthHmeSsoRoute: typeof ApiPublicAuthHmeSsoRoute
-  ApiPublicAuthWalletCallbackRoute: typeof ApiPublicAuthWalletCallbackRoute
-  ApiPublicAuthWalletChallengeRoute: typeof ApiPublicAuthWalletChallengeRoute
-  ApiPublicAuthWalletExchangeRoute: typeof ApiPublicAuthWalletExchangeRoute
-  ApiPublicAuthWalletStatusRoute: typeof ApiPublicAuthWalletStatusRoute
-  ApiPublicCronAlchemySyncRoute: typeof ApiPublicCronAlchemySyncRoute
-  ApiPublicCronBillingRoute: typeof ApiPublicCronBillingRoute
-  ApiPublicCronLightningRoute: typeof ApiPublicCronLightningRoute
-  ApiPublicCronRatesRoute: typeof ApiPublicCronRatesRoute
-  ApiPublicCronWatcherRoute: typeof ApiPublicCronWatcherRoute
-  ApiPublicHooksAlchemyActivityRoute: typeof ApiPublicHooksAlchemyActivityRoute
-  ApiPublicStoreLogoSplatRoute: typeof ApiPublicStoreLogoSplatRoute
-  ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
-  ApiPublicV1InvoicesRoute: typeof ApiPublicV1InvoicesRouteWithChildren
-  ApiPublicV1LinksRoute: typeof ApiPublicV1LinksRouteWithChildren
-  ApiPublicV1LiveStatsRoute: typeof ApiPublicV1LiveStatsRoute
-  ApiPublicV1LookupRoute: typeof ApiPublicV1LookupRoute
-  ApiPublicV1MeRoute: typeof ApiPublicV1MeRoute
-  ApiPublicV1RatesRoute: typeof ApiPublicV1RatesRoute
-  ApiPublicV1StoreRoute: typeof ApiPublicV1StoreRoute
-  ApiPublicV1WalletLinkRoute: typeof ApiPublicV1WalletLinkRouteWithChildren
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
-  ApiPublicV1HooksAffiliateSaleRoute: typeof ApiPublicV1HooksAffiliateSaleRoute
-  ApiPublicV1PayInvoiceIdRoute: typeof ApiPublicV1PayInvoiceIdRoute
-  ApiPublicV1StatsLiveRoute: typeof ApiPublicV1StatsLiveRoute
-  ApiPublicV1TerminalsHeartbeatRoute: typeof ApiPublicV1TerminalsHeartbeatRoute
-  ApiPublicV1TerminalsInvoiceRoute: typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
-  ApiPublicV1TerminalsInvoicesRoute: typeof ApiPublicV1TerminalsInvoicesRoute
-  ApiPublicV1TerminalsOptionsRoute: typeof ApiPublicV1TerminalsOptionsRoute
-  ApiPublicV1TerminalsPairRoute: typeof ApiPublicV1TerminalsPairRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -2058,6 +2065,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api': {
+      id: '/api'
+      path: '/api'
+      fullPath: '/api'
+      preLoaderRoute: typeof ApiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -2107,6 +2121,13 @@ declare module '@tanstack/react-router' {
       path: '/demo-reset'
       fullPath: '/demo-reset'
       preLoaderRoute: typeof DemoResetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/directory': {
+      id: '/directory'
+      path: '/directory'
+      fullPath: '/directory'
+      preLoaderRoute: typeof DirectoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs': {
@@ -2643,10 +2664,10 @@ declare module '@tanstack/react-router' {
     }
     '/api/public/demo-reset': {
       id: '/api/public/demo-reset'
-      path: '/api/public/demo-reset'
+      path: '/public/demo-reset'
       fullPath: '/api/public/demo-reset'
       preLoaderRoute: typeof ApiPublicDemoResetRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/lovable/email/events': {
       id: '/lovable/email/events'
@@ -2811,157 +2832,164 @@ declare module '@tanstack/react-router' {
     }
     '/api/public/affiliate/click': {
       id: '/api/public/affiliate/click'
-      path: '/api/public/affiliate/click'
+      path: '/public/affiliate/click'
       fullPath: '/api/public/affiliate/click'
       preLoaderRoute: typeof ApiPublicAffiliateClickRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/auth/hme-sso': {
       id: '/api/public/auth/hme-sso'
-      path: '/api/public/auth/hme-sso'
+      path: '/public/auth/hme-sso'
       fullPath: '/api/public/auth/hme-sso'
       preLoaderRoute: typeof ApiPublicAuthHmeSsoRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/auth/wallet-callback': {
       id: '/api/public/auth/wallet-callback'
-      path: '/api/public/auth/wallet-callback'
+      path: '/public/auth/wallet-callback'
       fullPath: '/api/public/auth/wallet-callback'
       preLoaderRoute: typeof ApiPublicAuthWalletCallbackRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/auth/wallet-challenge': {
       id: '/api/public/auth/wallet-challenge'
-      path: '/api/public/auth/wallet-challenge'
+      path: '/public/auth/wallet-challenge'
       fullPath: '/api/public/auth/wallet-challenge'
       preLoaderRoute: typeof ApiPublicAuthWalletChallengeRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/auth/wallet-exchange': {
       id: '/api/public/auth/wallet-exchange'
-      path: '/api/public/auth/wallet-exchange'
+      path: '/public/auth/wallet-exchange'
       fullPath: '/api/public/auth/wallet-exchange'
       preLoaderRoute: typeof ApiPublicAuthWalletExchangeRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/auth/wallet-status': {
       id: '/api/public/auth/wallet-status'
-      path: '/api/public/auth/wallet-status'
+      path: '/public/auth/wallet-status'
       fullPath: '/api/public/auth/wallet-status'
       preLoaderRoute: typeof ApiPublicAuthWalletStatusRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/cron/alchemy-sync': {
       id: '/api/public/cron/alchemy-sync'
-      path: '/api/public/cron/alchemy-sync'
+      path: '/public/cron/alchemy-sync'
       fullPath: '/api/public/cron/alchemy-sync'
       preLoaderRoute: typeof ApiPublicCronAlchemySyncRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/cron/billing': {
       id: '/api/public/cron/billing'
-      path: '/api/public/cron/billing'
+      path: '/public/cron/billing'
       fullPath: '/api/public/cron/billing'
       preLoaderRoute: typeof ApiPublicCronBillingRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/cron/lightning': {
       id: '/api/public/cron/lightning'
-      path: '/api/public/cron/lightning'
+      path: '/public/cron/lightning'
       fullPath: '/api/public/cron/lightning'
       preLoaderRoute: typeof ApiPublicCronLightningRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/cron/rates': {
       id: '/api/public/cron/rates'
-      path: '/api/public/cron/rates'
+      path: '/public/cron/rates'
       fullPath: '/api/public/cron/rates'
       preLoaderRoute: typeof ApiPublicCronRatesRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/cron/watcher': {
       id: '/api/public/cron/watcher'
-      path: '/api/public/cron/watcher'
+      path: '/public/cron/watcher'
       fullPath: '/api/public/cron/watcher'
       preLoaderRoute: typeof ApiPublicCronWatcherRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/hooks/alchemy-activity': {
       id: '/api/public/hooks/alchemy-activity'
-      path: '/api/public/hooks/alchemy-activity'
+      path: '/public/hooks/alchemy-activity'
       fullPath: '/api/public/hooks/alchemy-activity'
       preLoaderRoute: typeof ApiPublicHooksAlchemyActivityRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/store-logo/$': {
       id: '/api/public/store-logo/$'
-      path: '/api/public/store-logo/$'
+      path: '/public/store-logo/$'
       fullPath: '/api/public/store-logo/$'
       preLoaderRoute: typeof ApiPublicStoreLogoSplatRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/telegram/webhook': {
       id: '/api/public/telegram/webhook'
-      path: '/api/public/telegram/webhook'
+      path: '/public/telegram/webhook'
       fullPath: '/api/public/telegram/webhook'
       preLoaderRoute: typeof ApiPublicTelegramWebhookRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
+    }
+    '/api/public/v1/directory': {
+      id: '/api/public/v1/directory'
+      path: '/public/v1/directory'
+      fullPath: '/api/public/v1/directory'
+      preLoaderRoute: typeof ApiPublicV1DirectoryRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/v1/invoices': {
       id: '/api/public/v1/invoices'
-      path: '/api/public/v1/invoices'
+      path: '/public/v1/invoices'
       fullPath: '/api/public/v1/invoices'
       preLoaderRoute: typeof ApiPublicV1InvoicesRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/v1/links': {
       id: '/api/public/v1/links'
-      path: '/api/public/v1/links'
+      path: '/public/v1/links'
       fullPath: '/api/public/v1/links'
       preLoaderRoute: typeof ApiPublicV1LinksRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/v1/live-stats': {
       id: '/api/public/v1/live-stats'
-      path: '/api/public/v1/live-stats'
+      path: '/public/v1/live-stats'
       fullPath: '/api/public/v1/live-stats'
       preLoaderRoute: typeof ApiPublicV1LiveStatsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/v1/lookup': {
       id: '/api/public/v1/lookup'
-      path: '/api/public/v1/lookup'
+      path: '/public/v1/lookup'
       fullPath: '/api/public/v1/lookup'
       preLoaderRoute: typeof ApiPublicV1LookupRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/v1/me': {
       id: '/api/public/v1/me'
-      path: '/api/public/v1/me'
+      path: '/public/v1/me'
       fullPath: '/api/public/v1/me'
       preLoaderRoute: typeof ApiPublicV1MeRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/v1/rates': {
       id: '/api/public/v1/rates'
-      path: '/api/public/v1/rates'
+      path: '/public/v1/rates'
       fullPath: '/api/public/v1/rates'
       preLoaderRoute: typeof ApiPublicV1RatesRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/v1/store': {
       id: '/api/public/v1/store'
-      path: '/api/public/v1/store'
+      path: '/public/v1/store'
       fullPath: '/api/public/v1/store'
       preLoaderRoute: typeof ApiPublicV1StoreRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/v1/wallet-link': {
       id: '/api/public/v1/wallet-link'
-      path: '/api/public/v1/wallet-link'
+      path: '/public/v1/wallet-link'
       fullPath: '/api/public/v1/wallet-link'
       preLoaderRoute: typeof ApiPublicV1WalletLinkRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/lovable/email/auth/preview': {
       id: '/lovable/email/auth/preview'
@@ -3028,10 +3056,10 @@ declare module '@tanstack/react-router' {
     }
     '/api/public/v1/hooks/affiliate-sale': {
       id: '/api/public/v1/hooks/affiliate-sale'
-      path: '/api/public/v1/hooks/affiliate-sale'
+      path: '/public/v1/hooks/affiliate-sale'
       fullPath: '/api/public/v1/hooks/affiliate-sale'
       preLoaderRoute: typeof ApiPublicV1HooksAffiliateSaleRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/v1/invoices/$id': {
       id: '/api/public/v1/invoices/$id'
@@ -3049,52 +3077,52 @@ declare module '@tanstack/react-router' {
     }
     '/api/public/v1/pay/$invoiceId': {
       id: '/api/public/v1/pay/$invoiceId'
-      path: '/api/public/v1/pay/$invoiceId'
+      path: '/public/v1/pay/$invoiceId'
       fullPath: '/api/public/v1/pay/$invoiceId'
       preLoaderRoute: typeof ApiPublicV1PayInvoiceIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/v1/stats/live': {
       id: '/api/public/v1/stats/live'
-      path: '/api/public/v1/stats/live'
+      path: '/public/v1/stats/live'
       fullPath: '/api/public/v1/stats/live'
       preLoaderRoute: typeof ApiPublicV1StatsLiveRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/v1/terminals/heartbeat': {
       id: '/api/public/v1/terminals/heartbeat'
-      path: '/api/public/v1/terminals/heartbeat'
+      path: '/public/v1/terminals/heartbeat'
       fullPath: '/api/public/v1/terminals/heartbeat'
       preLoaderRoute: typeof ApiPublicV1TerminalsHeartbeatRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/v1/terminals/invoice': {
       id: '/api/public/v1/terminals/invoice'
-      path: '/api/public/v1/terminals/invoice'
+      path: '/public/v1/terminals/invoice'
       fullPath: '/api/public/v1/terminals/invoice'
       preLoaderRoute: typeof ApiPublicV1TerminalsInvoiceRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/v1/terminals/invoices': {
       id: '/api/public/v1/terminals/invoices'
-      path: '/api/public/v1/terminals/invoices'
+      path: '/public/v1/terminals/invoices'
       fullPath: '/api/public/v1/terminals/invoices'
       preLoaderRoute: typeof ApiPublicV1TerminalsInvoicesRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/v1/terminals/options': {
       id: '/api/public/v1/terminals/options'
-      path: '/api/public/v1/terminals/options'
+      path: '/public/v1/terminals/options'
       fullPath: '/api/public/v1/terminals/options'
       preLoaderRoute: typeof ApiPublicV1TerminalsOptionsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/v1/terminals/pair': {
       id: '/api/public/v1/terminals/pair'
-      path: '/api/public/v1/terminals/pair'
+      path: '/public/v1/terminals/pair'
       fullPath: '/api/public/v1/terminals/pair'
       preLoaderRoute: typeof ApiPublicV1TerminalsPairRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ApiRoute
     }
     '/api/public/v1/wallet-link/status': {
       id: '/api/public/v1/wallet-link/status'
@@ -3356,54 +3384,6 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
-interface CheckoutRouteChildren {
-  CheckoutThanksRoute: typeof CheckoutThanksRoute
-}
-
-const CheckoutRouteChildren: CheckoutRouteChildren = {
-  CheckoutThanksRoute: CheckoutThanksRoute,
-}
-
-const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
-  CheckoutRouteChildren,
-)
-
-interface DocsRouteChildren {
-  DocsAddressRotationRoute: typeof DocsAddressRotationRoute
-  DocsTapToPayTangemRoute: typeof DocsTapToPayTangemRoute
-  DocsWalletSetupRoute: typeof DocsWalletSetupRoute
-}
-
-const DocsRouteChildren: DocsRouteChildren = {
-  DocsAddressRotationRoute: DocsAddressRotationRoute,
-  DocsTapToPayTangemRoute: DocsTapToPayTangemRoute,
-  DocsWalletSetupRoute: DocsWalletSetupRoute,
-}
-
-const DocsRouteWithChildren = DocsRoute._addFileChildren(DocsRouteChildren)
-
-interface PosRouteChildren {
-  PosHistoryRoute: typeof PosHistoryRoute
-  PosNfcInspectRoute: typeof PosNfcInspectRoute
-  PosPairRoute: typeof PosPairRoute
-  PosPairSigninRoute: typeof PosPairSigninRoute
-  PosPrinterTestRoute: typeof PosPrinterTestRoute
-  PosSettingsRoute: typeof PosSettingsRoute
-  PosIndexRoute: typeof PosIndexRoute
-}
-
-const PosRouteChildren: PosRouteChildren = {
-  PosHistoryRoute: PosHistoryRoute,
-  PosNfcInspectRoute: PosNfcInspectRoute,
-  PosPairRoute: PosPairRoute,
-  PosPairSigninRoute: PosPairSigninRoute,
-  PosPrinterTestRoute: PosPrinterTestRoute,
-  PosSettingsRoute: PosSettingsRoute,
-  PosIndexRoute: PosIndexRoute,
-}
-
-const PosRouteWithChildren = PosRoute._addFileChildren(PosRouteChildren)
-
 interface ApiPublicV1InvoicesIdRouteChildren {
   ApiPublicV1InvoicesIdEmailRoute: typeof ApiPublicV1InvoicesIdEmailRoute
   ApiPublicV1InvoicesIdWebhooksRoute: typeof ApiPublicV1InvoicesIdWebhooksRoute
@@ -3490,9 +3470,131 @@ const ApiPublicV1TerminalsInvoiceRouteWithChildren =
     ApiPublicV1TerminalsInvoiceRouteChildren,
   )
 
+interface ApiRouteChildren {
+  ApiPublicDemoResetRoute: typeof ApiPublicDemoResetRoute
+  ApiPublicAffiliateClickRoute: typeof ApiPublicAffiliateClickRoute
+  ApiPublicAuthHmeSsoRoute: typeof ApiPublicAuthHmeSsoRoute
+  ApiPublicAuthWalletCallbackRoute: typeof ApiPublicAuthWalletCallbackRoute
+  ApiPublicAuthWalletChallengeRoute: typeof ApiPublicAuthWalletChallengeRoute
+  ApiPublicAuthWalletExchangeRoute: typeof ApiPublicAuthWalletExchangeRoute
+  ApiPublicAuthWalletStatusRoute: typeof ApiPublicAuthWalletStatusRoute
+  ApiPublicCronAlchemySyncRoute: typeof ApiPublicCronAlchemySyncRoute
+  ApiPublicCronBillingRoute: typeof ApiPublicCronBillingRoute
+  ApiPublicCronLightningRoute: typeof ApiPublicCronLightningRoute
+  ApiPublicCronRatesRoute: typeof ApiPublicCronRatesRoute
+  ApiPublicCronWatcherRoute: typeof ApiPublicCronWatcherRoute
+  ApiPublicHooksAlchemyActivityRoute: typeof ApiPublicHooksAlchemyActivityRoute
+  ApiPublicStoreLogoSplatRoute: typeof ApiPublicStoreLogoSplatRoute
+  ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
+  ApiPublicV1DirectoryRoute: typeof ApiPublicV1DirectoryRoute
+  ApiPublicV1InvoicesRoute: typeof ApiPublicV1InvoicesRouteWithChildren
+  ApiPublicV1LinksRoute: typeof ApiPublicV1LinksRouteWithChildren
+  ApiPublicV1LiveStatsRoute: typeof ApiPublicV1LiveStatsRoute
+  ApiPublicV1LookupRoute: typeof ApiPublicV1LookupRoute
+  ApiPublicV1MeRoute: typeof ApiPublicV1MeRoute
+  ApiPublicV1RatesRoute: typeof ApiPublicV1RatesRoute
+  ApiPublicV1StoreRoute: typeof ApiPublicV1StoreRoute
+  ApiPublicV1WalletLinkRoute: typeof ApiPublicV1WalletLinkRouteWithChildren
+  ApiPublicV1HooksAffiliateSaleRoute: typeof ApiPublicV1HooksAffiliateSaleRoute
+  ApiPublicV1PayInvoiceIdRoute: typeof ApiPublicV1PayInvoiceIdRoute
+  ApiPublicV1StatsLiveRoute: typeof ApiPublicV1StatsLiveRoute
+  ApiPublicV1TerminalsHeartbeatRoute: typeof ApiPublicV1TerminalsHeartbeatRoute
+  ApiPublicV1TerminalsInvoiceRoute: typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
+  ApiPublicV1TerminalsInvoicesRoute: typeof ApiPublicV1TerminalsInvoicesRoute
+  ApiPublicV1TerminalsOptionsRoute: typeof ApiPublicV1TerminalsOptionsRoute
+  ApiPublicV1TerminalsPairRoute: typeof ApiPublicV1TerminalsPairRoute
+}
+
+const ApiRouteChildren: ApiRouteChildren = {
+  ApiPublicDemoResetRoute: ApiPublicDemoResetRoute,
+  ApiPublicAffiliateClickRoute: ApiPublicAffiliateClickRoute,
+  ApiPublicAuthHmeSsoRoute: ApiPublicAuthHmeSsoRoute,
+  ApiPublicAuthWalletCallbackRoute: ApiPublicAuthWalletCallbackRoute,
+  ApiPublicAuthWalletChallengeRoute: ApiPublicAuthWalletChallengeRoute,
+  ApiPublicAuthWalletExchangeRoute: ApiPublicAuthWalletExchangeRoute,
+  ApiPublicAuthWalletStatusRoute: ApiPublicAuthWalletStatusRoute,
+  ApiPublicCronAlchemySyncRoute: ApiPublicCronAlchemySyncRoute,
+  ApiPublicCronBillingRoute: ApiPublicCronBillingRoute,
+  ApiPublicCronLightningRoute: ApiPublicCronLightningRoute,
+  ApiPublicCronRatesRoute: ApiPublicCronRatesRoute,
+  ApiPublicCronWatcherRoute: ApiPublicCronWatcherRoute,
+  ApiPublicHooksAlchemyActivityRoute: ApiPublicHooksAlchemyActivityRoute,
+  ApiPublicStoreLogoSplatRoute: ApiPublicStoreLogoSplatRoute,
+  ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
+  ApiPublicV1DirectoryRoute: ApiPublicV1DirectoryRoute,
+  ApiPublicV1InvoicesRoute: ApiPublicV1InvoicesRouteWithChildren,
+  ApiPublicV1LinksRoute: ApiPublicV1LinksRouteWithChildren,
+  ApiPublicV1LiveStatsRoute: ApiPublicV1LiveStatsRoute,
+  ApiPublicV1LookupRoute: ApiPublicV1LookupRoute,
+  ApiPublicV1MeRoute: ApiPublicV1MeRoute,
+  ApiPublicV1RatesRoute: ApiPublicV1RatesRoute,
+  ApiPublicV1StoreRoute: ApiPublicV1StoreRoute,
+  ApiPublicV1WalletLinkRoute: ApiPublicV1WalletLinkRouteWithChildren,
+  ApiPublicV1HooksAffiliateSaleRoute: ApiPublicV1HooksAffiliateSaleRoute,
+  ApiPublicV1PayInvoiceIdRoute: ApiPublicV1PayInvoiceIdRoute,
+  ApiPublicV1StatsLiveRoute: ApiPublicV1StatsLiveRoute,
+  ApiPublicV1TerminalsHeartbeatRoute: ApiPublicV1TerminalsHeartbeatRoute,
+  ApiPublicV1TerminalsInvoiceRoute:
+    ApiPublicV1TerminalsInvoiceRouteWithChildren,
+  ApiPublicV1TerminalsInvoicesRoute: ApiPublicV1TerminalsInvoicesRoute,
+  ApiPublicV1TerminalsOptionsRoute: ApiPublicV1TerminalsOptionsRoute,
+  ApiPublicV1TerminalsPairRoute: ApiPublicV1TerminalsPairRoute,
+}
+
+const ApiRouteWithChildren = ApiRoute._addFileChildren(ApiRouteChildren)
+
+interface CheckoutRouteChildren {
+  CheckoutThanksRoute: typeof CheckoutThanksRoute
+}
+
+const CheckoutRouteChildren: CheckoutRouteChildren = {
+  CheckoutThanksRoute: CheckoutThanksRoute,
+}
+
+const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
+  CheckoutRouteChildren,
+)
+
+interface DocsRouteChildren {
+  DocsAddressRotationRoute: typeof DocsAddressRotationRoute
+  DocsTapToPayTangemRoute: typeof DocsTapToPayTangemRoute
+  DocsWalletSetupRoute: typeof DocsWalletSetupRoute
+}
+
+const DocsRouteChildren: DocsRouteChildren = {
+  DocsAddressRotationRoute: DocsAddressRotationRoute,
+  DocsTapToPayTangemRoute: DocsTapToPayTangemRoute,
+  DocsWalletSetupRoute: DocsWalletSetupRoute,
+}
+
+const DocsRouteWithChildren = DocsRoute._addFileChildren(DocsRouteChildren)
+
+interface PosRouteChildren {
+  PosHistoryRoute: typeof PosHistoryRoute
+  PosNfcInspectRoute: typeof PosNfcInspectRoute
+  PosPairRoute: typeof PosPairRoute
+  PosPairSigninRoute: typeof PosPairSigninRoute
+  PosPrinterTestRoute: typeof PosPrinterTestRoute
+  PosSettingsRoute: typeof PosSettingsRoute
+  PosIndexRoute: typeof PosIndexRoute
+}
+
+const PosRouteChildren: PosRouteChildren = {
+  PosHistoryRoute: PosHistoryRoute,
+  PosNfcInspectRoute: PosNfcInspectRoute,
+  PosPairRoute: PosPairRoute,
+  PosPairSigninRoute: PosPairSigninRoute,
+  PosPrinterTestRoute: PosPrinterTestRoute,
+  PosSettingsRoute: PosSettingsRoute,
+  PosIndexRoute: PosIndexRoute,
+}
+
+const PosRouteWithChildren = PosRoute._addFileChildren(PosRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  ApiRoute: ApiRouteWithChildren,
   AuthRoute: AuthRoute,
   BrandRoute: BrandRoute,
   CashOutRoute: CashOutRoute,
@@ -3500,6 +3602,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRouteWithChildren,
   CompareRoute: CompareRoute,
   DemoResetRoute: DemoResetRoute,
+  DirectoryRoute: DirectoryRoute,
   DocsRoute: DocsRouteWithChildren,
   HelpRoute: HelpRoute,
   KycRoute: KycRoute,
@@ -3532,42 +3635,10 @@ const rootRouteChildren: RootRouteChildren = {
   SdkPayhmeDotjsRoute: SdkPayhmeDotjsRoute,
   TSlugRoute: TSlugRoute,
   IntegrationsIndexRoute: IntegrationsIndexRoute,
-  ApiPublicDemoResetRoute: ApiPublicDemoResetRoute,
   LovableEmailEventsRoute: LovableEmailEventsRoute,
-  ApiPublicAffiliateClickRoute: ApiPublicAffiliateClickRoute,
-  ApiPublicAuthHmeSsoRoute: ApiPublicAuthHmeSsoRoute,
-  ApiPublicAuthWalletCallbackRoute: ApiPublicAuthWalletCallbackRoute,
-  ApiPublicAuthWalletChallengeRoute: ApiPublicAuthWalletChallengeRoute,
-  ApiPublicAuthWalletExchangeRoute: ApiPublicAuthWalletExchangeRoute,
-  ApiPublicAuthWalletStatusRoute: ApiPublicAuthWalletStatusRoute,
-  ApiPublicCronAlchemySyncRoute: ApiPublicCronAlchemySyncRoute,
-  ApiPublicCronBillingRoute: ApiPublicCronBillingRoute,
-  ApiPublicCronLightningRoute: ApiPublicCronLightningRoute,
-  ApiPublicCronRatesRoute: ApiPublicCronRatesRoute,
-  ApiPublicCronWatcherRoute: ApiPublicCronWatcherRoute,
-  ApiPublicHooksAlchemyActivityRoute: ApiPublicHooksAlchemyActivityRoute,
-  ApiPublicStoreLogoSplatRoute: ApiPublicStoreLogoSplatRoute,
-  ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
-  ApiPublicV1InvoicesRoute: ApiPublicV1InvoicesRouteWithChildren,
-  ApiPublicV1LinksRoute: ApiPublicV1LinksRouteWithChildren,
-  ApiPublicV1LiveStatsRoute: ApiPublicV1LiveStatsRoute,
-  ApiPublicV1LookupRoute: ApiPublicV1LookupRoute,
-  ApiPublicV1MeRoute: ApiPublicV1MeRoute,
-  ApiPublicV1RatesRoute: ApiPublicV1RatesRoute,
-  ApiPublicV1StoreRoute: ApiPublicV1StoreRoute,
-  ApiPublicV1WalletLinkRoute: ApiPublicV1WalletLinkRouteWithChildren,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
-  ApiPublicV1HooksAffiliateSaleRoute: ApiPublicV1HooksAffiliateSaleRoute,
-  ApiPublicV1PayInvoiceIdRoute: ApiPublicV1PayInvoiceIdRoute,
-  ApiPublicV1StatsLiveRoute: ApiPublicV1StatsLiveRoute,
-  ApiPublicV1TerminalsHeartbeatRoute: ApiPublicV1TerminalsHeartbeatRoute,
-  ApiPublicV1TerminalsInvoiceRoute:
-    ApiPublicV1TerminalsInvoiceRouteWithChildren,
-  ApiPublicV1TerminalsInvoicesRoute: ApiPublicV1TerminalsInvoicesRoute,
-  ApiPublicV1TerminalsOptionsRoute: ApiPublicV1TerminalsOptionsRoute,
-  ApiPublicV1TerminalsPairRoute: ApiPublicV1TerminalsPairRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

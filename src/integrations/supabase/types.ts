@@ -1809,10 +1809,12 @@ export type Database = {
           business_city: string | null
           business_country: string | null
           business_description: string | null
+          business_hours: string | null
           business_lat: number | null
           business_lng: number | null
           business_logo_url: string | null
           business_phone: string | null
+          business_postal_code: string | null
           business_presence: string
           business_region: string | null
           created_at: string
@@ -1885,10 +1887,12 @@ export type Database = {
           business_city?: string | null
           business_country?: string | null
           business_description?: string | null
+          business_hours?: string | null
           business_lat?: number | null
           business_lng?: number | null
           business_logo_url?: string | null
           business_phone?: string | null
+          business_postal_code?: string | null
           business_presence?: string
           business_region?: string | null
           created_at?: string
@@ -1961,10 +1965,12 @@ export type Database = {
           business_city?: string | null
           business_country?: string | null
           business_description?: string | null
+          business_hours?: string | null
           business_lat?: number | null
           business_lng?: number | null
           business_logo_url?: string | null
           business_phone?: string | null
+          business_postal_code?: string | null
           business_presence?: string
           business_region?: string | null
           created_at?: string
@@ -2730,6 +2736,7 @@ export type Database = {
           website: string
         }[]
       }
+      get_public_directory: { Args: { _since?: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

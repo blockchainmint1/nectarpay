@@ -65,3 +65,9 @@ Status: [/status](/status). Changelog: [/changelog](/changelog).
 
 - [Start](/start): Mobile-friendly merchant onboarding.
 - [Sign up](/signup): Full onboarding wizard.
+
+## Merchant directory (public, no key)
+- GET https://app.nectar-pay.com/api/public/v1/directory — every listed merchant (JSON, CORS open).
+- GET ...?since=<ISO-8601> — only stores changed after that time, plus a `removed` list.
+- Use `id` as the permanent key. `city_only` stores carry no name/contact; location rounded to ~10 km.
+- Human page: https://app.nectar-pay.com/directory · Docs: https://app.nectar-pay.com/api
