@@ -1,5 +1,9 @@
 # Roadmap
 
+## Honest Money popup return
+- [ ] Restore the popup-to-main-window handoff when the browser removes the opener, and verify callback handling.
+- [ ] Verify a real Honest Money sign-in after publishing; requires the member's email-code approval.
+
 ## HME credential cutover and referral review
 - [x] Use Bobby's corrected HME_ECOSYSTEM key for safe connection checks: empty member lookup returned 200; another site code returned 401.
 - [x] Check the replaced ecosystem key and deleted HMAC secret against current Honest Money instructions: only SSO referenced the deleted credential; card relay uses the ecosystem key.
