@@ -36,7 +36,7 @@ function DirectoryPage() {
   const [cat, setCat] = useState<string | null>(null);
   const [coin, setCoin] = useState<string | null>(null);
 
-  const full = data.stores.filter((s) => s.listing === "full");
+  const full = data.stores.filter((s) => s.listing !== "city_only");
   const pins = data.stores.filter((s) => s.listing === "city_only");
   const categories = useMemo(() => [...new Set(data.stores.map((s) => s.category).filter(Boolean))].sort() as string[], [data]);
   const coins = useMemo(() => {
