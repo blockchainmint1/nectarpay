@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const CARD_APPROVAL_TIMEOUT_MS = 15 * 60_000;
-export const CARD_POLL_INTERVAL_MS = 3000;
+export const CARD_POLL_INTERVAL_MS = 1500;
 export const CardRequest = z.union([
   z.object({ payment_id: z.string().uuid(), poll_token: z.string().min(1).max(1024) }),
   z.object({ card_uid: z.string().min(4).max(64).regex(/^[0-9a-fA-F:\s-]+$/), pin: z.string().regex(/^\d{4,8}$/).optional() }),
