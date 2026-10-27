@@ -1,7 +1,11 @@
 import { expect, test } from "vitest";
-import { hmeTicketMessage, validHmeFlow } from "./hme-popup";
+import { hmeSsoSearch, hmeTicketMessage, validHmeFlow } from "./hme-popup";
 
 const flow = "a".repeat(32);
+test("accepts Honest Money's popup=1 after router numeric parsing", () => {
+  expect(hmeSsoSearch.parse({ popup: 1, token: "test-ticket" })).toEqual({ popup: "1", token: "test-ticket" });
+  expect(hmeSsoSearch.parse({ popup: "1" }).popup).toBe("1");
+});
 test("only accepts a ticket for the initiating popup flow", () => {
   expect(hmeTicketMessage({ type: "hme-sso", flow, token: "test-ticket" }, flow)).toBe(true);
   expect(hmeTicketMessage({ type: "hme-sso", flow: "b".repeat(32), token: "test-ticket" }, flow)).toBe(false);

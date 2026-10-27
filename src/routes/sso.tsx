@@ -1,14 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { z } from "zod";
 
 import { finishHmeSso } from "@/lib/hme-auth";
-import { hmeChannelName, validHmeFlow } from "@/lib/hme-popup";
+import { hmeSsoSearch, hmeChannelName, validHmeFlow } from "@/lib/hme-popup";
 
 // Return address for Honest Money SSO. In popup mode we hand the ticket back
 // to the opener (the /auth page) and close; otherwise we finish sign-in here.
 export const Route = createFileRoute("/sso")({
-  validateSearch: z.object({ token: z.string().optional(), popup: z.string().optional(), flow: z.string().optional() }),
+  validateSearch: hmeSsoSearch,
   head: () => ({
     meta: [
       { title: "Signing in with Honest Money · Nectar.Pay" },

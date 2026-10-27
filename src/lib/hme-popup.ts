@@ -1,3 +1,7 @@
+import { z } from "zod";
+
+export const hmeSsoSearch = z.object({ token: z.string().optional(), popup: z.coerce.string().optional(), flow: z.string().optional() });
+
 export const HME_POPUP_TIMEOUT_MS = 180000;
 
 export function validHmeFlow(flow: unknown): flow is string {
