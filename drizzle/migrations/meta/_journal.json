@@ -92,6 +92,13 @@
       "when": 1793100421307,
       "tag": "0012_store_business_email",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793102230881,
+      "tag": "0013_store_business_email_column_access",
+      "breakpoints": true
     }
   ]
 }

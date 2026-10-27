@@ -1,5 +1,8 @@
 # Roadmap
 
+## Store info save failure
+- [x] Restore authenticated access to the new public-email field without exposing store secrets; six tests passed, and Bobby's Nectar-Pay store saved successfully and read back after reload.
+
 ## SES and customer receipts
 - [x] Move app email delivery to verified AWS SES; SES accepted one connection-check email to Bobby.
 - [x] Wire customer receipts after settlement/email capture; show failures on the terminal; six tests passed.
