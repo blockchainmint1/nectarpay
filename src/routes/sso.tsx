@@ -27,20 +27,24 @@ function SsoPage() {
   const navigate = useNavigate();
   const [msg, setMsg] = useState("Signing you in…");
   const finishing = useRef(false);
+  const ticket = useRef<{ token: string; flow?: string } | undefined>(undefined);
 
   useEffect(() => {
-    if (!token) {
+    if (token) ticket.current = { token, flow };
+    const callback = ticket.current;
+    if (!callback) {
       setMsg("No sign-in ticket found.");
       return;
     }
+    const { token: callbackToken, flow: callbackFlow } = callback;
     window.history.replaceState(null, "", "/sso");
-    if (validHmeFlow(flow)) {
-      const channel = typeof BroadcastChannel === "undefined" ? undefined : new BroadcastChannel(hmeChannelName(flow));
-      const message = { type: "hme-sso", flow, token };
+    if (validHmeFlow(callbackFlow)) {
+      const channel = typeof BroadcastChannel === "undefined" ? undefined : new BroadcastChannel(hmeChannelName(callbackFlow));
+      const message = { type: "hme-sso", flow: callbackFlow, token: callbackToken };
       const acknowledge = (data: unknown) => {
         if (!data || typeof data !== "object") return;
         const ack = data as Record<string, unknown>;
-        if (ack.type === "hme-sso-ack" && ack.flow === flow) {
+        if (ack.type === "hme-sso-ack" && ack.flow === callbackFlow) {
           setMsg("Returning to NectarPay…");
           window.close();
         }
@@ -70,14 +74,14 @@ function SsoPage() {
     }
     if (window.opener && window.opener !== window) {
       try {
-        window.opener.postMessage({ type: "hme-sso", token }, window.location.origin);
+        window.opener.postMessage({ type: "hme-sso", token: callbackToken }, window.location.origin);
         window.close();
         return;
       } catch { /* fall through */ }
     }
     if (finishing.current) return;
     finishing.current = true;
-    finishHmeSso(token)
+    finishHmeSso(callbackToken)
       .then(({ is_admin }) => navigate({ to: is_admin ? "/admin" : "/dashboard" }))
       .catch((e) => setMsg(e instanceof Error ? e.message : "Sign-in failed"));
   }, [token, flow, navigate]);
