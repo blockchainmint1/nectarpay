@@ -1,9 +1,13 @@
 # Roadmap
 
 ## HME credential cutover and referral review
-- [ ] Check the replaced ecosystem key and deleted HMAC secret against current Honest Money instructions.
-- [ ] Align SSO verification and permanent member matching without disrupting existing sign-in methods.
-- [ ] Align referral capture and server-side signup reporting; verify safe checks and document remaining external blockers.
+- [x] Use Bobby's corrected HME_ECOSYSTEM key for safe connection checks: empty member lookup returned 200; another site code returned 401.
+- [x] Check the replaced ecosystem key and deleted HMAC secret against current Honest Money instructions: only SSO referenced the deleted credential; card relay uses the ecosystem key.
+- [x] Align SSO verification and permanent member matching; Account now offers a verified-session first connection, and all four sign-in options remain visible.
+- [x] Align referral capture, preserve referral through the entry redirect, and report server-side Hub signup events with stored delivery status; 21 relevant tests passed.
+- [ ] Real Honest Money account connection and subsequent sign-in: requires Bobby to complete Honest Money's email-code popup, then retry from signed-out state after publishing.
+- [ ] Real referral signup readback in Honest Money: requires a new legitimate signup; no fake member or signup event was sent.
+- [ ] NFC card connection after key rotation: requires HME Wallet's current payment-signature handoff; honest.money/api does not specify that wallet endpoint's protocol, so it was not guessed or changed.
 
 ## Store info save failure
 - [x] Restore authenticated access to the new public-email field without exposing store secrets; six tests passed, and Bobby's Nectar-Pay store saved successfully and read back after reload.

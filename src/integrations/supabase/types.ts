@@ -658,6 +658,45 @@ export type Database = {
         }
         Relationships: []
       }
+      hme_member_links: {
+        Row: {
+          created_at: string
+          member_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          member_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          member_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      hme_signup_events: {
+        Row: {
+          created_at: string
+          ref: string | null
+          sent_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          ref?: string | null
+          sent_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          ref?: string | null
+          sent_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       hme_sso_nonces: {
         Row: {
           nonce: string

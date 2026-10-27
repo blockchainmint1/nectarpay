@@ -8,7 +8,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { MfaGate } from "@/components/mfa-gate";
 
-import { readAffiliateSnapshot, clearAffiliateSnapshot } from "@/lib/affiliate";
+import { readAffiliateSnapshot } from "@/lib/affiliate";
 import { recordAffiliateAttribution } from "@/lib/affiliate.functions";
 import {
   DropdownMenu,
@@ -43,10 +43,8 @@ function AuthenticatedLayout() {
   useEffect(() => {
     if (loading || !user) return;
     const snap = readAffiliateSnapshot();
-    if (!snap) return;
-    recordAffiliateAttribution({ data: snap })
-      .catch(() => { /* non-blocking */ })
-      .finally(() => { clearAffiliateSnapshot(); });
+    recordAffiliateAttribution({ data: snap ?? {} })
+      .catch(() => { /* non-blocking; keep the referral for a later retry */ });
   }, [loading, user]);
 
   if (loading || !user) {
