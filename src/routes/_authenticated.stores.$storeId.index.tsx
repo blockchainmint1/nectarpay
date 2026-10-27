@@ -42,7 +42,7 @@ function StoreDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 md:px-8">
+    <div className="mx-auto max-w-[90rem] px-4 py-10 md:px-8">
       <Link
         to="/stores"
         className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"

@@ -1,3 +1,4 @@
+import { useStoreRef } from "@/lib/store-ref";
 // /stores/$storeId/share-links — merchant-facing management of public
 // "virtual terminal" links: persistent, re-shareable URLs that render a
 // POS terminal look-alike running this store's payment flow.
@@ -41,7 +42,7 @@ function slugify(s: string) {
 }
 
 function ShareLinksPage() {
-  const { storeId } = Route.useParams();
+  const { storeId, storeSlug } = useStoreRef();
   const qc = useQueryClient();
 
   const { data: store } = useQuery({
@@ -136,10 +137,10 @@ function ShareLinksPage() {
   });
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 md:px-8">
+    <div className="mx-auto max-w-[90rem] px-4 py-10 md:px-8">
       <Link
         to="/stores/$storeId"
-        params={{ storeId }}
+        params={{ storeId: storeSlug }}
         className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="h-4 w-4" /> Back to store

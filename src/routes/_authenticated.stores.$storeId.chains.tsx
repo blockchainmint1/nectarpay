@@ -1,3 +1,4 @@
+import { useStoreRef } from "@/lib/store-ref";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -191,7 +192,7 @@ function emptyRow(chain: ChainKey): Row {
 }
 
 function ChainsPage() {
-  const { storeId } = Route.useParams();
+  const { storeId, storeSlug } = useStoreRef();
   const walletHistory = useWalletChangeHistory(storeId);
   const lastWalletChange = walletHistory.data?.pages[0]?.rows[0];
 
@@ -259,10 +260,10 @@ function ChainsPage() {
 
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 md:px-8">
+    <div className="mx-auto max-w-[90rem] px-4 py-10 md:px-8">
       <Link
         to="/stores/$storeId"
-        params={{ storeId }}
+        params={{ storeId: storeSlug }}
         className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="h-4 w-4" /> Back to store

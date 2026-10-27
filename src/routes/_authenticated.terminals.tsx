@@ -118,7 +118,7 @@ function TerminalsAggregatePage() {
   const noStores = storesQ.data && storesQ.data.length === 0;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 md:px-8">
+    <div className="mx-auto max-w-[90rem] px-4 py-10 md:px-8">
       <div className="flex items-center gap-2">
         <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
           <Smartphone className="h-5 w-5" />

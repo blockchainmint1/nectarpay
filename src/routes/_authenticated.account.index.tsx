@@ -98,7 +98,7 @@ function AccountPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 md:px-8">
+    <div className="mx-auto max-w-[90rem] px-4 py-10 md:px-8">
       <h1 className="text-2xl font-semibold tracking-tight">Account</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Signed in as {user?.email ?? "your account"}.

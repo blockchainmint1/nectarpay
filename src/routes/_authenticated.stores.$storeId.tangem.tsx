@@ -1,3 +1,4 @@
+import { useStoreRef } from "@/lib/store-ref";
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft, Save, Nfc } from "lucide-react";
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/stores/$storeId/tangem")({
 const ETH_ADDRESS = /^0x[a-fA-F0-9]{40}$/;
 
 function TangemSettingsPage() {
-  const { storeId } = Route.useParams();
+  const { storeId, storeSlug } = useStoreRef();
   const [address, setAddress] = useState("");
   const [initial, setInitial] = useState("");
   const [loading, setLoading] = useState(true);
@@ -65,10 +66,10 @@ function TangemSettingsPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-2xl px-6 py-10">
+      <div className="mx-auto max-w-[90rem] px-6 py-10">
         <Link
           to="/stores/$storeId"
-          params={{ storeId }}
+          params={{ storeId: storeSlug }}
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft className="h-4 w-4" /> Back to store
