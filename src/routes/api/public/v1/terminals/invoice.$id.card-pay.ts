@@ -50,15 +50,32 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/card-
           if (!inv) return json({ error: "Invoice not found." }, 404);
           if (inv.store_id !== auth.terminal.store_id) return json({ error: "Forbidden." }, 403);
 
+          // Diagnostic trail of every CryptoPOP exchange (never the card UID or PIN).
+          const record = async (step: string, httpStatus: number | null, r: { status?: string; reason?: string | null; payment_id?: string | null; txid?: string | null }, started: number) => {
+            const { error } = await supabaseAdmin.from("card_payment_events").insert({
+              invoice_id: inv.id, store_id: inv.store_id, terminal_id: auth.terminal.id, step,
+              http_status: httpStatus, status: r.status ?? null, reason: r.reason ? String(r.reason).slice(0, 500) : null,
+              payment_id: r.payment_id ?? null, txid: r.txid ?? null, duration_ms: Date.now() - started,
+            });
+            if (error) console.error("[card-pay] event log failed", error.message);
+          };
+
           // Poll an existing payment.
           if ("payment_id" in parsed.data) {
             const pid = parsed.data.payment_id;
             if (!validCardPollToken(secret, parsed.data.poll_token, inv.id, auth.terminal.id, pid)) return json({ error: "Payment status request is not authorized for this sale." }, 403);
-            const res = await fetch(`${CRYPTOPOP_CARD_URL}?id=${encodeURIComponent(pid)}`, {
-              headers: cardHeaders(secret, pid), signal: AbortSignal.timeout(20000),
-            });
-            const r = await res.json().catch(() => ({}));
-            return json({ ...normalizeCardReply(r, res.ok), payment_id: pid, poll_token: parsed.data.poll_token });
+            const started = Date.now();
+            try {
+              const res = await fetch(`${CRYPTOPOP_CARD_URL}?id=${encodeURIComponent(pid)}`, {
+                headers: cardHeaders(secret, pid), signal: AbortSignal.timeout(20000),
+              });
+              const r = normalizeCardReply(await res.json().catch(() => ({})), res.ok);
+              await record("poll", res.status, { ...r, payment_id: pid }, started);
+              return json({ ...r, payment_id: pid, poll_token: parsed.data.poll_token });
+            } catch (e) {
+              await record("poll", null, { status: "error", reason: e instanceof Error ? `${e.name}: ${e.message}` : "unknown", payment_id: pid }, started);
+              throw e;
+            }
           }
 
           // TSD must be on for this store's TXC network.
@@ -70,7 +87,7 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/card-
             .maybeSingle();
           const hasTsd = (cfg?.stables ?? []).map((t) => t.toUpperCase()).includes("TSD");
           const invalid = cardInvoiceError(inv, Boolean(cfg?.enabled && hasTsd));
-          if (invalid) return json({ status: "failed", reason: invalid });
+          if (invalid) { await record("precheck", null, { status: "failed", reason: invalid }, Date.now()); return json({ status: "failed", reason: invalid }); }
 
           const { issueTapHandoff } = await import("@/lib/tap-handoff.server");
           const tap = await issueTapHandoff(inv.id);
@@ -81,8 +98,18 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/card-
             nonce: tap.nonce,
             ...(parsed.data.pin ? { pin: parsed.data.pin } : {}),
           });
-          const res = await fetch(CRYPTOPOP_CARD_URL, { method: "POST", headers: cardHeaders(secret, body), body, signal: AbortSignal.timeout(45000) });
+          const step = parsed.data.pin ? "pay_with_pin" : "tap";
+          const started = Date.now();
+          let res: Response;
+          try {
+            res = await fetch(CRYPTOPOP_CARD_URL, { method: "POST", headers: cardHeaders(secret, body), body, signal: AbortSignal.timeout(45000) });
+          } catch (e) {
+            await record(step, null, { status: "error", reason: e instanceof Error ? `${e.name}: ${e.message}` : "unknown" }, started);
+            const timedOut = e instanceof Error && e.name === "TimeoutError";
+            return json({ status: "failed", reason: timedOut ? "CryptoPOP didn't answer in time. Check the sale before retrying." : "Couldn't reach CryptoPOP. Try again." });
+          }
           const r = normalizeCardReply(await res.json().catch(() => ({})), res.ok);
+          await record(step, res.status, r, started);
           if (!res.ok) console.error("[card-pay] CryptoPOP request failed", res.status);
           return json({ ...r, ...(r.payment_id ? { poll_token: issueCardPollToken(secret, inv.id, auth.terminal.id, r.payment_id) } : {}) });
         } catch (err) {
