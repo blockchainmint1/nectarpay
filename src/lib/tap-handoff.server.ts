@@ -16,8 +16,6 @@ import { randomBytes } from "crypto";
 
 export const TAP_NONCE_TTL_MS = 10 * 60 * 1000;
 
-const PUBLIC_ORIGIN =
-  process.env.PUBLIC_ORIGIN || "https://app.nectar-pay.com";
 const APP_SCHEME = "nectar"; // Custom URI scheme handled by HME Mobile wallet
 
 export interface TapHandoff {
@@ -47,7 +45,7 @@ export async function issueTapHandoff(
     .insert({ invoice_id: invoiceId, nonce, expires_at: expiresAt });
   if (error) throw new Error(`Could not issue tap handoff: ${error.message}`);
 
-  const origin = originOverride || PUBLIC_ORIGIN;
+  const origin = originOverride || process.env["PUBLIC_ORIGIN"] || "https://app.nectar-pay.com";
   const tap_universal_url = `${origin}/pay/${invoiceId}?t=${nonce}`;
   const tap_url = `${APP_SCHEME}://pay?inv=${invoiceId}&t=${nonce}`;
   return { nonce, expires_at: expiresAt, tap_url, tap_universal_url };

@@ -1,5 +1,12 @@
 # Roadmap
 
+## CryptoPOP NFC checkout
+- [x] Connect exact-body server-signed CryptoPOP requests, bound approval status checks, and shared invoice callback helpers.
+- [x] Add PIN collection/retry, waiting-for-owner, reader failures, and sent-to-invoice-monitoring states; pending payments disable cancel/QR switching.
+- [x] Nine NFC safety tests passed (22 with SSO regression tests); simulated $1.23 checkout exercised tap, wrong PIN, retry, approval, polling, and sent without prematurely marking paid; no browser errors.
+- [ ] Verify shared NFC_PAY_SECRET against published CryptoPOP: read-only signed unknown-payment lookup returned 401 Bad signature; matching saved values and CryptoPOP publishing require confirmation.
+- [ ] Verify a real funded-card tap after both apps are published; requires a paired physical terminal/card and cardholder approval. CryptoPOP Telegram bot selection remains in its own project; NectarPay did not take over another bot.
+
 ## Honest Money popup return
 - [x] Fix numeric popup=1 validation and restore the popup-to-main-window handoff when the browser removes the opener; real browser callback closes the popup and reports rejected diagnostic tickets in the parent; 13 tests passed.
 - [ ] Verify a real Honest Money sign-in after publishing; requires the member's email-code approval.
@@ -11,7 +18,7 @@
 - [x] Align referral capture, preserve referral through the entry redirect, and report server-side Hub signup events with stored delivery status; 21 relevant tests passed.
 - [ ] Real Honest Money account connection and subsequent sign-in: requires Bobby to complete Honest Money's email-code popup, then retry from signed-out state after publishing.
 - [ ] Real referral signup readback in Honest Money: requires a new legitimate signup; no fake member or signup event was sent.
-- [ ] NFC card connection after key rotation: requires HME Wallet's current payment-signature handoff; honest.money/api does not specify that wallet endpoint's protocol, so it was not guessed or changed.
+- [x] Replace retired wallet card relay with CryptoPOP's documented NFC protocol; live signature and funded-card verification are tracked above.
 
 ## Store info save failure
 - [x] Restore authenticated access to the new public-email field without exposing store secrets; six tests passed, and Bobby's Nectar-Pay store saved successfully and read back after reload.
