@@ -22,7 +22,7 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  beforeLoad: () => {
-    throw redirect({ to: "/auth" });
+  beforeLoad: ({ location }) => {
+    throw redirect({ href: `/auth${location.searchStr}` });
   },
 });
