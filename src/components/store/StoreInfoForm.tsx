@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { CountryRegionFields } from "@/components/store/CountryRegionFields";
 
 const CATEGORIES = ["Restaurant", "Bar", "Cafe", "Retail", "Grocery", "Services", "Health & Beauty", "Auto", "Lodging", "Online", "Other"];
 const LOGO_TYPES = ["image/png", "image/jpeg", "image/webp"];
@@ -268,14 +269,12 @@ export function StoreInfoForm({ storeId, storeSlug }: { storeId: string; storeSl
                 <Label htmlFor="si-zip">ZIP</Label>
                 <Input id="si-zip" value={form.business_postal_code} onChange={(e) => set("business_postal_code", e.target.value)} />
               </div>
-              <div>
-                <Label htmlFor="si-region">State</Label>
-                <Input id="si-region" value={form.business_region} onChange={(e) => set("business_region", e.target.value)} />
-              </div>
-              <div>
-                <Label htmlFor="si-country">Country</Label>
-                <Input id="si-country" value={form.business_country} onChange={(e) => set("business_country", e.target.value)} placeholder="United States" />
-              </div>
+              <CountryRegionFields
+                country={form.business_country}
+                region={form.business_region}
+                onCountry={(c) => setForm((f) => ({ ...f, business_country: c, business_region: "" }))}
+                onRegion={(r) => set("business_region", r)}
+              />
             </div>
             <div className="md:col-span-2">
               <Label htmlFor="si-hours">Opening hours</Label>
