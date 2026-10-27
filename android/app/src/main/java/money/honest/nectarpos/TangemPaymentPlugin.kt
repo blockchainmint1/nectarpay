@@ -74,8 +74,13 @@ class TangemPaymentPlugin : Plugin() {
                             call.reject("NO_SECP256K1_WALLET", "Card has no secp256k1 wallet")
                             return@scanCard
                         }
-                        val pubKeyHex = "0x" + wallet.publicKey.toHex()
-                        val ethAddress = deriveEthAddress(wallet.publicKey)
+                        val pubKey = wallet.publicKey
+                        if (pubKey == null) {
+                            call.reject("NO_PUBLIC_KEY", "Card wallet has no public key")
+                            return@scanCard
+                        }
+                        val pubKeyHex = "0x" + pubKey.toHex()
+                        val ethAddress = deriveEthAddress(pubKey)
                         val js = JSObject().apply {
                             put("cardId", card.cardId)
                             put("publicKey", pubKeyHex)
