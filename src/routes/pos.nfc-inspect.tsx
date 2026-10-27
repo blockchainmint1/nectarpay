@@ -9,8 +9,9 @@
 
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Zap } from "lucide-react";
+import { ArrowLeft, Copy, Zap } from "lucide-react";
 import { NectarNfc, isNative, type TagEvent, type ApduResponse } from "@/lib/pos-native";
+import { qrToDataURL } from "@/lib/qr";
 
 export const Route = createFileRoute("/pos/nfc-inspect")({
   head: () => ({
@@ -48,7 +49,27 @@ function NfcInspector() {
   const [probeResults, setProbeResults] = useState<ProbeResult[]>([]);
   const [customApdu, setCustomApdu] = useState("00A4040007A000000812010101");
   const [customResp, setCustomResp] = useState<ApduResponse | null>(null);
+  const [uidQr, setUidQr] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const subRef = useRef<{ remove: () => Promise<void> } | null>(null);
+
+  const uid = event?.uid ?? null;
+  const uidText = uid ? uid.toUpperCase().replace(/\s+/g, "") : null;
+
+  useEffect(() => {
+    let cancelled = false;
+    setUidQr(null);
+    setCopied(false);
+    if (!uidText) return;
+    qrToDataURL(uidText, { margin: 2, width: 260, errorCorrectionLevel: "M" })
+      .then((url) => {
+        if (!cancelled) setUidQr(url);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [uidText]);
 
   useEffect(() => {
     setNative(isNative());
@@ -142,6 +163,39 @@ function NfcInspector() {
               <Kv k="UID" v={event.uid ?? "(none)"} />
               <Kv k="Action" v={event.action} />
               <Kv k="Tech list" v={(event.techList ?? []).join(", ") || "(none)"} />
+              {uidText && (
+                <div className="mt-3 flex flex-col items-center gap-2 rounded border border-amber-900/40 bg-black/40 p-3">
+                  {uidQr ? (
+                    <img
+                      src={uidQr}
+                      alt={`QR code of card UID ${uidText}`}
+                      className="h-[260px] w-[260px] rounded bg-white p-2"
+                    />
+                  ) : (
+                    <div className="flex h-[260px] w-[260px] items-center justify-center rounded bg-white/90 text-xs text-black/60">
+                      Building QR…
+                    </div>
+                  )}
+                  <p className="text-center text-xs text-amber-200/70">
+                    Card UID — let an iPhone scan this to pair
+                  </p>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard?.writeText(uidText).then(
+                        () => {
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 1500);
+                        },
+                        () => {},
+                      );
+                    }}
+                    className="flex items-center gap-2 rounded bg-amber-500 px-3 py-1.5 text-xs font-semibold text-black"
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                    {copied ? "Copied!" : "Copy UID"}
+                  </button>
+                </div>
+              )}
             </Section>
 
             {event.isoDep && (
