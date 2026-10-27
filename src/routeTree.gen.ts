@@ -132,6 +132,7 @@ import { Route as ApiPublicCronWatcherRouteImport } from './routes/api/public/cr
 import { Route as ApiPublicHooksAlchemyActivityRouteImport } from './routes/api/public/hooks/alchemy-activity'
 import { Route as ApiPublicStoreLogoSplatRouteImport } from './routes/api.public.store-logo.$'
 import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
+import { Route as ApiPublicV1DirectoryRouteImport } from './routes/api/public/v1/directory'
 import { Route as ApiPublicV1InvoicesRouteImport } from './routes/api.public.v1.invoices'
 import { Route as ApiPublicV1LinksRouteImport } from './routes/api.public.v1.links'
 import { Route as ApiPublicV1LiveStatsRouteImport } from './routes/api/public/v1/live-stats'
@@ -832,6 +833,11 @@ const ApiPublicTelegramWebhookRoute =
     path: '/api/public/telegram/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicV1DirectoryRoute = ApiPublicV1DirectoryRouteImport.update({
+  id: '/api/public/v1/directory',
+  path: '/api/public/v1/directory',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicV1InvoicesRoute = ApiPublicV1InvoicesRouteImport.update({
   id: '/api/public/v1/invoices',
   path: '/api/public/v1/invoices',
@@ -1143,6 +1149,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/store-logo/$': typeof ApiPublicStoreLogoSplatRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
+  '/api/public/v1/directory': typeof ApiPublicV1DirectoryRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
   '/api/public/v1/links': typeof ApiPublicV1LinksRouteWithChildren
   '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
@@ -1295,6 +1302,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/store-logo/$': typeof ApiPublicStoreLogoSplatRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
+  '/api/public/v1/directory': typeof ApiPublicV1DirectoryRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
   '/api/public/v1/links': typeof ApiPublicV1LinksRouteWithChildren
   '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
@@ -1455,6 +1463,7 @@ export interface FileRoutesById {
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
   '/api/public/store-logo/$': typeof ApiPublicStoreLogoSplatRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
+  '/api/public/v1/directory': typeof ApiPublicV1DirectoryRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
   '/api/public/v1/links': typeof ApiPublicV1LinksRouteWithChildren
   '/api/public/v1/live-stats': typeof ApiPublicV1LiveStatsRoute
@@ -1615,6 +1624,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/alchemy-activity'
     | '/api/public/store-logo/$'
     | '/api/public/telegram/webhook'
+    | '/api/public/v1/directory'
     | '/api/public/v1/invoices'
     | '/api/public/v1/links'
     | '/api/public/v1/live-stats'
@@ -1767,6 +1777,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/alchemy-activity'
     | '/api/public/store-logo/$'
     | '/api/public/telegram/webhook'
+    | '/api/public/v1/directory'
     | '/api/public/v1/invoices'
     | '/api/public/v1/links'
     | '/api/public/v1/live-stats'
@@ -1926,6 +1937,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/alchemy-activity'
     | '/api/public/store-logo/$'
     | '/api/public/telegram/webhook'
+    | '/api/public/v1/directory'
     | '/api/public/v1/invoices'
     | '/api/public/v1/links'
     | '/api/public/v1/live-stats'
@@ -2023,6 +2035,7 @@ export interface RootRouteChildren {
   ApiPublicHooksAlchemyActivityRoute: typeof ApiPublicHooksAlchemyActivityRoute
   ApiPublicStoreLogoSplatRoute: typeof ApiPublicStoreLogoSplatRoute
   ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
+  ApiPublicV1DirectoryRoute: typeof ApiPublicV1DirectoryRoute
   ApiPublicV1InvoicesRoute: typeof ApiPublicV1InvoicesRouteWithChildren
   ApiPublicV1LinksRoute: typeof ApiPublicV1LinksRouteWithChildren
   ApiPublicV1LiveStatsRoute: typeof ApiPublicV1LiveStatsRoute
@@ -2907,6 +2920,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicTelegramWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/directory': {
+      id: '/api/public/v1/directory'
+      path: '/api/public/v1/directory'
+      fullPath: '/api/public/v1/directory'
+      preLoaderRoute: typeof ApiPublicV1DirectoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/invoices': {
       id: '/api/public/v1/invoices'
       path: '/api/public/v1/invoices'
@@ -3548,6 +3568,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksAlchemyActivityRoute: ApiPublicHooksAlchemyActivityRoute,
   ApiPublicStoreLogoSplatRoute: ApiPublicStoreLogoSplatRoute,
   ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
+  ApiPublicV1DirectoryRoute: ApiPublicV1DirectoryRoute,
   ApiPublicV1InvoicesRoute: ApiPublicV1InvoicesRouteWithChildren,
   ApiPublicV1LinksRoute: ApiPublicV1LinksRouteWithChildren,
   ApiPublicV1LiveStatsRoute: ApiPublicV1LiveStatsRoute,
