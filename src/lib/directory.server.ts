@@ -52,7 +52,10 @@ export async function loadDirectory(since: string | null): Promise<DirectoryFeed
   if (error) throw new Error(error.message);
   const feed = data as unknown as DirectoryFeed;
   // Only stores that can actually take a payment belong in a "where to spend" directory.
-  feed.stores = (feed.stores ?? []).filter((s) => s.accepts.length > 0);
+  const alias: Record<string, string> = { TRON: "TRX", SOL: "SOL" };
+  feed.stores = (feed.stores ?? [])
+    .map((s) => ({ ...s, accepts: [...new Set(s.accepts.map((c) => alias[c] ?? c))].sort() }))
+    .filter((s) => s.accepts.length > 0);
   feed.removed = feed.removed ?? [];
   return feed;
 }
