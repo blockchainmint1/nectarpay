@@ -150,6 +150,7 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
   const [options, setOptions] = useState<PaymentOption[] | null>(null);
   const [optionsErr, setOptionsErr] = useState<string | null>(null);
   const [finalTipCents, setFinalTipCents] = useState(0);
+  const [tappedUid, setTappedUid] = useState<string | null>(null);
   const [experience, setExperience] = useState<Experience>(DEFAULT_EXPERIENCE);
   const [storeName, setStoreName] = useState<string | null>(null);
   const [receiptCfg, setReceiptCfg] = useState<ReceiptConfig>(DEFAULT_RECEIPT);
@@ -227,6 +228,30 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
       setBusy(false);
     }
   };
+
+  // While the payment chooser is on screen, listen for a CryptoPOP card tap:
+  // the tap itself picks "CryptoPOP card", creates the TSD invoice, and jumps
+  // straight into the card flow — no button press needed.
+  useEffect(() => {
+    if (screen !== "chain" || !isNative()) return;
+    const hasTsd = (options ?? []).some((o) => o.chain === "txc" && (o.tokenSymbol ?? "").toUpperCase() === "TSD");
+    if (!hasTsd) return;
+    let stopped = false;
+    let fired = false;
+    let subscription: { remove: () => Promise<void> } | undefined;
+    void NectarNfc.start((event) => {
+      if (stopped || fired || !event.uid) return;
+      fired = true;
+      setTappedUid(event.uid);
+      void createInvoice(finalTipCents, null, "card");
+    }).then((sub) => {
+      if (stopped) void sub.remove(); else subscription = sub;
+    }).catch(() => { /* reader unavailable: the on-screen button still works */ });
+    return () => { stopped = true; if (subscription) void subscription.remove(); };
+    // createInvoice/finalTipCents are captured with the values set before
+    // entering the chooser; re-subscribing on every render would churn the reader.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen, options]);
 
   // Poll status while waiting. After confirmation, advance into the optional
   // signature → email-receipt → final receipt sequence based on store settings.
