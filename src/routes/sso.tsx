@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 
-import { supabase } from "@/integrations/supabase/client";
+import { finishHmeSso } from "@/lib/hme-auth";
 
 // Return address for Honest Money SSO. In popup mode we hand the ticket back
 // to the opener (the /auth page) and close; otherwise we finish sign-in here.
@@ -14,24 +14,13 @@ export const Route = createFileRoute("/sso")({
       { name: "description", content: "Finishing your Honest Money sign-in to Nectar.Pay." },
       { property: "og:title", content: "Signing in with Honest Money · Nectar.Pay" },
       { property: "og:description", content: "Finishing your Honest Money sign-in to Nectar.Pay." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),
   component: SsoPage,
 });
-
-export async function finishHmeSso(token: string): Promise<{ is_admin: boolean }> {
-  const res = await fetch("/api/public/auth/hme-sso", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ token }),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error ?? "Sign-in failed");
-  const { error } = await supabase.auth.verifyOtp({ type: "magiclink", token_hash: data.token_hash });
-  if (error) throw error;
-  return { is_admin: Boolean(data.is_admin) };
-}
 
 function SsoPage() {
   const { token } = Route.useSearch();
@@ -43,6 +32,7 @@ function SsoPage() {
       setMsg("No sign-in ticket found.");
       return;
     }
+    window.history.replaceState(null, "", "/sso");
     if (window.opener && window.opener !== window) {
       try {
         window.opener.postMessage({ type: "hme-sso", token }, window.location.origin);

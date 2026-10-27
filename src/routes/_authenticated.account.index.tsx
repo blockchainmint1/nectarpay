@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { closeMyStore, closeMyAccount } from "@/lib/account-self.functions";
 import { AccountSecurity } from "@/components/account-security";
+import { openHmeConnection } from "@/lib/hme-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +34,10 @@ export const Route = createFileRoute("/_authenticated/account/")({
     meta: [
       { title: "Account · Nectar.Pay" },
       { name: "description", content: "Manage your Nectar.Pay account, close a store, or close your account." },
+      { property: "og:title", content: "Account · Nectar.Pay" },
+      { property: "og:description", content: "Manage your Nectar.Pay account and connected Honest Money sign-in." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -59,7 +64,7 @@ function AccountPage() {
       const { data, error } = await supabase
         .from("stores")
         .select("id, name, deactivated_at")
-        .eq("owner_id", user!.id)
+        .eq("owner_id", user?.id ?? "")
         .order("created_at", { ascending: true });
       if (error) throw error;
       return data ?? [];
@@ -105,6 +110,13 @@ function AccountPage() {
       </p>
 
       <AccountSecurity />
+
+      <section className="mt-8 border-t border-border pt-5">
+        <h2 className="font-semibold">Honest Money sign-in</h2>
+        <Button variant="outline" className="mt-3" onClick={() => openHmeConnection(() => toast.success("Honest Money connected"), (message) => toast.error(message))}>
+          Connect Honest Money
+        </Button>
+      </section>
 
       <section className="mt-8 rounded-lg border border-border bg-card/50 p-5">
         <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">

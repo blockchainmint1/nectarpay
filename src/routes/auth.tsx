@@ -24,12 +24,16 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Sign in with TXC Wallet · Nectar.Pay" },
+      { title: "Sign in · Nectar.Pay" },
       {
         name: "description",
         content:
-          "Scan with your TEXITcoin wallet to sign in. Nectar.Pay is wallet-only — no email, no password, no custody.",
+          "Sign in to Nectar.Pay with Google, email, a TXC wallet, or your connected Honest Money account.",
       },
+      { property: "og:title", content: "Sign in · Nectar.Pay" },
+      { property: "og:description", content: "Access your Nectar.Pay stores with Google, email, TXC wallet, or Honest Money." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
           { property: "og:url", content: "https://app.nectar-pay.com/auth" },
 ],
     links: [{ rel: "canonical", href: "https://app.nectar-pay.com/auth" }],
@@ -233,10 +237,10 @@ function AuthPage() {
       return;
     }
     const onMsg = async (e: MessageEvent) => {
-      if (e.origin !== window.location.origin || e.data?.type !== "hme-sso") return;
+      if (e.origin !== window.location.origin || e.source !== popup || e.data?.type !== "hme-sso") return;
       window.removeEventListener("message", onMsg);
       try {
-        const { finishHmeSso } = await import("./sso");
+        const { finishHmeSso } = await import("@/lib/hme-auth");
         const { is_admin } = await finishHmeSso(String(e.data.token));
         toast.success("Signed in");
         navigate({ to: resolvePostAuthPath(is_admin, search.redirect) });
