@@ -5,8 +5,8 @@ import { NectarNfc, isNative } from "@/lib/pos-native";
 import { signedJson, type TerminalCreds } from "@/lib/pos-client";
 import { CARD_APPROVAL_TIMEOUT_MS, CARD_POLL_INTERVAL_MS, type CardReply } from "@/lib/cryptopop-card";
 
-export function CryptoPopCardScreen({ creds, invoiceId, totalCents, onPaid, onUseQr, onCancel }: {
-  creds: TerminalCreds; invoiceId: string; totalCents: number;
+export function CryptoPopCardScreen({ creds, invoiceId, totalCents, initialUid, onPaid, onUseQr, onCancel }: {
+  creds: TerminalCreds; invoiceId: string; totalCents: number; initialUid?: string | null;
   onPaid: () => void; onUseQr: () => void; onCancel: () => void;
 }) {
   const [phase, setPhase] = useState<"tap" | "sending" | "pin" | "approval" | "error">("tap");
@@ -45,6 +45,16 @@ export function CryptoPopCardScreen({ creds, invoiceId, totalCents, onPaid, onUs
       if (alive.current) { uid.current = null; setReason(error instanceof Error ? error.message : "Payment request failed."); setPhase("error"); }
     } finally { busy.current = false; }
   }
+
+  // A card tapped on the payment-chooser screen arrives as initialUid:
+  // send it immediately instead of asking the customer to tap twice.
+  useEffect(() => {
+    if (initialUid && !uid.current && !busy.current && !payment) {
+      uid.current = initialUid;
+      void send(initialUid);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialUid]);
 
   useEffect(() => {
     if (!payment) return;
