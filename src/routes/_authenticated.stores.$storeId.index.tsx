@@ -1,24 +1,40 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, KeyRound, Link2, MapPin, Receipt, Settings as SettingsIcon, Share2, ShieldCheck, Smartphone, Sliders, Wallet } from "lucide-react";
+import {
+  ChevronLeft, KeyRound, Link2, Receipt, Share2, ShieldCheck, Smartphone, Sliders, Wallet,
+} from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useStoreRef } from "@/lib/store-ref";
+import { StoreInfoForm } from "@/components/store/StoreInfoForm";
+import { StoreWalletBalance } from "@/components/store/StoreWalletBalance";
 
 export const Route = createFileRoute("/_authenticated/stores/$storeId/")({
-  head: () => ({ meta: [{ title: "Store · Nectar.Pay" }] }),
+  head: () => ({
+    meta: [
+      { title: "Store · Nectar.Pay" },
+      { name: "description", content: "Manage your store's info, payments, wallets and settings." },
+      { property: "og:title", content: "Store · Nectar.Pay" },
+      { property: "og:description", content: "Manage your store's info, payments, wallets and settings." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: StoreDetailPage,
 });
 
-function StoreDetailPage() {
-  const { storeId } = Route.useParams();
+type Sub = "chains" | "balances" | "keys" | "terminals" | "share-links" | "pos-settings" | "invoices" | "kyc";
 
-  const { data: store, isLoading } = useQuery({
+function StoreDetailPage() {
+  const { storeId, storeSlug } = useStoreRef();
+
+  const { data: store } = useQuery({
     queryKey: ["store", storeId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("stores")
-        .select("id, name, website, fiat_currency, webhook_url, created_at")
+        .select("id, name, website, fiat_currency, business_logo_url")
         .eq("id", storeId)
         .maybeSingle();
       if (error) throw error;
@@ -26,148 +42,95 @@ function StoreDetailPage() {
     },
   });
 
-  if (isLoading) {
-    return <div className="px-8 py-10 text-sm text-muted-foreground">Loading…</div>;
-  }
-
-  if (!store) {
-    return (
-      <div className="px-8 py-10">
-        <p className="text-sm text-muted-foreground">Store not found.</p>
-        <Button asChild variant="link" className="px-0">
-          <Link to="/stores">Back to stores</Link>
-        </Button>
-      </div>
-    );
-  }
+  const tile = (icon: React.ReactNode, title: string, body: string, sub: Sub) => (
+    <Tile icon={icon} title={title} body={body} slug={storeSlug} sub={sub} />
+  );
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 md:px-8">
-      <Link
-        to="/stores"
-        className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
-      >
+    <div className="mx-auto max-w-[90rem] px-4 py-10 md:px-8">
+      <Link to="/stores" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
         <ChevronLeft className="h-4 w-4" /> All stores
       </Link>
 
-      <div className="mt-4 flex items-end justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{store.name}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {store.website || "No website set"} · {store.fiat_currency}
-          </p>
+      <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="flex min-w-0 items-center gap-4">
+          {store?.business_logo_url ? (
+            <img src={store.business_logo_url} alt="" className="h-14 w-14 shrink-0 rounded-xl border border-border bg-card object-contain p-1" />
+          ) : null}
+          <div className="min-w-0">
+            <h1 className="truncate text-3xl font-semibold tracking-tight">{store?.name ?? "…"}</h1>
+            <p className="mt-1 truncate text-sm text-muted-foreground">
+              /stores/{storeSlug} · {store?.website || "No website set"} · {store?.fiat_currency}
+            </p>
+          </div>
         </div>
+        <StoreWalletBalance storeId={storeId} storeSlug={storeSlug} />
       </div>
 
-      <div className="mt-8 grid gap-4 md:grid-cols-2">
-        <CardLink
-          icon={<Link2 className="h-4 w-4" />}
-          title="Wallets & Chains"
-          body="Configure xpubs and addresses per chain."
-          to={`/stores/${storeId}/chains`}
-        />
-        <CardLink
-          icon={<Wallet className="h-4 w-4" />}
-          title="Balances"
-          body="Live balances for every linked wallet, broken down address by address."
-          to={`/stores/${storeId}/balances`}
-        />
-        <CardLink
-          icon={<KeyRound className="h-4 w-4" />}
-          title="API keys"
-          body="Issue, rotate, and revoke API credentials."
-          to={`/stores/${storeId}/keys`}
-        />
-        <CardLink
-          icon={<Smartphone className="h-4 w-4" />}
-          title="Terminals"
-          body="Pair Senraise / Android POS devices. Each terminal gets its own credentials and a revocable lease."
-          to={`/stores/${storeId}/terminals`}
-        />
-        <CardLink
-          icon={<Share2 className="h-4 w-4" />}
-          title="Share links"
-          body="A permanent URL that opens a POS terminal in any browser. Perfect for email signatures, donation buttons, and invoices — optional pre-filled amount."
-          to={`/stores/${storeId}/share-links`}
-        />
-        <CardLink
-          icon={<Sliders className="h-4 w-4" />}
-          title="POS terminal experience"
-          body="Tip step, signature capture, email receipts, and receipt header (logo, address, footer)."
-          to={`/stores/${storeId}/pos-settings`}
-        />
-        <CardLink
-          icon={<MapPin className="h-4 w-4" />}
-          title="Public listing"
-          body="Opt in to the public 'where to spend crypto' map. Hidden, anonymous city pin, or a full listing with address and logo."
-          to={`/stores/${storeId}/listing`}
-        />
-        <CardLink
-          icon={<Receipt className="h-4 w-4" />}
-          title="Invoices"
-          body="Email payment requests, track opens, resend reminders, and review completed transactions."
-          to={`/stores/${storeId}/invoices`}
-        />
+      <Section title="Your Store Info" hint="What customers see on the map, receipts and your listing.">
+        <StoreInfoForm storeId={storeId} storeSlug={storeSlug} />
+      </Section>
 
-        <CardLink
-          icon={<ShieldCheck className="h-4 w-4" />}
-          title="Buyer verification (KYC)"
-          body="Optional: sanctions screen, wallet risk, geo block, or BYO advanced provider."
-          to={`/stores/${storeId}/kyc`}
-        />
-        <CardLink
-          icon={<SettingsIcon className="h-4 w-4" />}
-          title="Settings"
-          body="Webhook URL, fiat currency, expiry rules."
-          to={`/stores/${storeId}/settings`}
-          comingSoon
-        />
-      </div>
+      <Section title="Get Paid">
+        <div className="grid gap-4 md:grid-cols-2">
+          {tile(<Share2 className="h-4 w-4" />, "Share payment links", "A permanent link that opens a checkout in any browser — great for email signatures, donation buttons and social posts.", "share-links")}
+          {tile(<Receipt className="h-4 w-4" />, "Send an invoice", "Email a payment request, track opens, resend reminders and review completed sales.", "invoices")}
+        </div>
+      </Section>
 
-      <div className="mt-8 rounded-lg border border-destructive/40 bg-destructive/5 p-5">
+      <Section title="Tech Stuff">
+        <div className="grid gap-4 md:grid-cols-2">
+          {tile(<KeyRound className="h-4 w-4" />, "API keys", "Issue, rotate and revoke keys for your website or plugins.", "keys")}
+          {tile(<Link2 className="h-4 w-4" />, "Wallets & Chains", "Link your wallet and choose which coins this store accepts.", "chains")}
+        </div>
+      </Section>
+
+      <Section title="Other Settings">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {tile(<Wallet className="h-4 w-4" />, "Balances", "Live balances, address by address.", "balances")}
+          {tile(<Smartphone className="h-4 w-4" />, "Terminals", "Pair and manage POS devices.", "terminals")}
+          {tile(<Sliders className="h-4 w-4" />, "POS terminal experience", "Tips, signatures, receipts and receipt header.", "pos-settings")}
+          {tile(<ShieldCheck className="h-4 w-4" />, "Buyer verification (KYC)", "Optional sanctions, wallet risk and geo checks.", "kyc")}
+        </div>
+      </Section>
+
+      <div className="mt-12 rounded-lg border border-destructive/40 bg-destructive/5 p-5">
         <div className="font-medium text-destructive">Close this store</div>
         <p className="mt-2 text-sm text-muted-foreground">
-          Switches off terminals, API keys, share links and payment rails for this store.
-          Past invoices and transactions are kept in your records.
+          Switches off terminals, API keys, share links and payment rails for this store. Past invoices and transactions are kept in your records.
         </p>
         <Button asChild variant="outline" size="sm" className="mt-3">
           <Link to="/account">Go to account settings</Link>
         </Button>
       </div>
-
     </div>
   );
 }
 
-function CardLink({
-  icon,
-  title,
-  body,
-  to,
-  comingSoon,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-  to: string;
-  comingSoon?: boolean;
-}) {
-  const inner = (
-    <div className="rounded-lg border border-border bg-card/60 p-5 transition-colors hover:bg-accent">
+function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <section className="mt-10">
+      <div className="mb-4 flex items-baseline gap-3 border-b border-border pb-2">
+        <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+        {hint && <p className="hidden text-sm text-muted-foreground sm:block">{hint}</p>}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function Tile({ icon, title, body, slug, sub }: { icon: React.ReactNode; title: string; body: string; slug: string; sub: Sub }) {
+  return (
+    <Link
+      to={`/stores/$storeId/${sub}` as "/stores/$storeId/chains"}
+      params={{ storeId: slug }}
+      className="block h-full rounded-lg border border-border bg-card/60 p-5 transition-colors hover:border-primary/40 hover:bg-accent"
+    >
       <div className="flex items-center gap-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary">
-          {icon}
-        </div>
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">{icon}</div>
         <div className="font-medium">{title}</div>
-        {comingSoon && (
-          <span className="ml-auto rounded-full border border-border bg-card px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
-            soon
-          </span>
-        )}
       </div>
       <p className="mt-2 text-sm text-muted-foreground">{body}</p>
-    </div>
+    </Link>
   );
-  if (comingSoon) return <div className="cursor-not-allowed opacity-60">{inner}</div>;
-  return <a href={to}>{inner}</a>;
 }

@@ -1,3 +1,4 @@
+import { useStoreRef } from "@/lib/store-ref";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -41,7 +42,7 @@ const DONE_STATUSES = ["confirmed", "overpaid"];
 type Invoice = Awaited<ReturnType<typeof listStoreInvoices>>[number];
 
 function StoreInvoicesPage() {
-  const { storeId } = Route.useParams();
+  const { storeId, storeSlug } = useStoreRef();
   const qc = useQueryClient();
 
   const list = useServerFn(listStoreInvoices);
@@ -112,10 +113,10 @@ function StoreInvoicesPage() {
   }, [data]);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 md:px-8">
+    <div className="mx-auto max-w-[90rem] px-4 py-8 md:px-8">
       <Link
         to="/stores/$storeId"
-        params={{ storeId }}
+        params={{ storeId: storeSlug }}
         className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="h-4 w-4" /> Store

@@ -1,3 +1,4 @@
+import { useStoreRef } from "@/lib/store-ref";
 // Per-store POS terminal experience settings.
 // Everything here is OPTIONAL and OFF by default — the cashier-facing POS
 // looks exactly the same until a merchant turns something on. Sections are
@@ -81,7 +82,7 @@ const SELECT_COLS = [
 ].join(", ");
 
 function PosSettingsPage() {
-  const { storeId } = Route.useParams();
+  const { storeId, storeSlug } = useStoreRef();
   const qc = useQueryClient();
 
   const { data: store, isLoading, error } = useQuery({
@@ -180,7 +181,7 @@ function PosSettingsPage() {
 
   if (error) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-10 md:px-8">
+      <div className="mx-auto max-w-[90rem] px-4 py-10 md:px-8">
         <Link to="/stores" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
           <ChevronLeft className="h-4 w-4" /> All stores
         </Link>
@@ -200,10 +201,10 @@ function PosSettingsPage() {
     setDraft({ ...draft, [key]: value });
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 md:px-8">
+    <div className="mx-auto max-w-[90rem] px-4 py-10 md:px-8">
       <Link
         to="/stores/$storeId"
-        params={{ storeId }}
+        params={{ storeId: storeSlug }}
         className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="h-4 w-4" /> {store.name}

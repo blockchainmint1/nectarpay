@@ -114,6 +114,7 @@ import { Route as AuthenticatedStoresStoreIdKeysRouteImport } from './routes/_au
 import { Route as AuthenticatedStoresStoreIdKycRouteImport } from './routes/_authenticated.stores.$storeId.kyc'
 import { Route as AuthenticatedStoresStoreIdListingRouteImport } from './routes/_authenticated.stores.$storeId.listing'
 import { Route as AuthenticatedStoresStoreIdPosSettingsRouteImport } from './routes/_authenticated.stores.$storeId.pos-settings'
+import { Route as AuthenticatedStoresStoreIdPromoteRouteImport } from './routes/_authenticated.stores.$storeId.promote'
 import { Route as AuthenticatedStoresStoreIdShareLinksRouteImport } from './routes/_authenticated.stores.$storeId.share-links'
 import { Route as AuthenticatedStoresStoreIdTangemRouteImport } from './routes/_authenticated.stores.$storeId.tangem'
 import { Route as AuthenticatedStoresStoreIdTerminalsRouteImport } from './routes/_authenticated.stores.$storeId.terminals'
@@ -129,6 +130,7 @@ import { Route as ApiPublicCronLightningRouteImport } from './routes/api/public/
 import { Route as ApiPublicCronRatesRouteImport } from './routes/api/public/cron/rates'
 import { Route as ApiPublicCronWatcherRouteImport } from './routes/api/public/cron/watcher'
 import { Route as ApiPublicHooksAlchemyActivityRouteImport } from './routes/api/public/hooks/alchemy-activity'
+import { Route as ApiPublicStoreLogoSplatRouteImport } from './routes/api.public.store-logo.$'
 import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
 import { Route as ApiPublicV1InvoicesRouteImport } from './routes/api.public.v1.invoices'
 import { Route as ApiPublicV1LinksRouteImport } from './routes/api.public.v1.links'
@@ -729,6 +731,12 @@ const AuthenticatedStoresStoreIdPosSettingsRoute =
     path: '/pos-settings',
     getParentRoute: () => AuthenticatedStoresStoreIdRoute,
   } as any)
+const AuthenticatedStoresStoreIdPromoteRoute =
+  AuthenticatedStoresStoreIdPromoteRouteImport.update({
+    id: '/promote',
+    path: '/promote',
+    getParentRoute: () => AuthenticatedStoresStoreIdRoute,
+  } as any)
 const AuthenticatedStoresStoreIdShareLinksRoute =
   AuthenticatedStoresStoreIdShareLinksRouteImport.update({
     id: '/share-links',
@@ -813,6 +821,11 @@ const ApiPublicHooksAlchemyActivityRoute =
     path: '/api/public/hooks/alchemy-activity',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicStoreLogoSplatRoute = ApiPublicStoreLogoSplatRouteImport.update({
+  id: '/api/public/store-logo/$',
+  path: '/api/public/store-logo/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicTelegramWebhookRoute =
   ApiPublicTelegramWebhookRouteImport.update({
     id: '/api/public/telegram/webhook',
@@ -1112,6 +1125,7 @@ export interface FileRoutesByFullPath {
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/stores/$storeId/listing': typeof AuthenticatedStoresStoreIdListingRoute
   '/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
+  '/stores/$storeId/promote': typeof AuthenticatedStoresStoreIdPromoteRoute
   '/stores/$storeId/share-links': typeof AuthenticatedStoresStoreIdShareLinksRoute
   '/stores/$storeId/tangem': typeof AuthenticatedStoresStoreIdTangemRoute
   '/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
@@ -1127,6 +1141,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
+  '/api/public/store-logo/$': typeof ApiPublicStoreLogoSplatRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
   '/api/public/v1/links': typeof ApiPublicV1LinksRouteWithChildren
@@ -1262,6 +1277,7 @@ export interface FileRoutesByTo {
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/stores/$storeId/listing': typeof AuthenticatedStoresStoreIdListingRoute
   '/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
+  '/stores/$storeId/promote': typeof AuthenticatedStoresStoreIdPromoteRoute
   '/stores/$storeId/share-links': typeof AuthenticatedStoresStoreIdShareLinksRoute
   '/stores/$storeId/tangem': typeof AuthenticatedStoresStoreIdTangemRoute
   '/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
@@ -1277,6 +1293,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
+  '/api/public/store-logo/$': typeof ApiPublicStoreLogoSplatRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
   '/api/public/v1/links': typeof ApiPublicV1LinksRouteWithChildren
@@ -1420,6 +1437,7 @@ export interface FileRoutesById {
   '/_authenticated/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
   '/_authenticated/stores/$storeId/listing': typeof AuthenticatedStoresStoreIdListingRoute
   '/_authenticated/stores/$storeId/pos-settings': typeof AuthenticatedStoresStoreIdPosSettingsRoute
+  '/_authenticated/stores/$storeId/promote': typeof AuthenticatedStoresStoreIdPromoteRoute
   '/_authenticated/stores/$storeId/share-links': typeof AuthenticatedStoresStoreIdShareLinksRoute
   '/_authenticated/stores/$storeId/tangem': typeof AuthenticatedStoresStoreIdTangemRoute
   '/_authenticated/stores/$storeId/terminals': typeof AuthenticatedStoresStoreIdTerminalsRoute
@@ -1435,6 +1453,7 @@ export interface FileRoutesById {
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
+  '/api/public/store-logo/$': typeof ApiPublicStoreLogoSplatRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/invoices': typeof ApiPublicV1InvoicesRouteWithChildren
   '/api/public/v1/links': typeof ApiPublicV1LinksRouteWithChildren
@@ -1578,6 +1597,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId/kyc'
     | '/stores/$storeId/listing'
     | '/stores/$storeId/pos-settings'
+    | '/stores/$storeId/promote'
     | '/stores/$storeId/share-links'
     | '/stores/$storeId/tangem'
     | '/stores/$storeId/terminals'
@@ -1593,6 +1613,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
     | '/api/public/hooks/alchemy-activity'
+    | '/api/public/store-logo/$'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
     | '/api/public/v1/links'
@@ -1728,6 +1749,7 @@ export interface FileRouteTypes {
     | '/stores/$storeId/kyc'
     | '/stores/$storeId/listing'
     | '/stores/$storeId/pos-settings'
+    | '/stores/$storeId/promote'
     | '/stores/$storeId/share-links'
     | '/stores/$storeId/tangem'
     | '/stores/$storeId/terminals'
@@ -1743,6 +1765,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
     | '/api/public/hooks/alchemy-activity'
+    | '/api/public/store-logo/$'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
     | '/api/public/v1/links'
@@ -1885,6 +1908,7 @@ export interface FileRouteTypes {
     | '/_authenticated/stores/$storeId/kyc'
     | '/_authenticated/stores/$storeId/listing'
     | '/_authenticated/stores/$storeId/pos-settings'
+    | '/_authenticated/stores/$storeId/promote'
     | '/_authenticated/stores/$storeId/share-links'
     | '/_authenticated/stores/$storeId/tangem'
     | '/_authenticated/stores/$storeId/terminals'
@@ -1900,6 +1924,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
     | '/api/public/hooks/alchemy-activity'
+    | '/api/public/store-logo/$'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/invoices'
     | '/api/public/v1/links'
@@ -1996,6 +2021,7 @@ export interface RootRouteChildren {
   ApiPublicCronRatesRoute: typeof ApiPublicCronRatesRoute
   ApiPublicCronWatcherRoute: typeof ApiPublicCronWatcherRoute
   ApiPublicHooksAlchemyActivityRoute: typeof ApiPublicHooksAlchemyActivityRoute
+  ApiPublicStoreLogoSplatRoute: typeof ApiPublicStoreLogoSplatRoute
   ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
   ApiPublicV1InvoicesRoute: typeof ApiPublicV1InvoicesRouteWithChildren
   ApiPublicV1LinksRoute: typeof ApiPublicV1LinksRouteWithChildren
@@ -2755,6 +2781,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStoresStoreIdPosSettingsRouteImport
       parentRoute: typeof AuthenticatedStoresStoreIdRoute
     }
+    '/_authenticated/stores/$storeId/promote': {
+      id: '/_authenticated/stores/$storeId/promote'
+      path: '/promote'
+      fullPath: '/stores/$storeId/promote'
+      preLoaderRoute: typeof AuthenticatedStoresStoreIdPromoteRouteImport
+      parentRoute: typeof AuthenticatedStoresStoreIdRoute
+    }
     '/_authenticated/stores/$storeId/share-links': {
       id: '/_authenticated/stores/$storeId/share-links'
       path: '/share-links'
@@ -2858,6 +2891,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/alchemy-activity'
       fullPath: '/api/public/hooks/alchemy-activity'
       preLoaderRoute: typeof ApiPublicHooksAlchemyActivityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/store-logo/$': {
+      id: '/api/public/store-logo/$'
+      path: '/api/public/store-logo/$'
+      fullPath: '/api/public/store-logo/$'
+      preLoaderRoute: typeof ApiPublicStoreLogoSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/telegram/webhook': {
@@ -3235,6 +3275,7 @@ interface AuthenticatedStoresStoreIdRouteChildren {
   AuthenticatedStoresStoreIdKycRoute: typeof AuthenticatedStoresStoreIdKycRoute
   AuthenticatedStoresStoreIdListingRoute: typeof AuthenticatedStoresStoreIdListingRoute
   AuthenticatedStoresStoreIdPosSettingsRoute: typeof AuthenticatedStoresStoreIdPosSettingsRoute
+  AuthenticatedStoresStoreIdPromoteRoute: typeof AuthenticatedStoresStoreIdPromoteRoute
   AuthenticatedStoresStoreIdShareLinksRoute: typeof AuthenticatedStoresStoreIdShareLinksRoute
   AuthenticatedStoresStoreIdTangemRoute: typeof AuthenticatedStoresStoreIdTangemRoute
   AuthenticatedStoresStoreIdTerminalsRoute: typeof AuthenticatedStoresStoreIdTerminalsRoute
@@ -3255,6 +3296,8 @@ const AuthenticatedStoresStoreIdRouteChildren: AuthenticatedStoresStoreIdRouteCh
       AuthenticatedStoresStoreIdListingRoute,
     AuthenticatedStoresStoreIdPosSettingsRoute:
       AuthenticatedStoresStoreIdPosSettingsRoute,
+    AuthenticatedStoresStoreIdPromoteRoute:
+      AuthenticatedStoresStoreIdPromoteRoute,
     AuthenticatedStoresStoreIdShareLinksRoute:
       AuthenticatedStoresStoreIdShareLinksRoute,
     AuthenticatedStoresStoreIdTangemRoute:
@@ -3503,6 +3546,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCronRatesRoute: ApiPublicCronRatesRoute,
   ApiPublicCronWatcherRoute: ApiPublicCronWatcherRoute,
   ApiPublicHooksAlchemyActivityRoute: ApiPublicHooksAlchemyActivityRoute,
+  ApiPublicStoreLogoSplatRoute: ApiPublicStoreLogoSplatRoute,
   ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
   ApiPublicV1InvoicesRoute: ApiPublicV1InvoicesRouteWithChildren,
   ApiPublicV1LinksRoute: ApiPublicV1LinksRouteWithChildren,

@@ -1,3 +1,4 @@
+import { useStoreRef } from "@/lib/store-ref";
 // /stores/$storeId/terminals — merchant management for paired POS devices.
 
 import { useState, useEffect } from "react";
@@ -19,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/stores/$storeId/terminals"
 });
 
 function TerminalsPage() {
-  const { storeId } = Route.useParams();
+  const { storeId, storeSlug } = useStoreRef();
   const list = useServerFn(listTerminals);
   const create = useServerFn(createPairingCode);
   const revoke = useServerFn(revokeTerminal);
@@ -62,8 +63,8 @@ function TerminalsPage() {
   const ss = Math.floor((remaining % 60_000) / 1000).toString().padStart(2, "0");
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 md:px-8">
-      <Link to="/stores/$storeId" params={{ storeId }} className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
+    <div className="mx-auto max-w-[90rem] px-4 py-10 md:px-8">
+      <Link to="/stores/$storeId" params={{ storeId: storeSlug }} className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
         <ChevronLeft className="h-4 w-4" /> Back to store
       </Link>
 

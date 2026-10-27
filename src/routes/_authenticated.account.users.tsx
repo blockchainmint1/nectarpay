@@ -96,7 +96,7 @@ function UsersPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 md:px-8">
+    <div className="mx-auto max-w-[90rem] px-4 py-10 md:px-8">
       <Link
         to="/account"
         className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"

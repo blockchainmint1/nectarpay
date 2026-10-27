@@ -1,3 +1,4 @@
+import { useStoreRef } from "@/lib/store-ref";
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -32,7 +33,7 @@ const BASIC_CHECK_OPTIONS = [
 ] as const;
 
 function KycSettingsPage() {
-  const { storeId } = Route.useParams();
+  const { storeId, storeSlug } = useStoreRef();
   const load = useServerFn(getStoreKycSettings);
   const save = useServerFn(saveStoreKycSettings);
 
@@ -97,10 +98,10 @@ function KycSettingsPage() {
   if (isLoading) return <div className="px-8 py-10 text-sm text-muted-foreground">Loading…</div>;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 md:px-8">
+    <div className="mx-auto max-w-[90rem] px-4 py-10 md:px-8">
       <Link
         to="/stores/$storeId"
-        params={{ storeId }}
+        params={{ storeId: storeSlug }}
         className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="h-4 w-4" /> Back to store

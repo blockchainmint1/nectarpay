@@ -1,3 +1,4 @@
+import { useStoreRef } from "@/lib/store-ref";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -32,7 +33,7 @@ export const Route = createFileRoute("/_authenticated/stores/$storeId/balances")
 const PAGE_SIZE = 5;
 
 function BalancesPage() {
-  const { storeId } = Route.useParams();
+  const { storeId, storeSlug } = useStoreRef();
   const loadChains = useServerFn(listBalanceChains);
 
   const { data, isLoading } = useQuery({
@@ -41,10 +42,10 @@ function BalancesPage() {
   });
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 md:px-8">
+    <div className="mx-auto max-w-[90rem] px-4 py-10 md:px-8">
       <Link
         to="/stores/$storeId"
-        params={{ storeId }}
+        params={{ storeId: storeSlug }}
         className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft className="h-4 w-4" /> Back to store
@@ -95,6 +96,7 @@ function ChainBalanceCard({
   nextIndex: number;
   configured: boolean;
 }) {
+  const { storeSlug } = useStoreRef();
   const [open, setOpen] = useState(false);
   const [start, setStart] = useState(1);
   const load = useServerFn(getChainBalances);
@@ -120,7 +122,7 @@ function ChainBalanceCard({
         </div>
         <Link
           to="/stores/$storeId/chains"
-          params={{ storeId }}
+          params={{ storeId: storeSlug }}
           className="text-xs text-primary hover:underline"
         >
           Add wallet
