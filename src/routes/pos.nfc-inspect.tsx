@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Copy, Zap } from "lucide-react";
 import { NectarNfc, isNative, type TagEvent, type ApduResponse } from "@/lib/pos-native";
 import { qrToDataURL } from "@/lib/qr";
+import { uidPayload } from "@/lib/nfc-uid";
 
 export const Route = createFileRoute("/pos/nfc-inspect")({
   head: () => ({
@@ -54,7 +55,8 @@ function NfcInspector() {
   const subRef = useRef<{ remove: () => Promise<void> } | null>(null);
 
   const uid = event?.uid ?? null;
-  const uidText = uid ? uid.toUpperCase().replace(/\s+/g, "") : null;
+  // Encode exactly what the terminal sends on a tap — no case change.
+  const uidText = uidPayload(uid);
 
   useEffect(() => {
     let cancelled = false;
