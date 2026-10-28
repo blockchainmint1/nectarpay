@@ -127,6 +127,13 @@
       "when": 1793184916946,
       "tag": "0017_egiving_recipients_registry",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1793185131236,
+      "tag": "0018_lock_egiving_discount_fixed",
+      "breakpoints": true
     }
   ]
 }

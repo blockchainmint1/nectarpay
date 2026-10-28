@@ -2,8 +2,19 @@
 // A merchant who opted in accepts a single send-to-many TSD payment whose
 // merchant slice is at least (100 - discount)% of the invoice as paid in full.
 
+/**
+ * The community discount is fixed at 10% for now. The eGiving wallet hard-codes
+ * its split (8% church + 2% program), so every opted-in store must expect the
+ * same 90% merchant slice. The per-store `egiving_discount_pct` column still
+ * exists and is shown to merchants, but it is no longer editable and is
+ * deliberately NOT read here — a stray or hand-set value in that column must
+ * never change what counts as paid in full.
+ */
+export const EGIVING_DISCOUNT_PCT = 10;
+
 export interface EgivingStore {
   egiving_enabled?: boolean | null;
+  /** Display only — settlement always uses EGIVING_DISCOUNT_PCT. */
   egiving_discount_pct?: number | string | null;
 }
 
@@ -33,8 +44,7 @@ export function egivingDecision(opts: {
   const none: EgivingDecision = { amountDueUsd: opts.invoiceUsd, program: null, discountUsd: 0, discountPct: 0 };
   if (!opts.sendToMany || !opts.store?.egiving_enabled) return none;
   if ((opts.tokenSymbol ?? "").toUpperCase() !== "TSD") return none;
-  const pct = Number(opts.store.egiving_discount_pct ?? 10);
-  if (!Number.isFinite(pct) || pct <= 0 || pct > 50) return none;
+  const pct = EGIVING_DISCOUNT_PCT;
   const minimum = round2(opts.invoiceUsd * (1 - pct / 100));
   // One transaction must cover the whole merchant share; no tolerance below it.
   if (opts.creditUsd + 1e-9 < minimum) return none;

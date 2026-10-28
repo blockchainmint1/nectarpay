@@ -462,7 +462,6 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
   const [preferredEvm, setPreferredEvm] = useState<string>("base");
   const [evmRotation, setEvmRotation] = useState<boolean>(true);
   const [egiving, setEgiving] = useState<boolean>(false);
-  const [egivingPct, setEgivingPct] = useState<string>("10");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -481,7 +480,6 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
       (data as { evm_address_rotation?: boolean | null }).evm_address_rotation !== false,
     );
     setEgiving(!!data.egiving_enabled);
-    setEgivingPct(String(data.egiving_discount_pct ?? 10));
   }, [data]);
 
 
@@ -492,18 +490,12 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
       toast.error("Mempool cap must be a non-negative number, or blank.");
       return;
     }
-    const pct = Number(egivingPct);
-    if (!Number.isFinite(pct) || pct < 1 || pct > 50) {
-      toast.error("Community discount must be between 1% and 50%.");
-      return;
-    }
     setSaving(true);
     try {
       const { error } = await supabase
         .from("stores")
         .update({
           egiving_enabled: egiving,
-          egiving_discount_pct: pct,
           default_confirmations_required: Math.max(0, Number(confs) || 0),
           mempool_max_usd: mNum,
           mempool_accept_fast: fast,
@@ -621,16 +613,23 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
           </div>
         </label>
         <div>
-          <Label htmlFor="egiving-pct" className="text-xs">Community discount (%)</Label>
+          <Label htmlFor="egiving-pct" className="flex items-center gap-1.5 text-xs">
+            <Lock className="h-3 w-3" aria-hidden />
+            Community discount (%)
+          </Label>
           <Input
             id="egiving-pct"
             inputMode="decimal"
-            placeholder="10"
-            value={egivingPct}
-            disabled={!egiving}
-            onChange={(e) => setEgivingPct(e.target.value)}
+            value={String(data?.egiving_discount_pct ?? 10)}
+            readOnly
+            aria-readonly
+            tabIndex={-1}
+            className="bg-muted text-muted-foreground"
           />
-          <p className="mt-1 text-xs text-muted-foreground">Between 1% and 50%. Standard is 10%.</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Fixed at 10% for now — the eGiving wallet sends 8% to the customer's church and 2% to
+            the program, so every store uses the same split.
+          </p>
         </div>
       </div>
 
