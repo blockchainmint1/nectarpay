@@ -616,6 +616,30 @@ export type Database = {
           },
         ]
       }
+      egiving_recipients: {
+        Row: {
+          active: boolean
+          address: string
+          created_at: string
+          kind: string
+          name: string
+        }
+        Insert: {
+          active?: boolean
+          address: string
+          created_at?: string
+          kind: string
+          name: string
+        }
+        Update: {
+          active?: boolean
+          address?: string
+          created_at?: string
+          kind?: string
+          name?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
