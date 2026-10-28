@@ -30,7 +30,7 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id")({
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { data: inv } = await supabaseAdmin
             .from("invoices")
-            .select("id, store_id, status, chain, crypto_amount, address, fiat_amount, fiat_currency, expires_at, updated_at, token_symbol, rate")
+            .select("id, store_id, status, chain, crypto_amount, address, fiat_amount, fiat_currency, expires_at, updated_at, token_symbol, rate, payment_program, discount_usd, discount_pct")
             .eq("id", params.id)
             .maybeSingle();
           if (!inv) return json({ error: "Invoice not found." }, 404);
@@ -63,7 +63,7 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id")({
 
           const { data: freshInv } = await supabaseAdmin
             .from("invoices")
-            .select("id, store_id, status, chain, crypto_amount, address, fiat_amount, fiat_currency, expires_at, updated_at, token_symbol, rate")
+            .select("id, store_id, status, chain, crypto_amount, address, fiat_amount, fiat_currency, expires_at, updated_at, token_symbol, rate, payment_program, discount_usd, discount_pct")
             .eq("id", params.id)
             .maybeSingle();
           const invoice = freshInv ?? inv;
@@ -95,7 +95,8 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id")({
             paidUsd += isStable ? amt : amt * lockedRate;
           }
           const owedUsd = Number(invoice.fiat_amount);
-          const dueUsd = Math.max(0, owedUsd - paidUsd);
+          const discountUsd = invoice.discount_usd == null ? 0 : Number(invoice.discount_usd);
+          const dueUsd = Math.max(0, owedUsd - discountUsd - paidUsd);
           const owedCrypto = invoice.crypto_amount == null ? null : Number(invoice.crypto_amount);
           const dueCrypto = owedCrypto == null ? null : Math.max(0, owedCrypto - paidCrypto);
 
@@ -115,6 +116,9 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id")({
             due_usd: Number(dueUsd.toFixed(4)),
             paid_crypto: paidCrypto,
             due_crypto: dueCrypto,
+            payment_program: invoice.payment_program ?? null,
+            discount_usd: invoice.payment_program ? discountUsd : null,
+            discount_pct: invoice.discount_pct == null ? null : Number(invoice.discount_pct),
           });
 
         } catch (err) {
