@@ -613,14 +613,18 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
           </div>
         </label>
         <div>
-          <Label htmlFor="egiving-pct" className="text-xs">Community discount (%)</Label>
+          <Label htmlFor="egiving-pct" className="flex items-center gap-1.5 text-xs">
+            <Lock className="h-3 w-3" aria-hidden />
+            Community discount (%)
+          </Label>
           <Input
             id="egiving-pct"
             inputMode="decimal"
             value={String(data?.egiving_discount_pct ?? 10)}
             readOnly
             aria-readonly
-            className="bg-muted/50 text-muted-foreground"
+            tabIndex={-1}
+            className="bg-muted text-muted-foreground"
           />
           <p className="mt-1 text-xs text-muted-foreground">
             Fixed at 10% for now — the eGiving wallet sends 8% to the customer's church and 2% to
