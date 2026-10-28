@@ -91,6 +91,8 @@ export interface OmniCredit {
   blockTime: number | null;
   /** True when this credit came from a send-to-many (split) transaction. */
   sendToMany?: boolean;
+  /** Every send-to-many recipient (address + decimal amount), for split checks. */
+  splitRecipients?: Array<{ address: string | null; amount: number }>;
 }
 
 /**
@@ -143,6 +145,9 @@ export function extractOmniIncoming(
       confirmations: confs,
       blockTime: tx.status.block_time ?? null,
       sendToMany: isMany,
+      splitRecipients: isMany
+        ? (payload.outputs ?? []).map((o) => ({ address: tx.vout[o.vout]?.scriptpubkey_address ?? null, amount: Number(o.amount) / 10 ** decimals }))
+        : undefined,
     });
   }
   return out;

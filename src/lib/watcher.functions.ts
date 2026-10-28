@@ -270,14 +270,21 @@ async function applyEgiving(
   invoiceId: string,
   store: { egiving_enabled?: boolean | null; egiving_discount_pct?: number | string | null } | null,
   tokenSymbol: string | null,
-  sendToMany: boolean,
+  credit: { sendToMany?: boolean; splitRecipients?: Array<{ address: string | null; amount: number }> },
+  merchantAddress: string,
   creditUsd: number,
   invoiceUsd: number,
 ): Promise<number> {
+  if (!credit.sendToMany || !store?.egiving_enabled) return invoiceUsd;
   const { egivingDecision } = await import("./egiving");
-  const d = egivingDecision({ store, tokenSymbol, sendToMany, creditUsd, invoiceUsd });
-  if (!d.program) return invoiceUsd;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const addrs = (credit.splitRecipients ?? []).map((r) => r.address).filter((a): a is string => !!a && a !== merchantAddress);
+  const { data: reg } = addrs.length
+    ? await supabaseAdmin.from("egiving_recipients").select("address, kind").in("address", addrs).eq("active", true)
+    : { data: [] as Array<{ address: string; kind: string }> };
+  const registry = new Map((reg ?? []).map((r) => [r.address, r.kind as "church" | "program"]));
+  const d = egivingDecision({ store, tokenSymbol, sendToMany: true, creditUsd, invoiceUsd, merchantAddress, recipients: credit.splitRecipients, registry });
+  if (!d.program) return invoiceUsd;
   await supabaseAdmin
     .from("invoices")
     .update({ payment_program: d.program, discount_usd: d.discountUsd, discount_pct: d.discountPct })
@@ -493,7 +500,7 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string, hintTxid?: string
     if (creditPredatesInvoice(creditTimeMs, inv.created_at)) continue;
     await recordTransaction(inv.id, credit.txid, paidCrypto, credit.confirmations, null, isConfirmed, null, creditTimeMs);
     if (isConfirmed) {
-      const due = await applyEgiving(inv.id, inv.stores ?? null, inv.token_symbol, !!(credit as { sendToMany?: boolean }).sendToMany, paidUsd, Number(inv.fiat_amount));
+      const due = await applyEgiving(inv.id, inv.stores ?? null, inv.token_symbol, credit as { sendToMany?: boolean; splitRecipients?: Array<{ address: string | null; amount: number }> }, inv.address, paidUsd, Number(inv.fiat_amount));
       const settled = await settleInvoice(inv.id, paidUsd, due);
       changed = settled.changed || changed;
     } else {
@@ -766,7 +773,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               creditTimeMs,
             );
             if (isConfirmed) {
-              const due = await applyEgiving(inv.id, cfg?.stores ?? null, inv.token_symbol, !!(credit as { sendToMany?: boolean }).sendToMany, paidUsd, Number(inv.fiat_amount));
+              const due = await applyEgiving(inv.id, cfg?.stores ?? null, inv.token_symbol, credit as { sendToMany?: boolean; splitRecipients?: Array<{ address: string | null; amount: number }> }, inv.address, paidUsd, Number(inv.fiat_amount));
               const settled = await settleInvoice(inv.id, paidUsd, due);
               if (settled.changed) r.invoicesUpdated++;
             } else if (await markInvoiceDetected(inv.id)) {

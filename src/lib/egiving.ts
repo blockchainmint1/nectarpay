@@ -23,6 +23,12 @@ export function egivingDecision(opts: {
   sendToMany: boolean;
   creditUsd: number;
   invoiceUsd: number;
+  /** Merchant (invoice) address. */
+  merchantAddress?: string;
+  /** All send-to-many recipients of the transaction (TSD = USD). */
+  recipients?: Array<{ address: string | null; amount: number }>;
+  /** Registered, active giving addresses. */
+  registry?: Map<string, "church" | "program">;
 }): EgivingDecision {
   const none: EgivingDecision = { amountDueUsd: opts.invoiceUsd, program: null, discountUsd: 0, discountPct: 0 };
   if (!opts.sendToMany || !opts.store?.egiving_enabled) return none;
@@ -32,6 +38,23 @@ export function egivingDecision(opts: {
   const minimum = round2(opts.invoiceUsd * (1 - pct / 100));
   // One transaction must cover the whole merchant share; no tolerance below it.
   if (opts.creditUsd + 1e-9 < minimum) return none;
+  // The giving must be real: every other output goes to a registered church
+  // or the program, with exactly one program output and at least one church,
+  // and the whole split adds up to the invoice.
+  if (!opts.recipients || !opts.registry || !opts.merchantAddress) return none;
+  let churches = 0;
+  let programs = 0;
+  let total = 0;
+  for (const r of opts.recipients) {
+    total += r.amount;
+    if (r.address === opts.merchantAddress) continue;
+    const kind = r.address ? opts.registry.get(r.address) : undefined;
+    if (kind === "church") churches++;
+    else if (kind === "program") programs++;
+    else return none;
+  }
+  if (churches < 1 || programs !== 1) return none;
+  if (total + 0.005 < opts.invoiceUsd) return none;
   // Full payment (or more) through a split is just a normal payment.
   if (opts.creditUsd >= opts.invoiceUsd) return none;
   return { amountDueUsd: minimum, program: "egiving", discountUsd: round2(opts.invoiceUsd - minimum), discountPct: pct };
