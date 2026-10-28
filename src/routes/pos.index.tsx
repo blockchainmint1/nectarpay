@@ -2,6 +2,7 @@
 // if unpaired, optional PIN lock, idle auto-lock, sale flow: amount → tip →
 // fullscreen QR → paid.
 
+import { cardUrlFromTag } from "@/lib/card-partners";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Settings, History, Lock, X, PenLine, Mail, Printer } from "lucide-react";
@@ -161,6 +162,7 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
   const [optionsErr, setOptionsErr] = useState<string | null>(null);
   const [finalTipCents, setFinalTipCents] = useState(0);
   const [tappedUid, setTappedUid] = useState<string | null>(null);
+  const [tappedUrl, setTappedUrl] = useState<string | null>(null);
   const [cardSent, setCardSent] = useState(false);
   const [experience, setExperience] = useState<Experience>(DEFAULT_EXPERIENCE);
   const [storeName, setStoreName] = useState<string | null>(null);
@@ -254,6 +256,7 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
       if (stopped || fired || !event.uid) return;
       fired = true;
       setTappedUid(event.uid);
+      setTappedUrl(cardUrlFromTag(event));
       void createInvoice(finalTipCents, null, "card");
     }).then((sub) => {
       if (stopped) void sub.remove(); else subscription = sub;
@@ -342,6 +345,7 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
             invoiceId={invoice.id}
             totalCents={subtotalCents + taxCents + finalTipCents}
             initialUid={tappedUid}
+            initialCardUrl={tappedUrl}
             onPaid={() => setCardSent(true)}
             onUseQr={() => setScreen("waiting")}
             onCancel={onCancel}

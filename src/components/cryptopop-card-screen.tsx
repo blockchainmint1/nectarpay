@@ -3,10 +3,11 @@ import { Nfc, Delete, LoaderCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NectarNfc, isNative } from "@/lib/pos-native";
 import { signedJson, type TerminalCreds } from "@/lib/pos-client";
+import { cardUrlFromTag } from "@/lib/card-partners";
 import { CARD_APPROVAL_TIMEOUT_MS, CARD_POLL_INTERVAL_MS, type CardReply } from "@/lib/cryptopop-card";
 
-export function CryptoPopCardScreen({ creds, invoiceId, totalCents, initialUid, onPaid, onUseQr, onCancel }: {
-  creds: TerminalCreds; invoiceId: string; totalCents: number; initialUid?: string | null;
+export function CryptoPopCardScreen({ creds, invoiceId, totalCents, initialUid, initialCardUrl, onPaid, onUseQr, onCancel }: {
+  creds: TerminalCreds; invoiceId: string; totalCents: number; initialUid?: string | null; initialCardUrl?: string | null;
   onPaid: (txid: string) => void; onUseQr: () => void; onCancel: () => void;
 }) {
   const [phase, setPhase] = useState<"tap" | "sending" | "pin" | "approval" | "confirming" | "error">("tap");
@@ -15,6 +16,7 @@ export function CryptoPopCardScreen({ creds, invoiceId, totalCents, initialUid, 
   const [txid, setTxid] = useState<string | null>(null);
   const [payment, setPayment] = useState<{ id: string; token: string; started: number } | null>(null);
   const uid = useRef<string | null>(null);
+  const cardUrl = useRef<string | null>(null);
   const busy = useRef(false);
   const alive = useRef(true);
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
@@ -40,7 +42,7 @@ export function CryptoPopCardScreen({ creds, invoiceId, totalCents, initialUid, 
     setPhase("sending"); setPin(""); setReason(null);
     try {
       handle(await signedJson<CardReply>(creds, `/api/public/v1/terminals/invoice/${invoiceId}/card-pay`, {
-        method: "POST", body: { card_uid: cardUid, ...(pinValue ? { pin: pinValue } : {}) },
+        method: "POST", body: { card_uid: cardUid, ...(cardUrl.current ? { card_url: cardUrl.current } : {}), ...(pinValue ? { pin: pinValue } : {}) },
       }));
     } catch (error) {
       if (alive.current) { uid.current = null; setReason(error instanceof Error ? error.message : "Payment request failed."); setPhase("error"); }
@@ -52,6 +54,7 @@ export function CryptoPopCardScreen({ creds, invoiceId, totalCents, initialUid, 
   useEffect(() => {
     if (initialUid && !uid.current && !busy.current && !payment) {
       uid.current = initialUid;
+      cardUrl.current = initialCardUrl ?? null;
       void send(initialUid);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -89,6 +92,7 @@ export function CryptoPopCardScreen({ creds, invoiceId, totalCents, initialUid, 
       if (!event.uid) { setReason("Couldn't read that card — try tapping again."); return; }
       setReason(null);
       uid.current = event.uid;
+      cardUrl.current = cardUrlFromTag(event);
       void send(event.uid);
     }, message => { if (!stopped) { setReason(message); setPhase("error"); } }).then(sub => {
       if (stopped) void sub.remove(); else subscription = sub;
