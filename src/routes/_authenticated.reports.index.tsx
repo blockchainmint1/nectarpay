@@ -30,6 +30,7 @@ const LINKS = [
   { to: "/reports/invoices", label: "Customers & invoices", body: "Payment requests, opens, and repeat payers." },
   { to: "/reports/settlement", label: "Settlement & fees", body: "What landed, and what card fees would have cost." },
   { to: "/reports/tax-tips", label: "Tax & tips", body: "Tax and tip on every terminal sale, line by line." },
+  { to: "/reports/egiving", label: "eGiving", body: "Community discounts given to eGiving customers, by month and sale by sale." },
 ] as const;
 
 function SummaryReport() {
