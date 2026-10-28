@@ -113,6 +113,13 @@
       "when": 1793114265863,
       "tag": "0015_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1793184325788,
+      "tag": "0016_egiving_community_payments",
+      "breakpoints": true
     }
   ]
 }
