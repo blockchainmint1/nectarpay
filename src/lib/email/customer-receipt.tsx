@@ -15,6 +15,7 @@ export function receiptEligible(status: string) { return status === "confirmed" 
 export interface CustomerReceiptData {
   storeName: string; invoiceId: string; total: number; currency: string;
   paymentMethod: string; description: string | null; orderId: string | null;
+  egiving?: { discount: number; pct: number } | null;
 }
 
 export function CustomerReceipt(data: CustomerReceiptData) {
@@ -34,6 +35,7 @@ export function CustomerReceipt(data: CustomerReceiptData) {
           <Heading style={{ fontSize: 36, margin: "8px 0" }}>{money(data.total)}</Heading>
         </Section>
         {breakdown && <><Text>Subtotal: {money(breakdown.subtotal)}</Text><Text>Tax: {money(breakdown.tax)}</Text><Text>Tip: {money(breakdown.tip)}</Text></>}
+        {data.egiving && <><Text>eGiving community discount ({data.egiving.pct}%): −{money(data.egiving.discount)}</Text><Text>Received: {money(data.total - data.egiving.discount)} TSD · Paid in full</Text><Text style={{ fontSize: 12 }}>The rest of your payment went to your church and the eGiving program.</Text></>}
         <Text>Payment method: {data.paymentMethod}</Text>
         <Text>Receipt reference: {data.invoiceId}</Text>
         {data.orderId && <Text>Order reference: {data.orderId}</Text>}
