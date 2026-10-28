@@ -803,6 +803,8 @@ export type Database = {
           customer_email: string | null
           derivation_index: number | null
           description: string | null
+          discount_pct: number | null
+          discount_usd: number | null
           email_send_count: number
           email_sent_at: string | null
           expires_at: string
@@ -815,6 +817,7 @@ export type Database = {
           kyc_reference: string | null
           kyc_status: Database["public"]["Enums"]["kyc_status"]
           last_viewed_at: string | null
+          payment_program: string | null
           rate: number | null
           redirect_url: string | null
           signature_data_url: string | null
@@ -834,6 +837,8 @@ export type Database = {
           customer_email?: string | null
           derivation_index?: number | null
           description?: string | null
+          discount_pct?: number | null
+          discount_usd?: number | null
           email_send_count?: number
           email_sent_at?: string | null
           expires_at: string
@@ -846,6 +851,7 @@ export type Database = {
           kyc_reference?: string | null
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
           last_viewed_at?: string | null
+          payment_program?: string | null
           rate?: number | null
           redirect_url?: string | null
           signature_data_url?: string | null
@@ -865,6 +871,8 @@ export type Database = {
           customer_email?: string | null
           derivation_index?: number | null
           description?: string | null
+          discount_pct?: number | null
+          discount_usd?: number | null
           email_send_count?: number
           email_sent_at?: string | null
           expires_at?: string
@@ -877,6 +885,7 @@ export type Database = {
           kyc_reference?: string | null
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
           last_viewed_at?: string | null
+          payment_program?: string | null
           rate?: number | null
           redirect_url?: string | null
           signature_data_url?: string | null
@@ -1907,6 +1916,8 @@ export type Database = {
           default_allowed_chains: string[] | null
           default_confirmations_required: number
           default_display_currency: string | null
+          egiving_discount_pct: number
+          egiving_enabled: boolean
           evm_address_rotation: boolean
           ext_ref_label: string | null
           ext_ref_mode: string
@@ -1986,6 +1997,8 @@ export type Database = {
           default_allowed_chains?: string[] | null
           default_confirmations_required?: number
           default_display_currency?: string | null
+          egiving_discount_pct?: number
+          egiving_enabled?: boolean
           evm_address_rotation?: boolean
           ext_ref_label?: string | null
           ext_ref_mode?: string
@@ -2065,6 +2078,8 @@ export type Database = {
           default_allowed_chains?: string[] | null
           default_confirmations_required?: number
           default_display_currency?: string | null
+          egiving_discount_pct?: number
+          egiving_enabled?: boolean
           evm_address_rotation?: boolean
           ext_ref_label?: string | null
           ext_ref_mode?: string
