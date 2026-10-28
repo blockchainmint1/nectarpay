@@ -47,7 +47,7 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/card-
           const pollPartnerId = "payment_id" in parsed.data ? parsed.data.poll_token.split("~")[0] : null;
           const partner = pollPartnerId
             ? (partners ?? []).find((p) => p.id === pollPartnerId && p.active) ?? null
-            : pickCardPartner(partners ?? [], parsed.data.card_url);
+            : pickCardPartner(partners ?? [], "card_url" in parsed.data ? parsed.data.card_url : null);
           if (!partner) return json({ status: "failed", reason: "This card's wallet isn't connected to NectarPay." });
           const secret = partner.secret || (partner.uses_legacy_secret ? process.env["NFC_PAY_SECRET"] : undefined);
           if (!secret) return json({ status: "failed", reason: `${partner.name} card payments are not set up yet.` }, 503);
