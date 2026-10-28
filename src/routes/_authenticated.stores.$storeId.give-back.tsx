@@ -154,7 +154,7 @@ function GiveBackPage() {
       <div className="mt-6 max-w-3xl">
         <Link
           to="/reports/egiving"
-          search={{ range: "30d" }}
+          search={{ range: "30d", compare: true }}
           className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
         >
           <BarChart3 className="h-4 w-4" /> See your eGiving totals and monthly breakdown
