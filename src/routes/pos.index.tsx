@@ -70,7 +70,17 @@ type InvoiceStatus = {
   due_usd?: number;
   paid_crypto?: number;
   due_crypto?: number | null;
+  payment_program?: string | null;
+  discount_usd?: number | null;
+  discount_pct?: number | null;
 };
+
+function egivingInfo(status: InvoiceStatus) {
+  if (status.payment_program !== "egiving" || !status.discount_usd) return null;
+  const discountCents = Math.round(status.discount_usd * 100);
+  const totalCents = Math.round(status.fiat_amount * 100);
+  return { pct: status.discount_pct ?? 10, discountCents, receivedCents: totalCents - discountCents };
+}
 
 
 type PaymentOption = {
@@ -964,6 +974,12 @@ function buildReceiptPayload(
     lines.push({ divider: true });
   }
   lines.push({ text: "TOTAL", right: fmt(totalCents, cur), bold: true });
+  const eg = egivingInfo(status);
+  if (eg) {
+    lines.push({ text: `eGiving community discount (${eg.pct}%)`, right: `-${fmt(eg.discountCents, cur)}` });
+    lines.push({ text: "Received", right: `${fmt(eg.receivedCents, cur)} TSD` });
+    lines.push({ text: "Status", right: "PAID IN FULL", bold: true });
+  }
   lines.push({ divider: true });
   if (status.chain) lines.push({ text: `Paid via ${status.chain.toUpperCase()}` });
   if (status.tx_hash) lines.push({ text: "Tx", right: status.tx_hash.slice(0, 10) + "…" });
@@ -1019,6 +1035,18 @@ function PaidScreen({
       {status.chain && (
         <p className="text-[10px] tracking-widest text-white/60">via {status.chain.toUpperCase()}</p>
       )}
+      {(() => {
+        const eg = egivingInfo(status);
+        if (!eg) return null;
+        return (
+          <div className="mt-4 w-full max-w-sm space-y-1 rounded-md border border-amber-400/30 bg-amber-400/[0.06] p-3 text-left text-xs">
+            <div className="flex justify-between"><span className="text-white/60">Sale</span><span className="tabular-nums">{fmt(status.fiat_amount * 100, status.currency)}</span></div>
+            <div className="flex justify-between"><span className="text-white/60">eGiving community discount ({eg.pct}%)</span><span className="tabular-nums">−{fmt(eg.discountCents, status.currency)}</span></div>
+            <div className="flex justify-between"><span className="text-white/60">Received</span><span className="tabular-nums">{fmt(eg.receivedCents, status.currency)} TSD</span></div>
+            <div className="flex justify-between font-bold text-amber-300"><span>Status</span><span>PAID IN FULL</span></div>
+          </div>
+        );
+      })()}
       {status.tx_hash && (
         <div className="mt-4 w-full max-w-sm rounded-md border border-white/10 bg-white/[0.03] p-3">
           <p className="text-[9px] font-bold tracking-widest text-white/50">TX HASH</p>
