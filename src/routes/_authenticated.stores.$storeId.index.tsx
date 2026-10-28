@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
-  ChevronLeft, KeyRound, Link2, Receipt, Share2, ShieldCheck, Smartphone, Sliders, Wallet,
+  ChevronLeft, HeartHandshake, KeyRound, Link2, Receipt, Share2, ShieldCheck, Smartphone, Sliders, Wallet,
 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/_authenticated/stores/$storeId/")({
   component: StoreDetailPage,
 });
 
-type Sub = "chains" | "balances" | "keys" | "terminals" | "share-links" | "pos-settings" | "invoices" | "kyc";
+type Sub = "chains" | "balances" | "keys" | "terminals" | "share-links" | "pos-settings" | "invoices" | "kyc" | "give-back";
 
 function StoreDetailPage() {
   const { storeId, storeSlug } = useStoreRef();
@@ -77,6 +77,13 @@ function StoreDetailPage() {
           {tile(<Receipt className="h-4 w-4" />, "Send an invoice", "Email a payment request, track opens, resend reminders and review completed sales.", "invoices")}
         </div>
       </Section>
+
+      <Section title="Give Back" hint="Optional — let customers give to their church while paying you.">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {tile(<HeartHandshake className="h-4 w-4" />, "eGiving community payments", "Turn on split payments: you get paid in full, the rest goes to the customer's church and the eGiving program.", "give-back")}
+        </div>
+      </Section>
+
 
       <Section title="Tech Stuff">
         <div className="grid gap-4 md:grid-cols-2">
