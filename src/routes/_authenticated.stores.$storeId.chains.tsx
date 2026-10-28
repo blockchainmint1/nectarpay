@@ -445,7 +445,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("stores")
-        .select("default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd, preferred_evm_chain, evm_address_rotation, egiving_enabled, egiving_discount_pct")
+        .select("default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd, preferred_evm_chain, evm_address_rotation")
         .eq("id", storeId)
         .single();
       if (error) throw error;
@@ -461,7 +461,6 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
   const [tsdCap, setTsdCap] = useState<string>("250");
   const [preferredEvm, setPreferredEvm] = useState<string>("base");
   const [evmRotation, setEvmRotation] = useState<boolean>(true);
-  const [egiving, setEgiving] = useState<boolean>(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -479,7 +478,6 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
     setEvmRotation(
       (data as { evm_address_rotation?: boolean | null }).evm_address_rotation !== false,
     );
-    setEgiving(!!data.egiving_enabled);
   }, [data]);
 
 
@@ -495,7 +493,6 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
       const { error } = await supabase
         .from("stores")
         .update({
-          egiving_enabled: egiving,
           default_confirmations_required: Math.max(0, Number(confs) || 0),
           mempool_max_usd: mNum,
           mempool_accept_fast: fast,
@@ -597,39 +594,6 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
             onChange={(e) => setTsdCap(e.target.value)}
           />
           <p className="mt-1 text-xs text-muted-foreground">Blank = no cap.</p>
-        </div>
-      </div>
-
-      <div className="mt-5 grid gap-3 border-t border-primary/15 pt-4 sm:grid-cols-[1fr_180px] sm:items-start">
-        <label className="flex cursor-pointer items-start gap-3 rounded-md border border-border bg-background/40 p-3 hover:bg-background/70">
-          <Switch checked={egiving} onCheckedChange={setEgiving} className="mt-0.5" />
-          <div className="min-w-0">
-            <div className="text-sm font-medium">Accept eGiving community payments</div>
-            <p className="text-xs text-muted-foreground">
-              eGiving customers pay in TSD with one split payment: you receive your share and the rest
-              goes to their church and the eGiving program. Your share counts as paid in full — the
-              difference is recorded as a community discount on the sale.
-            </p>
-          </div>
-        </label>
-        <div>
-          <Label htmlFor="egiving-pct" className="flex items-center gap-1.5 text-xs">
-            <Lock className="h-3 w-3" aria-hidden />
-            Community discount (%)
-          </Label>
-          <Input
-            id="egiving-pct"
-            inputMode="decimal"
-            value={String(data?.egiving_discount_pct ?? 10)}
-            readOnly
-            aria-readonly
-            tabIndex={-1}
-            className="bg-muted text-muted-foreground"
-          />
-          <p className="mt-1 text-xs text-muted-foreground">
-            Fixed at 10% for now — the eGiving wallet sends 8% to the customer's church and 2% to
-            the program, so every store uses the same split.
-          </p>
         </div>
       </div>
 

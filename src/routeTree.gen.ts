@@ -116,6 +116,7 @@ import { Route as AuthenticatedAdminKnowledgeTermsRouteImport } from './routes/_
 import { Route as AuthenticatedStoresStoreIdIndexRouteImport } from './routes/_authenticated.stores.$storeId.index'
 import { Route as AuthenticatedStoresStoreIdBalancesRouteImport } from './routes/_authenticated.stores.$storeId.balances'
 import { Route as AuthenticatedStoresStoreIdChainsRouteImport } from './routes/_authenticated.stores.$storeId.chains'
+import { Route as AuthenticatedStoresStoreIdGiveBackRouteImport } from './routes/_authenticated.stores.$storeId.give-back'
 import { Route as AuthenticatedStoresStoreIdInvoicesRouteImport } from './routes/_authenticated.stores.$storeId.invoices'
 import { Route as AuthenticatedStoresStoreIdKeysRouteImport } from './routes/_authenticated.stores.$storeId.keys'
 import { Route as AuthenticatedStoresStoreIdKycRouteImport } from './routes/_authenticated.stores.$storeId.kyc'
@@ -746,6 +747,12 @@ const AuthenticatedStoresStoreIdChainsRoute =
     path: '/chains',
     getParentRoute: () => AuthenticatedStoresStoreIdRoute,
   } as any)
+const AuthenticatedStoresStoreIdGiveBackRoute =
+  AuthenticatedStoresStoreIdGiveBackRouteImport.update({
+    id: '/give-back',
+    path: '/give-back',
+    getParentRoute: () => AuthenticatedStoresStoreIdRoute,
+  } as any)
 const AuthenticatedStoresStoreIdInvoicesRoute =
   AuthenticatedStoresStoreIdInvoicesRouteImport.update({
     id: '/invoices',
@@ -1177,6 +1184,7 @@ export interface FileRoutesByFullPath {
   '/admin/knowledge/terms': typeof AuthenticatedAdminKnowledgeTermsRoute
   '/stores/$storeId/balances': typeof AuthenticatedStoresStoreIdBalancesRoute
   '/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
+  '/stores/$storeId/give-back': typeof AuthenticatedStoresStoreIdGiveBackRoute
   '/stores/$storeId/invoices': typeof AuthenticatedStoresStoreIdInvoicesRoute
   '/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
@@ -1337,6 +1345,7 @@ export interface FileRoutesByTo {
   '/admin/knowledge/terms': typeof AuthenticatedAdminKnowledgeTermsRoute
   '/stores/$storeId/balances': typeof AuthenticatedStoresStoreIdBalancesRoute
   '/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
+  '/stores/$storeId/give-back': typeof AuthenticatedStoresStoreIdGiveBackRoute
   '/stores/$storeId/invoices': typeof AuthenticatedStoresStoreIdInvoicesRoute
   '/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
@@ -1505,6 +1514,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/knowledge/terms': typeof AuthenticatedAdminKnowledgeTermsRoute
   '/_authenticated/stores/$storeId/balances': typeof AuthenticatedStoresStoreIdBalancesRoute
   '/_authenticated/stores/$storeId/chains': typeof AuthenticatedStoresStoreIdChainsRoute
+  '/_authenticated/stores/$storeId/give-back': typeof AuthenticatedStoresStoreIdGiveBackRoute
   '/_authenticated/stores/$storeId/invoices': typeof AuthenticatedStoresStoreIdInvoicesRoute
   '/_authenticated/stores/$storeId/keys': typeof AuthenticatedStoresStoreIdKeysRoute
   '/_authenticated/stores/$storeId/kyc': typeof AuthenticatedStoresStoreIdKycRoute
@@ -1673,6 +1683,7 @@ export interface FileRouteTypes {
     | '/admin/knowledge/terms'
     | '/stores/$storeId/balances'
     | '/stores/$storeId/chains'
+    | '/stores/$storeId/give-back'
     | '/stores/$storeId/invoices'
     | '/stores/$storeId/keys'
     | '/stores/$storeId/kyc'
@@ -1833,6 +1844,7 @@ export interface FileRouteTypes {
     | '/admin/knowledge/terms'
     | '/stores/$storeId/balances'
     | '/stores/$storeId/chains'
+    | '/stores/$storeId/give-back'
     | '/stores/$storeId/invoices'
     | '/stores/$storeId/keys'
     | '/stores/$storeId/kyc'
@@ -2000,6 +2012,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/knowledge/terms'
     | '/_authenticated/stores/$storeId/balances'
     | '/_authenticated/stores/$storeId/chains'
+    | '/_authenticated/stores/$storeId/give-back'
     | '/_authenticated/stores/$storeId/invoices'
     | '/_authenticated/stores/$storeId/keys'
     | '/_authenticated/stores/$storeId/kyc'
@@ -2865,6 +2878,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStoresStoreIdChainsRouteImport
       parentRoute: typeof AuthenticatedStoresStoreIdRoute
     }
+    '/_authenticated/stores/$storeId/give-back': {
+      id: '/_authenticated/stores/$storeId/give-back'
+      path: '/give-back'
+      fullPath: '/stores/$storeId/give-back'
+      preLoaderRoute: typeof AuthenticatedStoresStoreIdGiveBackRouteImport
+      parentRoute: typeof AuthenticatedStoresStoreIdRoute
+    }
     '/_authenticated/stores/$storeId/invoices': {
       id: '/_authenticated/stores/$storeId/invoices'
       path: '/invoices'
@@ -3402,6 +3422,7 @@ const AuthenticatedReportsRouteWithChildren =
 interface AuthenticatedStoresStoreIdRouteChildren {
   AuthenticatedStoresStoreIdBalancesRoute: typeof AuthenticatedStoresStoreIdBalancesRoute
   AuthenticatedStoresStoreIdChainsRoute: typeof AuthenticatedStoresStoreIdChainsRoute
+  AuthenticatedStoresStoreIdGiveBackRoute: typeof AuthenticatedStoresStoreIdGiveBackRoute
   AuthenticatedStoresStoreIdInvoicesRoute: typeof AuthenticatedStoresStoreIdInvoicesRoute
   AuthenticatedStoresStoreIdKeysRoute: typeof AuthenticatedStoresStoreIdKeysRoute
   AuthenticatedStoresStoreIdKycRoute: typeof AuthenticatedStoresStoreIdKycRoute
@@ -3420,6 +3441,8 @@ const AuthenticatedStoresStoreIdRouteChildren: AuthenticatedStoresStoreIdRouteCh
       AuthenticatedStoresStoreIdBalancesRoute,
     AuthenticatedStoresStoreIdChainsRoute:
       AuthenticatedStoresStoreIdChainsRoute,
+    AuthenticatedStoresStoreIdGiveBackRoute:
+      AuthenticatedStoresStoreIdGiveBackRoute,
     AuthenticatedStoresStoreIdInvoicesRoute:
       AuthenticatedStoresStoreIdInvoicesRoute,
     AuthenticatedStoresStoreIdKeysRoute: AuthenticatedStoresStoreIdKeysRoute,
