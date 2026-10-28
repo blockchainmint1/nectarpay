@@ -31,8 +31,14 @@ test("opted-out store gets no discount", () => {
 test("only TSD qualifies", () => {
   expect(egivingDecision({ ...base, tokenSymbol: "USDC", creditUsd: 4.5, recipients: split(4.5) }).program).toBeNull();
 });
-test("a merchant-set 5% discount needs 95%", () => {
-  const s = { ...base, store: { egiving_enabled: true, egiving_discount_pct: 5 } };
-  expect(egivingDecision({ ...s, creditUsd: 4.5, recipients: split(4.5) }).program).toBeNull();
-  expect(egivingDecision({ ...s, creditUsd: 4.75, recipients: split(4.75, 0.15, 0.1) }).discountUsd).toBe(0.25);
+test("a stored 5% or 50% discount cannot change the fixed 10% rule", () => {
+  for (const pct of [5, 50]) {
+    const s = { ...base, store: { egiving_enabled: true, egiving_discount_pct: pct } };
+    expect(egivingDecision({ ...s, creditUsd: 4.5, recipients: split(4.5) })).toEqual({
+      amountDueUsd: 4.5,
+      program: "egiving",
+      discountUsd: 0.5,
+      discountPct: 10,
+    });
+  }
 });
