@@ -89,6 +89,7 @@ import { Route as AuthenticatedAdminVerifyRouteImport } from './routes/_authenti
 import { Route as AuthenticatedMHomeRouteImport } from './routes/_authenticated.m.home'
 import { Route as AuthenticatedMVirtualTerminalRouteImport } from './routes/_authenticated.m.virtual-terminal'
 import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authenticated.reports.index'
+import { Route as AuthenticatedReportsEgivingRouteImport } from './routes/_authenticated.reports.egiving'
 import { Route as AuthenticatedReportsInvoicesRouteImport } from './routes/_authenticated.reports.invoices'
 import { Route as AuthenticatedReportsLocationsRouteImport } from './routes/_authenticated.reports.locations'
 import { Route as AuthenticatedReportsMethodsRouteImport } from './routes/_authenticated.reports.methods'
@@ -583,6 +584,12 @@ const AuthenticatedReportsIndexRoute =
   AuthenticatedReportsIndexRouteImport.update({
     id: '/',
     path: '/',
+    getParentRoute: () => AuthenticatedReportsRoute,
+  } as any)
+const AuthenticatedReportsEgivingRoute =
+  AuthenticatedReportsEgivingRouteImport.update({
+    id: '/egiving',
+    path: '/egiving',
     getParentRoute: () => AuthenticatedReportsRoute,
   } as any)
 const AuthenticatedReportsInvoicesRoute =
@@ -1136,6 +1143,7 @@ export interface FileRoutesByFullPath {
   '/admin/verify': typeof AuthenticatedAdminVerifyRoute
   '/m/home': typeof AuthenticatedMHomeRoute
   '/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
+  '/reports/egiving': typeof AuthenticatedReportsEgivingRoute
   '/reports/invoices': typeof AuthenticatedReportsInvoicesRoute
   '/reports/locations': typeof AuthenticatedReportsLocationsRoute
   '/reports/methods': typeof AuthenticatedReportsMethodsRoute
@@ -1295,6 +1303,7 @@ export interface FileRoutesByTo {
   '/admin/verify': typeof AuthenticatedAdminVerifyRoute
   '/m/home': typeof AuthenticatedMHomeRoute
   '/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
+  '/reports/egiving': typeof AuthenticatedReportsEgivingRoute
   '/reports/invoices': typeof AuthenticatedReportsInvoicesRoute
   '/reports/locations': typeof AuthenticatedReportsLocationsRoute
   '/reports/methods': typeof AuthenticatedReportsMethodsRoute
@@ -1460,6 +1469,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/verify': typeof AuthenticatedAdminVerifyRoute
   '/_authenticated/m/home': typeof AuthenticatedMHomeRoute
   '/_authenticated/m/virtual-terminal': typeof AuthenticatedMVirtualTerminalRoute
+  '/_authenticated/reports/egiving': typeof AuthenticatedReportsEgivingRoute
   '/_authenticated/reports/invoices': typeof AuthenticatedReportsInvoicesRoute
   '/_authenticated/reports/locations': typeof AuthenticatedReportsLocationsRoute
   '/_authenticated/reports/methods': typeof AuthenticatedReportsMethodsRoute
@@ -1626,6 +1636,7 @@ export interface FileRouteTypes {
     | '/admin/verify'
     | '/m/home'
     | '/m/virtual-terminal'
+    | '/reports/egiving'
     | '/reports/invoices'
     | '/reports/locations'
     | '/reports/methods'
@@ -1785,6 +1796,7 @@ export interface FileRouteTypes {
     | '/admin/verify'
     | '/m/home'
     | '/m/virtual-terminal'
+    | '/reports/egiving'
     | '/reports/invoices'
     | '/reports/locations'
     | '/reports/methods'
@@ -1949,6 +1961,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/verify'
     | '/_authenticated/m/home'
     | '/_authenticated/m/virtual-terminal'
+    | '/_authenticated/reports/egiving'
     | '/_authenticated/reports/invoices'
     | '/_authenticated/reports/locations'
     | '/_authenticated/reports/methods'
@@ -2650,6 +2663,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedReportsIndexRouteImport
       parentRoute: typeof AuthenticatedReportsRoute
     }
+    '/_authenticated/reports/egiving': {
+      id: '/_authenticated/reports/egiving'
+      path: '/egiving'
+      fullPath: '/reports/egiving'
+      preLoaderRoute: typeof AuthenticatedReportsEgivingRouteImport
+      parentRoute: typeof AuthenticatedReportsRoute
+    }
     '/_authenticated/reports/invoices': {
       id: '/_authenticated/reports/invoices'
       path: '/invoices'
@@ -3333,6 +3353,7 @@ const AuthenticatedAdminRouteWithChildren =
   AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
 interface AuthenticatedReportsRouteChildren {
+  AuthenticatedReportsEgivingRoute: typeof AuthenticatedReportsEgivingRoute
   AuthenticatedReportsInvoicesRoute: typeof AuthenticatedReportsInvoicesRoute
   AuthenticatedReportsLocationsRoute: typeof AuthenticatedReportsLocationsRoute
   AuthenticatedReportsMethodsRoute: typeof AuthenticatedReportsMethodsRoute
@@ -3343,6 +3364,7 @@ interface AuthenticatedReportsRouteChildren {
 }
 
 const AuthenticatedReportsRouteChildren: AuthenticatedReportsRouteChildren = {
+  AuthenticatedReportsEgivingRoute: AuthenticatedReportsEgivingRoute,
   AuthenticatedReportsInvoicesRoute: AuthenticatedReportsInvoicesRoute,
   AuthenticatedReportsLocationsRoute: AuthenticatedReportsLocationsRoute,
   AuthenticatedReportsMethodsRoute: AuthenticatedReportsMethodsRoute,
