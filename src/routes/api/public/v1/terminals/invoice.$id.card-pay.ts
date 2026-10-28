@@ -37,11 +37,21 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/card-
           const parsed = CardRequest.safeParse(JSON.parse(rawBody || "{}"));
           if (!parsed.success) return json({ error: "Bad request." }, 400);
 
-          const secret = process.env["NFC_PAY_SECRET"];
-          if (!secret) return json({ error: "Card payments are not set up." }, 503);
-          const { cardHeaders, CRYPTOPOP_CARD_URL, issueCardPollToken, validCardPollToken } = await import("@/lib/cryptopop-card.server");
-
+          const { cardHeaders, issueCardPollToken, validCardPollToken } = await import("@/lib/cryptopop-card.server");
+          const { pickCardPartner } = await import("@/lib/card-partners");
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+          // Pick the wallet partner: the poll token names it, otherwise the card's web address does.
+          const { data: partners } = await supabaseAdmin.from("card_partners")
+            .select("id, name, pay_url, card_domains, secret, uses_legacy_secret, is_default, active");
+          const pollPartnerId = "payment_id" in parsed.data ? parsed.data.poll_token.split("~")[0] : null;
+          const partner = pollPartnerId
+            ? (partners ?? []).find((p) => p.id === pollPartnerId && p.active) ?? null
+            : pickCardPartner(partners ?? [], "card_url" in parsed.data ? parsed.data.card_url : null);
+          if (!partner) return json({ status: "failed", reason: "This card's wallet isn't connected to NectarPay." });
+          const secret = partner.secret || (partner.uses_legacy_secret ? process.env["NFC_PAY_SECRET"] : undefined);
+          if (!secret) return json({ status: "failed", reason: `${partner.name} card payments are not set up yet.` }, 503);
+          const PAY_URL = partner.pay_url;
           const { data: inv } = await supabaseAdmin
             .from("invoices")
             .select("id, store_id, status, fiat_currency, expires_at")
@@ -54,7 +64,7 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/card-
           const record = async (step: string, httpStatus: number | null, r: { status?: string; reason?: string | null; payment_id?: string | null; txid?: string | null }, started: number) => {
             const { error } = await supabaseAdmin.from("card_payment_events").insert({
               invoice_id: inv.id, store_id: inv.store_id, terminal_id: auth.terminal.id, step,
-              http_status: httpStatus, status: r.status ?? null, reason: r.reason ? String(r.reason).slice(0, 500) : null,
+              partner_id: partner.id, http_status: httpStatus, status: r.status ?? null, reason: r.reason ? String(r.reason).slice(0, 500) : null,
               payment_id: r.payment_id ?? null, txid: r.txid ?? null, duration_ms: Date.now() - started,
             });
             if (error) console.error("[card-pay] event log failed", error.message);
@@ -75,10 +85,11 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/card-
           // Poll an existing payment.
           if ("payment_id" in parsed.data) {
             const pid = parsed.data.payment_id;
-            if (!validCardPollToken(secret, parsed.data.poll_token, inv.id, auth.terminal.id, pid)) return json({ error: "Payment status request is not authorized for this sale." }, 403);
+            const innerToken = parsed.data.poll_token.slice(partner.id.length + 1);
+            if (!validCardPollToken(secret, innerToken, inv.id, auth.terminal.id, pid)) return json({ error: "Payment status request is not authorized for this sale." }, 403);
             const started = Date.now();
             try {
-              const res = await fetch(`${CRYPTOPOP_CARD_URL}?id=${encodeURIComponent(pid)}`, {
+              const res = await fetch(`${PAY_URL}?id=${encodeURIComponent(pid)}`, {
                 headers: cardHeaders(secret, pid), signal: AbortSignal.timeout(20000),
               });
               const r = normalizeCardReply(await res.json().catch(() => ({})), res.ok);
@@ -115,17 +126,17 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/card-
           const started = Date.now();
           let res: Response;
           try {
-            res = await fetch(CRYPTOPOP_CARD_URL, { method: "POST", headers: cardHeaders(secret, body), body, signal: AbortSignal.timeout(45000) });
+            res = await fetch(PAY_URL, { method: "POST", headers: cardHeaders(secret, body), body, signal: AbortSignal.timeout(45000) });
           } catch (e) {
             await record(step, null, { status: "error", reason: e instanceof Error ? `${e.name}: ${e.message}` : "unknown" }, started);
             const timedOut = e instanceof Error && e.name === "TimeoutError";
-            return json({ status: "failed", reason: timedOut ? "CryptoPOP didn't answer in time. Check the sale before retrying." : "Couldn't reach CryptoPOP. Try again." });
+            return json({ status: "failed", reason: timedOut ? `${partner.name} didn't answer in time. Check the sale before retrying.` : `Couldn't reach ${partner.name}. Try again.` });
           }
           const r = normalizeCardReply(await res.json().catch(() => ({})), res.ok);
           await record(step, res.status, r, started);
           await verifySent(r);
           if (!res.ok) console.error("[card-pay] CryptoPOP request failed", res.status);
-          return json({ ...r, ...(r.payment_id ? { poll_token: issueCardPollToken(secret, inv.id, auth.terminal.id, r.payment_id) } : {}) });
+          return json({ ...r, ...(r.payment_id ? { poll_token: partner.id + "~" + issueCardPollToken(secret, inv.id, auth.terminal.id, r.payment_id) } : {}) });
         } catch (err) {
           console.error("[card-pay] request failed", err instanceof Error ? err.name : "unknown");
           return json({ status: "failed", reason: "Something went wrong. Try again." }, 500);

@@ -321,6 +321,48 @@ export type Database = {
         }
         Relationships: []
       }
+      card_partners: {
+        Row: {
+          active: boolean
+          card_domains: string[]
+          created_at: string
+          id: string
+          is_default: boolean
+          name: string
+          pay_url: string
+          secret: string | null
+          secret_fingerprint: string | null
+          updated_at: string
+          uses_legacy_secret: boolean
+        }
+        Insert: {
+          active?: boolean
+          card_domains?: string[]
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          name: string
+          pay_url: string
+          secret?: string | null
+          secret_fingerprint?: string | null
+          updated_at?: string
+          uses_legacy_secret?: boolean
+        }
+        Update: {
+          active?: boolean
+          card_domains?: string[]
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          pay_url?: string
+          secret?: string | null
+          secret_fingerprint?: string | null
+          updated_at?: string
+          uses_legacy_secret?: boolean
+        }
+        Relationships: []
+      }
       card_payment_events: {
         Row: {
           created_at: string
@@ -328,6 +370,7 @@ export type Database = {
           http_status: number | null
           id: string
           invoice_id: string
+          partner_id: string | null
           payment_id: string | null
           reason: string | null
           status: string | null
@@ -342,6 +385,7 @@ export type Database = {
           http_status?: number | null
           id?: string
           invoice_id: string
+          partner_id?: string | null
           payment_id?: string | null
           reason?: string | null
           status?: string | null
@@ -356,6 +400,7 @@ export type Database = {
           http_status?: number | null
           id?: string
           invoice_id?: string
+          partner_id?: string | null
           payment_id?: string | null
           reason?: string | null
           status?: string | null
