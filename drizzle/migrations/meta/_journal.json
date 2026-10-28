@@ -134,6 +134,13 @@
       "when": 1793185131236,
       "tag": "0018_lock_egiving_discount_fixed",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1793206925557,
+      "tag": "0019_card_partners",
+      "breakpoints": true
     }
   ]
 }
