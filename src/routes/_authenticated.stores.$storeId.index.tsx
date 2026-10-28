@@ -72,7 +72,7 @@ function StoreDetailPage() {
       </Section>
 
       <Section title="Get Paid">
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {tile(<Share2 className="h-4 w-4" />, "Share payment links", "A permanent link that opens a checkout in any browser — great for email signatures, donation buttons and social posts.", "share-links")}
           {tile(<Receipt className="h-4 w-4" />, "Send an invoice", "Email a payment request, track opens, resend reminders and review completed sales.", "invoices")}
         </div>
