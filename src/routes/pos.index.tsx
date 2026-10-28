@@ -979,6 +979,7 @@ function buildReceiptPayload(
     lines.push({ text: `eGiving community discount (${eg.pct}%)`, right: `-${fmt(eg.discountCents, cur)}` });
     lines.push({ text: "Received", right: `${fmt(eg.receivedCents, cur)} TSD` });
     lines.push({ text: "Status", right: "PAID IN FULL", bold: true });
+    lines.push({ text: "Church and program contributions are non-refundable." });
   }
   lines.push({ divider: true });
   if (status.chain) lines.push({ text: `Paid via ${status.chain.toUpperCase()}` });
