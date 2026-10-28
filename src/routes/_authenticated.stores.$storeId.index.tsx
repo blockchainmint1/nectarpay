@@ -85,6 +85,8 @@ function StoreDetailPage() {
       </Section>
 
 
+
+
       <Section title="Tech Stuff">
         <div className="grid gap-4 md:grid-cols-2">
           {tile(<KeyRound className="h-4 w-4" />, "API keys", "Issue, rotate and revoke keys for your website or plugins.", "keys")}
