@@ -33,7 +33,7 @@ export async function readPublicInvoice(data: { id: string }) {
     const { data: initialInv, error } = await supabaseAdmin
       .from("invoices")
       .select(
-        "id, chain, token_symbol, fiat_amount, fiat_currency, crypto_amount, rate, address, status, description, redirect_url, expires_at, created_at, store_id",
+        "id, chain, token_symbol, fiat_amount, fiat_currency, crypto_amount, rate, address, status, description, redirect_url, expires_at, created_at, store_id, payment_program, discount_usd, discount_pct",
       )
       .eq("id", data.id)
       .maybeSingle();
@@ -56,7 +56,7 @@ export async function readPublicInvoice(data: { id: string }) {
         const { data: freshInv } = await supabaseAdmin
           .from("invoices")
           .select(
-            "id, chain, token_symbol, fiat_amount, fiat_currency, crypto_amount, rate, address, status, description, redirect_url, expires_at, created_at, store_id",
+            "id, chain, token_symbol, fiat_amount, fiat_currency, crypto_amount, rate, address, status, description, redirect_url, expires_at, created_at, store_id, payment_program, discount_usd, discount_pct",
           )
           .eq("id", data.id)
           .maybeSingle();

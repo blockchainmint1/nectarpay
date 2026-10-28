@@ -261,6 +261,30 @@ async function totalPaidUsdForInvoice(
   return total;
 }
 
+/**
+ * eGiving community split: when an opted-in store receives one send-to-many
+ * TSD payment covering its discounted share, tag the invoice and return the
+ * discounted amount due. Otherwise returns the full invoice amount.
+ */
+async function applyEgiving(
+  invoiceId: string,
+  store: { egiving_enabled?: boolean | null; egiving_discount_pct?: number | string | null } | null,
+  tokenSymbol: string | null,
+  sendToMany: boolean,
+  creditUsd: number,
+  invoiceUsd: number,
+): Promise<number> {
+  const { egivingDecision } = await import("./egiving");
+  const d = egivingDecision({ store, tokenSymbol, sendToMany, creditUsd, invoiceUsd });
+  if (!d.program) return invoiceUsd;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  await supabaseAdmin
+    .from("invoices")
+    .update({ payment_program: d.program, discount_usd: d.discountUsd, discount_pct: d.discountPct })
+    .eq("id", invoiceId);
+  return d.amountDueUsd;
+}
+
 export async function settleInvoice(
   invoiceId: string,
   _ignoredLatestCreditUsd: number,
@@ -428,7 +452,7 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string, hintTxid?: string
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
-    .select("id, store_id, chain, address, token_symbol, fiat_amount, status, rate, created_at, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd)")
+    .select("id, store_id, chain, address, token_symbol, fiat_amount, status, rate, created_at, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd, egiving_enabled, egiving_discount_pct)")
     .eq("id", invoiceId)
     .maybeSingle();
   if (!inv || !inv.address || !isBtcLikeChain(inv.chain)) return false;
@@ -469,7 +493,8 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string, hintTxid?: string
     if (creditPredatesInvoice(creditTimeMs, inv.created_at)) continue;
     await recordTransaction(inv.id, credit.txid, paidCrypto, credit.confirmations, null, isConfirmed, null, creditTimeMs);
     if (isConfirmed) {
-      const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
+      const due = await applyEgiving(inv.id, inv.stores ?? null, inv.token_symbol, !!(credit as { sendToMany?: boolean }).sendToMany, paidUsd, Number(inv.fiat_amount));
+      const settled = await settleInvoice(inv.id, paidUsd, due);
       changed = settled.changed || changed;
     } else {
       changed = (await markInvoiceDetected(inv.id)) || changed;
@@ -654,7 +679,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
 
   const { data: configs } = await supabaseAdmin
     .from("chain_configs")
-    .select("*, stores!inner(id, owner_id, default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd)")
+    .select("*, stores!inner(id, owner_id, default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd, egiving_enabled, egiving_discount_pct)")
     .not("xpub", "is", null)
     .eq("enabled", true);
 
@@ -741,7 +766,8 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               creditTimeMs,
             );
             if (isConfirmed) {
-              const settled = await settleInvoice(inv.id, paidUsd, Number(inv.fiat_amount));
+              const due = await applyEgiving(inv.id, cfg?.stores ?? null, inv.token_symbol, !!(credit as { sendToMany?: boolean }).sendToMany, paidUsd, Number(inv.fiat_amount));
+              const settled = await settleInvoice(inv.id, paidUsd, due);
               if (settled.changed) r.invoicesUpdated++;
             } else if (await markInvoiceDetected(inv.id)) {
               r.invoicesUpdated++;
