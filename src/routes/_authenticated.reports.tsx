@@ -43,6 +43,7 @@ const TABS = [
   { to: "/reports/invoices", label: "Customers & invoices" },
   { to: "/reports/settlement", label: "Settlement & fees" },
   { to: "/reports/tax-tips", label: "Tax & tips" },
+  { to: "/reports/egiving", label: "eGiving" },
 ] as const;
 
 const RANGES: Array<{ v: RangeKey; l: string }> = [
