@@ -55,6 +55,10 @@ export type ReportBundle = {
   settlement: Array<{ token: string; chain: string; cryptoAmount: number; usd: number; count: number }>;
   savings: { periodUsd: number; cardFeeUsd: number; nectarFeeUsd: number };
   tax: Array<{ month: string; currency: string; gross: number; taxEstimate: number; net: number; count: number }>;
+  egiving: {
+    monthly: Array<{ month: string; storeId: string; store: string; currency: string; count: number; sales: number; discount: number; received: number }>;
+    sales: Array<{ id: string; date: string; store: string; currency: string; total: number; discountPct: number; discount: number; received: number }>;
+  };
   taxTips: Array<{
     id: string;
     date: string;

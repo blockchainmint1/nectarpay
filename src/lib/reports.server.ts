@@ -67,6 +67,9 @@ type InvoiceRow = {
   token_symbol: string | null;
   fiat_amount: number | string;
   fiat_currency: string;
+  payment_program?: string | null;
+  discount_usd?: number | string | null;
+  discount_pct?: number | string | null;
   crypto_amount: number | string | null;
   status: string;
   created_at: string;
@@ -87,7 +90,7 @@ async function fetchInvoices(
   let q = supabase
     .from("invoices")
     .select(
-      "id, store_id, chain, token_symbol, fiat_amount, fiat_currency, crypto_amount, status, created_at, updated_at, customer_email, buyer_email, description, email_sent_at, first_viewed_at, stores!inner(id, name, tax_bps, tax_mode), transactions(amount, token_symbol, confirmed_at)",
+      "id, store_id, chain, token_symbol, fiat_amount, fiat_currency, crypto_amount, status, created_at, updated_at, customer_email, buyer_email, description, email_sent_at, first_viewed_at, payment_program, discount_usd, discount_pct, stores!inner(id, name, tax_bps, tax_mode), transactions(amount, token_symbol, confirmed_at)",
     )
     .gte("created_at", filters.from)
     .lte("created_at", filters.to)
@@ -406,7 +409,27 @@ export async function computeReports(
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 500);
 
+  // ---- eGiving community discounts (monthly per store + each sale) --------
+  const egMonthly = new Map<string, ReportBundle["egiving"]["monthly"][number]>();
+  const egSales: ReportBundle["egiving"]["sales"] = [];
+  for (const r of paid) {
+    if (r.payment_program !== "egiving") continue;
+    const total = Number(r.fiat_amount ?? 0);
+    const discount = Number(r.discount_usd ?? 0);
+    const month = r.created_at.slice(0, 7);
+    const key = `${month}|${r.store_id}|${r.fiat_currency}`;
+    const m = egMonthly.get(key) ?? { month, storeId: r.store_id, store: r.stores?.name ?? "Store", currency: r.fiat_currency, count: 0, sales: 0, discount: 0, received: 0 };
+    m.count += 1; m.sales += total; m.discount += discount; m.received += total - discount;
+    egMonthly.set(key, m);
+    egSales.push({ id: r.id, date: r.created_at, store: r.stores?.name ?? "Store", currency: r.fiat_currency, total: round(total), discountPct: Number(r.discount_pct ?? 10), discount: round(discount), received: round(total - discount) });
+  }
+  const egiving: ReportBundle["egiving"] = {
+    monthly: [...egMonthly.values()].map((m) => ({ ...m, sales: round(m.sales), discount: round(m.discount), received: round(m.received) })).sort((a, b) => b.month.localeCompare(a.month) || a.store.localeCompare(b.store)),
+    sales: egSales.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 500),
+  };
+
   return {
+    egiving,
     generated_at: new Date().toISOString(),
     currency,
     range: { from, to, days, grain },
