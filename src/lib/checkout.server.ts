@@ -1,4 +1,5 @@
 import { VALID_CHAIN_SET } from "@/lib/chains/networks";
+import { EGIVING_DISCOUNT_PCT } from "@/lib/egiving";
 import type { CheckoutPaymentOption } from "./checkout.functions";
 const VALID_CHAINS = VALID_CHAIN_SET;
 const VALID_STABLES = new Set(["USDC", "USDT", "PYUSD", "DAI", "TSD"]);
@@ -195,7 +196,7 @@ export async function readPublicInvoice(data: { id: string }) {
       store: store ? { name: store.name, website: store.website } : null,
       egiving: store?.egiving_enabled
         ? (() => {
-            const pct = Number(store.egiving_discount_pct ?? 10);
+            const pct = EGIVING_DISCOUNT_PCT;
             const minimum = Math.round(Number(inv.fiat_amount) * (1 - pct / 100) * 100) / 100;
             return { accepted: true as const, discountPct: pct, merchantMinimumUsd: minimum, discountUsd: Math.round((Number(inv.fiat_amount) - minimum) * 100) / 100 };
           })()
