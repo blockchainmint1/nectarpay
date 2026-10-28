@@ -77,6 +77,7 @@ import { Route as TSlugRouteImport } from './routes/t.$slug'
 import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authenticated.account.index'
 import { Route as AuthenticatedAccountUsersRouteImport } from './routes/_authenticated.account.users'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated.admin.index'
+import { Route as AuthenticatedAdminCardPartnersRouteImport } from './routes/_authenticated.admin.card-partners'
 import { Route as AuthenticatedAdminCrmRouteImport } from './routes/_authenticated.admin.crm'
 import { Route as AuthenticatedAdminEgivingRouteImport } from './routes/_authenticated.admin.egiving'
 import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated.admin.invoices'
@@ -519,6 +520,12 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminCardPartnersRoute =
+  AuthenticatedAdminCardPartnersRouteImport.update({
+    id: '/card-partners',
+    path: '/card-partners',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminCrmRoute = AuthenticatedAdminCrmRouteImport.update({
   id: '/crm',
   path: '/crm',
@@ -1146,6 +1153,7 @@ export interface FileRoutesByFullPath {
   '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
   '/account/users': typeof AuthenticatedAccountUsersRoute
+  '/admin/card-partners': typeof AuthenticatedAdminCardPartnersRoute
   '/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/admin/egiving': typeof AuthenticatedAdminEgivingRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
@@ -1310,6 +1318,7 @@ export interface FileRoutesByTo {
   '/integrations': typeof IntegrationsIndexRoute
   '/pos': typeof PosIndexRoute
   '/account/users': typeof AuthenticatedAccountUsersRoute
+  '/admin/card-partners': typeof AuthenticatedAdminCardPartnersRoute
   '/admin/egiving': typeof AuthenticatedAdminEgivingRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/lightning': typeof AuthenticatedAdminLightningRoute
@@ -1476,6 +1485,7 @@ export interface FileRoutesById {
   '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
   '/_authenticated/account/users': typeof AuthenticatedAccountUsersRoute
+  '/_authenticated/admin/card-partners': typeof AuthenticatedAdminCardPartnersRoute
   '/_authenticated/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/_authenticated/admin/egiving': typeof AuthenticatedAdminEgivingRoute
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
@@ -1645,6 +1655,7 @@ export interface FileRouteTypes {
     | '/integrations/'
     | '/pos/'
     | '/account/users'
+    | '/admin/card-partners'
     | '/admin/crm'
     | '/admin/egiving'
     | '/admin/invoices'
@@ -1809,6 +1820,7 @@ export interface FileRouteTypes {
     | '/integrations'
     | '/pos'
     | '/account/users'
+    | '/admin/card-partners'
     | '/admin/egiving'
     | '/admin/invoices'
     | '/admin/lightning'
@@ -1974,6 +1986,7 @@ export interface FileRouteTypes {
     | '/integrations/'
     | '/pos/'
     | '/_authenticated/account/users'
+    | '/_authenticated/admin/card-partners'
     | '/_authenticated/admin/crm'
     | '/_authenticated/admin/egiving'
     | '/_authenticated/admin/invoices'
@@ -2603,6 +2616,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/card-partners': {
+      id: '/_authenticated/admin/card-partners'
+      path: '/card-partners'
+      fullPath: '/admin/card-partners'
+      preLoaderRoute: typeof AuthenticatedAdminCardPartnersRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/crm': {
@@ -3363,6 +3383,7 @@ const AuthenticatedAdminKnowledgeRouteWithChildren =
   )
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminCardPartnersRoute: typeof AuthenticatedAdminCardPartnersRoute
   AuthenticatedAdminCrmRoute: typeof AuthenticatedAdminCrmRouteWithChildren
   AuthenticatedAdminEgivingRoute: typeof AuthenticatedAdminEgivingRoute
   AuthenticatedAdminInvoicesRoute: typeof AuthenticatedAdminInvoicesRoute
@@ -3377,6 +3398,7 @@ interface AuthenticatedAdminRouteChildren {
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminCardPartnersRoute: AuthenticatedAdminCardPartnersRoute,
   AuthenticatedAdminCrmRoute: AuthenticatedAdminCrmRouteWithChildren,
   AuthenticatedAdminEgivingRoute: AuthenticatedAdminEgivingRoute,
   AuthenticatedAdminInvoicesRoute: AuthenticatedAdminInvoicesRoute,
