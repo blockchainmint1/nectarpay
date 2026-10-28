@@ -10,6 +10,9 @@
 // Transaction types we credit:
 //   0x0000 (0)  simple send
 //   0x0037 (55) grant tokens
+//   0x0007 (7)  send-to-many: <propertyId:4> <count:1> then count x
+//               (<outputIndex:1> <amount:8>). Only the outputs pointing at
+//               the watched address are credited (eGiving community split).
 //
 // Recipient (Omni "reference address"): the receiving address we are watching
 // must appear as a non-data output AND must not be one of the input addresses
@@ -28,7 +31,11 @@ export interface OmniPayload {
   propertyId: number;
   /** Raw integer amount in the property's smallest unit. */
   amount: bigint;
+  /** Send-to-many (type 7) recipients: vout index → raw amount. */
+  outputs?: Array<{ vout: number; amount: bigint }>;
 }
+
+export const SEND_TO_MANY = 0x0007;
 
 /** Decode the Omni payload from an OP_RETURN scriptpubkey hex, if present. */
 export function decodeOmniScript(scriptHex: string): OmniPayload | null {
@@ -37,10 +44,27 @@ export function decodeOmniScript(scriptHex: string): OmniPayload | null {
   const idx = hex.indexOf(OMNI_MARKER);
   if (idx === -1) return null;
   const body = hex.slice(idx + OMNI_MARKER.length);
-  if (body.length < 32) return null; // 2+2+4+8 bytes
+  if (body.length < 16) return null;
   const version = parseInt(body.slice(0, 4), 16);
   const type = parseInt(body.slice(4, 8), 16);
   const propertyId = parseInt(body.slice(8, 16), 16);
+  if (type === SEND_TO_MANY) {
+    const count = parseInt(body.slice(16, 18), 16);
+    if (!Number.isFinite(count) || count < 1 || count > 255) return null;
+    if (body.length < 18 + count * 18) return null;
+    const outputs: Array<{ vout: number; amount: bigint }> = [];
+    let total = 0n;
+    for (let i = 0; i < count; i++) {
+      const off = 18 + i * 18;
+      const vout = parseInt(body.slice(off, off + 2), 16);
+      const amount = BigInt(`0x${body.slice(off + 2, off + 18)}`);
+      outputs.push({ vout, amount });
+      total += amount;
+    }
+    if (!Number.isFinite(version) || !Number.isFinite(propertyId)) return null;
+    return { version, type, propertyId, amount: total, outputs };
+  }
+  if (body.length < 32) return null; // 2+2+4+8 bytes
   const amount = BigInt(`0x${body.slice(16, 32)}`);
   if (!Number.isFinite(version) || !Number.isFinite(type) || !Number.isFinite(propertyId)) {
     return null;
@@ -65,6 +89,8 @@ export interface OmniCredit {
   amount: number;
   confirmations: number;
   blockTime: number | null;
+  /** True when this credit came from a send-to-many (split) transaction. */
+  sendToMany?: boolean;
 }
 
 /**
@@ -83,7 +109,8 @@ export function extractOmniIncoming(
     const payload = omniPayloadOf(tx);
     if (!payload) continue;
     if (payload.propertyId !== propertyId) continue;
-    if (!CREDIT_TYPES.has(payload.type)) continue;
+    const isMany = payload.type === SEND_TO_MANY;
+    if (!isMany && !CREDIT_TYPES.has(payload.type)) continue;
 
     // Skip if the watched address funded the transaction (change output).
     const inputAddrs = new Set(
@@ -91,8 +118,19 @@ export function extractOmniIncoming(
     );
     if (inputAddrs.has(address)) continue;
 
-    const voutIdx = tx.vout.findIndex((v) => v.scriptpubkey_address === address);
-    if (voutIdx === -1) continue;
+    let voutIdx: number;
+    let raw: bigint;
+    if (isMany) {
+      // Only the slices addressed to us; an index may repeat, so sum them.
+      const mine = (payload.outputs ?? []).filter((o) => tx.vout[o.vout]?.scriptpubkey_address === address);
+      if (!mine.length) continue;
+      voutIdx = mine[0].vout;
+      raw = mine.reduce((a, o) => a + o.amount, 0n);
+    } else {
+      voutIdx = tx.vout.findIndex((v) => v.scriptpubkey_address === address);
+      if (voutIdx === -1) continue;
+      raw = payload.amount;
+    }
 
     const confs =
       tx.status.confirmed && tx.status.block_height
@@ -101,9 +139,10 @@ export function extractOmniIncoming(
     out.push({
       txid: tx.txid,
       vout: voutIdx,
-      amount: Number(payload.amount) / 10 ** decimals,
+      amount: Number(raw) / 10 ** decimals,
       confirmations: confs,
       blockTime: tx.status.block_time ?? null,
+      sendToMany: isMany,
     });
   }
   return out;
