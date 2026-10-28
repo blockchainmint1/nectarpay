@@ -83,7 +83,7 @@ export async function readPublicInvoice(data: { id: string }) {
 
     const { data: store } = await supabaseAdmin
       .from("stores")
-      .select("name, website")
+      .select("name, website, egiving_enabled, egiving_discount_pct")
       .eq("id", inv.store_id)
       .maybeSingle();
 
@@ -193,6 +193,13 @@ export async function readPublicInvoice(data: { id: string }) {
         createdAt: inv.created_at,
       },
       store: store ? { name: store.name, website: store.website } : null,
+      egiving: store?.egiving_enabled
+        ? (() => {
+            const pct = Number(store.egiving_discount_pct ?? 10);
+            const minimum = Math.round(Number(inv.fiat_amount) * (1 - pct / 100) * 100) / 100;
+            return { accepted: true as const, discountPct: pct, merchantMinimumUsd: minimum, discountUsd: Math.round((Number(inv.fiat_amount) - minimum) * 100) / 100 };
+          })()
+        : { accepted: false as const },
       transactions: (txs ?? []).map((t) => ({
         hash: t.tx_hash,
         amount: t.amount == null ? null : Number(t.amount),

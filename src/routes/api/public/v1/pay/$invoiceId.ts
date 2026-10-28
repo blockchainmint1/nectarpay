@@ -65,6 +65,11 @@ export const Route = createFileRoute("/api/public/v1/pay/$invoiceId")({
               : null,
             // Whatever the merchant has already pinned (often null for a
             // fresh tap invoice — the wallet picks below).
+            // eGiving community split: whether this merchant accepts it, the
+            // merchant share required, and (after payment) the tag + discount.
+            egiving: "egiving" in result ? result.egiving : { accepted: false },
+            payment_program: "paymentProgram" in inv ? inv.paymentProgram : null,
+            discount_usd: "discountUsd" in inv ? inv.discountUsd : null,
             chain: inv.chain,
             token_symbol: inv.tokenSymbol,
             crypto_amount: inv.cryptoAmount,
