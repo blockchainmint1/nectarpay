@@ -35,8 +35,8 @@ export const Route = createFileRoute("/api/admin/signature-backfill")({
         if (roleError || !adminRole) return json({ error: "Forbidden" }, 403);
 
         const { ensureSignatureFile } = await import("@/lib/sale-signature.server");
+        const skipped = new Set<string>();
         let converted = 0;
-        let failed = 0;
         for (let pass = 0; pass < 40; pass += 1) {
           const { data: rows, error: rowsError } = await supabaseAdmin
             .from("invoices")
@@ -45,18 +45,17 @@ export const Route = createFileRoute("/api/admin/signature-backfill")({
             .not("signature_data_url", "is", null)
             .limit(20);
           if (rowsError) return json({ error: rowsError.message }, 500);
-          if (!rows?.length) break;
-          for (const row of rows) {
+          const pending = (rows ?? []).filter((row) => !skipped.has(row.id));
+          if (!pending.length) break;
+          for (const row of pending) {
             const path = await ensureSignatureFile({ id: row.id, signature_data_url: row.signature_data_url });
+            // A sale whose file could not be written keeps its inline copy for a
+            // later run; nothing is removed here.
             if (path) converted += 1;
-            else {
-              failed += 1;
-              // Leave the row alone so the next run retries it.
-              await supabaseAdmin.from("invoices").update({ signature_path: "" }).eq("id", row.id).neq("signature_path", "");
-            }
+            else skipped.add(row.id);
           }
         }
-        return json({ converted, failed });
+        return json({ converted, skipped: skipped.size });
       },
     },
   },
