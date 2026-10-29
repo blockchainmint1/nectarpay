@@ -1,6 +1,7 @@
 // Server-only: reads the public merchant directory through the publishable key.
 // The SQL function returns a safe projection (city-pin stores carry no name/contact).
 import { createClient } from "@supabase/supabase-js";
+import { EGIVING_DISCOUNT_PCT } from "@/lib/egiving";
 
 export type DirectoryStore = {
   id: string;
@@ -24,12 +25,14 @@ export type DirectoryStore = {
   website: string | null;
   hours: string | null;
   accepts: string[];
+  egiving: { accepted: boolean; discount_pct: number | null };
   updated_at: string;
 };
 
 export type DirectoryFeed = {
   generated_at: string;
   since: string | null;
+  count: number;
   stores: DirectoryStore[];
   removed: { id: string; status: "closed" | "unlisted"; removed_at: string }[];
 };
@@ -54,8 +57,17 @@ export async function loadDirectory(since: string | null): Promise<DirectoryFeed
   // Only stores that can actually take a payment belong in a "where to spend" directory.
   const alias: Record<string, string> = { TRON: "TRX", SOL: "SOL" };
   feed.stores = (feed.stores ?? [])
-    .map((s) => ({ ...s, accepts: [...new Set(s.accepts.map((c) => alias[c] ?? c))].sort() }))
+    .map((s) => {
+      const accepted = s.egiving?.accepted === true;
+      return {
+        ...s,
+        accepts: [...new Set(s.accepts.map((c) => alias[c] ?? c))].sort(),
+        // The discount is fixed in code; never trust the stored per-store value.
+        egiving: { accepted, discount_pct: accepted ? EGIVING_DISCOUNT_PCT : null },
+      };
+    })
     .filter((s) => s.accepts.length > 0);
   feed.removed = feed.removed ?? [];
+  feed.count = feed.stores.length;
   return feed;
 }
