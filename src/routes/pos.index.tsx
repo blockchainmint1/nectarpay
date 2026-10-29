@@ -1034,6 +1034,23 @@ function PaidScreen({
   const [printState, setPrintState] = useState<"idle" | "printing" | "done" | "error">("idle");
   const [printErr, setPrintErr] = useState<string | null>(null);
 
+  // Android's hardware back button on the paid screen starts a new sale.
+  useEffect(() => {
+    let remove: (() => void) | undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { Capacitor } = await import("@capacitor/core");
+        if (!Capacitor.isNativePlatform()) return;
+        const { App } = await import("@capacitor/app");
+        const handle = await App.addListener("backButton", () => onDone());
+        if (cancelled) handle.remove();
+        else remove = () => handle.remove();
+      } catch { /* not native */ }
+    })();
+    return () => { cancelled = true; remove?.(); };
+  }, [onDone]);
+
   useEffect(() => {
     let cancelled = false;
     void NectarPrinter.isAvailable().then((ok) => { if (!cancelled) setPrinterAvailable(ok); });
