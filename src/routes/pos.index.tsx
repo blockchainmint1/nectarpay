@@ -1056,8 +1056,7 @@ function PaidScreen({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-4 py-4 pb-10 text-center">
-      <div className="my-auto" aria-hidden />
-      <div className="flex w-full flex-col items-center">
+      <div className="my-auto flex w-full flex-col items-center">
       <div className="flex size-20 items-center justify-center rounded-full border-2 border-amber-400/40 bg-amber-400/15">
         <svg viewBox="0 0 24 24" className="size-10 text-amber-300" fill="none" stroke="currentColor" strokeWidth="3">
           <path d="M5 12l5 5L20 7" strokeLinecap="round" strokeLinejoin="round" />
@@ -1110,6 +1109,7 @@ function PaidScreen({
         </button>
       </div>
       {printErr && <p className="mt-2 text-[10px] text-red-400">{printErr}</p>}
+      </div>
     </div>
   );
 }
