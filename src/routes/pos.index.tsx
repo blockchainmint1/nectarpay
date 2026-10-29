@@ -1004,7 +1004,7 @@ function buildReceiptPayload(
 }
 
 function PaidScreen({
-  status, onDone, receiptCfg, subtotalCents, taxCents, tipCents,
+  status, onDone, receiptCfg, subtotalCents, taxCents, tipCents, signature,
 }: {
   status: InvoiceStatus;
   onDone: () => void;
@@ -1012,6 +1012,7 @@ function PaidScreen({
   subtotalCents: number;
   taxCents: number;
   tipCents: number;
+  signature: { dataUrl: string; base64: string } | null;
 }) {
   const [printerAvailable, setPrinterAvailable] = useState(false);
   const [printState, setPrintState] = useState<"idle" | "printing" | "done" | "error">("idle");
@@ -1027,6 +1028,8 @@ function PaidScreen({
     setPrintState("printing"); setPrintErr(null);
     try {
       await NectarPrinter.printReceipt(buildReceiptPayload(status, receiptCfg, subtotalCents, taxCents, tipCents));
+      // The customer's signature comes off straight after the receipt.
+      if (signature) await NectarPrinter.printBitmap(signature.base64);
       await NectarPrinter.feed(3);
       setPrintState("done");
     } catch (e) {
