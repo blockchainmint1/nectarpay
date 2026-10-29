@@ -12,6 +12,7 @@ import { EVM_CHAIN_LABEL, evmChainsForStable } from "@/lib/chains/networks";
 import { qrToDataURL } from "@/lib/qr";
 import { buildPaymentUri } from "@/lib/payment-uri";
 import { NectarPrinter, NectarNfc, isNative, Tangem, type ReceiptPayload, type ReceiptLine } from "@/lib/pos-native";
+import { parseSignatureDataUrl } from "@/lib/sale-signature";
 import { useServerFn } from "@tanstack/react-start";
 import { startTangemPayment, submitTangemPayment } from "@/lib/tangem-pay.functions";
 import { Checkbox } from "@/components/ui/checkbox";
