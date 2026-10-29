@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { useReportData, money } from "@/components/reports/report-context";
+import { useReportTimeZone } from "@/components/reports/report-context";
+import { formatDate, formatDateTime } from "@/lib/timezone";
 import { CsvButton, Empty, Panel, Tile } from "@/components/reports/report-ui";
 
 export const Route = createFileRoute("/_authenticated/reports/tax-tips")({
@@ -15,6 +17,7 @@ export const Route = createFileRoute("/_authenticated/reports/tax-tips")({
 
 function TaxTipsReport() {
   const { data, isLoading, error } = useReportData();
+  const tz = useReportTimeZone();
 
   if (isLoading) return <Empty>Crunching your numbers…</Empty>;
   if (error || !data) return <Empty>We couldn't load this report.</Empty>;
@@ -89,7 +92,7 @@ function TaxTipsReport() {
                 {taxTips.map((r) => (
                   <tr key={r.id} className="border-b border-border/60 last:border-0">
                     <td className="py-2.5 pr-4 whitespace-nowrap">
-                      {new Date(r.date).toLocaleString()}
+                      {formatDateTime(r.date, tz)}
                     </td>
                     <td className="py-2.5 pr-4 text-muted-foreground">{r.store}</td>
                     <td className="py-2.5 pr-4 text-right font-mono tabular-nums">
