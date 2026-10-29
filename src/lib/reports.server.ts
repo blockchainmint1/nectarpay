@@ -4,6 +4,7 @@
 // the browser never downloads raw invoice lists. All reads go through the
 // caller's Supabase client, so RLS + store-team access decide what is visible.
 
+import { safeTimeZone, zonedParts } from "./timezone";
 import type { ReportBundle, ReportFilters, SeriesPoint, Totals } from "./reports.types";
 
 const PAID = new Set(["confirmed", "overpaid"]);
@@ -136,6 +137,7 @@ export async function computeReports(
 ): Promise<ReportBundle> {
   const from = filters.from;
   const to = filters.to;
+  const tz = safeTimeZone(filters.timeZone);
   const fromMs = new Date(from).getTime();
   const toMs = new Date(to).getTime();
   const days = Math.max(1, Math.round((toMs - fromMs) / 86_400_000));
@@ -165,18 +167,18 @@ export async function computeReports(
   const hours = Array.from({ length: 24 }, (_, hour) => ({ hour, volume: 0, count: 0 }));
 
   for (const r of paid) {
-    const d = new Date(r.created_at);
-    const bucket = grain === "month" ? r.created_at.slice(0, 7) : r.created_at.slice(0, 10);
+    const zp = zonedParts(r.created_at, tz);
+    const bucket = grain === "month" ? zp.month : zp.date;
     const amt = Number(r.fiat_amount ?? 0);
     const cur = seriesMap.get(bucket) ?? { bucket, volume: 0, count: 0 };
     cur.volume += amt;
     cur.count += 1;
     seriesMap.set(bucket, cur);
 
-    const wd = weekday[d.getDay()]!;
+    const wd = weekday[zp.weekday]!;
     wd.volume += amt;
     wd.count += 1;
-    const hr = hours[d.getHours()]!;
+    const hr = hours[zp.hour]!;
     hr.volume += amt;
     hr.count += 1;
   }
@@ -352,7 +354,7 @@ export async function computeReports(
   // ---- tax / accounting --------------------------------------------------
   const taxMap = new Map<string, { month: string; currency: string; gross: number; tax: number; count: number }>();
   for (const r of paid) {
-    const month = r.created_at.slice(0, 7);
+    const month = zonedParts(r.created_at, tz).month;
     const cur = r.fiat_currency || "USD";
     const key = `${month}:${cur}`;
     const bps = Number(r.stores?.tax_bps ?? 0);
@@ -416,7 +418,7 @@ export async function computeReports(
     if (r.payment_program !== "egiving") continue;
     const total = Number(r.fiat_amount ?? 0);
     const discount = Number(r.discount_usd ?? 0);
-    const month = r.created_at.slice(0, 7);
+    const month = zonedParts(r.created_at, tz).month;
     const key = `${month}|${r.store_id}|${r.fiat_currency}`;
     const m = egMonthly.get(key) ?? { month, storeId: r.store_id, store: r.stores?.name ?? "Store", currency: r.fiat_currency, count: 0, sales: 0, discount: 0, received: 0 };
     m.count += 1; m.sales += total; m.discount += discount; m.received += total - discount;
