@@ -1658,6 +1658,7 @@ export type Database = {
           onboarding_completed_at: string | null
           onboarding_step: string | null
           terminal_order_clicked_at: string | null
+          timezone: string | null
           updated_at: string
           user_id: string
         }
@@ -1673,6 +1674,7 @@ export type Database = {
           onboarding_completed_at?: string | null
           onboarding_step?: string | null
           terminal_order_clicked_at?: string | null
+          timezone?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1688,6 +1690,7 @@ export type Database = {
           onboarding_completed_at?: string | null
           onboarding_step?: string | null
           terminal_order_clicked_at?: string | null
+          timezone?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -2037,6 +2040,7 @@ export type Database = {
           receipt_tax_id: string | null
           tax_bps: number
           tax_mode: string
+          timezone: string | null
           tsd_instant: boolean
           tsd_instant_max_usd: number | null
           updated_at: string
@@ -2119,6 +2123,7 @@ export type Database = {
           receipt_tax_id?: string | null
           tax_bps?: number
           tax_mode?: string
+          timezone?: string | null
           tsd_instant?: boolean
           tsd_instant_max_usd?: number | null
           updated_at?: string
@@ -2201,6 +2206,7 @@ export type Database = {
           receipt_tax_id?: string | null
           tax_bps?: number
           tax_mode?: string
+          timezone?: string | null
           tsd_instant?: boolean
           tsd_instant_max_usd?: number | null
           updated_at?: string
