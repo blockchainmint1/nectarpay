@@ -40,6 +40,7 @@ const SAMPLE = `{
     "website": "https://example.com",
     "hours": "Mon–Sat 11am–9pm",
     "accepts": ["BTC", "TSD", "TXC", "USDC"],
+    "egiving": { "accepted": true, "discount_pct": 10 },
     "updated_at": "2026-10-27T10:57:57Z"
   }],
   "removed": [
