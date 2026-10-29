@@ -972,34 +972,46 @@ function buildReceiptPayload(
 ): ReceiptPayload {
   const cur = status.currency || "USD";
   const totalCents = Math.round(status.fiat_amount * 100);
+  // The terminal's printer only starts a new line when told to, so every
+  // plain text line ends with "\n" and dividers are sent as text rows.
   const lines: ReceiptLine[] = [];
-  if (cfg.business_name) lines.push({ text: cfg.business_name, bold: true, size: 1 });
-  if (cfg.address) lines.push({ text: cfg.address });
-  if (cfg.tax_id) lines.push({ text: `Tax ID: ${cfg.tax_id}` });
-  lines.push({ text: new Date(status.paid_at ?? Date.now()).toLocaleString() });
-  lines.push({ divider: true });
+  const text = (t: string, extra: Partial<ReceiptLine> = {}) => lines.push({ text: `${t}\n`, ...extra });
+  const dots = () => text("................................");
+  if (cfg.address) text(cfg.address);
+  if (cfg.tax_id) text(`Tax ID: ${cfg.tax_id}`);
+  text(new Date(status.paid_at ?? Date.now()).toLocaleString());
+  dots();
+  dots();
   if (subtotalCents > 0 && (taxCents > 0 || tipCents > 0)) {
     lines.push({ text: "Subtotal", right: fmt(subtotalCents, cur) });
     if (taxCents > 0) lines.push({ text: "Tax", right: fmt(taxCents, cur) });
     if (tipCents > 0) lines.push({ text: "Tip", right: fmt(tipCents, cur) });
-    lines.push({ divider: true });
   }
   lines.push({ text: "TOTAL", right: fmt(totalCents, cur), bold: true });
   const eg = egivingInfo(status);
+  const asset = (status.token_symbol || (status.chain === "txc" ? "TSD" : status.chain || "")).toUpperCase();
   if (eg) {
-    lines.push({ text: `eGiving community discount (${eg.pct}%)`, right: `-${fmt(eg.discountCents, cur)}` });
-    lines.push({ text: "Received", right: `${fmt(eg.receivedCents, cur)} TSD` });
-    lines.push({ text: "Status", right: "PAID IN FULL", bold: true });
-    lines.push({ text: "Church and program contributions are non-refundable." });
+    lines.push({ text: `Discount (${eg.pct}%)`, right: `-${fmt(eg.discountCents, cur)}` });
+    lines.push({ text: "Received", right: `${fmt(eg.receivedCents, cur)} ${asset}` });
+  } else {
+    lines.push({ text: "Received", right: fmt(totalCents, cur) });
   }
-  lines.push({ divider: true });
-  if (status.chain) lines.push({ text: `Paid via ${status.chain.toUpperCase()}` });
-  if (status.tx_hash) lines.push({ text: "Tx", right: status.tx_hash.slice(0, 10) + "…" });
-  lines.push({ text: `Invoice ${status.id.slice(0, 8)}` });
+  lines.push({ text: "Status", right: "PAID IN FULL", bold: true });
+  if (eg) text("Church and program contributions are non-refundable.");
+  dots();
+  dots();
+  if (status.chain) {
+    const chainName = status.chain.toUpperCase();
+    text(asset && asset !== chainName ? `Paid via ${asset} on ${chainName}` : `Paid via ${chainName}`);
+  }
+  if (status.tx_hash) text(`TxID: ${status.tx_hash}`);
+  text(`Invoice #${status.id.slice(0, 8)}`);
+  text("");
+  text("     THANK YOU!", { bold: true, size: 40 });
   return {
     header: cfg.business_name ?? undefined,
     lines,
-    footer: cfg.footer ?? "Thank you!",
+    footer: cfg.footer ? `${cfg.footer}\n` : undefined,
   };
 }
 
