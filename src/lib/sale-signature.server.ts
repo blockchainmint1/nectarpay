@@ -8,6 +8,7 @@ import {
   base64FromBytes,
   parseSignatureDataUrl,
   signatureObjectPath,
+  toArrayBuffer,
   type ParsedSignature,
   type SignatureRow,
 } from "@/lib/sale-signature";
@@ -24,7 +25,7 @@ export async function storeSaleSignature(invoiceId: string, signature: ParsedSig
     const { storage } = await adminClient();
     const { error } = await storage
       .from(SIGNATURE_BUCKET)
-      .upload(path, new Blob([signature.bytes], { type: signature.mime }), {
+      .upload(path, new Blob([toArrayBuffer(signature.bytes)], { type: signature.mime }), {
         contentType: signature.mime,
         upsert: true,
       });

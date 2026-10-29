@@ -47,6 +47,11 @@ describe("captured customer signatures", () => {
     const bytes = new Uint8Array([0, 1, 2, 253, 254, 255, 42, 128, 64]);
     expect(Array.from(bytesFromBase64(base64FromBytes(bytes)) ?? [])).toEqual(Array.from(bytes));
   });
+  it("copies a decoded signature into a buffer of exactly its own size", () => {
+    const decoded = bytesFromBase64(base64FromBytes(new Uint8Array([1, 2, 3, 4])));
+    expect(decoded).not.toBeNull();
+    expect(toArrayBuffer(decoded!).byteLength).toBe(4);
+  });
   it("counts a sale as signed whether the image is a file or an inline copy", () => {
     expect(hasStoredSignature({ id: "x", signature_path: "x.png" })).toBe(true);
     expect(hasStoredSignature({ id: "x", signature_data_url: pngUrl })).toBe(true);

@@ -72,6 +72,13 @@ export function base64FromBytes(bytes: Uint8Array): string {
   return out;
 }
 
+/** Copies a (possibly sliced) view into its own exact-length ArrayBuffer. */
+export function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const copy = new Uint8Array(bytes.length);
+  copy.set(bytes);
+  return copy.buffer;
+}
+
 function hasMagic(bytes: Uint8Array, magic: number[]): boolean {
   return magic.every((byte, index) => bytes[index] === byte);
 }
