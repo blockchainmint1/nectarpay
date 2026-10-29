@@ -167,6 +167,8 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
   const [experience, setExperience] = useState<Experience>(DEFAULT_EXPERIENCE);
   const [storeName, setStoreName] = useState<string | null>(null);
   const [receiptCfg, setReceiptCfg] = useState<ReceiptConfig>(DEFAULT_RECEIPT);
+  // The signature the customer just drew, kept for this sale's print + preview.
+  const [signature, setSignature] = useState<{ dataUrl: string; base64: string } | null>(null);
 
   const taxCents = Math.round((subtotalCents * settings.taxBps) / 10_000);
   const tipCents = customTipCents !== null ? customTipCents : Math.round((subtotalCents * tipBps) / 10_000);
@@ -300,6 +302,7 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
     setInvoice(null); setStatus(null); setErr(null);
     setFinalTipCents(0);
     setTappedUid(null); setCardSent(false);
+    setSignature(null);
     setScreen("amount");
   };
 
@@ -362,6 +365,8 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
           <SignatureScreen
             onSkip={() => setScreen(experience.email_receipt_enabled ? "email" : "paid")}
             onSubmit={async (dataUrl) => {
+              const parsed = parseSignatureDataUrl(dataUrl);
+              if (parsed) setSignature({ dataUrl, base64: parsed.base64 });
               try { await signedJson(creds, `/api/public/v1/terminals/invoice/${invoice.id}/receipt`, { method: "POST", body: { signature_data_url: dataUrl } }); } catch { /* non-fatal */ }
               setScreen(experience.email_receipt_enabled ? "email" : "paid");
             }}
@@ -385,6 +390,7 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
             subtotalCents={subtotalCents}
             taxCents={taxCents}
             tipCents={finalTipCents}
+            signature={signature}
           />
         )}
         {screen === "cancelled" && <DoneScreen label="PAYMENT CANCELLED" onDone={reset} />}
