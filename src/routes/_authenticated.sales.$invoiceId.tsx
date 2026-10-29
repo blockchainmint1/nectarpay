@@ -104,6 +104,10 @@ function SaleDetailPage() {
             <Row label="Expires" value={new Date(inv.expires_at).toLocaleString()} />
           </div>
 
+          {sig.data?.available && sig.data.dataUrl && (
+            <SignatureCard dataUrl={sig.data.dataUrl} fileName={sig.data.fileName ?? "signature.png"} />
+          )}
+
           <div className="mt-6">
             <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               On-chain transactions
