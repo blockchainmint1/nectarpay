@@ -1034,6 +1034,23 @@ function PaidScreen({
   const [printState, setPrintState] = useState<"idle" | "printing" | "done" | "error">("idle");
   const [printErr, setPrintErr] = useState<string | null>(null);
 
+  // Android's hardware back button on the paid screen starts a new sale.
+  useEffect(() => {
+    let remove: (() => void) | undefined;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { Capacitor } = await import("@capacitor/core");
+        if (!Capacitor.isNativePlatform()) return;
+        const { App } = await import("@capacitor/app");
+        const handle = await App.addListener("backButton", () => onDone());
+        if (cancelled) handle.remove();
+        else remove = () => handle.remove();
+      } catch { /* not native */ }
+    })();
+    return () => { cancelled = true; remove?.(); };
+  }, [onDone]);
+
   useEffect(() => {
     let cancelled = false;
     void NectarPrinter.isAvailable().then((ok) => { if (!cancelled) setPrinterAvailable(ok); });
@@ -1055,7 +1072,8 @@ function PaidScreen({
   };
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-4 py-4 text-center">
+    <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-4 py-4 pb-10 text-center">
+      <div className="my-auto flex w-full flex-col items-center">
       <div className="flex size-20 items-center justify-center rounded-full border-2 border-amber-400/40 bg-amber-400/15">
         <svg viewBox="0 0 24 24" className="size-10 text-amber-300" fill="none" stroke="currentColor" strokeWidth="3">
           <path d="M5 12l5 5L20 7" strokeLinecap="round" strokeLinejoin="round" />
@@ -1092,20 +1110,23 @@ function PaidScreen({
           </div>
         </div>
       )}
-      {printerAvailable && (
-        <button
-          onClick={onPrint}
-          disabled={printState === "printing"}
-          className="mt-6 flex h-12 items-center gap-2 rounded-lg border border-amber-400/40 bg-amber-400/10 px-6 text-xs font-bold tracking-widest text-amber-200 hover:bg-amber-400/20 disabled:opacity-50"
-        >
-          <Printer className="size-4" />
-          {printState === "printing" ? "PRINTING…" : printState === "done" ? "PRINT AGAIN" : "PRINT RECEIPT"}
+      <div className="mt-6 flex w-full max-w-sm gap-2">
+        {printerAvailable && (
+          <button
+            onClick={onPrint}
+            disabled={printState === "printing"}
+            className="flex h-12 flex-1 items-center justify-center gap-2 rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 text-xs font-bold tracking-widest text-amber-200 hover:bg-amber-400/20 disabled:opacity-50"
+          >
+            <Printer className="size-4" />
+            {printState === "printing" ? "PRINTING…" : printState === "done" ? "PRINT AGAIN" : "PRINT RECEIPT"}
+          </button>
+        )}
+        <button onClick={onDone} className="h-12 flex-1 rounded-lg bg-amber-500 px-3 text-sm font-bold tracking-widest text-black hover:bg-amber-400">
+          NEW SALE
         </button>
-      )}
+      </div>
       {printErr && <p className="mt-2 text-[10px] text-red-400">{printErr}</p>}
-      <button onClick={onDone} className="mt-4 h-12 rounded-lg bg-amber-500 px-10 text-sm font-bold tracking-widest text-black hover:bg-amber-400">
-        NEW SALE
-      </button>
+      </div>
     </div>
   );
 }
