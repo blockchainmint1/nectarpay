@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, UsersRound, Store as StoreIcon, Receipt, BookOpen, Radar, LogOut, ArrowLeft, Smartphone, SearchCheck, Zap } from "lucide-react";
+import { LayoutDashboard, UsersRound, Store as StoreIcon, Receipt, BookOpen, Radar, LogOut, ArrowLeft, Smartphone, SearchCheck, Zap, HeartHandshake } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -44,8 +44,7 @@ function AdminLayout() {
           <NavItem to="/admin/crm" icon={<UsersRound className="h-4 w-4" />}>CRM</NavItem>
           <NavItem to="/admin/merchants" icon={<StoreIcon className="h-4 w-4" />}>Merchants</NavItem>
           <NavItem to="/admin/setup" icon={<StoreIcon className="h-4 w-4" />}>Unfinished setups</NavItem>
-          <NavItem to="/admin/egiving" icon={<StoreIcon className="h-4 w-4" />}>eGiving recipients</NavItem>
-          <NavItem to="/admin/card-partners" icon={<Zap className="h-4 w-4" />}>Giving partners</NavItem>
+          <NavItem to="/admin/give" icon={<HeartHandshake className="h-4 w-4" />}>Give</NavItem>
           <NavItem to="/admin/invoices" icon={<Receipt className="h-4 w-4" />}>Invoices</NavItem>
           <NavItem to="/admin/verify" icon={<SearchCheck className="h-4 w-4" />}>Verify address</NavItem>
           <NavItem to="/admin/lightning" icon={<Zap className="h-4 w-4" />}>Lightning</NavItem>
