@@ -1,3 +1,4 @@
+import { TimeZoneSelect } from "@/components/timezone-select";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -31,6 +32,7 @@ type Form = {
   business_phone: string;
   website: string;
   business_email: string;
+  timezone: string | null;
   business_presence: Presence;
   business_category: string;
   business_description: string;
@@ -39,7 +41,7 @@ type Form = {
 
 const EMPTY: Form = {
   name: "", listed: false, visibility: "city_only", business_address: "", business_city: "",
-  business_region: "", business_country: "", business_postal_code: "", business_hours: "", business_phone: "", website: "", business_email: "", business_presence: "physical",
+  business_region: "", business_country: "", business_postal_code: "", business_hours: "", business_phone: "", website: "", business_email: "", timezone: null, business_presence: "physical",
   business_category: "", business_description: "", business_logo_url: "",
 };
 
@@ -55,7 +57,7 @@ export function StoreInfoForm({ storeId, storeSlug }: { storeId: string; storeSl
     queryFn: async () => {
       const { data, error } = await supabase
         .from("stores")
-        .select("id, name, listing_visibility, business_address, business_city, business_region, business_country, business_postal_code, business_hours, business_phone, website, business_email, business_presence, business_category, business_description, business_logo_url")
+        .select("id, name, listing_visibility, business_address, business_city, business_region, business_country, business_postal_code, business_hours, business_phone, website, business_email, timezone, business_presence, business_category, business_description, business_logo_url")
         .eq("id", storeId)
         .maybeSingle();
       if (error) throw error;
@@ -79,6 +81,7 @@ export function StoreInfoForm({ storeId, storeSlug }: { storeId: string; storeSl
       business_phone: store.business_phone ?? "",
       website: store.website ?? "",
       business_email: store.business_email ?? "",
+      timezone: store.timezone ?? null,
       business_presence: (store.business_presence as Presence) ?? "physical",
       business_category: store.business_category ?? "",
       business_description: store.business_description ?? "",
@@ -103,6 +106,7 @@ export function StoreInfoForm({ storeId, storeSlug }: { storeId: string; storeSl
           business_phone: form.business_phone || null,
           website: form.website.trim() ? (/^https?:\/\//i.test(form.website.trim()) ? form.website.trim() : `https://${form.website.trim()}`) : null,
           business_email: form.business_email.trim() || null,
+          timezone: form.timezone,
           business_presence: form.business_presence,
           business_category: form.business_category || null,
           business_description: form.business_description || null,
@@ -247,6 +251,11 @@ export function StoreInfoForm({ storeId, storeSlug }: { storeId: string; storeSl
             <div>
               <Label htmlFor="si-email">Public email</Label>
               <Input id="si-email" type="email" value={form.business_email} onChange={(e) => set("business_email", e.target.value)} placeholder="hello@example.com" />
+            </div>
+            <div>
+              <Label htmlFor="si-tz">Store timezone</Label>
+              <TimeZoneSelect id="si-tz" value={form.timezone} onChange={(v) => set("timezone", v)} autoLabel="Not set (use each viewer's timezone)" />
+              <p className="mt-1 text-xs text-muted-foreground">Decides when this store's business day starts and ends on reports.</p>
             </div>
             <div>
               <Label>Where do you sell?</Label>
