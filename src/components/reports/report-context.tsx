@@ -5,6 +5,8 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 
 import { getReportBundle } from "@/lib/reports.functions";
 import type { ReportBundle } from "@/lib/reports.types";
+import { addDays, isValidTimeZone, zonedParts, zonedTimeToUtc } from "@/lib/timezone";
+import { useMyTimeZone, useStoreTimeZones } from "@/lib/use-timezone";
 
 export type RangeKey = "today" | "7d" | "30d" | "90d" | "ytd" | "custom";
 
@@ -31,36 +33,44 @@ export function validateReportSearch(search: Record<string, unknown>): ReportSea
   };
 }
 
-export function resolveRange(s: ReportSearch): { from: string; to: string } {
-  const now = new Date();
-  const end = new Date(now);
-  end.setHours(23, 59, 59, 999);
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
-
+export function resolveRange(s: ReportSearch, tz = "UTC"): { from: string; to: string } {
+  const today = zonedParts(new Date(), tz).date;
+  let startDay = today;
+  let endDay = today;
   switch (s.range) {
     case "today":
       break;
     case "7d":
-      start.setDate(start.getDate() - 6);
+      startDay = addDays(today, -6);
       break;
     case "90d":
-      start.setDate(start.getDate() - 89);
+      startDay = addDays(today, -89);
       break;
     case "ytd":
-      start.setMonth(0, 1);
+      startDay = `${today.slice(0, 4)}-01-01`;
       break;
     case "custom":
-      return {
-        from: s.from ? new Date(`${s.from}T00:00:00`).toISOString() : new Date(start).toISOString(),
-        to: s.to ? new Date(`${s.to}T23:59:59.999`).toISOString() : end.toISOString(),
-      };
+      startDay = s.from || today;
+      endDay = s.to || today;
+      break;
     case "30d":
     default:
-      start.setDate(start.getDate() - 29);
+      startDay = addDays(today, -29);
       break;
   }
-  return { from: start.toISOString(), to: end.toISOString() };
+  return {
+    from: zonedTimeToUtc(startDay, tz).toISOString(),
+    to: new Date(zonedTimeToUtc(addDays(endDay, 1), tz).getTime() - 1).toISOString(),
+  };
+}
+
+/** Business-day zone for reports: the chosen store's zone, else the viewer's. */
+export function useReportTimeZone(): string {
+  const search = useReportSearch();
+  const { zone } = useMyTimeZone();
+  const { data: storeZones } = useStoreTimeZones();
+  const storeZone = search.store ? storeZones?.[search.store] : null;
+  return isValidTimeZone(storeZone) ? storeZone : zone;
 }
 
 export function useReportSearch() {
@@ -75,11 +85,12 @@ export function useReportNavigate() {
 
 export function useReportData() {
   const search = useReportSearch();
-  const range = useMemo(() => resolveRange(search), [search]);
+  const tz = useReportTimeZone();
+  const range = useMemo(() => resolveRange(search, tz), [search, tz]);
   const fetchBundle = useServerFn(getReportBundle);
 
   return useQuery<ReportBundle>({
-    queryKey: ["report-bundle", search.store ?? "all", search.chain ?? "all", range.from, range.to, search.compare],
+    queryKey: ["report-bundle", search.store ?? "all", search.chain ?? "all", range.from, range.to, search.compare, tz],
     queryFn: () =>
       fetchBundle({
         data: {
@@ -88,6 +99,7 @@ export function useReportData() {
           from: range.from,
           to: range.to,
           compare: search.compare,
+          timeZone: tz,
         },
       }) as Promise<ReportBundle>,
     staleTime: 60_000,

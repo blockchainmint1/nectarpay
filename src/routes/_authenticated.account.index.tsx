@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { closeMyStore, closeMyAccount } from "@/lib/account-self.functions";
 import { AccountSecurity } from "@/components/account-security";
+import { AccountTimeZone } from "@/components/account-timezone";
 import { openHmeConnection } from "@/lib/hme-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -110,6 +111,8 @@ function AccountPage() {
       </p>
 
       <AccountSecurity />
+
+      <AccountTimeZone />
 
       <section className="mt-8 border-t border-border pt-5">
         <h2 className="font-semibold">Honest Money sign-in</h2>

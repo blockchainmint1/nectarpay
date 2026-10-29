@@ -1,0 +1,10 @@
+ALTER TABLE public.stores ADD COLUMN IF NOT EXISTS timezone text;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS timezone text;
+ALTER TABLE public.stores ADD CONSTRAINT stores_timezone_len CHECK (timezone IS NULL OR char_length(timezone) <= 64);
+ALTER TABLE public.profiles ADD CONSTRAINT profiles_timezone_len CHECK (timezone IS NULL OR char_length(timezone) <= 64);
+COMMENT ON COLUMN public.stores.timezone IS 'IANA zone deciding the store business day for reports; null = owner/device default';
+COMMENT ON COLUMN public.profiles.timezone IS 'IANA zone or UTC for showing times to this user; null = device timezone';
+GRANT SELECT (timezone) ON public.stores TO authenticated;
+GRANT UPDATE (timezone) ON public.stores TO authenticated;
+GRANT INSERT (timezone) ON public.stores TO authenticated;
+GRANT SELECT (timezone), UPDATE (timezone) ON public.profiles TO authenticated;

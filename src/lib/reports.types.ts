@@ -6,6 +6,7 @@ export type ReportFilters = {
   from: string; // ISO
   to: string;   // ISO
   compare?: boolean;
+  timeZone?: string | null; // IANA zone for business days
 };
 
 export type Totals = {

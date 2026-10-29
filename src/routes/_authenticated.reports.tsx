@@ -17,7 +17,7 @@ import {
 import {
   validateReportSearch,
   useReportSearch,
-  useReportNavigate,
+  useReportNavigate, useReportTimeZone,
   type RangeKey,
 } from "@/components/reports/report-context";
 
@@ -58,6 +58,7 @@ const RANGES: Array<{ v: RangeKey; l: string }> = [
 function ReportsLayout() {
   const search = useReportSearch();
   const setSearch = useReportNavigate();
+  const tz = useReportTimeZone();
 
   const { data: stores } = useQuery({
     queryKey: ["reports-stores"],
@@ -74,6 +75,9 @@ function ReportsLayout() {
         <h1 className="text-2xl font-semibold tracking-tight">Reports</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Everything your books, your accountant, and your gut need to know.
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Days and times in {tz === "UTC" ? "UTC" : tz.replace(/_/g, " ")}. Set a store's timezone in its Store Info, or yours on the Account page.
         </p>
       </div>
 
