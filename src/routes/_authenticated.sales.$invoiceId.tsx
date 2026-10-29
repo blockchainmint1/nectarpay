@@ -197,7 +197,7 @@ function SignatureCard({ dataUrl, fileName }: { dataUrl: string; fileName: strin
       <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         <PenLine className="h-4 w-4" /> Customer signature
       </h2>
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-border p-4">
+      <div className="mt-2 flex flex-wrap items-center gap-6 rounded-lg border border-border p-4">
         <div className="rounded-md bg-paper p-3">
           <img src={dataUrl} alt="Customer signature" className="h-24 w-auto max-w-full object-contain" />
         </div>
