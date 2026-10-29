@@ -56,6 +56,7 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
         'website', CASE WHEN b.is_full THEN b.website END,
         'hours', CASE WHEN b.is_full THEN b.business_hours END,
         'accepts', COALESCE(to_jsonb(co.list), '[]'::jsonb),
+        'egiving', jsonb_build_object('accepted', COALESCE(b.egiving_enabled, false) AND 'TSD' = ANY(COALESCE(co.list, '{}')), 'discount_pct', CASE WHEN COALESCE(b.egiving_enabled, false) AND 'TSD' = ANY(COALESCE(co.list, '{}')) THEN b.egiving_discount_pct END),
         'updated_at', b.changed_at
       ) ORDER BY b.changed_at DESC)
       FROM base b
