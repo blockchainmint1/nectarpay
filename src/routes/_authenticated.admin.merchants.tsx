@@ -4,6 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Check, X, ChevronRight, ChevronDown } from "lucide-react";
 import { listAdminMerchants, updateAdminStore, setAccountActive } from "@/lib/admin.functions";
+import { SortHeader } from "@/components/admin/sort-header";
+import { sortRows, toggleSort, type SortAccessors, type SortState } from "@/lib/table-sort";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,6 +25,19 @@ export const Route = createFileRoute("/_authenticated/admin/merchants")({
 
 type Merchant = Awaited<ReturnType<typeof listAdminMerchants>>[number];
 type StoreRow = Merchant["stores"][number];
+
+type MerchantSortKey = "name" | "plan" | "signed_up" | "expires" | "markets" | "stores" | "tx" | "sales";
+
+const MERCHANT_SORT: SortAccessors<Merchant, MerchantSortKey> = {
+  name: (m) => m.email ?? m.display_name ?? m.owner_id,
+  plan: (m) => m.plan_id,
+  signed_up: (m) => (m.signed_up_at ? new Date(m.signed_up_at) : null),
+  expires: (m) => (m.expires_at ? new Date(m.expires_at) : null),
+  markets: (m) => m.markets.join(", "),
+  stores: (m) => m.store_count,
+  tx: (m) => m.tx_count,
+  sales: (m) => m.total_sales,
+};
 
 function fmtMoney(amount: number, currency = "USD") {
   return new Intl.NumberFormat(undefined, {
