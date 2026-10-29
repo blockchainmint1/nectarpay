@@ -55,6 +55,7 @@ function AdminMerchants() {
   const [editing, setEditing] = useState<string | null>(null);
   const [draft, setDraft] = useState<{ market: string; rep: string }>({ market: "", rep: "" });
   const [q, setQ] = useState("");
+  const [sort, setSort] = useState<SortState<MerchantSortKey>>({ key: "signed_up", dir: "desc" });
   const [target, setTarget] = useState<Merchant | null>(null);
   const [reason, setReason] = useState("");
   const deactivateFn = useServerFn(setAccountActive);
@@ -97,6 +98,8 @@ function AdminMerchants() {
     return m.stores.some((st) => (st.name ?? "").toLowerCase().includes(s));
   });
 
+  const sorted = sortRows(merchants, sort, MERCHANT_SORT);
+
   const totalStores = merchants.reduce((a, m) => a + m.store_count, 0);
   const totalSales = merchants.reduce((a, m) => a + (m.total_sales || 0), 0);
   const totalTx = merchants.reduce((a, m) => a + m.tx_count, 0);
@@ -133,19 +136,19 @@ function AdminMerchants() {
           <thead className="bg-muted/40 text-left text-xs uppercase tracking-[0.2em] text-muted-foreground">
             <tr>
               <th className="px-3 py-2 w-8" />
-              <th className="px-3 py-2">Merchant</th>
-              <th className="px-3 py-2">Plan</th>
-              <th className="px-3 py-2">Signed up</th>
-              <th className="px-3 py-2">Expires</th>
-              <th className="px-3 py-2">Markets</th>
-              <th className="px-3 py-2 text-right">Stores</th>
-              <th className="px-3 py-2 text-right">Tx</th>
-              <th className="px-3 py-2 text-right">Sales</th>
+              <SortHeader label="Merchant" sortKey="name" state={sort} onSort={(k) => setSort((s) => toggleSort(s, k))} />
+              <SortHeader label="Plan" sortKey="plan" state={sort} onSort={(k) => setSort((s) => toggleSort(s, k))} />
+              <SortHeader label="Signed up" sortKey="signed_up" state={sort} onSort={(k) => setSort((s) => toggleSort(s, k))} />
+              <SortHeader label="Expires" sortKey="expires" state={sort} onSort={(k) => setSort((s) => toggleSort(s, k))} />
+              <SortHeader label="Markets" sortKey="markets" state={sort} onSort={(k) => setSort((s) => toggleSort(s, k))} />
+              <SortHeader label="Stores" sortKey="stores" state={sort} onSort={(k) => setSort((s) => toggleSort(s, k))} align="right" />
+              <SortHeader label="Tx" sortKey="tx" state={sort} onSort={(k) => setSort((s) => toggleSort(s, k))} align="right" />
+              <SortHeader label="Sales" sortKey="sales" state={sort} onSort={(k) => setSort((s) => toggleSort(s, k))} align="right" />
               <th className="px-3 py-2" />
             </tr>
           </thead>
           <tbody>
-            {merchants.map((m: Merchant) => {
+            {sorted.map((m: Merchant) => {
               const open = expanded.has(m.owner_id);
               return (
                 <Fragment key={m.owner_id}>
