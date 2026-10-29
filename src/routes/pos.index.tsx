@@ -1068,6 +1068,14 @@ function PaidScreen({
           <p className="mt-0.5 break-all font-mono text-[10px] leading-snug text-white/80">{status.tx_hash}</p>
         </div>
       )}
+      {signature && (
+        <div className="mt-4 w-full max-w-sm rounded-md border border-white/10 bg-white/[0.03] p-3">
+          <p className="text-[9px] font-bold tracking-widest text-white/50">SIGNATURE</p>
+          <div className="mt-1 rounded bg-white p-2">
+            <img src={signature.dataUrl} alt="Customer signature" className="mx-auto h-14 w-auto max-w-full object-contain" />
+          </div>
+        </div>
+      )}
       {printerAvailable && (
         <button
           onClick={onPrint}
