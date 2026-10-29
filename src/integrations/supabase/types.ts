@@ -2017,6 +2017,7 @@ export type Database = {
           pos_eod_enabled: boolean
           pos_hold_enabled: boolean
           pos_other_tender_enabled: boolean
+          pos_print_signature: boolean
           pos_quick_items: Json
           pos_refund_enabled: boolean
           pos_refund_reasons: string[]
@@ -2098,6 +2099,7 @@ export type Database = {
           pos_eod_enabled?: boolean
           pos_hold_enabled?: boolean
           pos_other_tender_enabled?: boolean
+          pos_print_signature?: boolean
           pos_quick_items?: Json
           pos_refund_enabled?: boolean
           pos_refund_reasons?: string[]
@@ -2179,6 +2181,7 @@ export type Database = {
           pos_eod_enabled?: boolean
           pos_hold_enabled?: boolean
           pos_other_tender_enabled?: boolean
+          pos_print_signature?: boolean
           pos_quick_items?: Json
           pos_refund_enabled?: boolean
           pos_refund_reasons?: string[]

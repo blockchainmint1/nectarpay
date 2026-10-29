@@ -155,6 +155,13 @@
       "when": 1793275399990,
       "tag": "0021_add_sale_signature_path",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1793278769250,
+      "tag": "0022_store_print_signature",
+      "breakpoints": true
     }
   ]
 }
