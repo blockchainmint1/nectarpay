@@ -1,10 +1,13 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, Copy } from "lucide-react";
+import { ChevronLeft, Copy, Download, PenLine } from "lucide-react";
 import { toast } from "sonner";
 
 import { getStoreInvoiceDetail } from "@/lib/store-invoices.functions";
+import { getSaleSignature } from "@/lib/sale-signature.functions";
+import { blobFromDataUrl, deliverFile } from "@/lib/download";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/sales/$invoiceId")({
