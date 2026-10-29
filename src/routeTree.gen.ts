@@ -103,7 +103,6 @@ import { Route as AuthenticatedSalesInvoiceIdRouteImport } from './routes/_authe
 import { Route as AuthenticatedStoresIndexRouteImport } from './routes/_authenticated.stores.index'
 import { Route as AuthenticatedStoresStoreIdRouteImport } from './routes/_authenticated.stores.$storeId'
 import { Route as AuthenticatedStoresNewRouteImport } from './routes/_authenticated.stores.new'
-import { Route as ApiAdminSignatureBackfillRouteImport } from './routes/api/admin/signature-backfill'
 import { Route as ApiPublicDemoResetRouteImport } from './routes/api/public/demo-reset'
 import { Route as LovableEmailEventsRouteImport } from './routes/lovable/email/events'
 import { Route as AuthenticatedAdminCrmIndexRouteImport } from './routes/_authenticated.admin.crm.index'
@@ -673,12 +672,6 @@ const AuthenticatedStoresNewRoute = AuthenticatedStoresNewRouteImport.update({
   path: '/stores/new',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const ApiAdminSignatureBackfillRoute =
-  ApiAdminSignatureBackfillRouteImport.update({
-    id: '/admin/signature-backfill',
-    path: '/admin/signature-backfill',
-    getParentRoute: () => ApiRoute,
-  } as any)
 const ApiPublicDemoResetRoute = ApiPublicDemoResetRouteImport.update({
   id: '/public/demo-reset',
   path: '/public/demo-reset',
@@ -1190,7 +1183,6 @@ export interface FileRoutesByFullPath {
   '/sales/$invoiceId': typeof AuthenticatedSalesInvoiceIdRoute
   '/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/stores/new': typeof AuthenticatedStoresNewRoute
-  '/api/admin/signature-backfill': typeof ApiAdminSignatureBackfillRoute
   '/api/public/demo-reset': typeof ApiPublicDemoResetRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
   '/account/': typeof AuthenticatedAccountIndexRoute
@@ -1354,7 +1346,6 @@ export interface FileRoutesByTo {
   '/reports/tax-tips': typeof AuthenticatedReportsTaxTipsRoute
   '/sales/$invoiceId': typeof AuthenticatedSalesInvoiceIdRoute
   '/stores/new': typeof AuthenticatedStoresNewRoute
-  '/api/admin/signature-backfill': typeof ApiAdminSignatureBackfillRoute
   '/api/public/demo-reset': typeof ApiPublicDemoResetRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
   '/account': typeof AuthenticatedAccountIndexRoute
@@ -1526,7 +1517,6 @@ export interface FileRoutesById {
   '/_authenticated/sales/$invoiceId': typeof AuthenticatedSalesInvoiceIdRoute
   '/_authenticated/stores/$storeId': typeof AuthenticatedStoresStoreIdRouteWithChildren
   '/_authenticated/stores/new': typeof AuthenticatedStoresNewRoute
-  '/api/admin/signature-backfill': typeof ApiAdminSignatureBackfillRoute
   '/api/public/demo-reset': typeof ApiPublicDemoResetRoute
   '/lovable/email/events': typeof LovableEmailEventsRoute
   '/_authenticated/account/': typeof AuthenticatedAccountIndexRoute
@@ -1698,7 +1688,6 @@ export interface FileRouteTypes {
     | '/sales/$invoiceId'
     | '/stores/$storeId'
     | '/stores/new'
-    | '/api/admin/signature-backfill'
     | '/api/public/demo-reset'
     | '/lovable/email/events'
     | '/account/'
@@ -1862,7 +1851,6 @@ export interface FileRouteTypes {
     | '/reports/tax-tips'
     | '/sales/$invoiceId'
     | '/stores/new'
-    | '/api/admin/signature-backfill'
     | '/api/public/demo-reset'
     | '/lovable/email/events'
     | '/account'
@@ -2033,7 +2021,6 @@ export interface FileRouteTypes {
     | '/_authenticated/sales/$invoiceId'
     | '/_authenticated/stores/$storeId'
     | '/_authenticated/stores/new'
-    | '/api/admin/signature-backfill'
     | '/api/public/demo-reset'
     | '/lovable/email/events'
     | '/_authenticated/account/'
@@ -2824,13 +2811,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/stores/new'
       preLoaderRoute: typeof AuthenticatedStoresNewRouteImport
       parentRoute: typeof AuthenticatedRoute
-    }
-    '/api/admin/signature-backfill': {
-      id: '/api/admin/signature-backfill'
-      path: '/admin/signature-backfill'
-      fullPath: '/api/admin/signature-backfill'
-      preLoaderRoute: typeof ApiAdminSignatureBackfillRouteImport
-      parentRoute: typeof ApiRoute
     }
     '/api/public/demo-reset': {
       id: '/api/public/demo-reset'
@@ -3661,7 +3641,6 @@ const ApiPublicV1TerminalsInvoiceRouteWithChildren =
   )
 
 interface ApiRouteChildren {
-  ApiAdminSignatureBackfillRoute: typeof ApiAdminSignatureBackfillRoute
   ApiPublicDemoResetRoute: typeof ApiPublicDemoResetRoute
   ApiPublicAffiliateClickRoute: typeof ApiPublicAffiliateClickRoute
   ApiPublicAuthHmeSsoRoute: typeof ApiPublicAuthHmeSsoRoute
@@ -3697,7 +3676,6 @@ interface ApiRouteChildren {
 }
 
 const ApiRouteChildren: ApiRouteChildren = {
-  ApiAdminSignatureBackfillRoute: ApiAdminSignatureBackfillRoute,
   ApiPublicDemoResetRoute: ApiPublicDemoResetRoute,
   ApiPublicAffiliateClickRoute: ApiPublicAffiliateClickRoute,
   ApiPublicAuthHmeSsoRoute: ApiPublicAuthHmeSsoRoute,
