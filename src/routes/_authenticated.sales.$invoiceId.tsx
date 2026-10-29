@@ -40,6 +40,15 @@ function SaleDetailPage() {
     queryFn: () => detail({ data: { invoice_id: invoiceId } }),
   });
 
+  // The signature is fetched separately: only the sale's own store team can
+  // read it, and the image itself never appears in the sale list.
+  const signature = useServerFn(getSaleSignature);
+  const sig = useQuery({
+    queryKey: ["sale-signature", invoiceId],
+    queryFn: () => signature({ data: { invoice_id: invoiceId } }),
+    retry: false,
+  });
+
   const inv = data?.invoice as any;
   const store = inv?.stores as { id: string; name: string | null } | undefined;
   const currency = (inv?.fiat_currency ?? "USD") as string;
