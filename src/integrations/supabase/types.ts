@@ -890,6 +890,7 @@ export type Database = {
           rate: number | null
           redirect_url: string | null
           signature_data_url: string | null
+          signature_path: string | null
           status: Database["public"]["Enums"]["invoice_status"]
           store_id: string
           token_symbol: string | null
@@ -924,6 +925,7 @@ export type Database = {
           rate?: number | null
           redirect_url?: string | null
           signature_data_url?: string | null
+          signature_path?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           store_id: string
           token_symbol?: string | null
@@ -958,6 +960,7 @@ export type Database = {
           rate?: number | null
           redirect_url?: string | null
           signature_data_url?: string | null
+          signature_path?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           store_id?: string
           token_symbol?: string | null
