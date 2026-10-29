@@ -22,8 +22,8 @@ async function adminClient() {
 export async function storeSaleSignature(invoiceId: string, signature: ParsedSignature): Promise<string | null> {
   const path = signatureObjectPath(invoiceId, signature.mime);
   try {
-    const { storage } = await adminClient();
-    const { error } = await storage
+    const client = await adminClient();
+    const { error } = await client.storage
       .from(SIGNATURE_BUCKET)
       .upload(path, new Blob([toArrayBuffer(signature.bytes)], { type: signature.mime }), {
         contentType: signature.mime,
@@ -52,8 +52,8 @@ export async function ensureSignatureFile(row: SignatureRow): Promise<string | n
   if (!parsed) return null;
   const path = await storeSaleSignature(row.id, parsed);
   if (!path) return null;
-  const { from } = await adminClient();
-  const { error } = await from("invoices").update({ signature_path: path }).eq("id", row.id);
+  const client = await adminClient();
+  const { error } = await client.from("invoices").update({ signature_path: path }).eq("id", row.id);
   if (error) console.error("[signature] path could not be recorded", { invoiceId: row.id, message: error.message });
   return path;
 }
@@ -61,8 +61,8 @@ export async function ensureSignatureFile(row: SignatureRow): Promise<string | n
 /** Reads a stored signature back as bytes plus base64 for embedding. */
 export async function readSignatureFile(path: string): Promise<ParsedSignature | null> {
   try {
-    const { storage } = await adminClient();
-    const { data, error } = await storage.from(SIGNATURE_BUCKET).download(path);
+    const client = await adminClient();
+    const { data, error } = await client.storage.from(SIGNATURE_BUCKET).download(path);
     if (error || !data) return null;
     const bytes = new Uint8Array(await data.arrayBuffer());
     if (bytes.length === 0) return null;
