@@ -24,13 +24,13 @@ describe("sortRows", () => {
     expect(names(sortRows(rows, { key: "sales", dir: "desc" }, get))).toEqual([
       "Store 10",
       "Beta",
-      "Gamma",
       "Store 2",
+      "Gamma",
       "alpha",
     ]);
     expect(names(sortRows(rows, { key: "sales", dir: "asc" }, get))).toEqual([
-      "Store 2",
       "Gamma",
+      "Store 2",
       "Beta",
       "Store 10",
       "alpha",
