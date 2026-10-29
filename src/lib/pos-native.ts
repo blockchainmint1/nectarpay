@@ -127,6 +127,12 @@ export const NectarPrinter = {
     if (!p) throw new Error("Printer not available on this device");
     await p.printReceipt(payload);
   },
+  /** Prints an image (the customer's signature) straight after the receipt. */
+  async printBitmap(base64: string): Promise<void> {
+    const p = cap()?.Plugins.NectarPrinter;
+    if (!p) throw new Error("Printer not available on this device");
+    await p.printBitmap({ base64 });
+  },
   async feed(lines = 3): Promise<void> {
     const p = cap()?.Plugins.NectarPrinter;
     if (!p) return;
