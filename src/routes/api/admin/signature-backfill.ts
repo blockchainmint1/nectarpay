@@ -34,6 +34,26 @@ export const Route = createFileRoute("/api/admin/signature-backfill")({
           .maybeSingle();
         if (roleError || !adminRole) return json({ error: "Forbidden" }, 403);
 
+        // Test send: re-mail a receipt, but only ever to the signed-in admin's
+        // own address, so this can never mail a customer twice by accident.
+        let body: { send_receipt?: unknown } = {};
+        try { body = await request.json(); } catch { body = {}; }
+        if (typeof body.send_receipt === "string") {
+          const { data: target, error: targetError } = await supabaseAdmin
+            .from("invoices")
+            .select("id, customer_email, signature_path")
+            .eq("id", body.send_receipt)
+            .maybeSingle();
+          if (targetError || !target) return json({ error: "Sale not found" }, 404);
+          if ((target.customer_email ?? "").toLowerCase() !== (account.user.email ?? "").toLowerCase()) {
+            return json({ error: "This test can only send to your own email address" }, 403);
+          }
+          await supabaseAdmin.from("email_send_log").delete().eq("id", target.id);
+          const { sendCustomerReceipt } = await import("@/lib/email/customer-receipt.server");
+          return json(await sendCustomerReceipt(target.id));
+        }
+
+
         const { ensureSignatureFile } = await import("@/lib/sale-signature.server");
         const skipped = new Set<string>();
         let converted = 0;
