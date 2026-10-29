@@ -2,12 +2,13 @@ import * as React from "react";
 import { render } from "@react-email/render";
 import { CustomerReceipt, receiptEligible } from "./customer-receipt";
 import { sendSesEmail } from "./ses.server";
+import { SIGNATURE_CID, signatureFileName } from "@/lib/sale-signature";
 
 /** Called only after an authorized feature has validated its invoice. */
 export async function sendCustomerReceipt(invoiceId: string): Promise<{ sent: boolean; error?: string }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: invoice, error } = await supabaseAdmin.from("invoices")
-    .select("id,status,customer_email,buyer_email,fiat_amount,fiat_currency,chain,token_symbol,description,external_order_id,payment_program,discount_usd,discount_pct,stores(name)")
+    .select("id,status,customer_email,buyer_email,fiat_amount,fiat_currency,chain,token_symbol,description,external_order_id,payment_program,discount_usd,discount_pct,signature_path,signature_data_url,stores(name)")
     .eq("id", invoiceId).single();
   if (error || !invoice) return { sent: false, error: "Receipt could not be loaded" };
   if (!receiptEligible(invoice.status)) return { sent: false, error: "Payment is not complete" };
@@ -29,13 +30,24 @@ export async function sendCustomerReceipt(invoiceId: string): Promise<{ sent: bo
   try {
     const store = invoice.stores as { name: string | null } | null;
     const storeName = store?.name || "Your merchant";
+    // A captured signature rides inside the receipt as an inline image, so no
+    // mail client needs to fetch it from somewhere else.
+    const { ensureSignatureFile, readSignatureFile } = await import("@/lib/sale-signature.server");
+    const signaturePath = await ensureSignatureFile(invoice);
+    const signature = signaturePath ? await readSignatureFile(signaturePath) : null;
     const element = React.createElement(CustomerReceipt, {
       storeName, invoiceId, total: Number(invoice.fiat_amount), currency: invoice.fiat_currency || "USD",
       paymentMethod: [invoice.token_symbol, invoice.chain?.toUpperCase()].filter(Boolean).join(" on "),
       description: invoice.description, orderId: invoice.external_order_id,
       egiving: invoice.payment_program === "egiving" && invoice.discount_usd ? { discount: Number(invoice.discount_usd), pct: Number(invoice.discount_pct ?? 10) } : null,
+      signatureCid: signature ? SIGNATURE_CID : null,
     });
-    const result = await sendSesEmail({ to, subject: `Your receipt from ${storeName}`, html: await render(element), text: await render(element, { plainText: true }) });
+    const result = await sendSesEmail({
+      to, subject: `Your receipt from ${storeName}`, html: await render(element), text: await render(element, { plainText: true }),
+      inline: signature
+        ? [{ cid: SIGNATURE_CID, filename: signatureFileName(invoiceId, signature.mime), contentType: signature.mime, base64: signature.base64 }]
+        : undefined,
+    });
     await supabaseAdmin.from("email_send_log").update({ status: "sent", message_id: result.messageId }).eq("id", invoiceId);
     return { sent: true };
   } catch (error) {

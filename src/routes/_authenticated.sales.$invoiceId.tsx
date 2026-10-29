@@ -1,10 +1,13 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, Copy } from "lucide-react";
+import { ChevronLeft, Copy, Download, PenLine } from "lucide-react";
 import { toast } from "sonner";
 
 import { getStoreInvoiceDetail } from "@/lib/store-invoices.functions";
+import { getSaleSignature } from "@/lib/sale-signature.functions";
+import { blobFromDataUrl, deliverFile } from "@/lib/download";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/sales/$invoiceId")({
@@ -35,6 +38,15 @@ function SaleDetailPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["sale-detail", invoiceId],
     queryFn: () => detail({ data: { invoice_id: invoiceId } }),
+  });
+
+  // The signature is fetched separately: only the sale's own store team can
+  // read it, and the image itself never appears in the sale list.
+  const signature = useServerFn(getSaleSignature);
+  const sig = useQuery({
+    queryKey: ["sale-signature", invoiceId],
+    queryFn: () => signature({ data: { invoice_id: invoiceId } }),
+    retry: false,
   });
 
   const inv = data?.invoice as any;
@@ -91,6 +103,10 @@ function SaleDetailPage() {
             <Row label="Receive address" value={inv.address ?? "—"} mono />
             <Row label="Expires" value={new Date(inv.expires_at).toLocaleString()} />
           </div>
+
+          {sig.data?.available && sig.data.dataUrl && (
+            <SignatureCard dataUrl={sig.data.dataUrl} fileName={sig.data.fileName ?? "signature.png"} />
+          )}
 
           <div className="mt-6">
             <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -153,6 +169,42 @@ function Row({ label, value, mono }: { label: string; value: string; mono?: bool
     <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border/40 pb-2 last:border-0 last:pb-0">
       <span className="text-muted-foreground">{label}</span>
       <span className={mono ? "break-all font-mono text-xs" : "font-medium"}>{value}</span>
+    </div>
+  );
+}
+
+/**
+ * The customer's signature, shown on the sheet it was drawn on and offered as a
+ * file. The bytes are prepared as soon as the image loads, so the download
+ * button hands the file over without a pause.
+ */
+function SignatureCard({ dataUrl, fileName }: { dataUrl: string; fileName: string }) {
+  const [blob, setBlob] = useState<Blob | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setBlob(null);
+    void blobFromDataUrl(dataUrl).then((b) => {
+      if (!cancelled) setBlob(b);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [dataUrl]);
+
+  return (
+    <div className="mt-6">
+      <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        <PenLine className="h-4 w-4" /> Customer signature
+      </h2>
+      <div className="mt-2 flex flex-wrap items-center gap-6 rounded-lg border border-border p-4">
+        <div className="rounded-md bg-paper p-3">
+          <img src={dataUrl} alt="Customer signature" className="h-24 w-auto max-w-full object-contain" />
+        </div>
+        <Button variant="outline" disabled={!blob} onClick={() => blob && void deliverFile(blob, fileName)}>
+          <Download className="mr-1 h-4 w-4" /> Download signature
+        </Button>
+      </div>
     </div>
   );
 }

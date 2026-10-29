@@ -6,6 +6,7 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import { customerContactSchema } from "@/lib/customers";
+import { parseSignatureDataUrl } from "@/lib/sale-signature";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -19,9 +20,6 @@ function json(body: unknown, status = 200) {
     headers: { "Content-Type": "application/json", ...CORS },
   });
 }
-
-// data:image/png;base64,XXXX — small canvas signature, typically < 30KB.
-const MAX_SIGNATURE_BYTES = 200_000;
 
 export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/receipt")({
   server: {
@@ -46,9 +44,10 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/recei
           if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             return json({ error: "Invalid email" }, 400);
           }
-          if (sig && (sig.length > MAX_SIGNATURE_BYTES || !sig.startsWith("data:image/"))) {
-            return json({ error: "Signature too large or invalid" }, 400);
-          }
+          // Only a real PNG/JPEG image is accepted: it is stored as a file and
+          // later shown in a browser and in the customer's receipt email.
+          const signature = sig === null ? null : parseSignatureDataUrl(sig);
+          if (sig !== null && !signature) return json({ error: "Signature must be a PNG or JPEG image" }, 400);
 
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -63,9 +62,20 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/recei
           if (inv.store_id !== auth.terminal.store_id) return json({ error: "Forbidden" }, 403);
           if (!["confirmed", "overpaid"].includes(inv.status)) return json({ error: "Payment is not complete" }, 409);
 
-          const patch: { customer_email?: string; signature_data_url?: string } = {};
+          const patch: {
+            customer_email?: string;
+            signature_path?: string;
+            signature_data_url?: string;
+          } = {};
           if (email !== null) patch.customer_email = email;
-          if (sig !== null) patch.signature_data_url = sig;
+          if (signature) {
+            const { storeSaleSignature } = await import("@/lib/sale-signature.server");
+            const path = await storeSaleSignature(params.id, signature);
+            // The file is the record of the signature; the inline copy is kept
+            // only when the upload itself failed, so nothing is ever lost.
+            if (path) patch.signature_path = path;
+            else patch.signature_data_url = sig as string;
+          }
           if (Object.keys(patch).length === 0) return json({ ok: true });
 
           const { error: upErr } = await supabaseAdmin

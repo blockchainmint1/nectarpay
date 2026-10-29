@@ -1,5 +1,9 @@
 import { AwsClient } from "aws4fetch";
 import { getEmailUnsubscribe } from "@lovable.dev/email-js";
+import { base64FromBytes } from "@/lib/sale-signature";
+import { rawMimeEmail, type InlineImage } from "./mime";
+
+const SENDER = "NectarPay <noreply@nectar-pay.com>";
 
 export interface SesEmail {
   to: string;
@@ -7,6 +11,8 @@ export interface SesEmail {
   html: string;
   text: string;
   replyTo?: string;
+  /** Images embedded in the HTML through `cid:<cid>`; forces a raw MIME send. */
+  inline?: InlineImage[];
 }
 
 export class SesSendError extends Error {
@@ -16,10 +22,17 @@ export class SesSendError extends Error {
 }
 
 export function sesEmailBody(email: SesEmail) {
-  return {
-    FromEmailAddress: "NectarPay <noreply@nectar-pay.com>",
+  const addressing = {
+    FromEmailAddress: SENDER,
     Destination: { ToAddresses: [email.to] },
     ...(email.replyTo ? { ReplyToAddresses: [email.replyTo] } : {}),
+  };
+  if (email.inline?.length) {
+    const mime = rawMimeEmail({ ...email, from: SENDER, inline: email.inline }, crypto.randomUUID());
+    return { ...addressing, Content: { Raw: { Data: base64FromBytes(new TextEncoder().encode(mime)) } } };
+  }
+  return {
+    ...addressing,
     Content: { Simple: {
       Subject: { Data: email.subject, Charset: "UTF-8" },
       Body: { Html: { Data: email.html, Charset: "UTF-8" }, Text: { Data: email.text, Charset: "UTF-8" } },

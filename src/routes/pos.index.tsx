@@ -12,6 +12,7 @@ import { EVM_CHAIN_LABEL, evmChainsForStable } from "@/lib/chains/networks";
 import { qrToDataURL } from "@/lib/qr";
 import { buildPaymentUri } from "@/lib/payment-uri";
 import { NectarPrinter, NectarNfc, isNative, Tangem, type ReceiptPayload, type ReceiptLine } from "@/lib/pos-native";
+import { parseSignatureDataUrl } from "@/lib/sale-signature";
 import { useServerFn } from "@tanstack/react-start";
 import { startTangemPayment, submitTangemPayment } from "@/lib/tangem-pay.functions";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -167,6 +168,8 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
   const [experience, setExperience] = useState<Experience>(DEFAULT_EXPERIENCE);
   const [storeName, setStoreName] = useState<string | null>(null);
   const [receiptCfg, setReceiptCfg] = useState<ReceiptConfig>(DEFAULT_RECEIPT);
+  // The signature the customer just drew, kept for this sale's print + preview.
+  const [signature, setSignature] = useState<{ dataUrl: string; base64: string } | null>(null);
 
   const taxCents = Math.round((subtotalCents * settings.taxBps) / 10_000);
   const tipCents = customTipCents !== null ? customTipCents : Math.round((subtotalCents * tipBps) / 10_000);
@@ -300,6 +303,7 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
     setInvoice(null); setStatus(null); setErr(null);
     setFinalTipCents(0);
     setTappedUid(null); setCardSent(false);
+    setSignature(null);
     setScreen("amount");
   };
 
@@ -362,6 +366,8 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
           <SignatureScreen
             onSkip={() => setScreen(experience.email_receipt_enabled ? "email" : "paid")}
             onSubmit={async (dataUrl) => {
+              const parsed = parseSignatureDataUrl(dataUrl);
+              if (parsed) setSignature({ dataUrl, base64: parsed.base64 });
               try { await signedJson(creds, `/api/public/v1/terminals/invoice/${invoice.id}/receipt`, { method: "POST", body: { signature_data_url: dataUrl } }); } catch { /* non-fatal */ }
               setScreen(experience.email_receipt_enabled ? "email" : "paid");
             }}
@@ -385,6 +391,7 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
             subtotalCents={subtotalCents}
             taxCents={taxCents}
             tipCents={finalTipCents}
+            signature={signature}
           />
         )}
         {screen === "cancelled" && <DoneScreen label="PAYMENT CANCELLED" onDone={reset} />}
@@ -997,7 +1004,7 @@ function buildReceiptPayload(
 }
 
 function PaidScreen({
-  status, onDone, receiptCfg, subtotalCents, taxCents, tipCents,
+  status, onDone, receiptCfg, subtotalCents, taxCents, tipCents, signature,
 }: {
   status: InvoiceStatus;
   onDone: () => void;
@@ -1005,6 +1012,7 @@ function PaidScreen({
   subtotalCents: number;
   taxCents: number;
   tipCents: number;
+  signature: { dataUrl: string; base64: string } | null;
 }) {
   const [printerAvailable, setPrinterAvailable] = useState(false);
   const [printState, setPrintState] = useState<"idle" | "printing" | "done" | "error">("idle");
@@ -1020,6 +1028,8 @@ function PaidScreen({
     setPrintState("printing"); setPrintErr(null);
     try {
       await NectarPrinter.printReceipt(buildReceiptPayload(status, receiptCfg, subtotalCents, taxCents, tipCents));
+      // The customer's signature comes off straight after the receipt.
+      if (signature) await NectarPrinter.printBitmap(signature.base64);
       await NectarPrinter.feed(3);
       setPrintState("done");
     } catch (e) {
@@ -1056,6 +1066,14 @@ function PaidScreen({
         <div className="mt-4 w-full max-w-sm rounded-md border border-white/10 bg-white/[0.03] p-3">
           <p className="text-[9px] font-bold tracking-widest text-white/50">TX HASH</p>
           <p className="mt-0.5 break-all font-mono text-[10px] leading-snug text-white/80">{status.tx_hash}</p>
+        </div>
+      )}
+      {signature && (
+        <div className="mt-4 w-full max-w-sm rounded-md border border-white/10 bg-white/[0.03] p-3">
+          <p className="text-[9px] font-bold tracking-widest text-white/50">SIGNATURE</p>
+          <div className="mt-1 rounded bg-white p-2">
+            <img src={signature.dataUrl} alt="Customer signature" className="mx-auto h-14 w-auto max-w-full object-contain" />
+          </div>
         </div>
       )}
       {printerAvailable && (

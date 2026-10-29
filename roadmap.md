@@ -28,6 +28,13 @@
 - [x] Wire customer receipts after settlement/email capture; show failures on the terminal; six tests passed.
 - [ ] Real terminal receipt/inbox check: requires a paired terminal's completed sale and recipient confirmation; not exercised end-to-end yet.
 - [ ] All-auth SES switch: managed Cloud auth sending must remain intact; external transport is not supported here.
+
+## Customer signatures on sales
+- [x] Store each captured signature as a real image file in a private bucket; all 63 previously signed sales converted with none skipped, and the inline copy is kept only if a file upload fails.
+- [x] Show the signature on the sale record page with a Download signature button; verified signed-in — the image rendered and the download produced an 18,504-byte PNG named signature-2ebde28b.png, with no console or page errors.
+- [x] Put the signature inside the emailed receipt (sent as an inline image, not a link); SES accepted a real receipt send to Bobby's own address with a recorded delivery ID, and the raw-message builder is covered by tests for structure and header-injection refusal.
+- [x] Print the signature on the terminal straight after the receipt using the printer's existing image command, and show it on the paid screen.
+- [ ] Printed signature on paper and the inline image as it renders in a real inbox: requires a physical terminal print and Bobby's confirmation of the emailed receipt.
 - [x] Build merchant customer list from historical sales, with store filters and CSV download.
 - [x] Add separate, unchecked, store-specific marketing opt-in on POS receipts and customer checkout, with recorded consent.
 - [x] Verify customer aggregation, consent rules, and merchant view: 17 tests passed; Bobby's signed-in view shows 78 customer records and 97 purchases; filters and CSV verified; checkout defaults unchecked.
