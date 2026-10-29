@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Body, Container, Head, Heading, Html, Preview, Section, Text, Hr, Link } from "@react-email/components";
+import { Body, Container, Head, Heading, Html, Img, Preview, Section, Text, Hr, Link } from "@react-email/components";
 
 export function receiptBreakdown(description: string | null, total: number) {
   const values = Object.fromEntries([...((description ?? "").matchAll(/\b(subtotal|tax|tip):(\d+)\b/g))].map((m) => [m[1], Number(m[2])]));
@@ -16,6 +16,8 @@ export interface CustomerReceiptData {
   storeName: string; invoiceId: string; total: number; currency: string;
   paymentMethod: string; description: string | null; orderId: string | null;
   egiving?: { discount: number; pct: number } | null;
+  /** Content-ID of the attached signature image, when the sale has one. */
+  signatureCid?: string | null;
 }
 
 export function CustomerReceipt(data: CustomerReceiptData) {
@@ -39,6 +41,10 @@ export function CustomerReceipt(data: CustomerReceiptData) {
         <Text>Payment method: {data.paymentMethod}</Text>
         <Text>Receipt reference: {data.invoiceId}</Text>
         {data.orderId && <Text>Order reference: {data.orderId}</Text>}
+        {data.signatureCid && <Section style={{ backgroundColor: "#F7F9FC", padding: "16px 24px", textAlign: "center" }}>
+          <Text style={{ margin: 0, fontSize: 12, color: "#6B7A90" }}>Signature on file</Text>
+          <Img src={`cid:${data.signatureCid}`} alt="Customer signature" width={240} style={{ margin: "8px auto 0", maxWidth: 240 }} />
+        </Section>}
         <Hr /><Text style={{ fontSize: 12 }}>Sent by NectarPay on behalf of {data.storeName}. This receipt does not sign you up for marketing.</Text>
         <Text style={{ fontSize: 12 }}>Part of the <Link href="https://honest.money">honest.money ecosystem</Link></Text>
         <Text style={{ fontSize: 12 }}><Link href="https://app.nectar-pay.com/terms">Terms</Link> · <Link href="https://app.nectar-pay.com/privacy">Privacy</Link> · <Link href="https://app.nectar-pay.com/manifesto">Manifesto</Link></Text>

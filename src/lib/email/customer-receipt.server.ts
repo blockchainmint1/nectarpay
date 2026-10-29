@@ -30,6 +30,11 @@ export async function sendCustomerReceipt(invoiceId: string): Promise<{ sent: bo
   try {
     const store = invoice.stores as { name: string | null } | null;
     const storeName = store?.name || "Your merchant";
+    // A captured signature rides inside the receipt as an inline image, so no
+    // mail client needs to fetch it from somewhere else.
+    const { ensureSignatureFile, readSignatureFile } = await import("@/lib/sale-signature.server");
+    const signaturePath = await ensureSignatureFile(invoice);
+    const signature = signaturePath ? await readSignatureFile(signaturePath) : null;
     const element = React.createElement(CustomerReceipt, {
       storeName, invoiceId, total: Number(invoice.fiat_amount), currency: invoice.fiat_currency || "USD",
       paymentMethod: [invoice.token_symbol, invoice.chain?.toUpperCase()].filter(Boolean).join(" on "),
