@@ -38,6 +38,7 @@ interface Draft {
   // existing
   pos_tip_enabled: boolean;
   pos_signature_enabled: boolean;
+  pos_print_signature: boolean;
   pos_email_receipt_enabled: boolean;
   receipt_business_name: string;
   receipt_address: string;
@@ -71,7 +72,7 @@ interface Draft {
 
 const SELECT_COLS = [
   "id, name",
-  "pos_tip_enabled, pos_signature_enabled, pos_email_receipt_enabled",
+  "pos_tip_enabled, pos_signature_enabled, pos_print_signature, pos_email_receipt_enabled",
   "receipt_business_name, receipt_address, receipt_logo_url, receipt_footer, receipt_tax_id",
   "ext_ref_mode, ext_ref_required, ext_ref_label, ext_ref_scan_mode",
   "tax_mode, tax_bps",
@@ -107,6 +108,7 @@ function PosSettingsPage() {
     setDraft({
       pos_tip_enabled: (s.pos_tip_enabled as boolean) ?? true,
       pos_signature_enabled: (s.pos_signature_enabled as boolean) ?? false,
+      pos_print_signature: (s.pos_print_signature as boolean) ?? false,
       pos_email_receipt_enabled: (s.pos_email_receipt_enabled as boolean) ?? false,
       receipt_business_name: (s.receipt_business_name as string) ?? s.name ?? "",
       receipt_address: (s.receipt_address as string) ?? "",
@@ -141,6 +143,7 @@ function PosSettingsPage() {
         .update({
           pos_tip_enabled: next.pos_tip_enabled,
           pos_signature_enabled: next.pos_signature_enabled,
+          pos_print_signature: next.pos_print_signature,
           pos_email_receipt_enabled: next.pos_email_receipt_enabled,
           receipt_business_name: emptyToNull(next.receipt_business_name),
           receipt_address: emptyToNull(next.receipt_address),
@@ -239,6 +242,14 @@ function PosSettingsPage() {
               checked={draft.pos_signature_enabled}
               onChange={(v) => update("pos_signature_enabled", v)}
             />
+            {draft.pos_signature_enabled && (
+              <ToggleRow
+                label="Print signature on receipt"
+                hint="Adds a small copy of the signature to the paper receipt. It's always saved on the sale record either way."
+                checked={draft.pos_print_signature}
+                onChange={(v) => update("pos_print_signature", v)}
+              />
+            )}
             <ToggleRow
               label="Email receipt"
               hint="Prompt the customer for an email after payment and send a branded receipt."

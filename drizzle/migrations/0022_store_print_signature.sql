@@ -1,0 +1,2 @@
+ALTER TABLE public.stores ADD COLUMN IF NOT EXISTS pos_print_signature boolean NOT NULL DEFAULT false;
+GRANT SELECT (pos_print_signature), UPDATE (pos_print_signature), INSERT (pos_print_signature) ON public.stores TO authenticated;

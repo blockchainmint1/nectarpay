@@ -13,6 +13,7 @@ import { qrToDataURL } from "@/lib/qr";
 import { buildPaymentUri } from "@/lib/payment-uri";
 import { NectarPrinter, NectarNfc, isNative, Tangem, type ReceiptPayload, type ReceiptLine } from "@/lib/pos-native";
 import { parseSignatureDataUrl } from "@/lib/sale-signature";
+import { compactSignature } from "@/lib/signature-print";
 import { useServerFn } from "@tanstack/react-start";
 import { startTangemPayment, submitTangemPayment } from "@/lib/tangem-pay.functions";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -137,6 +138,7 @@ type Screen = "amount" | "tip" | "chain" | "card" | "waiting" | "underpaid" | "p
 interface Experience {
   tip_enabled: boolean;
   signature_enabled: boolean;
+  print_signature?: boolean;
   email_receipt_enabled: boolean;
 }
 const DEFAULT_EXPERIENCE: Experience = { tip_enabled: true, signature_enabled: false, email_receipt_enabled: false };
@@ -392,6 +394,7 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
             taxCents={taxCents}
             tipCents={finalTipCents}
             signature={signature}
+            printSignature={experience.print_signature ?? false}
           />
         )}
         {screen === "cancelled" && <DoneScreen label="PAYMENT CANCELLED" onDone={reset} />}
@@ -1016,7 +1019,7 @@ function buildReceiptPayload(
 }
 
 function PaidScreen({
-  status, onDone, receiptCfg, subtotalCents, taxCents, tipCents, signature,
+  status, onDone, receiptCfg, subtotalCents, taxCents, tipCents, signature, printSignature,
 }: {
   status: InvoiceStatus;
   onDone: () => void;
@@ -1025,6 +1028,7 @@ function PaidScreen({
   taxCents: number;
   tipCents: number;
   signature: { dataUrl: string; base64: string } | null;
+  printSignature?: boolean;
 }) {
   const [printerAvailable, setPrinterAvailable] = useState(false);
   const [printState, setPrintState] = useState<"idle" | "printing" | "done" | "error">("idle");
@@ -1041,7 +1045,7 @@ function PaidScreen({
     try {
       await NectarPrinter.printReceipt(buildReceiptPayload(status, receiptCfg, subtotalCents, taxCents, tipCents));
       // The customer's signature comes off straight after the receipt.
-      if (signature) await NectarPrinter.printBitmap(signature.base64);
+      if (signature && printSignature) await NectarPrinter.printBitmap(await compactSignature(signature.dataUrl));
       await NectarPrinter.feed(3);
       setPrintState("done");
     } catch (e) {
