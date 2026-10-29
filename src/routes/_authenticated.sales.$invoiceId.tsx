@@ -173,6 +173,42 @@ function Row({ label, value, mono }: { label: string; value: string; mono?: bool
   );
 }
 
+/**
+ * The customer's signature, shown on the sheet it was drawn on and offered as a
+ * file. The bytes are prepared as soon as the image loads, so the download
+ * button hands the file over without a pause.
+ */
+function SignatureCard({ dataUrl, fileName }: { dataUrl: string; fileName: string }) {
+  const [blob, setBlob] = useState<Blob | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setBlob(null);
+    void blobFromDataUrl(dataUrl).then((b) => {
+      if (!cancelled) setBlob(b);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [dataUrl]);
+
+  return (
+    <div className="mt-6">
+      <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        <PenLine className="h-4 w-4" /> Customer signature
+      </h2>
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-border p-4">
+        <div className="rounded-md bg-paper p-3">
+          <img src={dataUrl} alt="Customer signature" className="h-24 w-auto max-w-full object-contain" />
+        </div>
+        <Button variant="outline" disabled={!blob} onClick={() => blob && void deliverFile(blob, fileName)}>
+          <Download className="mr-1 h-4 w-4" /> Download signature
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function money(amount: number, currency: string): string {
   try {
     return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount);
