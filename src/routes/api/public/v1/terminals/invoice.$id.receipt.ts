@@ -44,7 +44,7 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/recei
           if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             return json({ error: "Invalid email" }, 400);
           }
-          // Only a real PNG/JJPEG image is accepted: it is stored as a file and
+          // Only a real PNG/JPEG image is accepted: it is stored as a file and
           // later shown in a browser and in the customer's receipt email.
           const signature = sig === null ? null : parseSignatureDataUrl(sig);
           if (sig !== null && !signature) return json({ error: "Signature must be a PNG or JPEG image" }, 400);
