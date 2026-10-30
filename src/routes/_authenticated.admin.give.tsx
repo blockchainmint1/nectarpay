@@ -275,6 +275,7 @@ function RecipientsSection() {
                   <p className="text-xs text-muted-foreground">
                     {r.active ? "Payments to this address count toward the eGiving discount." : "Switched off — payments to this address won't qualify."}
                   </p>
+                  {r.kind === "church" && <CauseDetails r={r} onSaved={() => void q.refetch()} />}
                 </div>
               )}
             </div>
