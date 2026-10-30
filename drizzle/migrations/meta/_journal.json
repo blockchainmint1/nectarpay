@@ -183,6 +183,13 @@
       "when": 1793352151458,
       "tag": "0025_pop_rewards",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1793366051345,
+      "tag": "0026_fast_enrollments",
+      "breakpoints": true
     }
   ]
 }

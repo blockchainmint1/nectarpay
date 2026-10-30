@@ -46,6 +46,7 @@ import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedCustomersRouteImport } from './routes/_authenticated.customers'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedExportsRouteImport } from './routes/_authenticated.exports'
+import { Route as AuthenticatedFastRouteImport } from './routes/_authenticated.fast'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated.notifications'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated.reports'
 import { Route as AuthenticatedTerminalsRouteImport } from './routes/_authenticated.terminals'
@@ -363,6 +364,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 const AuthenticatedExportsRoute = AuthenticatedExportsRouteImport.update({
   id: '/exports',
   path: '/exports',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedFastRoute = AuthenticatedFastRouteImport.update({
+  id: '/fast',
+  path: '/fast',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedNotificationsRoute =
@@ -1149,6 +1155,7 @@ export interface FileRoutesByFullPath {
   '/customers': typeof AuthenticatedCustomersRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exports': typeof AuthenticatedExportsRoute
+  '/fast': typeof AuthenticatedFastRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/reports': typeof AuthenticatedReportsRouteWithChildren
   '/terminals': typeof AuthenticatedTerminalsRoute
@@ -1318,6 +1325,7 @@ export interface FileRoutesByTo {
   '/customers': typeof AuthenticatedCustomersRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exports': typeof AuthenticatedExportsRoute
+  '/fast': typeof AuthenticatedFastRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/terminals': typeof AuthenticatedTerminalsRoute
   '/verify': typeof AuthenticatedVerifyRoute
@@ -1488,6 +1496,7 @@ export interface FileRoutesById {
   '/_authenticated/customers': typeof AuthenticatedCustomersRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/exports': typeof AuthenticatedExportsRoute
+  '/_authenticated/fast': typeof AuthenticatedFastRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRouteWithChildren
   '/_authenticated/terminals': typeof AuthenticatedTerminalsRoute
@@ -1662,6 +1671,7 @@ export interface FileRouteTypes {
     | '/customers'
     | '/dashboard'
     | '/exports'
+    | '/fast'
     | '/notifications'
     | '/reports'
     | '/terminals'
@@ -1831,6 +1841,7 @@ export interface FileRouteTypes {
     | '/customers'
     | '/dashboard'
     | '/exports'
+    | '/fast'
     | '/notifications'
     | '/terminals'
     | '/verify'
@@ -2000,6 +2011,7 @@ export interface FileRouteTypes {
     | '/_authenticated/customers'
     | '/_authenticated/dashboard'
     | '/_authenticated/exports'
+    | '/_authenticated/fast'
     | '/_authenticated/notifications'
     | '/_authenticated/reports'
     | '/_authenticated/terminals'
@@ -2446,6 +2458,13 @@ declare module '@tanstack/react-router' {
       path: '/exports'
       fullPath: '/exports'
       preLoaderRoute: typeof AuthenticatedExportsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/fast': {
+      id: '/_authenticated/fast'
+      path: '/fast'
+      fullPath: '/fast'
+      preLoaderRoute: typeof AuthenticatedFastRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/notifications': {
@@ -3572,6 +3591,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExportsRoute: typeof AuthenticatedExportsRoute
+  AuthenticatedFastRoute: typeof AuthenticatedFastRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRouteWithChildren
   AuthenticatedTerminalsRoute: typeof AuthenticatedTerminalsRoute
@@ -3592,6 +3612,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCustomersRoute: AuthenticatedCustomersRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExportsRoute: AuthenticatedExportsRoute,
+  AuthenticatedFastRoute: AuthenticatedFastRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRouteWithChildren,
   AuthenticatedTerminalsRoute: AuthenticatedTerminalsRoute,
