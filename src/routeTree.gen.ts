@@ -53,6 +53,7 @@ import { Route as AuthenticatedVerifyRouteImport } from './routes/_authenticated
 import { Route as CheckoutThanksRouteImport } from './routes/checkout.thanks'
 import { Route as CompareBitpayCoingateVsNectarRouteImport } from './routes/compare_.bitpay-coingate-vs-nectar'
 import { Route as DevTangemTestRouteImport } from './routes/dev.tangem-test'
+import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as DocsAddressRotationRouteImport } from './routes/docs.address-rotation'
 import { Route as DocsTapToPayTangemRouteImport } from './routes/docs.tap-to-pay-tangem'
 import { Route as DocsWalletSetupRouteImport } from './routes/docs.wallet-setup'
@@ -400,6 +401,11 @@ const DevTangemTestRoute = DevTangemTestRouteImport.update({
   id: '/dev/tangem-test',
   path: '/dev/tangem-test',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DocsIndexRoute = DocsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DocsRoute,
 } as any)
 const DocsAddressRotationRoute = DocsAddressRotationRouteImport.update({
   id: '/address-rotation',
@@ -1169,6 +1175,7 @@ export interface FileRoutesByFullPath {
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
   '/t/$slug': typeof TSlugRoute
+  '/docs/': typeof DocsIndexRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
   '/account/users': typeof AuthenticatedAccountUsersRoute
@@ -1288,7 +1295,6 @@ export interface FileRoutesByTo {
   '/compare': typeof CompareRoute
   '/demo-reset': typeof DemoResetRoute
   '/directory': typeof DirectoryRoute
-  '/docs': typeof DocsRouteWithChildren
   '/help': typeof HelpRoute
   '/kyc': typeof KycRoute
   '/live': typeof LiveRoute
@@ -1337,6 +1343,7 @@ export interface FileRoutesByTo {
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
   '/t/$slug': typeof TSlugRoute
+  '/docs': typeof DocsIndexRoute
   '/integrations': typeof IntegrationsIndexRoute
   '/pos': typeof PosIndexRoute
   '/account/users': typeof AuthenticatedAccountUsersRoute
@@ -1507,6 +1514,7 @@ export interface FileRoutesById {
   '/pos/settings': typeof PosSettingsRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
   '/t/$slug': typeof TSlugRoute
+  '/docs/': typeof DocsIndexRoute
   '/integrations/': typeof IntegrationsIndexRoute
   '/pos/': typeof PosIndexRoute
   '/_authenticated/account/users': typeof AuthenticatedAccountUsersRoute
@@ -1680,6 +1688,7 @@ export interface FileRouteTypes {
     | '/pos/settings'
     | '/sdk/payhme.js'
     | '/t/$slug'
+    | '/docs/'
     | '/integrations/'
     | '/pos/'
     | '/account/users'
@@ -1799,7 +1808,6 @@ export interface FileRouteTypes {
     | '/compare'
     | '/demo-reset'
     | '/directory'
-    | '/docs'
     | '/help'
     | '/kyc'
     | '/live'
@@ -1848,6 +1856,7 @@ export interface FileRouteTypes {
     | '/pos/settings'
     | '/sdk/payhme.js'
     | '/t/$slug'
+    | '/docs'
     | '/integrations'
     | '/pos'
     | '/account/users'
@@ -2017,6 +2026,7 @@ export interface FileRouteTypes {
     | '/pos/settings'
     | '/sdk/payhme.js'
     | '/t/$slug'
+    | '/docs/'
     | '/integrations/'
     | '/pos/'
     | '/_authenticated/account/users'
@@ -2486,6 +2496,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dev/tangem-test'
       preLoaderRoute: typeof DevTangemTestRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/docs/': {
+      id: '/docs/'
+      path: '/'
+      fullPath: '/docs/'
+      preLoaderRoute: typeof DocsIndexRouteImport
+      parentRoute: typeof DocsRoute
     }
     '/docs/address-rotation': {
       id: '/docs/address-rotation'
@@ -3772,12 +3789,14 @@ interface DocsRouteChildren {
   DocsAddressRotationRoute: typeof DocsAddressRotationRoute
   DocsTapToPayTangemRoute: typeof DocsTapToPayTangemRoute
   DocsWalletSetupRoute: typeof DocsWalletSetupRoute
+  DocsIndexRoute: typeof DocsIndexRoute
 }
 
 const DocsRouteChildren: DocsRouteChildren = {
   DocsAddressRotationRoute: DocsAddressRotationRoute,
   DocsTapToPayTangemRoute: DocsTapToPayTangemRoute,
   DocsWalletSetupRoute: DocsWalletSetupRoute,
+  DocsIndexRoute: DocsIndexRoute,
 }
 
 const DocsRouteWithChildren = DocsRoute._addFileChildren(DocsRouteChildren)
