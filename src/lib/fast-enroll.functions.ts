@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { normalizeCoinId, isTxcAddress } from "@/lib/fast-enroll";
+import { normalizeCoinId, isTxcAddress, coinIdMatchesAddress } from "@/lib/fast-enroll";
 
 const CSC_LOOKUP = "https://admin.coldstoragecoins.com/api/public/v5/coin-details";
 
@@ -26,6 +26,7 @@ async function lookupCoin(coinId: string): Promise<CoinCheck> {
   const coin = body?.coin ?? body;
   const address: string | undefined = coin?.publicKey;
   if (!address || !isTxcAddress(address)) return { ok: false, message: "That coin isn't a TEXITcoin coin, so it can't receive TSD." };
+  if (!coinIdMatchesAddress(coinId, address)) return { ok: false, message: "Coin ID and wallet address don't match. Check upper and lower case." };
   return { ok: true, coinId, address, chain: coin?.blockchainName ?? coin?.blockchainCode ?? null, product: body?.displayValues?.name ?? null, taken: false };
 }
 
