@@ -160,6 +160,7 @@ import { Route as AuthenticatedAdminKnowledgePitchNewMarketsRouteImport } from '
 import { Route as AuthenticatedAdminKnowledgeTrainingCryptopopRouteImport } from './routes/_authenticated.admin.knowledge.training.cryptopop'
 import { Route as AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRouteImport } from './routes/_authenticated.admin.knowledge.training.merchant-onboarding'
 import { Route as AuthenticatedAdminKnowledgeTrainingSalesRepsRouteImport } from './routes/_authenticated.admin.knowledge.training.sales-reps'
+import { Route as ApiPublicV1EgivingCausesRouteImport } from './routes/api/public/v1/egiving.causes'
 import { Route as ApiPublicV1HooksAffiliateSaleRouteImport } from './routes/api/public/v1/hooks/affiliate-sale'
 import { Route as ApiPublicV1InvoicesIdRouteImport } from './routes/api.public.v1.invoices.$id'
 import { Route as ApiPublicV1LinksSlugRouteImport } from './routes/api.public.v1.links.$slug'
@@ -994,6 +995,12 @@ const AuthenticatedAdminKnowledgeTrainingSalesRepsRoute =
     path: '/training/sales-reps',
     getParentRoute: () => AuthenticatedAdminKnowledgeRoute,
   } as any)
+const ApiPublicV1EgivingCausesRoute =
+  ApiPublicV1EgivingCausesRouteImport.update({
+    id: '/public/v1/egiving/causes',
+    path: '/public/v1/egiving/causes',
+    getParentRoute: () => ApiRoute,
+  } as any)
 const ApiPublicV1HooksAffiliateSaleRoute =
   ApiPublicV1HooksAffiliateSaleRouteImport.update({
     id: '/public/v1/hooks/affiliate-sale',
@@ -1244,6 +1251,7 @@ export interface FileRoutesByFullPath {
   '/admin/knowledge/training/cryptopop': typeof AuthenticatedAdminKnowledgeTrainingCryptopopRoute
   '/admin/knowledge/training/merchant-onboarding': typeof AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute
   '/admin/knowledge/training/sales-reps': typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRoute
+  '/api/public/v1/egiving/causes': typeof ApiPublicV1EgivingCausesRoute
   '/api/public/v1/hooks/affiliate-sale': typeof ApiPublicV1HooksAffiliateSaleRoute
   '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRouteWithChildren
   '/api/public/v1/links/$slug': typeof ApiPublicV1LinksSlugRoute
@@ -1407,6 +1415,7 @@ export interface FileRoutesByTo {
   '/admin/knowledge/training/cryptopop': typeof AuthenticatedAdminKnowledgeTrainingCryptopopRoute
   '/admin/knowledge/training/merchant-onboarding': typeof AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute
   '/admin/knowledge/training/sales-reps': typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRoute
+  '/api/public/v1/egiving/causes': typeof ApiPublicV1EgivingCausesRoute
   '/api/public/v1/hooks/affiliate-sale': typeof ApiPublicV1HooksAffiliateSaleRoute
   '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRouteWithChildren
   '/api/public/v1/links/$slug': typeof ApiPublicV1LinksSlugRoute
@@ -1578,6 +1587,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/knowledge/training/cryptopop': typeof AuthenticatedAdminKnowledgeTrainingCryptopopRoute
   '/_authenticated/admin/knowledge/training/merchant-onboarding': typeof AuthenticatedAdminKnowledgeTrainingMerchantOnboardingRoute
   '/_authenticated/admin/knowledge/training/sales-reps': typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRoute
+  '/api/public/v1/egiving/causes': typeof ApiPublicV1EgivingCausesRoute
   '/api/public/v1/hooks/affiliate-sale': typeof ApiPublicV1HooksAffiliateSaleRoute
   '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRouteWithChildren
   '/api/public/v1/links/$slug': typeof ApiPublicV1LinksSlugRoute
@@ -1749,6 +1759,7 @@ export interface FileRouteTypes {
     | '/admin/knowledge/training/cryptopop'
     | '/admin/knowledge/training/merchant-onboarding'
     | '/admin/knowledge/training/sales-reps'
+    | '/api/public/v1/egiving/causes'
     | '/api/public/v1/hooks/affiliate-sale'
     | '/api/public/v1/invoices/$id'
     | '/api/public/v1/links/$slug'
@@ -1912,6 +1923,7 @@ export interface FileRouteTypes {
     | '/admin/knowledge/training/cryptopop'
     | '/admin/knowledge/training/merchant-onboarding'
     | '/admin/knowledge/training/sales-reps'
+    | '/api/public/v1/egiving/causes'
     | '/api/public/v1/hooks/affiliate-sale'
     | '/api/public/v1/invoices/$id'
     | '/api/public/v1/links/$slug'
@@ -2082,6 +2094,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/knowledge/training/cryptopop'
     | '/_authenticated/admin/knowledge/training/merchant-onboarding'
     | '/_authenticated/admin/knowledge/training/sales-reps'
+    | '/api/public/v1/egiving/causes'
     | '/api/public/v1/hooks/affiliate-sale'
     | '/api/public/v1/invoices/$id'
     | '/api/public/v1/links/$slug'
@@ -3211,6 +3224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminKnowledgeTrainingSalesRepsRouteImport
       parentRoute: typeof AuthenticatedAdminKnowledgeRoute
     }
+    '/api/public/v1/egiving/causes': {
+      id: '/api/public/v1/egiving/causes'
+      path: '/public/v1/egiving/causes'
+      fullPath: '/api/public/v1/egiving/causes'
+      preLoaderRoute: typeof ApiPublicV1EgivingCausesRouteImport
+      parentRoute: typeof ApiRoute
+    }
     '/api/public/v1/hooks/affiliate-sale': {
       id: '/api/public/v1/hooks/affiliate-sale'
       path: '/public/v1/hooks/affiliate-sale'
@@ -3665,6 +3685,7 @@ interface ApiRouteChildren {
   ApiPublicV1RatesRoute: typeof ApiPublicV1RatesRoute
   ApiPublicV1StoreRoute: typeof ApiPublicV1StoreRoute
   ApiPublicV1WalletLinkRoute: typeof ApiPublicV1WalletLinkRouteWithChildren
+  ApiPublicV1EgivingCausesRoute: typeof ApiPublicV1EgivingCausesRoute
   ApiPublicV1HooksAffiliateSaleRoute: typeof ApiPublicV1HooksAffiliateSaleRoute
   ApiPublicV1PayInvoiceIdRoute: typeof ApiPublicV1PayInvoiceIdRoute
   ApiPublicV1StatsLiveRoute: typeof ApiPublicV1StatsLiveRoute
@@ -3700,6 +3721,7 @@ const ApiRouteChildren: ApiRouteChildren = {
   ApiPublicV1RatesRoute: ApiPublicV1RatesRoute,
   ApiPublicV1StoreRoute: ApiPublicV1StoreRoute,
   ApiPublicV1WalletLinkRoute: ApiPublicV1WalletLinkRouteWithChildren,
+  ApiPublicV1EgivingCausesRoute: ApiPublicV1EgivingCausesRoute,
   ApiPublicV1HooksAffiliateSaleRoute: ApiPublicV1HooksAffiliateSaleRoute,
   ApiPublicV1PayInvoiceIdRoute: ApiPublicV1PayInvoiceIdRoute,
   ApiPublicV1StatsLiveRoute: ApiPublicV1StatsLiveRoute,

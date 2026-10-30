@@ -665,21 +665,33 @@ export type Database = {
         Row: {
           active: boolean
           address: string
+          blurb: string | null
+          city: string | null
+          code: string | null
           created_at: string
+          featured: boolean
           kind: string
           name: string
         }
         Insert: {
           active?: boolean
           address: string
+          blurb?: string | null
+          city?: string | null
+          code?: string | null
           created_at?: string
+          featured?: boolean
           kind: string
           name: string
         }
         Update: {
           active?: boolean
           address?: string
+          blurb?: string | null
+          city?: string | null
+          code?: string | null
           created_at?: string
+          featured?: boolean
           kind?: string
           name?: string
         }
@@ -2920,6 +2932,17 @@ export type Database = {
         }[]
       }
       get_public_directory: { Args: { _since?: string }; Returns: Json }
+      get_public_egiving_causes: {
+        Args: never
+        Returns: {
+          address: string
+          blurb: string
+          city: string
+          code: string
+          featured: boolean
+          name: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
