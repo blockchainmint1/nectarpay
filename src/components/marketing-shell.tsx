@@ -335,6 +335,10 @@ export function MarketingFooter() {
             ·{" "}
             <Link to="/privacy" className="hover:text-white" style={{ color: "var(--np-slate)" }}>
               PRIVACY
+            </Link>{" "}
+            ·{" "}
+            <Link to="/api" className="hover:text-white" style={{ color: "var(--np-slate)" }}>
+              API
             </Link>
           </p>
 
