@@ -1627,6 +1627,76 @@ export type Database = {
         }
         Relationships: []
       }
+      pop_awards: {
+        Row: {
+          created_at: string
+          id: string
+          invoice_id: string
+          partner_id: string | null
+          pop: number
+          reason: string | null
+          release_at: string | null
+          sale_usd: number
+          shopper_ref: string
+          status: string
+          store_id: string
+          txid: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invoice_id: string
+          partner_id?: string | null
+          pop: number
+          reason?: string | null
+          release_at?: string | null
+          sale_usd: number
+          shopper_ref: string
+          status: string
+          store_id: string
+          txid: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          partner_id?: string | null
+          pop?: number
+          reason?: string | null
+          release_at?: string | null
+          sale_usd?: number
+          shopper_ref?: string
+          status?: string
+          store_id?: string
+          txid?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pop_awards_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: true
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pop_awards_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "card_partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pop_awards_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pos_releases: {
         Row: {
           apk_path: string
@@ -2027,6 +2097,7 @@ export type Database = {
           mempool_max_usd: number | null
           name: string
           owner_id: string
+          pop_rewards_enabled: boolean
           pos_custom_tenders: Json
           pos_email_receipt_enabled: boolean
           pos_eod_enabled: boolean
@@ -2110,6 +2181,7 @@ export type Database = {
           mempool_max_usd?: number | null
           name: string
           owner_id: string
+          pop_rewards_enabled?: boolean
           pos_custom_tenders?: Json
           pos_email_receipt_enabled?: boolean
           pos_eod_enabled?: boolean
@@ -2193,6 +2265,7 @@ export type Database = {
           mempool_max_usd?: number | null
           name?: string
           owner_id?: string
+          pop_rewards_enabled?: boolean
           pos_custom_tenders?: Json
           pos_email_receipt_enabled?: boolean
           pos_eod_enabled?: boolean

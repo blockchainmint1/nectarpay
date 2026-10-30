@@ -176,6 +176,13 @@
       "when": 1793351461052,
       "tag": "0024_egiving_public_causes",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1793352151458,
+      "tag": "0025_pop_rewards",
+      "breakpoints": true
     }
   ]
 }
