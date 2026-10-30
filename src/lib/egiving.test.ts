@@ -1,9 +1,9 @@
 import { expect, test } from "vitest";
-import { egivingDecision } from "./egiving";
+import { egivingDecision , EGIVING_PROGRAM_ADDRESS } from "./egiving";
 
 const on = { egiving_enabled: true, egiving_discount_pct: 10 };
 const registry = new Map<string, "church" | "program">([["church", "church"], ["program", "program"]]);
-const split = (m: number, c = 0.4, p = 0.1, cAddr = "church", pAddr = "program") => [
+const split = (m: number, c = 0.4, p = 0.1, cAddr = "church", pAddr = EGIVING_PROGRAM_ADDRESS) => [
   { address: "merchant", amount: m },
   { address: cAddr, amount: c },
   { address: pAddr, amount: p },
@@ -41,4 +41,8 @@ test("a stored 5% or 50% discount cannot change the fixed 10% rule", () => {
       discountPct: 10,
     });
   }
+});
+
+test("a program row in the list no longer counts; only the NectarGive wallet does", () => {
+  expect(egivingDecision({ ...base, creditUsd: 4.5, recipients: split(4.5, 0.4, 0.1, "church", "program") }).program).toBeNull();
 });
