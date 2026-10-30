@@ -285,3 +285,34 @@ function RecipientsSection() {
     </section>
   );
 }
+
+type CauseRow = { address: string; code: string | null; city: string | null; blurb: string | null; featured: boolean };
+
+function CauseDetails({ r, onSaved }: { r: CauseRow; onSaved: () => void }) {
+  const [code, setCode] = useState(r.code ?? "");
+  const [city, setCity] = useState(r.city ?? "");
+  const [blurb, setBlurb] = useState(r.blurb ?? "");
+  const [featured, setFeatured] = useState(r.featured);
+  async function save() {
+    const c = code.trim().toUpperCase();
+    if (c && !/^[A-Z0-9]{2,12}$/.test(c)) return toast.error("Code must be 2–12 letters or numbers.");
+    if (blurb.length > 500) return toast.error("Keep the description under 500 characters.");
+    const { error } = await supabase.from("egiving_recipients")
+      .update({ code: c || null, city: city.trim() || null, blurb: blurb.trim() || null, featured })
+      .eq("address", r.address);
+    if (error) return toast.error(error.message.includes("egiving_recipients_code_ci") ? "That code is already used by another church." : error.message);
+    toast.success("Saved — wallets see it on the public list.");
+    onSaved();
+  }
+  return (
+    <div className="grid gap-2 pt-2 sm:grid-cols-[8rem_1fr]">
+      <Input placeholder="Code (e.g. CCV)" value={code} onChange={(e) => setCode(e.target.value)} className="font-mono uppercase" />
+      <Input placeholder="City (e.g. Peoria, AZ)" value={city} onChange={(e) => setCity(e.target.value)} />
+      <Input placeholder="Short description members will see" value={blurb} onChange={(e) => setBlurb(e.target.value)} className="sm:col-span-2" />
+      <label className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Switch checked={featured} onCheckedChange={setFeatured} aria-label="Featured" /> Suggest to members
+      </label>
+      <div className="sm:text-right"><Button size="sm" onClick={save}>Save details</Button></div>
+    </div>
+  );
+}
