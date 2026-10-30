@@ -784,6 +784,66 @@ export type Database = {
         }
         Relationships: []
       }
+      fast_enrollments: {
+        Row: {
+          business_name: string
+          category: string | null
+          city: string | null
+          coin_id: string
+          contact_name: string
+          country: string | null
+          created_at: string
+          egiving_opt_in: boolean
+          email: string
+          enrolled_by: string
+          id: string
+          phone: string | null
+          postal_code: string | null
+          region: string | null
+          status: string
+          street: string | null
+          tsd_address: string
+        }
+        Insert: {
+          business_name: string
+          category?: string | null
+          city?: string | null
+          coin_id: string
+          contact_name: string
+          country?: string | null
+          created_at?: string
+          egiving_opt_in?: boolean
+          email: string
+          enrolled_by: string
+          id?: string
+          phone?: string | null
+          postal_code?: string | null
+          region?: string | null
+          status?: string
+          street?: string | null
+          tsd_address: string
+        }
+        Update: {
+          business_name?: string
+          category?: string | null
+          city?: string | null
+          coin_id?: string
+          contact_name?: string
+          country?: string | null
+          created_at?: string
+          egiving_opt_in?: boolean
+          email?: string
+          enrolled_by?: string
+          id?: string
+          phone?: string | null
+          postal_code?: string | null
+          region?: string | null
+          status?: string
+          street?: string | null
+          tsd_address?: string
+        }
+        Relationships: []
+      }
       hme_member_links: {
         Row: {
           created_at: string
