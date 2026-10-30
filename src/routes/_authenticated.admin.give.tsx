@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
 import { normalizeDomains } from "@/lib/card-partners";
 import { setCardPartnerSecret } from "@/lib/card-partners.functions";
+import { EGIVING_PROGRAM_ADDRESS } from "@/lib/egiving";
 
 export const Route = createFileRoute("/_authenticated/admin/give")({
   component: AdminGive,
@@ -36,6 +37,12 @@ function AdminGive() {
           Who can pay with a tap card, and where the church and program shares are allowed to go.
         </p>
       </div>
+      <Card className="space-y-1 border-primary/40 bg-primary/5 p-4">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Program wallet (fixed)</p>
+        <p className="font-semibold">NectarGive · HME Give</p>
+        <p className="break-all font-mono text-sm">{EGIVING_PROGRAM_ADDRESS}</p>
+        <p className="text-sm text-muted-foreground">Receives the program share: 2% of each Give Back sale (20% of the donation). Built in — it can't be changed here.</p>
+      </Card>
       <WalletsSection />
       <RecipientsSection />
     </div>
@@ -197,7 +204,7 @@ function RecipientsSection() {
   const q = useQuery({
     queryKey: ["admin", "egiving-recipients"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("egiving_recipients").select("*").order("kind").order("name");
+      const { data, error } = await supabase.from("egiving_recipients").select("*").eq("kind", "church").order("name");
       if (error) throw error;
       return data;
     },
@@ -206,7 +213,7 @@ function RecipientsSection() {
   const [open, setOpen] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
-  const [kind, setKind] = useState<"church" | "program">("church");
+  const kind = "church" as const;
 
   async function add() {
     const a = address.trim();
@@ -227,20 +234,13 @@ function RecipientsSection() {
   return (
     <section className="space-y-4">
       <SectionHeader icon={<HeartHandshake className="h-5 w-5" />} title="Approved donation recipients"
-        text="A payment only gets the community discount when the non-store shares go to a church listed here plus the eGiving program address."
+        text="A payment only gets the community discount when the non-store shares go to a church listed here plus the NectarGive program wallet above."
         onAdd={() => setAdding((a) => !a)} adding={adding} />
 
       {adding && (
-        <Card className="grid gap-3 p-4 sm:grid-cols-[1fr_2fr_auto_auto] sm:items-center">
+        <Card className="grid gap-3 p-4 sm:grid-cols-[1fr_2fr_auto] sm:items-center">
           <Input placeholder="Name (e.g. Christ Church of the Valley)" value={name} onChange={(e) => setName(e.target.value)} />
           <Input placeholder="TEXITcoin address" value={address} onChange={(e) => setAddress(e.target.value)} className="font-mono" />
-          <div className="flex gap-1">
-            {(["church", "program"] as const).map((k) => (
-              <Button key={k} type="button" size="sm" variant={kind === k ? "default" : "outline"} onClick={() => setKind(k)}>
-                {k === "church" ? "Church" : "Program"}
-              </Button>
-            ))}
-          </div>
           <Button onClick={add}>Add</Button>
         </Card>
       )}
@@ -250,7 +250,7 @@ function RecipientsSection() {
           <span>Name</span><span>Type</span><span>Address</span><span>On</span><span />
         </div>
         {q.isLoading ? <p className="p-4 text-sm text-muted-foreground">Loading…</p> : (q.data ?? []).length === 0 ? (
-          <p className="p-4 text-sm text-muted-foreground">No recipients yet. Add the program address and at least one church.</p>
+          <p className="p-4 text-sm text-muted-foreground">No recipients yet. Add at least one church.</p>
         ) : (q.data ?? []).map((r) => {
           const isOpen = open === r.address;
           return (

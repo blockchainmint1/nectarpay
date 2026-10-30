@@ -12,6 +12,13 @@
  */
 export const EGIVING_DISCOUNT_PCT = 10;
 
+/**
+ * NectarGive (HME Give) admin wallet — receives the program share (2% of the
+ * sale, i.e. 20% of the donation). Hard-coded: it is the only address that
+ * counts as the program share; program rows in the recipient list are ignored.
+ */
+export const EGIVING_PROGRAM_ADDRESS = "ToaRhmGqAW7PyvPJvbLJo69mnZwhaaA1vu";
+
 export interface EgivingStore {
   egiving_enabled?: boolean | null;
   /** Display only — settlement always uses EGIVING_DISCOUNT_PCT. */
@@ -58,7 +65,8 @@ export function egivingDecision(opts: {
   for (const r of opts.recipients) {
     total += r.amount;
     if (r.address === opts.merchantAddress) continue;
-    const kind = r.address ? opts.registry.get(r.address) : undefined;
+    const kind = r.address === EGIVING_PROGRAM_ADDRESS ? "program"
+      : r.address && opts.registry.get(r.address) === "church" ? "church" : undefined;
     if (kind === "church") churches++;
     else if (kind === "program") programs++;
     else return none;
