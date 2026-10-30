@@ -165,6 +165,7 @@ import { Route as ApiPublicV1HooksAffiliateSaleRouteImport } from './routes/api/
 import { Route as ApiPublicV1InvoicesIdRouteImport } from './routes/api.public.v1.invoices.$id'
 import { Route as ApiPublicV1LinksSlugRouteImport } from './routes/api.public.v1.links.$slug'
 import { Route as ApiPublicV1PayInvoiceIdRouteImport } from './routes/api/public/v1/pay/$invoiceId'
+import { Route as ApiPublicV1PopClaimRouteImport } from './routes/api/public/v1/pop.claim'
 import { Route as ApiPublicV1StatsLiveRouteImport } from './routes/api/public/v1/stats/live'
 import { Route as ApiPublicV1TerminalsHeartbeatRouteImport } from './routes/api/public/v1/terminals/heartbeat'
 import { Route as ApiPublicV1TerminalsInvoiceRouteImport } from './routes/api/public/v1/terminals/invoice'
@@ -1022,6 +1023,11 @@ const ApiPublicV1PayInvoiceIdRoute = ApiPublicV1PayInvoiceIdRouteImport.update({
   path: '/public/v1/pay/$invoiceId',
   getParentRoute: () => ApiRoute,
 } as any)
+const ApiPublicV1PopClaimRoute = ApiPublicV1PopClaimRouteImport.update({
+  id: '/public/v1/pop/claim',
+  path: '/public/v1/pop/claim',
+  getParentRoute: () => ApiRoute,
+} as any)
 const ApiPublicV1StatsLiveRoute = ApiPublicV1StatsLiveRouteImport.update({
   id: '/public/v1/stats/live',
   path: '/public/v1/stats/live',
@@ -1256,6 +1262,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRouteWithChildren
   '/api/public/v1/links/$slug': typeof ApiPublicV1LinksSlugRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
+  '/api/public/v1/pop/claim': typeof ApiPublicV1PopClaimRoute
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
@@ -1420,6 +1427,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRouteWithChildren
   '/api/public/v1/links/$slug': typeof ApiPublicV1LinksSlugRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
+  '/api/public/v1/pop/claim': typeof ApiPublicV1PopClaimRoute
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
@@ -1592,6 +1600,7 @@ export interface FileRoutesById {
   '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRouteWithChildren
   '/api/public/v1/links/$slug': typeof ApiPublicV1LinksSlugRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
+  '/api/public/v1/pop/claim': typeof ApiPublicV1PopClaimRoute
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
@@ -1764,6 +1773,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/invoices/$id'
     | '/api/public/v1/links/$slug'
     | '/api/public/v1/pay/$invoiceId'
+    | '/api/public/v1/pop/claim'
     | '/api/public/v1/stats/live'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
@@ -1928,6 +1938,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/invoices/$id'
     | '/api/public/v1/links/$slug'
     | '/api/public/v1/pay/$invoiceId'
+    | '/api/public/v1/pop/claim'
     | '/api/public/v1/stats/live'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
@@ -2099,6 +2110,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/invoices/$id'
     | '/api/public/v1/links/$slug'
     | '/api/public/v1/pay/$invoiceId'
+    | '/api/public/v1/pop/claim'
     | '/api/public/v1/stats/live'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
@@ -3259,6 +3271,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1PayInvoiceIdRouteImport
       parentRoute: typeof ApiRoute
     }
+    '/api/public/v1/pop/claim': {
+      id: '/api/public/v1/pop/claim'
+      path: '/public/v1/pop/claim'
+      fullPath: '/api/public/v1/pop/claim'
+      preLoaderRoute: typeof ApiPublicV1PopClaimRouteImport
+      parentRoute: typeof ApiRoute
+    }
     '/api/public/v1/stats/live': {
       id: '/api/public/v1/stats/live'
       path: '/public/v1/stats/live'
@@ -3688,6 +3707,7 @@ interface ApiRouteChildren {
   ApiPublicV1EgivingCausesRoute: typeof ApiPublicV1EgivingCausesRoute
   ApiPublicV1HooksAffiliateSaleRoute: typeof ApiPublicV1HooksAffiliateSaleRoute
   ApiPublicV1PayInvoiceIdRoute: typeof ApiPublicV1PayInvoiceIdRoute
+  ApiPublicV1PopClaimRoute: typeof ApiPublicV1PopClaimRoute
   ApiPublicV1StatsLiveRoute: typeof ApiPublicV1StatsLiveRoute
   ApiPublicV1TerminalsHeartbeatRoute: typeof ApiPublicV1TerminalsHeartbeatRoute
   ApiPublicV1TerminalsInvoiceRoute: typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
@@ -3724,6 +3744,7 @@ const ApiRouteChildren: ApiRouteChildren = {
   ApiPublicV1EgivingCausesRoute: ApiPublicV1EgivingCausesRoute,
   ApiPublicV1HooksAffiliateSaleRoute: ApiPublicV1HooksAffiliateSaleRoute,
   ApiPublicV1PayInvoiceIdRoute: ApiPublicV1PayInvoiceIdRoute,
+  ApiPublicV1PopClaimRoute: ApiPublicV1PopClaimRoute,
   ApiPublicV1StatsLiveRoute: ApiPublicV1StatsLiveRoute,
   ApiPublicV1TerminalsHeartbeatRoute: ApiPublicV1TerminalsHeartbeatRoute,
   ApiPublicV1TerminalsInvoiceRoute:
