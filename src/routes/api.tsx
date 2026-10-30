@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
+import { PaymentsApiReference } from "@/components/payments-api-reference";
 
 export const Route = createFileRoute("/api")({
   head: () => ({
@@ -61,7 +62,7 @@ function ApiPage() {
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           <Card title="Merchant directory" body="Open feed of every business that accepts crypto through Nectar.Pay. No key needed." href="#directory" />
-          <Card title="Payments API" body="Create invoices, payment links, check status and receive signed webhooks. Needs a store API key." to="/docs" />
+          <Card title="Payments API" body="Create invoices, payment links, check status and receive signed webhooks. Needs a store API key." href="#payments" />
           <Card title="Machine-readable spec" body="OpenAPI description and AI-friendly docs for tools and agents." href="/openapi.json" />
         </div>
 
@@ -99,13 +100,26 @@ function ApiPage() {
           </div>
         </section>
 
-        <section className="mt-14">
-          <h2 className="text-2xl font-semibold tracking-tight">Payments API</h2>
+        <section id="payments" className="mt-14 scroll-mt-20">
+          <h2 className="text-2xl font-semibold tracking-tight">Payments API — full reference</h2>
           <p className="mt-2 max-w-3xl text-muted-foreground">
-            For stores and plugins: invoices, payment links, rates, store info and signed webhooks. Full reference in the{" "}
-            <Link to="/docs" className="text-primary underline">developer docs</Link>; keys are explained on{" "}
-            <Link to="/docs/api-keys" className="text-primary underline">API keys</Link>.
+            For stores and plugins: invoices, payment links, rates, store info and signed webhooks. Step-by-step guides:{" "}
+            <Link to="/docs/api-keys" className="text-primary underline">API keys</Link>,{" "}
+            <Link to="/docs/wallet-setup" className="text-primary underline">wallet setup</Link>,{" "}
+            <Link to="/docs/address-rotation" className="text-primary underline">address rotation</Link>,{" "}
+            <Link to="/docs/tap-to-pay-tangem" className="text-primary underline">tap to pay (Tangem)</Link>.
           </p>
+          <div className="[&>section]:mx-0 [&>section]:max-w-4xl [&>section]:px-0 [&>section]:py-4 [&>section>h1]:hidden [&>section>h1+p]:hidden">
+            <PaymentsApiReference />
+          </div>
+        </section>
+
+        <section id="partners" className="mt-14 scroll-mt-20">
+          <h2 className="text-2xl font-semibold tracking-tight">Partner APIs</h2>
+          <div className="mt-6 grid gap-4 text-sm md:grid-cols-2">
+            <Endpoint method="GET" path="/api/public/v1/egiving/causes" desc="Signed public list of approved eGiving churches. Optional ?q= (search) and ?code=. Every response is TXC-message-signed; wallets should pin the signer address." />
+            <Endpoint method="POST" path="/api/public/v1/pop/claim" desc="For approved wallet partners: claim the POP reward for a paid sale (HMAC-signed). Each sale can be claimed once." />
+          </div>
         </section>
       </main>
       <MarketingFooter />
