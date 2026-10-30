@@ -169,6 +169,13 @@
       "when": 1793288541311,
       "tag": "0023_timezone_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1793351461052,
+      "tag": "0024_egiving_public_causes",
+      "breakpoints": true
     }
   ]
 }
