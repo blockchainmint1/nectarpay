@@ -8,6 +8,9 @@ import { MobileTabBar } from "@/components/mobile-tab-bar";
 
 
 export const Route = createFileRoute("/_authenticated/admin")({
+  // The guard below reads the browser session, which SSR has no access to; without this,
+  // opening or refreshing any /admin/... URL straight from the address bar bounces to Overview.
+  ssr: false,
   beforeLoad: async () => {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw redirect({ to: "/auth" });
