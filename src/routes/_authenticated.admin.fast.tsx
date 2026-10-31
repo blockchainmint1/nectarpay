@@ -6,7 +6,7 @@ import { ChevronDown, ChevronRight, HeartHandshake, Loader2, Printer, CheckCircl
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { qrToDataURL } from "@/lib/qr";
-import { stickerPath } from "@/lib/fast-enroll";
+import { stickerPath, storeIsLive, welcomeEmailOutstanding } from "@/lib/fast-enroll";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -52,12 +52,18 @@ function AdminFast() {
   const rows = useMemo(() => sortRows(q.data ?? [], sort, ACCESSORS), [q.data, sort]);
   const onSort = (key: Key) => setSort((s) => toggleSort(s, key));
 
-  async function approve(r: Enrollment) {
-    if (!window.confirm(`Activate ${r.business_name}? This starter store will be managed by your admin account, with payment emails sent to ${r.email}.`)) return;
+  async function retry(r: Enrollment) {
+    if (!storeIsLive(r) && !window.confirm(`Finish setup for ${r.business_name}? The starter store stays under your admin account, and payment emails go to ${r.email}.`)) return;
     setBusy(r.id);
-    try { await activate({ data: { id: r.id } }); toast.success("Merchant activated"); await q.refetch(); }
-    catch (e) { toast.error(e instanceof Error ? e.message : "Activation failed."); }
-    finally { setBusy(null); }
+    try {
+      await activate({ data: { id: r.id } });
+      toast.success(storeIsLive(r) ? "Welcome kit sent" : `${r.business_name} is live`);
+      await q.refetch();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Setup could not be finished.");
+    } finally {
+      setBusy(null);
+    }
   }
   async function showSticker(r: Enrollment) {
     try { const qr = await qrToDataURL(`https://app.nectar-pay.com${stickerPath(r.coin_id)}`, { width: 640, margin: 3, errorCorrectionLevel: "M" }); setSticker({ code: r.coin_id, name: r.business_name, qr }); }
@@ -77,8 +83,9 @@ function AdminFast() {
       <div>
         <h1 className="text-2xl font-semibold">Fast enrollments</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Submitted from the public enrollment page with a Cold Storage Coin ID. The coin ID is the sticker code,
-          and the wallet it resolves to is where TSD lands.
+          Merchants go live the moment they submit from the public page — the coin ID is the sticker code, and the
+          wallet it resolves to is where TSD lands. This list is for watching: it flags any setup that didn't finish
+          and lets you resend a welcome kit.
         </p>
       </div>
 
@@ -140,7 +147,9 @@ function AdminFast() {
                         {r.egiving_opt_in ? <HeartHandshake className="h-4 w-4 text-primary" /> : <span className="text-muted-foreground">—</span>}
                       </td>
                       <td className="px-3 py-2">
-                        <Badge variant={r.status === "pending" ? "secondary" : "outline"}>{r.status}</Badge>
+                        <Badge variant={storeIsLive(r) ? "outline" : "destructive"}>
+                          {storeIsLive(r) ? "live" : "needs attention"}
+                        </Badge>
                       </td>
                       <td className="px-3 py-2 text-muted-foreground">{new Date(r.created_at).toLocaleString()}</td>
                     </tr>
@@ -163,9 +172,14 @@ function AdminFast() {
                             <Detail label="Welcome email" value={r.welcome_sent_at ? `Sent ${new Date(r.welcome_sent_at).toLocaleString()}` : r.welcome_error ? `Failed: ${r.welcome_error}` : r.status === "activated" ? "Not sent" : null} />
                           </dl>
                           <div className="mt-4 flex flex-wrap items-center gap-3">
-                            {r.status === "pending" && <Button disabled={busy === r.id} onClick={() => approve(r)}><CheckCircle2 className="mr-2 h-4 w-4" />{busy === r.id ? "Activating…" : "Activate starter store"}</Button>}
+                            {(!storeIsLive(r) || welcomeEmailOutstanding(r)) && (
+                              <Button disabled={busy === r.id} onClick={() => retry(r)}>
+                                <CheckCircle2 className="mr-2 h-4 w-4" />
+                                {busy === r.id ? "Finishing setup…" : storeIsLive(r) ? "Resend welcome kit" : "Finish setup"}
+                              </Button>
+                            )}
                             <Button variant="outline" onClick={() => showSticker(r)}><Printer className="mr-2 h-4 w-4" />Sticker</Button>
-                            {r.status === "activated" && <a className="text-primary underline" href={stickerPath(r.coin_id)} target="_blank" rel="noreferrer">Open payment page</a>}
+                            {storeIsLive(r) && <a className="text-primary underline" href={stickerPath(r.coin_id)} target="_blank" rel="noreferrer">Open payment page</a>}
                           </div>
                         </td>
                       </tr>

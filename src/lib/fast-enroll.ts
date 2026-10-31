@@ -104,3 +104,28 @@ export function normalizeWebsite(raw: string | null | undefined): WebsiteResult 
   const path = url.pathname === "/" ? "" : url.pathname.replace(/\/+$/, "");
   return { ok: true, value: `https://${url.hostname}${url.port ? `:${url.port}` : ""}${path}` };
 }
+
+/* ------------------------------------------------------------------ */
+/* Auto go-live: what the admin queue still has to watch                */
+/* ------------------------------------------------------------------ */
+
+/**
+ * A submission goes live on its own the moment the coin checks out, so a row is
+ * only finished when it is activated AND linked to a store. Anything else is a
+ * setup that failed and needs one retry.
+ */
+export function storeIsLive(row: { status: string; store_id: string | null }): boolean {
+  return row.status === "activated" && !!row.store_id;
+}
+
+/**
+ * The welcome kit is what tells a merchant their sticker works. A live store
+ * whose email never went out — including one that failed — is still owed it.
+ */
+export function welcomeEmailOutstanding(row: {
+  status: string;
+  store_id: string | null;
+  welcome_sent_at: string | null;
+}): boolean {
+  return storeIsLive(row) && !row.welcome_sent_at;
+}

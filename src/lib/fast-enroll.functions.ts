@@ -104,7 +104,7 @@ export const submitFastEnrollment = createServerFn({ method: "POST" })
 
     if (honeypotFilled(data.companyUrl)) {
       // A script filled the field no person can see. Answer as if it worked, save nothing.
-      return { id: "", coin_id: coinId, tsd_address: coin.address };
+      return { id: "", coin_id: coinId, tsd_address: coin.address, live: false, emailed: false };
     }
 
     const ip = visitorIp();
