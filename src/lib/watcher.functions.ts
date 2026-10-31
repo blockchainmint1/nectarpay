@@ -506,7 +506,7 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string, hintTxid?: string
     const isConfirmed = credit.confirmations >= required;
     const creditTimeMs = credit.blockTime == null ? null : credit.blockTime * 1000;
     if (creditPredatesInvoice(creditTimeMs, inv.created_at)) continue;
-    if (!await claimStickerCredit({ invoiceId: inv.id, txid: credit.txid, amount: paidCrypto, invoiceAmount: Number(inv.fiat_amount), blockTimeMs: creditTimeMs, createdAt: inv.created_at, ...credit })) continue;
+    if (!await claimStickerCredit({ ...credit, invoiceId: inv.id, amount: paidCrypto, invoiceAmount: Number(inv.fiat_amount), blockTimeMs: creditTimeMs, createdAt: inv.created_at })) continue;
     const recorded = await recordTransaction(inv.id, credit.txid, paidCrypto, credit.confirmations, null, isConfirmed, null, creditTimeMs);
     if (!recorded) continue;
     if (isConfirmed) {
@@ -772,7 +772,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             const isConfirmed = credit.confirmations >= required;
             const creditTimeMs = credit.blockTime == null ? null : credit.blockTime * 1000;
             if (creditPredatesInvoice(creditTimeMs, inv.created_at)) continue;
-            if (!await claimStickerCredit({ invoiceId: inv.id, txid: credit.txid, amount: paidCrypto, invoiceAmount: Number(inv.fiat_amount), blockTimeMs: creditTimeMs, createdAt: inv.created_at, ...credit })) continue;
+            if (!await claimStickerCredit({ ...credit, invoiceId: inv.id, amount: paidCrypto, invoiceAmount: Number(inv.fiat_amount), blockTimeMs: creditTimeMs, createdAt: inv.created_at })) continue;
             const recorded = await recordTransaction(
               inv.id,
               credit.txid,
