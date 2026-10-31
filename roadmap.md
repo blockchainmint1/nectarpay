@@ -5,6 +5,8 @@
 - [x] Add atomic admin-managed starter-store activation and printable sticker access; no email-only account ownership claims.
 - [x] Verify public dQdbix enrollment, admin activation, printable QR and $1 TSD invoice at the correct cold-coin address; wrong-case and overlapping checkout refused; 20 tests passed.
 - [x] Collect an optional merchant website on the public /fast form (normalized to a real link, shown in Admin, copied into the store profile when the starter store is activated); 145 tests passed.
+- [x] Auto go-live after the double coin check, welcome email (sticker link, 14-day Telegram alert link, create-login link), store-level Telegram alerts; admin sees welcome status; 148 tests passed.
+- [ ] Text-message and WhatsApp alerts: deferred by Bobby (need Twilio / Meta approval).
 - [ ] Verify real payment and merchant alert: Bobby must pay the test invoice after website publication; no funds sent. Starter safety defaults are one checkout at a time and $0.50–$250.
 - [ ] Merchant account claiming/transfer remains a later ownership-verification step; starter stores are admin-managed, not falsely assigned to submitted emails.
 
