@@ -60,8 +60,12 @@ export function clientIpFromHeaders(get: (name: string) => string | null): strin
   return alt?.trim() || null;
 }
 
-/** Bot trap: a hidden field people never see, so only a script ever fills it in. */
-export const HONEYPOT_FIELD = "company_url";
+/**
+ * Bot trap: a hidden field people never see, so only a script ever fills it in.
+ * The name is deliberately meaningless — a browser that autofills a field called
+ * "company_url" would silently discard a real merchant's enrollment.
+ */
+export const HONEYPOT_FIELD = "hp_x9";
 
 export function honeypotFilled(value: string | undefined | null): boolean {
   return typeof value === "string" && value.trim() !== "";

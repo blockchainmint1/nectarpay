@@ -182,7 +182,7 @@ function FastPage() {
             </Field>
             <Field label="Website">
               <Input
-                type="url"
+                type="text"
                 inputMode="url"
                 autoComplete="url"
                 spellCheck={false}
