@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, HeartHandshake, Loader2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -88,7 +88,7 @@ function AdminFast() {
               {rows.map((r) => {
                 const isOpen = open === r.id;
                 return (
-                  <>
+                  <Fragment key={r.id}>
                     <tr key={r.id} className="cursor-pointer hover:bg-muted/40" onClick={() => setOpen(isOpen ? null : r.id)}>
                       <td className="px-2 py-2 text-muted-foreground">
                         {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -123,7 +123,7 @@ function AdminFast() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
             </tbody>
