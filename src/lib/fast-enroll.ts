@@ -17,3 +17,35 @@ export function isTxcAddress(a: string): boolean {
 export function coinIdMatchesAddress(coinId: string, address: string): boolean {
   return address.slice(1, 7) === coinId;
 }
+
+/* ------------------------------------------------------------------ */
+/* Public-form abuse controls                                           */
+/* ------------------------------------------------------------------ */
+
+/** At most this many enrollments from one address... */
+export const ENROLL_IP_MAX = 5;
+/** ...inside this many minutes. */
+export const ENROLL_IP_WINDOW_MIN = 30;
+
+/** True while an address that already made `recentCount` submissions may make one more. */
+export function ipWithinLimit(recentCount: number, max: number = ENROLL_IP_MAX): boolean {
+  return recentCount < max;
+}
+
+/** The visitor's address. Proxies append to x-forwarded-for, so the first hop is the client. */
+export function clientIpFromHeaders(get: (name: string) => string | null): string | null {
+  const xff = get("x-forwarded-for");
+  if (xff) {
+    const first = xff.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  const alt = get("cf-connecting-ip") ?? get("x-real-ip");
+  return alt?.trim() || null;
+}
+
+/** Bot trap: a hidden field people never see, so only a script ever fills it in. */
+export const HONEYPOT_FIELD = "company_url";
+
+export function honeypotFilled(value: string | undefined | null): boolean {
+  return typeof value === "string" && value.trim() !== "";
+}

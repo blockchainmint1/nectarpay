@@ -795,8 +795,9 @@ export type Database = {
           created_at: string
           egiving_opt_in: boolean
           email: string
-          enrolled_by: string
+          enrolled_by: string | null
           id: string
+          ip: string | null
           phone: string | null
           postal_code: string | null
           region: string | null
@@ -814,8 +815,9 @@ export type Database = {
           created_at?: string
           egiving_opt_in?: boolean
           email: string
-          enrolled_by: string
+          enrolled_by?: string | null
           id?: string
+          ip?: string | null
           phone?: string | null
           postal_code?: string | null
           region?: string | null
@@ -833,8 +835,9 @@ export type Database = {
           created_at?: string
           egiving_opt_in?: boolean
           email?: string
-          enrolled_by?: string
+          enrolled_by?: string | null
           id?: string
+          ip?: string | null
           phone?: string | null
           postal_code?: string | null
           region?: string | null
@@ -3047,6 +3050,14 @@ export type Database = {
     }
     Functions: {
       api_rate_hit: { Args: { _key_id: string }; Returns: number }
+      fast_enrollment_coin_taken: {
+        Args: { _coin_id: string }
+        Returns: boolean
+      }
+      fast_enrollment_ip_recent: {
+        Args: { _ip: string; _minutes: number }
+        Returns: number
+      }
       get_merchant_map_pins: {
         Args: never
         Returns: {

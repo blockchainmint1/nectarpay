@@ -21,6 +21,7 @@ import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DemoResetRouteImport } from './routes/demo-reset'
 import { Route as DirectoryRouteImport } from './routes/directory'
 import { Route as DocsRouteImport } from './routes/docs'
+import { Route as FastRouteImport } from './routes/fast'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as KycRouteImport } from './routes/kyc'
 import { Route as LiveRouteImport } from './routes/live'
@@ -46,7 +47,6 @@ import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedCustomersRouteImport } from './routes/_authenticated.customers'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedExportsRouteImport } from './routes/_authenticated.exports'
-import { Route as AuthenticatedFastRouteImport } from './routes/_authenticated.fast'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated.notifications'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated.reports'
 import { Route as AuthenticatedTerminalsRouteImport } from './routes/_authenticated.terminals'
@@ -82,6 +82,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminCardPartnersRouteImport } from './routes/_authenticated.admin.card-partners'
 import { Route as AuthenticatedAdminCrmRouteImport } from './routes/_authenticated.admin.crm'
 import { Route as AuthenticatedAdminEgivingRouteImport } from './routes/_authenticated.admin.egiving'
+import { Route as AuthenticatedAdminFastRouteImport } from './routes/_authenticated.admin.fast'
 import { Route as AuthenticatedAdminGiveRouteImport } from './routes/_authenticated.admin.give'
 import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated.admin.invoices'
 import { Route as AuthenticatedAdminKnowledgeRouteImport } from './routes/_authenticated.admin.knowledge'
@@ -241,6 +242,11 @@ const DocsRoute = DocsRouteImport.update({
   path: '/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FastRoute = FastRouteImport.update({
+  id: '/fast',
+  path: '/fast',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HelpRoute = HelpRouteImport.update({
   id: '/help',
   path: '/help',
@@ -364,11 +370,6 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 const AuthenticatedExportsRoute = AuthenticatedExportsRouteImport.update({
   id: '/exports',
   path: '/exports',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedFastRoute = AuthenticatedFastRouteImport.update({
-  id: '/fast',
-  path: '/fast',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedNotificationsRoute =
@@ -552,6 +553,11 @@ const AuthenticatedAdminEgivingRoute =
     path: '/egiving',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminFastRoute = AuthenticatedAdminFastRouteImport.update({
+  id: '/fast',
+  path: '/fast',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedAdminGiveRoute = AuthenticatedAdminGiveRouteImport.update({
   id: '/give',
   path: '/give',
@@ -1130,6 +1136,7 @@ export interface FileRoutesByFullPath {
   '/demo-reset': typeof DemoResetRoute
   '/directory': typeof DirectoryRoute
   '/docs': typeof DocsRouteWithChildren
+  '/fast': typeof FastRoute
   '/help': typeof HelpRoute
   '/kyc': typeof KycRoute
   '/live': typeof LiveRoute
@@ -1155,7 +1162,6 @@ export interface FileRoutesByFullPath {
   '/customers': typeof AuthenticatedCustomersRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exports': typeof AuthenticatedExportsRoute
-  '/fast': typeof AuthenticatedFastRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/reports': typeof AuthenticatedReportsRouteWithChildren
   '/terminals': typeof AuthenticatedTerminalsRoute
@@ -1189,6 +1195,7 @@ export interface FileRoutesByFullPath {
   '/admin/card-partners': typeof AuthenticatedAdminCardPartnersRoute
   '/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/admin/egiving': typeof AuthenticatedAdminEgivingRoute
+  '/admin/fast': typeof AuthenticatedAdminFastRoute
   '/admin/give': typeof AuthenticatedAdminGiveRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
@@ -1302,6 +1309,7 @@ export interface FileRoutesByTo {
   '/compare': typeof CompareRoute
   '/demo-reset': typeof DemoResetRoute
   '/directory': typeof DirectoryRoute
+  '/fast': typeof FastRoute
   '/help': typeof HelpRoute
   '/kyc': typeof KycRoute
   '/live': typeof LiveRoute
@@ -1325,7 +1333,6 @@ export interface FileRoutesByTo {
   '/customers': typeof AuthenticatedCustomersRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/exports': typeof AuthenticatedExportsRoute
-  '/fast': typeof AuthenticatedFastRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/terminals': typeof AuthenticatedTerminalsRoute
   '/verify': typeof AuthenticatedVerifyRoute
@@ -1357,6 +1364,7 @@ export interface FileRoutesByTo {
   '/account/users': typeof AuthenticatedAccountUsersRoute
   '/admin/card-partners': typeof AuthenticatedAdminCardPartnersRoute
   '/admin/egiving': typeof AuthenticatedAdminEgivingRoute
+  '/admin/fast': typeof AuthenticatedAdminFastRoute
   '/admin/give': typeof AuthenticatedAdminGiveRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/lightning': typeof AuthenticatedAdminLightningRoute
@@ -1471,6 +1479,7 @@ export interface FileRoutesById {
   '/demo-reset': typeof DemoResetRoute
   '/directory': typeof DirectoryRoute
   '/docs': typeof DocsRouteWithChildren
+  '/fast': typeof FastRoute
   '/help': typeof HelpRoute
   '/kyc': typeof KycRoute
   '/live': typeof LiveRoute
@@ -1496,7 +1505,6 @@ export interface FileRoutesById {
   '/_authenticated/customers': typeof AuthenticatedCustomersRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/exports': typeof AuthenticatedExportsRoute
-  '/_authenticated/fast': typeof AuthenticatedFastRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRouteWithChildren
   '/_authenticated/terminals': typeof AuthenticatedTerminalsRoute
@@ -1530,6 +1538,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/card-partners': typeof AuthenticatedAdminCardPartnersRoute
   '/_authenticated/admin/crm': typeof AuthenticatedAdminCrmRouteWithChildren
   '/_authenticated/admin/egiving': typeof AuthenticatedAdminEgivingRoute
+  '/_authenticated/admin/fast': typeof AuthenticatedAdminFastRoute
   '/_authenticated/admin/give': typeof AuthenticatedAdminGiveRoute
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/_authenticated/admin/knowledge': typeof AuthenticatedAdminKnowledgeRouteWithChildren
@@ -1646,6 +1655,7 @@ export interface FileRouteTypes {
     | '/demo-reset'
     | '/directory'
     | '/docs'
+    | '/fast'
     | '/help'
     | '/kyc'
     | '/live'
@@ -1671,7 +1681,6 @@ export interface FileRouteTypes {
     | '/customers'
     | '/dashboard'
     | '/exports'
-    | '/fast'
     | '/notifications'
     | '/reports'
     | '/terminals'
@@ -1705,6 +1714,7 @@ export interface FileRouteTypes {
     | '/admin/card-partners'
     | '/admin/crm'
     | '/admin/egiving'
+    | '/admin/fast'
     | '/admin/give'
     | '/admin/invoices'
     | '/admin/knowledge'
@@ -1818,6 +1828,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/demo-reset'
     | '/directory'
+    | '/fast'
     | '/help'
     | '/kyc'
     | '/live'
@@ -1841,7 +1852,6 @@ export interface FileRouteTypes {
     | '/customers'
     | '/dashboard'
     | '/exports'
-    | '/fast'
     | '/notifications'
     | '/terminals'
     | '/verify'
@@ -1873,6 +1883,7 @@ export interface FileRouteTypes {
     | '/account/users'
     | '/admin/card-partners'
     | '/admin/egiving'
+    | '/admin/fast'
     | '/admin/give'
     | '/admin/invoices'
     | '/admin/lightning'
@@ -1986,6 +1997,7 @@ export interface FileRouteTypes {
     | '/demo-reset'
     | '/directory'
     | '/docs'
+    | '/fast'
     | '/help'
     | '/kyc'
     | '/live'
@@ -2011,7 +2023,6 @@ export interface FileRouteTypes {
     | '/_authenticated/customers'
     | '/_authenticated/dashboard'
     | '/_authenticated/exports'
-    | '/_authenticated/fast'
     | '/_authenticated/notifications'
     | '/_authenticated/reports'
     | '/_authenticated/terminals'
@@ -2045,6 +2056,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/card-partners'
     | '/_authenticated/admin/crm'
     | '/_authenticated/admin/egiving'
+    | '/_authenticated/admin/fast'
     | '/_authenticated/admin/give'
     | '/_authenticated/admin/invoices'
     | '/_authenticated/admin/knowledge'
@@ -2161,6 +2173,7 @@ export interface RootRouteChildren {
   DemoResetRoute: typeof DemoResetRoute
   DirectoryRoute: typeof DirectoryRoute
   DocsRoute: typeof DocsRouteWithChildren
+  FastRoute: typeof FastRoute
   HelpRoute: typeof HelpRoute
   KycRoute: typeof KycRoute
   LiveRoute: typeof LiveRoute
@@ -2283,6 +2296,13 @@ declare module '@tanstack/react-router' {
       path: '/docs'
       fullPath: '/docs'
       preLoaderRoute: typeof DocsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/fast': {
+      id: '/fast'
+      path: '/fast'
+      fullPath: '/fast'
+      preLoaderRoute: typeof FastRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/help': {
@@ -2458,13 +2478,6 @@ declare module '@tanstack/react-router' {
       path: '/exports'
       fullPath: '/exports'
       preLoaderRoute: typeof AuthenticatedExportsRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/fast': {
-      id: '/_authenticated/fast'
-      path: '/fast'
-      fullPath: '/fast'
-      preLoaderRoute: typeof AuthenticatedFastRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/notifications': {
@@ -2710,6 +2723,13 @@ declare module '@tanstack/react-router' {
       path: '/egiving'
       fullPath: '/admin/egiving'
       preLoaderRoute: typeof AuthenticatedAdminEgivingRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/fast': {
+      id: '/_authenticated/admin/fast'
+      path: '/fast'
+      fullPath: '/admin/fast'
+      preLoaderRoute: typeof AuthenticatedAdminFastRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/give': {
@@ -3480,6 +3500,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminCardPartnersRoute: typeof AuthenticatedAdminCardPartnersRoute
   AuthenticatedAdminCrmRoute: typeof AuthenticatedAdminCrmRouteWithChildren
   AuthenticatedAdminEgivingRoute: typeof AuthenticatedAdminEgivingRoute
+  AuthenticatedAdminFastRoute: typeof AuthenticatedAdminFastRoute
   AuthenticatedAdminGiveRoute: typeof AuthenticatedAdminGiveRoute
   AuthenticatedAdminInvoicesRoute: typeof AuthenticatedAdminInvoicesRoute
   AuthenticatedAdminKnowledgeRoute: typeof AuthenticatedAdminKnowledgeRouteWithChildren
@@ -3496,6 +3517,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminCardPartnersRoute: AuthenticatedAdminCardPartnersRoute,
   AuthenticatedAdminCrmRoute: AuthenticatedAdminCrmRouteWithChildren,
   AuthenticatedAdminEgivingRoute: AuthenticatedAdminEgivingRoute,
+  AuthenticatedAdminFastRoute: AuthenticatedAdminFastRoute,
   AuthenticatedAdminGiveRoute: AuthenticatedAdminGiveRoute,
   AuthenticatedAdminInvoicesRoute: AuthenticatedAdminInvoicesRoute,
   AuthenticatedAdminKnowledgeRoute:
@@ -3591,7 +3613,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCustomersRoute: typeof AuthenticatedCustomersRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedExportsRoute: typeof AuthenticatedExportsRoute
-  AuthenticatedFastRoute: typeof AuthenticatedFastRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRouteWithChildren
   AuthenticatedTerminalsRoute: typeof AuthenticatedTerminalsRoute
@@ -3612,7 +3633,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCustomersRoute: AuthenticatedCustomersRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedExportsRoute: AuthenticatedExportsRoute,
-  AuthenticatedFastRoute: AuthenticatedFastRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRouteWithChildren,
   AuthenticatedTerminalsRoute: AuthenticatedTerminalsRoute,
@@ -3869,6 +3889,7 @@ const rootRouteChildren: RootRouteChildren = {
   DemoResetRoute: DemoResetRoute,
   DirectoryRoute: DirectoryRoute,
   DocsRoute: DocsRouteWithChildren,
+  FastRoute: FastRoute,
   HelpRoute: HelpRoute,
   KycRoute: KycRoute,
   LiveRoute: LiveRoute,
