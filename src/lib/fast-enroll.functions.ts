@@ -150,9 +150,25 @@ export const listFastEnrollments = createServerFn({ method: "GET" })
     const { data } = await context.supabase
       .from("fast_enrollments")
       .select(
-        "id, coin_id, tsd_address, business_name, contact_name, email, phone, category, street, city, region, postal_code, country, egiving_opt_in, status, ip, created_at",
+        "id, coin_id, tsd_address, business_name, contact_name, email, phone, category, street, city, region, postal_code, country, egiving_opt_in, status, ip, created_at, store_id, activated_at",
       )
       .order("created_at", { ascending: false })
       .limit(200);
     return data ?? [];
+  });
+
+/** An administrator manages the starter store until the merchant claims an account. */
+export const activateFastEnrollment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error: readError } = await supabaseAdmin.from("fast_enrollments").select("coin_id, tsd_address").eq("id", data.id).single();
+    if (readError || !row) throw new Error("Enrollment not found.");
+    const checked = await lookupCoin(row.coin_id);
+    if (!checked.ok || checked.address !== row.tsd_address) throw new Error("Coin verification failed. Nothing activated.");
+    const { data: storeId, error } = await supabaseAdmin.rpc("activate_fast_sticker", { _id: data.id, _manager: context.userId });
+    if (error) throw new Error(error.message);
+    return { storeId };
   });

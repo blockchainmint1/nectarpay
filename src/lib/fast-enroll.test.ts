@@ -7,6 +7,8 @@ import {
   honeypotFilled,
   ipWithinLimit,
   normalizeCoinId,
+  stickerPath,
+  stickerCreditEligible,
 } from "./fast-enroll";
 
 describe("fast enrollment coin IDs", () => {
@@ -17,6 +19,24 @@ describe("fast enrollment coin IDs", () => {
   it("sticker code must be the 6 characters after the leading T", () => {
     expect(coinIdMatchesAddress("oaRhmG", "ToaRhmGqAW7PyvPJvbLJo69mnZwhaaA1vu")).toBe(true);
     expect(coinIdMatchesAddress("OARHMG", "ToaRhmGqAW7PyvPJvbLJo69mnZwhaaA1vu")).toBe(false);
+  });
+});
+
+describe("merchant stickers", () => {
+  it("uses the exact merchant coin code in the sticker URL", () => {
+    expect(stickerPath("dQdbix")).toBe("/s/dQdbix");
+    expect(stickerPath("dqdbix")).not.toBe(stickerPath("dQdbix"));
+  });
+  const credit = { txid: "new", excluded: ["old"], amount: 5, expected: 5, blockTimeMs: null, createdAt: "2026-10-31T15:22:00Z" };
+  it("does not reuse a payment already present when checkout started", () => {
+    expect(stickerCreditEligible({ ...credit, txid: "old" })).toBe(false);
+    expect(stickerCreditEligible(credit)).toBe(true);
+  });
+  it("does not guess a sale from a different amount", () => {
+    expect(stickerCreditEligible({ ...credit, amount: 4.99 })).toBe(false);
+  });
+  it("rejects a confirmed payment from before checkout", () => {
+    expect(stickerCreditEligible({ ...credit, blockTimeMs: Date.parse("2026-10-31T15:21:59Z") })).toBe(false);
   });
 });
 
