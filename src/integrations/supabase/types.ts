@@ -665,6 +665,7 @@ export type Database = {
         Row: {
           active: boolean
           address: string
+          blocked: boolean
           blurb: string | null
           city: string | null
           code: string | null
@@ -672,10 +673,13 @@ export type Database = {
           featured: boolean
           kind: string
           name: string
+          source: string
+          synced_at: string | null
         }
         Insert: {
           active?: boolean
           address: string
+          blocked?: boolean
           blurb?: string | null
           city?: string | null
           code?: string | null
@@ -683,10 +687,13 @@ export type Database = {
           featured?: boolean
           kind: string
           name: string
+          source?: string
+          synced_at?: string | null
         }
         Update: {
           active?: boolean
           address?: string
+          blocked?: boolean
           blurb?: string | null
           city?: string | null
           code?: string | null
@@ -694,6 +701,8 @@ export type Database = {
           featured?: boolean
           kind?: string
           name?: string
+          source?: string
+          synced_at?: string | null
         }
         Relationships: []
       }
@@ -844,6 +853,36 @@ export type Database = {
           status?: string
           street?: string | null
           tsd_address?: string
+        }
+        Relationships: []
+      }
+      hme_give_sync: {
+        Row: {
+          backup: Json | null
+          id: number
+          last_attempt_at: string | null
+          last_error: string | null
+          last_issued_at: string | null
+          last_synced_at: string | null
+          recipient_count: number
+        }
+        Insert: {
+          backup?: Json | null
+          id?: number
+          last_attempt_at?: string | null
+          last_error?: string | null
+          last_issued_at?: string | null
+          last_synced_at?: string | null
+          recipient_count?: number
+        }
+        Update: {
+          backup?: Json | null
+          id?: number
+          last_attempt_at?: string | null
+          last_error?: string | null
+          last_issued_at?: string | null
+          last_synced_at?: string | null
+          recipient_count?: number
         }
         Relationships: []
       }

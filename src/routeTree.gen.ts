@@ -143,6 +143,7 @@ import { Route as ApiPublicCronLightningRouteImport } from './routes/api/public/
 import { Route as ApiPublicCronRatesRouteImport } from './routes/api/public/cron/rates'
 import { Route as ApiPublicCronWatcherRouteImport } from './routes/api/public/cron/watcher'
 import { Route as ApiPublicHooksAlchemyActivityRouteImport } from './routes/api/public/hooks/alchemy-activity'
+import { Route as ApiPublicHooksHmeGiveRouteImport } from './routes/api/public/hooks/hme-give'
 import { Route as ApiPublicStoreLogoSplatRouteImport } from './routes/api.public.store-logo.$'
 import { Route as ApiPublicTelegramWebhookRouteImport } from './routes/api/public/telegram/webhook'
 import { Route as ApiPublicV1DirectoryRouteImport } from './routes/api/public/v1/directory'
@@ -906,6 +907,11 @@ const ApiPublicHooksAlchemyActivityRoute =
     path: '/public/hooks/alchemy-activity',
     getParentRoute: () => ApiRoute,
   } as any)
+const ApiPublicHooksHmeGiveRoute = ApiPublicHooksHmeGiveRouteImport.update({
+  id: '/public/hooks/hme-give',
+  path: '/public/hooks/hme-give',
+  getParentRoute: () => ApiRoute,
+} as any)
 const ApiPublicStoreLogoSplatRoute = ApiPublicStoreLogoSplatRouteImport.update({
   id: '/public/store-logo/$',
   path: '/public/store-logo/$',
@@ -1255,6 +1261,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
+  '/api/public/hooks/hme-give': typeof ApiPublicHooksHmeGiveRoute
   '/api/public/store-logo/$': typeof ApiPublicStoreLogoSplatRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/directory': typeof ApiPublicV1DirectoryRoute
@@ -1422,6 +1429,7 @@ export interface FileRoutesByTo {
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
+  '/api/public/hooks/hme-give': typeof ApiPublicHooksHmeGiveRoute
   '/api/public/store-logo/$': typeof ApiPublicStoreLogoSplatRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/directory': typeof ApiPublicV1DirectoryRoute
@@ -1598,6 +1606,7 @@ export interface FileRoutesById {
   '/api/public/cron/rates': typeof ApiPublicCronRatesRoute
   '/api/public/cron/watcher': typeof ApiPublicCronWatcherRoute
   '/api/public/hooks/alchemy-activity': typeof ApiPublicHooksAlchemyActivityRoute
+  '/api/public/hooks/hme-give': typeof ApiPublicHooksHmeGiveRoute
   '/api/public/store-logo/$': typeof ApiPublicStoreLogoSplatRoute
   '/api/public/telegram/webhook': typeof ApiPublicTelegramWebhookRoute
   '/api/public/v1/directory': typeof ApiPublicV1DirectoryRoute
@@ -1774,6 +1783,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
     | '/api/public/hooks/alchemy-activity'
+    | '/api/public/hooks/hme-give'
     | '/api/public/store-logo/$'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/directory'
@@ -1941,6 +1951,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
     | '/api/public/hooks/alchemy-activity'
+    | '/api/public/hooks/hme-give'
     | '/api/public/store-logo/$'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/directory'
@@ -2116,6 +2127,7 @@ export interface FileRouteTypes {
     | '/api/public/cron/rates'
     | '/api/public/cron/watcher'
     | '/api/public/hooks/alchemy-activity'
+    | '/api/public/hooks/hme-give'
     | '/api/public/store-logo/$'
     | '/api/public/telegram/webhook'
     | '/api/public/v1/directory'
@@ -3152,6 +3164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksAlchemyActivityRouteImport
       parentRoute: typeof ApiRoute
     }
+    '/api/public/hooks/hme-give': {
+      id: '/api/public/hooks/hme-give'
+      path: '/public/hooks/hme-give'
+      fullPath: '/api/public/hooks/hme-give'
+      preLoaderRoute: typeof ApiPublicHooksHmeGiveRouteImport
+      parentRoute: typeof ApiRoute
+    }
     '/api/public/store-logo/$': {
       id: '/api/public/store-logo/$'
       path: '/public/store-logo/$'
@@ -3751,6 +3770,7 @@ interface ApiRouteChildren {
   ApiPublicCronRatesRoute: typeof ApiPublicCronRatesRoute
   ApiPublicCronWatcherRoute: typeof ApiPublicCronWatcherRoute
   ApiPublicHooksAlchemyActivityRoute: typeof ApiPublicHooksAlchemyActivityRoute
+  ApiPublicHooksHmeGiveRoute: typeof ApiPublicHooksHmeGiveRoute
   ApiPublicStoreLogoSplatRoute: typeof ApiPublicStoreLogoSplatRoute
   ApiPublicTelegramWebhookRoute: typeof ApiPublicTelegramWebhookRoute
   ApiPublicV1DirectoryRoute: typeof ApiPublicV1DirectoryRoute
@@ -3788,6 +3808,7 @@ const ApiRouteChildren: ApiRouteChildren = {
   ApiPublicCronRatesRoute: ApiPublicCronRatesRoute,
   ApiPublicCronWatcherRoute: ApiPublicCronWatcherRoute,
   ApiPublicHooksAlchemyActivityRoute: ApiPublicHooksAlchemyActivityRoute,
+  ApiPublicHooksHmeGiveRoute: ApiPublicHooksHmeGiveRoute,
   ApiPublicStoreLogoSplatRoute: ApiPublicStoreLogoSplatRoute,
   ApiPublicTelegramWebhookRoute: ApiPublicTelegramWebhookRoute,
   ApiPublicV1DirectoryRoute: ApiPublicV1DirectoryRoute,

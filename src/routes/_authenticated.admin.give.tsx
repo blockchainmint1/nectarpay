@@ -226,16 +226,25 @@ function RecipientsSection() {
   }
 
   async function toggle(addr: string, active: boolean) {
-    const { error } = await supabase.from("egiving_recipients").update({ active }).eq("address", addr);
+    // For HME Give churches, switching off is a local block that survives their next list update.
+    const { error } = await supabase.from("egiving_recipients").update({ active, blocked: !active }).eq("address", addr);
     if (error) return toast.error(error.message);
     void q.refetch();
   }
+  const sync = useQuery({
+    queryKey: ["admin", "hme-give-sync"],
+    queryFn: async () => (await supabase.from("hme_give_sync").select("last_synced_at, last_error, recipient_count").eq("id", 1).maybeSingle()).data,
+  });
 
   return (
     <section className="space-y-4">
       <SectionHeader icon={<HeartHandshake className="h-5 w-5" />} title="Approved donation recipients"
         text="A payment only gets the community discount when the non-store shares go to a church listed here plus the NectarGive program wallet above."
         onAdd={() => setAdding((a) => !a)} adding={adding} />
+      <p className="text-xs text-muted-foreground">
+        HME Give list: {sync.data?.last_synced_at ? `last updated ${new Date(sync.data.last_synced_at).toLocaleString()} (${sync.data.recipient_count} churches)` : "not received yet"}
+        {sync.data?.last_error ? ` · last problem: ${sync.data.last_error}` : ""}
+      </p>
 
       {adding && (
         <Card className="grid gap-3 p-4 sm:grid-cols-[1fr_2fr_auto] sm:items-center">
@@ -258,7 +267,7 @@ function RecipientsSection() {
               <div className="grid cursor-pointer grid-cols-[1fr_auto_auto_2rem] items-center gap-4 px-4 py-3 hover:bg-muted/30 md:grid-cols-[1fr_auto_1.4fr_auto_2rem]"
                 onClick={() => setOpen(isOpen ? null : r.address)}>
                 <span className="font-medium">{r.name}</span>
-                <Pill tone={r.kind === "church" ? "primary" : "muted"}>{r.kind === "church" ? "Church" : "Program"}</Pill>
+                <Pill tone={r.source === "hme_give" ? "good" : "primary"}>{r.source === "hme_give" ? (r.blocked ? "HME Give · blocked" : "HME Give") : "Added here"}</Pill>
                 <span className="hidden truncate font-mono text-xs text-muted-foreground md:block">{r.address.slice(0, 8)}…{r.address.slice(-6)}</span>
                 <div onClick={(e) => e.stopPropagation()}>
                   <Switch checked={r.active} onCheckedChange={(v) => toggle(r.address, v)} aria-label={`${r.name} on`} />

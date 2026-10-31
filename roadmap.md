@@ -71,3 +71,7 @@
 - [x] Celebratory paid-sale message and clear underpayment warning
 - [x] Branded subscription renewal receipts and friendly billing warnings
 - [x] Send Bobby a sample of the upgraded billing renewal email.
+
+## HME Give church list
+- [x] Accept HME Give's signed church list (pull every 5 min + push hook), keep last good list as backup, local admin block
+- [ ] Go live — waiting on HME Give's list URL and signing address
