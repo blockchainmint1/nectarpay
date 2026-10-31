@@ -816,6 +816,8 @@ export type Database = {
           street: string | null
           tsd_address: string
           website: string | null
+          welcome_error: string | null
+          welcome_sent_at: string | null
         }
         Insert: {
           activated_at?: string | null
@@ -839,6 +841,8 @@ export type Database = {
           street?: string | null
           tsd_address: string
           website?: string | null
+          welcome_error?: string | null
+          welcome_sent_at?: string | null
         }
         Update: {
           activated_at?: string | null
@@ -862,6 +866,8 @@ export type Database = {
           street?: string | null
           tsd_address?: string
           website?: string | null
+          welcome_error?: string | null
+          welcome_sent_at?: string | null
         }
         Relationships: [
           {
@@ -2667,6 +2673,7 @@ export type Database = {
           consumed_at: string | null
           created_at: string
           expires_at: string
+          store_id: string | null
           user_id: string
         }
         Insert: {
@@ -2674,6 +2681,7 @@ export type Database = {
           consumed_at?: string | null
           created_at?: string
           expires_at?: string
+          store_id?: string | null
           user_id: string
         }
         Update: {
@@ -2681,6 +2689,7 @@ export type Database = {
           consumed_at?: string | null
           created_at?: string
           expires_at?: string
+          store_id?: string | null
           user_id?: string
         }
         Relationships: []

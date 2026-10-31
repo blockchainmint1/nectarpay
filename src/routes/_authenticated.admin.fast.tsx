@@ -160,6 +160,7 @@ function AdminFast() {
                             />
                             <Detail label="Wallet (TSD)" value={r.tsd_address} mono />
                             <Detail label="Submitted from" value={r.ip} mono />
+                            <Detail label="Welcome email" value={r.welcome_sent_at ? `Sent ${new Date(r.welcome_sent_at).toLocaleString()}` : r.welcome_error ? `Failed: ${r.welcome_error}` : r.status === "activated" ? "Not sent" : null} />
                           </dl>
                           <div className="mt-4 flex flex-wrap items-center gap-3">
                             {r.status === "pending" && <Button disabled={busy === r.id} onClick={() => approve(r)}><CheckCircle2 className="mr-2 h-4 w-4" />{busy === r.id ? "Activating…" : "Activate starter store"}</Button>}

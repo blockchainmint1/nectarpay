@@ -225,6 +225,13 @@
       "when": 1793462649171,
       "tag": "0031_fast_enrollment_website",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1793464634313,
+      "tag": "0032_fast_auto_welcome",
+      "breakpoints": true
     }
   ]
 }

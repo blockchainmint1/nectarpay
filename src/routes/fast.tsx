@@ -50,7 +50,7 @@ function FastPage() {
   const [give, setGive] = useState(true);
   const [saving, setSaving] = useState(false);
   const [companyUrl, setCompanyUrl] = useState("");
-  const [done, setDone] = useState<{ coin_id: string; tsd_address: string; name: string } | null>(null);
+  const [done, setDone] = useState<{ coin_id: string; tsd_address: string; name: string; live?: boolean; emailed?: boolean } | null>(null);
 
   const set = (k: keyof typeof empty) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
 
@@ -88,10 +88,19 @@ function FastPage() {
         <MarketingNav />
         <main className="mx-auto max-w-xl px-4 py-16 text-center">
           <CheckCircle2 className="mx-auto h-14 w-14 text-primary" />
-          <h1 className="mt-4 text-2xl font-semibold">Thank you — {done.name} is in the queue</h1>
+          <h1 className="mt-4 text-2xl font-semibold">
+            {done.live ? `${done.name} is live — you can take TSD now` : `Thank you — ${done.name} is in the queue`}
+          </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            We'll check the details and set the store up. Nothing is live yet.
+            {done.live
+              ? done.emailed
+                ? "We just emailed your welcome kit: your payment page, Telegram alerts, and how to finish your account."
+                : "Your sticker works now. Your welcome email didn't go out yet — our team will follow up."
+              : "We'll finish setting the store up shortly."}
           </p>
+          {done.live && (
+            <a className="mt-4 inline-block text-primary underline" href={`/s/${encodeURIComponent(done.coin_id)}`}>Open my payment page</a>
+          )}
           <p className="mt-8 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">Sticker code</p>
           <p className="font-mono text-4xl font-bold tracking-widest">{done.coin_id}</p>
           <p className="mt-3 break-all font-mono text-xs text-muted-foreground">TSD payments land at {done.tsd_address}</p>
@@ -118,7 +127,7 @@ function FastPage() {
           {[
             { icon: <Coins className="h-4 w-4" />, t: "Check the coin", d: "We confirm it with Cold Storage Coins and show the wallet behind it." },
             { icon: <Store className="h-4 w-4" />, t: "Add the business", d: "Name, contact and address — that's all we need to get started." },
-            { icon: <Tags className="h-4 w-4" />, t: "We review it", d: "The store goes live after a person looks it over. Nothing is live yet." },
+            { icon: <Tags className="h-4 w-4" />, t: "Start selling", d: "Your sticker works the moment you submit, and your welcome email arrives." },
           ].map((s) => (
             <li key={s.t} className="rounded-xl border border-border p-3">
               <span className="flex items-center gap-2 font-medium">{s.icon}{s.t}</span>

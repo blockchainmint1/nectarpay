@@ -144,7 +144,10 @@ export const submitFastEnrollment = createServerFn({ method: "POST" })
       if (error.code === "23505") throw new Error("That coin is already assigned to another merchant.");
       throw new Error("Couldn't save the enrollment.");
     }
-    return row;
+    // The coin was verified twice above, so the sticker goes live right away.
+    const { activateAndWelcome } = await import("@/lib/fast-welcome.server");
+    const live = await activateAndWelcome(row.id);
+    return { ...row, live: !!live.storeId, emailed: live.emailed };
   });
 
 /** Admin only: the review queue for enrollments coming in from the public page. */
@@ -155,7 +158,7 @@ export const listFastEnrollments = createServerFn({ method: "GET" })
     const { data } = await context.supabase
       .from("fast_enrollments")
       .select(
-        "id, coin_id, tsd_address, business_name, contact_name, email, phone, website, category, street, city, region, postal_code, country, egiving_opt_in, status, ip, created_at, store_id, activated_at",
+        "id, coin_id, tsd_address, business_name, contact_name, email, phone, website, category, street, city, region, postal_code, country, egiving_opt_in, status, ip, created_at, store_id, activated_at, welcome_sent_at, welcome_error",
       )
       .order("created_at", { ascending: false })
       .limit(200);
@@ -173,7 +176,8 @@ export const activateFastEnrollment = createServerFn({ method: "POST" })
     if (readError || !row) throw new Error("Enrollment not found.");
     const checked = await lookupCoin(row.coin_id);
     if (!checked.ok || checked.address !== row.tsd_address) throw new Error("Coin verification failed. Nothing activated.");
-    const { data: storeId, error } = await supabaseAdmin.rpc("activate_fast_sticker", { _id: data.id, _manager: context.userId });
-    if (error) throw new Error(error.message);
-    return { storeId };
+    const { activateAndWelcome } = await import("@/lib/fast-welcome.server");
+    const live = await activateAndWelcome(data.id);
+    if (!live.storeId) throw new Error("Activation failed. Nothing changed.");
+    return { storeId: live.storeId, emailed: live.emailed };
   });
