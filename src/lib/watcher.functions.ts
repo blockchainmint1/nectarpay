@@ -279,9 +279,16 @@ async function applyEgiving(
   const { egivingDecision } = await import("./egiving");
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const addrs = (credit.splitRecipients ?? []).map((r) => r.address).filter((a): a is string => !!a && a !== merchantAddress);
-  const { data: reg } = addrs.length
-    ? await supabaseAdmin.from("egiving_recipients").select("address, kind").in("address", addrs).eq("active", true)
-    : { data: [] as Array<{ address: string; kind: string }> };
+  const loadReg = async () => addrs.length
+    ? (await supabaseAdmin.from("egiving_recipients").select("address, kind").in("address", addrs).eq("active", true)).data
+    : [] as Array<{ address: string; kind: string }>;
+  let reg = await loadReg();
+  // An unknown address may be a church HME Give just approved: re-check their list once.
+  if ((reg ?? []).length < addrs.length) {
+    const { syncHmeGive } = await import("./hme-give-registry.server");
+    const s = await syncHmeGive(30);
+    if (s.applied) reg = await loadReg();
+  }
   const registry = new Map((reg ?? []).map((r) => [r.address, r.kind as "church" | "program"]));
   const d = egivingDecision({ store, tokenSymbol, sendToMany: true, creditUsd, invoiceUsd, merchantAddress, recipients: credit.splitRecipients, registry });
   if (!d.program) return invoiceUsd;
