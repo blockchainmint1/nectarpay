@@ -104,12 +104,13 @@ export async function notifyUser(
     email_enabled: boolean;
     email_address: string | null;
     telegram_enabled: boolean;
+    telegram_chat_id: string | null;
     events: Record<string, boolean>;
   } | null = null;
   if (payload.storeId) {
     const { data: row } = await supabaseAdmin
       .from("store_notification_prefs")
-      .select("enabled, email_enabled, email_address, telegram_enabled, events")
+      .select("enabled, email_enabled, email_address, telegram_enabled, telegram_chat_id, events")
       .eq("user_id", userId)
       .eq("store_id", payload.storeId)
       .maybeSingle();
@@ -119,6 +120,7 @@ export async function notifyUser(
         email_enabled: row.email_enabled,
         email_address: row.email_address,
         telegram_enabled: row.telegram_enabled,
+        telegram_chat_id: row.telegram_chat_id ?? null,
         events: (row.events as Record<string, boolean>) ?? {},
       };
     }
@@ -131,7 +133,8 @@ export async function notifyUser(
         email_enabled: override.email_enabled,
         email_address: override.email_address ?? accountPrefs?.email_address ?? null,
         telegram_enabled: override.telegram_enabled,
-        telegram_chat_id: accountPrefs?.telegram_chat_id ?? null,
+        // A store-linked chat (starter merchants) wins over the account's own chat.
+        telegram_chat_id: override.telegram_chat_id ?? accountPrefs?.telegram_chat_id ?? null,
         events: override.events,
       }
     : accountPrefs;

@@ -63,6 +63,17 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
             await sendReply(chatId, "❌ That code is invalid or expired. Generate a new one in the dashboard.");
             return Response.json({ ok: true });
           }
+          if (bind.store_id) {
+            // Store-scoped link from a starter merchant's welcome email.
+            await supabaseAdmin
+              .from("store_notification_prefs")
+              .update({ telegram_enabled: true, telegram_chat_id: String(chatId) })
+              .eq("store_id", bind.store_id)
+              .eq("user_id", bind.user_id);
+            await supabaseAdmin.from("telegram_bind_codes").update({ consumed_at: new Date().toISOString() }).eq("code", code);
+            await sendReply(chatId, "✅ <b>Linked!</b> You'll get a message here every time a sticker sale is paid.");
+            return Response.json({ ok: true });
+          }
           await supabaseAdmin
             .from("notification_prefs")
             .upsert(
@@ -89,6 +100,10 @@ export const Route = createFileRoute("/api/public/telegram/webhook")({
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           await supabaseAdmin
             .from("notification_prefs")
+            .update({ telegram_enabled: false })
+            .eq("telegram_chat_id", String(chatId));
+          await supabaseAdmin
+            .from("store_notification_prefs")
             .update({ telegram_enabled: false })
             .eq("telegram_chat_id", String(chatId));
           await sendReply(chatId, "🔕 Telegram alerts disabled. Re-enable anytime from your dashboard.");
