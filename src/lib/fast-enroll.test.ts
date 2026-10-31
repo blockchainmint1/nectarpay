@@ -10,6 +10,8 @@ import {
   normalizeWebsite,
   stickerPath,
   stickerCreditEligible,
+  storeIsLive,
+  welcomeEmailOutstanding,
 } from "./fast-enroll";
 
 describe("fast enrollment coin IDs", () => {
@@ -89,5 +91,19 @@ describe("merchant website on the enrollment form", () => {
     expect(normalizeWebsite("javascript:alert(1)").ok).toBe(false);
     expect(normalizeWebsite("https://user:pass@example.com").ok).toBe(false);
     expect(normalizeWebsite("x".repeat(201)).ok).toBe(false);
+  });
+});
+
+describe("auto go-live queue rules", () => {
+  const unfinished = { status: "pending", store_id: null, welcome_sent_at: null };
+  it("counts a store as live only when it is activated and linked", () => {
+    expect(storeIsLive(unfinished)).toBe(false);
+    expect(storeIsLive({ status: "activated", store_id: null })).toBe(false);
+    expect(storeIsLive({ status: "activated", store_id: "store-1" })).toBe(true);
+  });
+  it("owes the welcome kit to a live store whose email never went out", () => {
+    expect(welcomeEmailOutstanding({ status: "activated", store_id: "store-1", welcome_sent_at: null })).toBe(true);
+    expect(welcomeEmailOutstanding({ status: "activated", store_id: "store-1", welcome_sent_at: "2026-10-31T16:00:00Z" })).toBe(false);
+    expect(welcomeEmailOutstanding(unfinished)).toBe(false);
   });
 });
