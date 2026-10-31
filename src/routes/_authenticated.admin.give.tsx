@@ -267,7 +267,7 @@ function RecipientsSection() {
               <div className="grid cursor-pointer grid-cols-[1fr_auto_auto_2rem] items-center gap-4 px-4 py-3 hover:bg-muted/30 md:grid-cols-[1fr_auto_1.4fr_auto_2rem]"
                 onClick={() => setOpen(isOpen ? null : r.address)}>
                 <span className="font-medium">{r.name}</span>
-                <Pill tone={r.kind === "church" ? "primary" : "muted"}>{r.kind === "church" ? "Church" : "Program"}</Pill>
+                <Pill tone={r.source === "hme_give" ? "good" : "primary"}>{r.source === "hme_give" ? (r.blocked ? "HME Give · blocked" : "HME Give") : "Added here"}</Pill>
                 <span className="hidden truncate font-mono text-xs text-muted-foreground md:block">{r.address.slice(0, 8)}…{r.address.slice(-6)}</span>
                 <div onClick={(e) => e.stopPropagation()}>
                   <Switch checked={r.active} onCheckedChange={(v) => toggle(r.address, v)} aria-label={`${r.name} on`} />
