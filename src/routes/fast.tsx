@@ -33,6 +33,7 @@ const empty = {
   contactName: "",
   email: "",
   phone: "",
+  website: "",
   category: "",
   street: "",
   city: "",
@@ -178,6 +179,18 @@ function FastPage() {
             </Field>
             <Field label="Phone">
               <Input type="tel" value={f.phone} onChange={set("phone")} maxLength={40} />
+            </Field>
+            <Field label="Website">
+              <Input
+                type="text"
+                inputMode="url"
+                autoComplete="url"
+                spellCheck={false}
+                value={f.website}
+                onChange={set("website")}
+                maxLength={200}
+                placeholder="example.com"
+              />
             </Field>
             <Field label="Street address">
               <Input value={f.street} onChange={set("street")} maxLength={200} />

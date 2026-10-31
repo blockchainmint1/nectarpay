@@ -815,6 +815,7 @@ export type Database = {
           store_id: string | null
           street: string | null
           tsd_address: string
+          website: string | null
         }
         Insert: {
           activated_at?: string | null
@@ -837,6 +838,7 @@ export type Database = {
           store_id?: string | null
           street?: string | null
           tsd_address: string
+          website?: string | null
         }
         Update: {
           activated_at?: string | null
@@ -859,6 +861,7 @@ export type Database = {
           store_id?: string | null
           street?: string | null
           tsd_address?: string
+          website?: string | null
         }
         Relationships: [
           {

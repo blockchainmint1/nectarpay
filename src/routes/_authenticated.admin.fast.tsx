@@ -152,6 +152,7 @@ function AdminFast() {
                             <Detail label="Contact" value={r.contact_name} />
                             <Detail label="Email" value={r.email} />
                             <Detail label="Phone" value={r.phone} />
+                            <Detail label="Website" value={r.website} link />
                             <Detail label="Type of business" value={r.category} />
                             <Detail
                               label="Address"
@@ -179,11 +180,19 @@ function AdminFast() {
   );
 }
 
-function Detail({ label, value, mono }: { label: string; value: string | null; mono?: boolean }) {
+function Detail({ label, value, mono, link }: { label: string; value: string | null; mono?: boolean; link?: boolean }) {
   return (
     <div>
       <dt className="uppercase tracking-[0.15em] text-muted-foreground">{label}</dt>
-      <dd className={`mt-0.5 break-all text-foreground ${mono ? "font-mono" : ""}`}>{value || "—"}</dd>
+      <dd className={`mt-0.5 break-all text-foreground ${mono ? "font-mono" : ""}`}>
+        {link && value ? (
+          <a className="text-primary underline" href={value} target="_blank" rel="noreferrer">
+            {value}
+          </a>
+        ) : (
+          value || "—"
+        )}
+      </dd>
     </div>
   );
 }
