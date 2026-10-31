@@ -795,6 +795,7 @@ export type Database = {
       }
       fast_enrollments: {
         Row: {
+          activated_at: string | null
           business_name: string
           category: string | null
           city: string | null
@@ -811,10 +812,12 @@ export type Database = {
           postal_code: string | null
           region: string | null
           status: string
+          store_id: string | null
           street: string | null
           tsd_address: string
         }
         Insert: {
+          activated_at?: string | null
           business_name: string
           category?: string | null
           city?: string | null
@@ -831,10 +834,12 @@ export type Database = {
           postal_code?: string | null
           region?: string | null
           status?: string
+          store_id?: string | null
           street?: string | null
           tsd_address: string
         }
         Update: {
+          activated_at?: string | null
           business_name?: string
           category?: string | null
           city?: string | null
@@ -851,10 +856,19 @@ export type Database = {
           postal_code?: string | null
           region?: string | null
           status?: string
+          store_id?: string | null
           street?: string | null
           tsd_address?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fast_enrollments_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       hme_give_sync: {
         Row: {
@@ -2013,6 +2027,58 @@ export type Database = {
           },
         ]
       }
+      sticker_credit_claims: {
+        Row: {
+          created_at: string
+          invoice_id: string
+          tx_hash: string
+        }
+        Insert: {
+          created_at?: string
+          invoice_id: string
+          tx_hash: string
+        }
+        Update: {
+          created_at?: string
+          invoice_id?: string
+          tx_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sticker_credit_claims_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sticker_invoice_guards: {
+        Row: {
+          created_at: string
+          excluded_txids: string[]
+          invoice_id: string
+        }
+        Insert: {
+          created_at?: string
+          excluded_txids?: string[]
+          invoice_id: string
+        }
+        Update: {
+          created_at?: string
+          excluded_txids?: string[]
+          invoice_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sticker_invoice_guards_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: true
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_invites: {
         Row: {
           accepted_at: string | null
@@ -3088,6 +3154,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_fast_sticker: {
+        Args: { _id: string; _manager: string }
+        Returns: string
+      }
       api_rate_hit: { Args: { _key_id: string }; Returns: number }
       fast_enrollment_coin_taken: {
         Args: { _coin_id: string }
@@ -3126,6 +3196,7 @@ export type Database = {
           name: string
         }[]
       }
+      get_public_sticker: { Args: { _code: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
