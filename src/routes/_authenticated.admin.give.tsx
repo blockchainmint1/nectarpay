@@ -226,16 +226,25 @@ function RecipientsSection() {
   }
 
   async function toggle(addr: string, active: boolean) {
-    const { error } = await supabase.from("egiving_recipients").update({ active }).eq("address", addr);
+    // For HME Give churches, switching off is a local block that survives their next list update.
+    const { error } = await supabase.from("egiving_recipients").update({ active, blocked: !active }).eq("address", addr);
     if (error) return toast.error(error.message);
     void q.refetch();
   }
+  const sync = useQuery({
+    queryKey: ["admin", "hme-give-sync"],
+    queryFn: async () => (await supabase.from("hme_give_sync").select("last_synced_at, last_error, recipient_count").eq("id", 1).maybeSingle()).data,
+  });
 
   return (
     <section className="space-y-4">
       <SectionHeader icon={<HeartHandshake className="h-5 w-5" />} title="Approved donation recipients"
         text="A payment only gets the community discount when the non-store shares go to a church listed here plus the NectarGive program wallet above."
         onAdd={() => setAdding((a) => !a)} adding={adding} />
+      <p className="text-xs text-muted-foreground">
+        HME Give list: {sync.data?.last_synced_at ? `last updated ${new Date(sync.data.last_synced_at).toLocaleString()} (${sync.data.recipient_count} churches)` : "not received yet"}
+        {sync.data?.last_error ? ` · last problem: ${sync.data.last_error}` : ""}
+      </p>
 
       {adding && (
         <Card className="grid gap-3 p-4 sm:grid-cols-[1fr_2fr_auto] sm:items-center">
