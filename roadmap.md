@@ -4,6 +4,7 @@
 - [x] Connect case-sensitive coin/sticker codes to an approved live merchant and checkout.
 - [x] Add atomic admin-managed starter-store activation and printable sticker access; no email-only account ownership claims.
 - [x] Verify public dQdbix enrollment, admin activation, printable QR and $1 TSD invoice at the correct cold-coin address; wrong-case and overlapping checkout refused; 20 tests passed.
+- [x] Collect an optional merchant website on the public /fast form (normalized to a real link, shown in Admin, copied into the store profile when the starter store is activated); 145 tests passed.
 - [ ] Verify real payment and merchant alert: Bobby must pay the test invoice after website publication; no funds sent. Starter safety defaults are one checkout at a time and $0.50–$250.
 - [ ] Merchant account claiming/transfer remains a later ownership-verification step; starter stores are admin-managed, not falsely assigned to submitted emails.
 
@@ -81,4 +82,4 @@
 
 ## HME Give church list
 - [x] Accept HME Give's signed church list (pull every 5 min + push hook), keep last good list as backup, local admin block
-- [ ] Go live — waiting on HME Give's list URL and signing address
+- [ ] Go live — their list URL and signing address are saved here; waiting on their list page going live and our website publish
