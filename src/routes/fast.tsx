@@ -109,8 +109,8 @@ function FastPage() {
       <main className="mx-auto max-w-2xl px-4 pb-16 pt-8 sm:px-6">
         <h1 className="text-3xl font-semibold tracking-tight">Fast merchant enrollment</h1>
         <p className="mt-2 text-muted-foreground">
-          A new merchant needs nothing but their Cold Storage Coin ID. The same 6 characters become their TSD
-          wallet and their sticker code.
+          The six-character Cold Storage Coin ID is your merchant and sticker code.
+          It identifies the coin’s TSD receiving address.
         </p>
 
         <ol className="mt-6 grid gap-3 text-sm sm:grid-cols-3">

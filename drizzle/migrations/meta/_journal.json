@@ -204,6 +204,20 @@
       "when": 1793448417747,
       "tag": "0028_hme_give_recipient_sync",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1793460366456,
+      "tag": "0029_fast_sticker_checkout",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1793460440009,
+      "tag": "0030_sticker_invoice_atomic_start",
+      "breakpoints": true
     }
   ]
 }

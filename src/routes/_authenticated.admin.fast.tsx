@@ -2,13 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { Fragment, useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, HeartHandshake, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronRight, HeartHandshake, Loader2, Printer, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { qrToDataURL } from "@/lib/qr";
+import { stickerPath } from "@/lib/fast-enroll";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { SortHeader } from "@/components/admin/sort-header";
 import { sortRows, toggleSort, type SortState } from "@/lib/table-sort";
-import { listFastEnrollments } from "@/lib/fast-enroll.functions";
+import { listFastEnrollments, activateFastEnrollment } from "@/lib/fast-enroll.functions";
 
 type Enrollment = NonNullable<Awaited<ReturnType<typeof listFastEnrollments>>>[number];
 type Key = "business_name" | "city" | "coin_id" | "status" | "egiving_opt_in" | "created_at";
@@ -38,12 +42,27 @@ export const Route = createFileRoute("/_authenticated/admin/fast")({
 
 function AdminFast() {
   const fn = useServerFn(listFastEnrollments);
+  const activate = useServerFn(activateFastEnrollment);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [sticker, setSticker] = useState<{ code: string; name: string; qr: string } | null>(null);
   const q = useQuery({ queryKey: ["admin", "fast-enrollments"], queryFn: () => fn() });
   const [sort, setSort] = useState<SortState<Key>>({ key: "created_at", dir: "desc" });
   const [open, setOpen] = useState<string | null>(null);
 
   const rows = useMemo(() => sortRows(q.data ?? [], sort, ACCESSORS), [q.data, sort]);
   const onSort = (key: Key) => setSort((s) => toggleSort(s, key));
+
+  async function approve(r: Enrollment) {
+    if (!window.confirm(`Activate ${r.business_name}? This starter store will be managed by your admin account, with payment emails sent to ${r.email}.`)) return;
+    setBusy(r.id);
+    try { await activate({ data: { id: r.id } }); toast.success("Merchant activated"); await q.refetch(); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Activation failed."); }
+    finally { setBusy(null); }
+  }
+  async function showSticker(r: Enrollment) {
+    try { const qr = await qrToDataURL(`https://app.nectar-pay.com${stickerPath(r.coin_id)}`, { width: 640, margin: 3, errorCorrectionLevel: "M" }); setSticker({ code: r.coin_id, name: r.business_name, qr }); }
+    catch { toast.error("Could not create sticker."); }
+  }
 
   if (q.isLoading) {
     return (
@@ -62,6 +81,27 @@ function AdminFast() {
           and the wallet it resolves to is where TSD lands.
         </p>
       </div>
+
+      {q.error && <p className="text-destructive">{q.error instanceof Error ? q.error.message : "Could not load enrollments."}</p>}
+      {sticker && <div role="dialog" aria-label="Merchant sticker" className="border border-border p-6">
+        <div id="merchant-sticker" className="mx-auto max-w-sm text-center">
+          <h2 className="text-2xl font-semibold">Pay with TSD</h2>
+          <p className="mt-2">{sticker.name}</p>
+          <img className="mx-auto my-4 w-64 max-w-full" src={sticker.qr} alt={`Payment sticker for ${sticker.code}`} />
+          <p className="font-mono text-3xl font-bold">{sticker.code}</p>
+          <p className="mt-2 text-sm">NectarPay · honest.money ecosystem</p>
+        </div>
+        <div className="mt-4 flex justify-center gap-3">
+          <Button onClick={() => {
+            const popup = window.open("", "_blank");
+            const content = document.getElementById("merchant-sticker");
+            if (!popup || !content) return;
+            popup.document.write(`<html><head><title>NectarPay sticker</title><style>body{font-family:Arial;text-align:center}img{width:240px}p{margin:12px}</style></head><body>${content.innerHTML}</body></html>`);
+            popup.document.close(); popup.addEventListener("load", () => popup.print());
+          }}><Printer className="mr-2 h-4 w-4" />Print sticker</Button>
+          <Button variant="outline" onClick={() => setSticker(null)}>Close</Button>
+        </div>
+      </div>}
 
       <Card>
         <CardContent className="overflow-x-auto p-0">
@@ -120,6 +160,11 @@ function AdminFast() {
                             <Detail label="Wallet (TSD)" value={r.tsd_address} mono />
                             <Detail label="Submitted from" value={r.ip} mono />
                           </dl>
+                          <div className="mt-4 flex flex-wrap items-center gap-3">
+                            {r.status === "pending" && <Button disabled={busy === r.id} onClick={() => approve(r)}><CheckCircle2 className="mr-2 h-4 w-4" />{busy === r.id ? "Activating…" : "Activate starter store"}</Button>}
+                            <Button variant="outline" onClick={() => showSticker(r)}><Printer className="mr-2 h-4 w-4" />Sticker</Button>
+                            {r.status === "activated" && <a className="text-primary underline" href={stickerPath(r.coin_id)} target="_blank" rel="noreferrer">Open payment page</a>}
+                          </div>
                         </td>
                       </tr>
                     )}

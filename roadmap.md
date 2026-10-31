@@ -1,9 +1,11 @@
 # Roadmap
 
 ## Fast merchant sticker launch
-- [ ] Connect case-sensitive coin/sticker codes to an approved live merchant and checkout.
-- [ ] Add admin activation and printable sticker access with safe ownership/wallet checks.
-- [ ] Verify enrollment-to-sticker-to-invoice flow; real settlement needs an assigned test coin and shopper payment.
+- [x] Connect case-sensitive coin/sticker codes to an approved live merchant and checkout.
+- [x] Add atomic admin-managed starter-store activation and printable sticker access; no email-only account ownership claims.
+- [x] Verify public dQdbix enrollment, admin activation, printable QR and $1 TSD invoice at the correct cold-coin address; wrong-case and overlapping checkout refused; 20 tests passed.
+- [ ] Verify real payment and merchant alert: Bobby must pay the test invoice after website publication; no funds sent. Starter safety defaults are one checkout at a time and $0.50–$250.
+- [ ] Merchant account claiming/transfer remains a later ownership-verification step; starter stores are admin-managed, not falsely assigned to submitted emails.
 
 ## CryptoPOP NFC checkout
 - [x] Connect exact-body server-signed CryptoPOP requests, bound approval status checks, and shared invoice callback helpers.

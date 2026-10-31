@@ -33,3 +33,9 @@ export async function enrollmentsFromIp(ip: string, minutes: number): Promise<nu
   if (error) throw new Error(error.message);
   return typeof data === "number" ? data : 0;
 }
+
+export async function publicSticker(code: string) {
+  const { data, error } = await publicClient().rpc("get_public_sticker", { _code: code });
+  if (error) throw new Error("Could not load merchant.");
+  return data as { code: string; name: string; store_id: string; giving: boolean; active: boolean } | null;
+}

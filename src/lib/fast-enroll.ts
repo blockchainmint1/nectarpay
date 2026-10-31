@@ -18,6 +18,23 @@ export function coinIdMatchesAddress(coinId: string, address: string): boolean {
   return address.slice(1, 7) === coinId;
 }
 
+export function stickerPath(code: string): string {
+  const normalized = normalizeCoinId(code);
+  if (!normalized) throw new Error("Invalid sticker code");
+  return `/s/${normalized}`;
+}
+
+/** Static coin payments must be new, exact credits; never guess a partial sale. */
+export function stickerCreditEligible(input: {
+  txid: string; excluded: string[]; amount: number; expected: number;
+  blockTimeMs: number | null; createdAt: string;
+}): boolean {
+  if (input.excluded.includes(input.txid)) return false;
+  if (!Number.isFinite(input.amount) || Math.abs(input.amount - input.expected) > 0.00000001) return false;
+  if (input.blockTimeMs != null && input.blockTimeMs < Date.parse(input.createdAt)) return false;
+  return true;
+}
+
 /* ------------------------------------------------------------------ */
 /* Public-form abuse controls                                           */
 /* ------------------------------------------------------------------ */

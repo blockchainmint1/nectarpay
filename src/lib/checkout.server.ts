@@ -234,6 +234,13 @@ export async function selectPublicInvoiceChain(data: { id: string; option: strin
       throw new Error("Invoice has expired.");
     }
 
+    const { data: stickerGuard, error: guardError } = await supabaseAdmin.from("sticker_invoice_guards").select("invoice_id").eq("invoice_id", inv.id).maybeSingle();
+    if (guardError) throw new Error("Could not verify invoice type.");
+    if (stickerGuard) {
+      if (data.option !== "txc:TSD") throw new Error("Cold coin stickers accept TSD on TEXITcoin only.");
+      return { ok: true as const };
+    }
+
     // Allow switching networks/tokens before any on-chain payment has been seen.
     if (inv.chain) {
       const { count } = await supabaseAdmin

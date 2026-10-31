@@ -16,6 +16,7 @@ import { getSolanaSlot, getSolanaCreditsTo } from "./chains/solana.server";
 import { notifyUser } from "./notify.server";
 import { getUsdRate } from "./rates.functions";
 import { identifyEvmAsset } from "./chains/evm-asset";
+import { claimStickerCredit } from "./sticker-scan.server";
 
 const ADDRESS_WINDOW = 20; // BIP44 gap-limit-style lookahead per chain_config
 
@@ -505,7 +506,9 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string, hintTxid?: string
     const isConfirmed = credit.confirmations >= required;
     const creditTimeMs = credit.blockTime == null ? null : credit.blockTime * 1000;
     if (creditPredatesInvoice(creditTimeMs, inv.created_at)) continue;
-    await recordTransaction(inv.id, credit.txid, paidCrypto, credit.confirmations, null, isConfirmed, null, creditTimeMs);
+    if (!await claimStickerCredit({ ...credit, invoiceId: inv.id, amount: paidCrypto, invoiceAmount: Number(inv.fiat_amount), blockTimeMs: creditTimeMs, createdAt: inv.created_at })) continue;
+    const recorded = await recordTransaction(inv.id, credit.txid, paidCrypto, credit.confirmations, null, isConfirmed, null, creditTimeMs);
+    if (!recorded) continue;
     if (isConfirmed) {
       const due = await applyEgiving(inv.id, inv.stores ?? null, inv.token_symbol, credit as { sendToMany?: boolean; splitRecipients?: Array<{ address: string | null; amount: number }> }, inv.address, paidUsd, Number(inv.fiat_amount));
       const settled = await settleInvoice(inv.id, paidUsd, due);
@@ -769,7 +772,8 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
             const isConfirmed = credit.confirmations >= required;
             const creditTimeMs = credit.blockTime == null ? null : credit.blockTime * 1000;
             if (creditPredatesInvoice(creditTimeMs, inv.created_at)) continue;
-            await recordTransaction(
+            if (!await claimStickerCredit({ ...credit, invoiceId: inv.id, amount: paidCrypto, invoiceAmount: Number(inv.fiat_amount), blockTimeMs: creditTimeMs, createdAt: inv.created_at })) continue;
+            const recorded = await recordTransaction(
               inv.id,
               credit.txid,
               paidCrypto,
@@ -779,6 +783,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               null,
               creditTimeMs,
             );
+            if (!recorded) continue;
             if (isConfirmed) {
               const due = await applyEgiving(inv.id, cfg?.stores ?? null, inv.token_symbol, credit as { sendToMany?: boolean; splitRecipients?: Array<{ address: string | null; amount: number }> }, inv.address, paidUsd, Number(inv.fiat_amount));
               const settled = await settleInvoice(inv.id, paidUsd, due);
