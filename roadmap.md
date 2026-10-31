@@ -1,5 +1,10 @@
 # Roadmap
 
+## Fast merchant sticker launch
+- [ ] Connect case-sensitive coin/sticker codes to an approved live merchant and checkout.
+- [ ] Add admin activation and printable sticker access with safe ownership/wallet checks.
+- [ ] Verify enrollment-to-sticker-to-invoice flow; real settlement needs an assigned test coin and shopper payment.
+
 ## CryptoPOP NFC checkout
 - [x] Connect exact-body server-signed CryptoPOP requests, bound approval status checks, and shared invoice callback helpers.
 - [x] Add PIN collection/retry, waiting-for-owner, reader failures, and sent-to-invoice-monitoring states; pending payments disable cancel/QR switching.
