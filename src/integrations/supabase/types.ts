@@ -3159,6 +3159,10 @@ export type Database = {
         Returns: string
       }
       api_rate_hit: { Args: { _key_id: string }; Returns: number }
+      create_sticker_invoice: {
+        Args: { _amount: number; _code: string; _excluded: string[] }
+        Returns: string
+      }
       fast_enrollment_coin_taken: {
         Args: { _coin_id: string }
         Returns: boolean
