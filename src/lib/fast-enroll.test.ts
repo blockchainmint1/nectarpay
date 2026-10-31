@@ -70,3 +70,24 @@ describe("public enrollment abuse controls", () => {
     expect(honeypotFilled("http://spam.example")).toBe(true);
   });
 });
+
+describe("merchant website on the enrollment form", () => {
+  it("leaves the field empty when the merchant skips it", () => {
+    expect(normalizeWebsite("")).toEqual({ ok: true, value: null });
+    expect(normalizeWebsite("   ")).toEqual({ ok: true, value: null });
+    expect(normalizeWebsite(undefined)).toEqual({ ok: true, value: null });
+  });
+  it("accepts a bare domain and stores one https shape", () => {
+    expect(normalizeWebsite("example.com")).toEqual({ ok: true, value: "https://example.com" });
+    expect(normalizeWebsite("  http://Example.com/Shop/  ")).toEqual({ ok: true, value: "https://example.com/Shop" });
+    expect(normalizeWebsite("shop.example.co.uk/menu")).toEqual({ ok: true, value: "https://shop.example.co.uk/menu" });
+    expect(normalizeWebsite("https://example.com:8080/x")).toEqual({ ok: true, value: "https://example.com:8080/x" });
+  });
+  it("refuses anything that is not a real web address", () => {
+    expect(normalizeWebsite("my shop").ok).toBe(false);
+    expect(normalizeWebsite("localhost").ok).toBe(false);
+    expect(normalizeWebsite("javascript:alert(1)").ok).toBe(false);
+    expect(normalizeWebsite("https://user:pass@example.com").ok).toBe(false);
+    expect(normalizeWebsite("x".repeat(201)).ok).toBe(false);
+  });
+});
