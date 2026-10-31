@@ -74,6 +74,7 @@ import { Route as PosPairRouteImport } from './routes/pos.pair'
 import { Route as PosPairSigninRouteImport } from './routes/pos.pair-signin'
 import { Route as PosPrinterTestRouteImport } from './routes/pos.printer-test'
 import { Route as PosSettingsRouteImport } from './routes/pos.settings'
+import { Route as SCodeRouteImport } from './routes/s.$code'
 import { Route as SdkPayhmeDotjsRouteImport } from './routes/sdk.payhme[.]js'
 import { Route as TSlugRouteImport } from './routes/t.$slug'
 import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authenticated.account.index'
@@ -509,6 +510,11 @@ const PosSettingsRoute = PosSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => PosRoute,
+} as any)
+const SCodeRoute = SCodeRouteImport.update({
+  id: '/s/$code',
+  path: '/s/$code',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const SdkPayhmeDotjsRoute = SdkPayhmeDotjsRouteImport.update({
   id: '/sdk/payhme.js',
@@ -1192,6 +1198,7 @@ export interface FileRoutesByFullPath {
   '/pos/pair-signin': typeof PosPairSigninRoute
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
+  '/s/$code': typeof SCodeRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
   '/t/$slug': typeof TSlugRoute
   '/docs/': typeof DocsIndexRoute
@@ -1363,6 +1370,7 @@ export interface FileRoutesByTo {
   '/pos/pair-signin': typeof PosPairSigninRoute
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
+  '/s/$code': typeof SCodeRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
   '/t/$slug': typeof TSlugRoute
   '/docs': typeof DocsIndexRoute
@@ -1537,6 +1545,7 @@ export interface FileRoutesById {
   '/pos/pair-signin': typeof PosPairSigninRoute
   '/pos/printer-test': typeof PosPrinterTestRoute
   '/pos/settings': typeof PosSettingsRoute
+  '/s/$code': typeof SCodeRoute
   '/sdk/payhme.js': typeof SdkPayhmeDotjsRoute
   '/t/$slug': typeof TSlugRoute
   '/docs/': typeof DocsIndexRoute
@@ -1714,6 +1723,7 @@ export interface FileRouteTypes {
     | '/pos/pair-signin'
     | '/pos/printer-test'
     | '/pos/settings'
+    | '/s/$code'
     | '/sdk/payhme.js'
     | '/t/$slug'
     | '/docs/'
@@ -1885,6 +1895,7 @@ export interface FileRouteTypes {
     | '/pos/pair-signin'
     | '/pos/printer-test'
     | '/pos/settings'
+    | '/s/$code'
     | '/sdk/payhme.js'
     | '/t/$slug'
     | '/docs'
@@ -2058,6 +2069,7 @@ export interface FileRouteTypes {
     | '/pos/pair-signin'
     | '/pos/printer-test'
     | '/pos/settings'
+    | '/s/$code'
     | '/sdk/payhme.js'
     | '/t/$slug'
     | '/docs/'
@@ -2215,6 +2227,7 @@ export interface RootRouteChildren {
   IntegrationsWoocommerceRoute: typeof IntegrationsWoocommerceRoute
   InviteTokenRoute: typeof InviteTokenRoute
   PayInvoiceIdRoute: typeof PayInvoiceIdRoute
+  SCodeRoute: typeof SCodeRoute
   SdkPayhmeDotjsRoute: typeof SdkPayhmeDotjsRoute
   TSlugRoute: typeof TSlugRoute
   IntegrationsIndexRoute: typeof IntegrationsIndexRoute
@@ -2680,6 +2693,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/pos/settings'
       preLoaderRoute: typeof PosSettingsRouteImport
       parentRoute: typeof PosRoute
+    }
+    '/s/$code': {
+      id: '/s/$code'
+      path: '/s/$code'
+      fullPath: '/s/$code'
+      preLoaderRoute: typeof SCodeRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/sdk/payhme.js': {
       id: '/sdk/payhme.js'
@@ -3940,6 +3960,7 @@ const rootRouteChildren: RootRouteChildren = {
   IntegrationsWoocommerceRoute: IntegrationsWoocommerceRoute,
   InviteTokenRoute: InviteTokenRoute,
   PayInvoiceIdRoute: PayInvoiceIdRoute,
+  SCodeRoute: SCodeRoute,
   SdkPayhmeDotjsRoute: SdkPayhmeDotjsRoute,
   TSlugRoute: TSlugRoute,
   IntegrationsIndexRoute: IntegrationsIndexRoute,
