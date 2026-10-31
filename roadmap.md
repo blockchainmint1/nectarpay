@@ -9,6 +9,7 @@
 - [ ] Text-message and WhatsApp alerts: deferred by Bobby (need Twilio / Meta approval).
 - [ ] Verify real payment and merchant alert: Bobby must pay the test invoice after website publication; no funds sent. Starter safety defaults are one checkout at a time and $0.50–$250.
 - [ ] Merchant account claiming/transfer remains a later ownership-verification step; starter stores are admin-managed, not falsely assigned to submitted emails.
+- [ ] Confirm what the sticker QR must carry so our supported wallets recognize it; today it encodes the payment-page web address, not a wallet-native payment request.
 
 ## CryptoPOP NFC checkout
 - [x] Connect exact-body server-signed CryptoPOP requests, bound approval status checks, and shared invoice callback helpers.
