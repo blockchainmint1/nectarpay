@@ -190,6 +190,13 @@
       "when": 1793366051345,
       "tag": "0026_fast_enrollments",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1793444365844,
+      "tag": "0027_fast_enrollments_public_form",
+      "breakpoints": true
     }
   ]
 }
