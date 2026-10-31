@@ -57,6 +57,9 @@ export const clearInvoiceChain = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!inv) throw new Error("Invoice not found.");
+    const { data: stickerGuard, error: guardError } = await supabaseAdmin.from("sticker_invoice_guards").select("invoice_id").eq("invoice_id", inv.id).maybeSingle();
+    if (guardError) throw new Error("Could not verify invoice type.");
+    if (stickerGuard) throw new Error("Sticker payments are fixed to TSD on TEXITcoin.");
     if (inv.status !== "pending") throw new Error("Invoice is no longer pending.");
     if (new Date(inv.expires_at).getTime() < Date.now()) {
       throw new Error("Invoice has expired.");
