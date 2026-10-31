@@ -1,7 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { normalizeCoinId, isTxcAddress, coinIdMatchesAddress } from "@/lib/fast-enroll";
+import {
+  coinIdMatchesAddress,
+  clientIpFromHeaders,
+  ENROLL_IP_MAX,
+  ENROLL_IP_WINDOW_MIN,
+  honeypotFilled,
+  ipWithinLimit,
+  isTxcAddress,
+  normalizeCoinId,
+} from "@/lib/fast-enroll";
 
 const CSC_LOOKUP = "https://admin.coldstoragecoins.com/api/public/v5/coin-details";
 
@@ -30,17 +40,28 @@ async function lookupCoin(coinId: string): Promise<CoinCheck> {
   return { ok: true, coinId, address, chain: coin?.blockchainName ?? coin?.blockchainCode ?? null, product: body?.displayValues?.name ?? null, taken: false };
 }
 
+/** The visitor's address, as reported by the proxy in front of the app. */
+function visitorIp(): string | null {
+  return clientIpFromHeaders((name) => getRequestHeader(name) ?? null);
+}
+
+/**
+ * Public: the enrollment page needs no NectarPay account, so a merchant or a rep
+ * on an iPad can check a coin before writing anything down.
+ */
 export const checkFastCoin = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ coinId: z.string().max(20) }).parse(d))
-  .handler(async ({ data, context }): Promise<CoinCheck> => {
-    await assertAdmin(context);
+  .handler(async ({ data }): Promise<CoinCheck> => {
     const coinId = normalizeCoinId(data.coinId);
     if (!coinId) return { ok: false, message: "Coin IDs are exactly 6 letters or numbers." };
     const r = await lookupCoin(coinId);
     if (!r.ok) return r;
-    const { data: existing } = await context.supabase.from("fast_enrollments").select("id").eq("coin_id", coinId).maybeSingle();
-    return { ...r, taken: !!existing };
+    const { coinTaken } = await import("@/lib/fast-enroll.server");
+    const taken = await coinTaken(coinId).catch((err) => {
+      console.error("coin-taken lookup failed", err);
+      return false;
+    });
+    return { ...r, taken };
   });
 
 const opt = (n: number) => z.string().trim().max(n).optional().transform((v) => v || null);
@@ -57,17 +78,42 @@ const Enroll = z.object({
   postalCode: opt(20),
   country: opt(120),
   egivingOptIn: z.boolean(),
+  companyUrl: z.string().max(200).optional().default(""),
 });
 
+/**
+ * Public: saves the enrollment as pending for an admin to review. The coin is
+ * re-verified server-side — nothing the browser claims about the wallet is trusted —
+ * and the address is recorded so one visitor can't fill the queue with submissions.
+ */
 export const submitFastEnrollment = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Enroll.parse(d))
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context);
+  .handler(async ({ data }) => {
     const coinId = normalizeCoinId(data.coinId);
     if (!coinId) throw new Error("Coin IDs are exactly 6 letters or numbers.");
     const coin = await lookupCoin(coinId);
     if (!coin.ok) throw new Error(coin.message);
+
+    const { coinTaken, enrollmentsFromIp } = await import("@/lib/fast-enroll.server");
+
+    if (await coinTaken(coinId)) throw new Error("That coin is already assigned to another merchant.");
+
+    if (honeypotFilled(data.companyUrl)) {
+      // A script filled the field no person can see. Answer as if it worked, save nothing.
+      return { id: "", coin_id: coinId, tsd_address: coin.address };
+    }
+
+    const ip = visitorIp();
+    if (ip) {
+      const recent = await enrollmentsFromIp(ip, ENROLL_IP_WINDOW_MIN).catch((err) => {
+        console.error("enrollment throttle lookup failed", err);
+        return 0;
+      });
+      if (!ipWithinLimit(recent, ENROLL_IP_MAX)) {
+        throw new Error("Too many enrollments from here right now. Try again in a little while.");
+      }
+    }
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row, error } = await supabaseAdmin
       .from("fast_enrollments")
@@ -85,7 +131,7 @@ export const submitFastEnrollment = createServerFn({ method: "POST" })
         postal_code: data.postalCode,
         country: data.country,
         egiving_opt_in: data.egivingOptIn,
-        enrolled_by: context.userId,
+        ip,
       })
       .select("id, coin_id, tsd_address")
       .single();
@@ -96,14 +142,17 @@ export const submitFastEnrollment = createServerFn({ method: "POST" })
     return row;
   });
 
+/** Admin only: the review queue for enrollments coming in from the public page. */
 export const listFastEnrollments = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context);
     const { data } = await context.supabase
       .from("fast_enrollments")
-      .select("id, coin_id, business_name, city, egiving_opt_in, status, created_at")
+      .select(
+        "id, coin_id, tsd_address, business_name, contact_name, email, phone, category, street, city, region, postal_code, country, egiving_opt_in, status, ip, created_at",
+      )
       .order("created_at", { ascending: false })
-      .limit(50);
+      .limit(200);
     return data ?? [];
   });
