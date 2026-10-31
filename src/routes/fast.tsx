@@ -50,7 +50,7 @@ function FastPage() {
   const [give, setGive] = useState(true);
   const [saving, setSaving] = useState(false);
   const [companyUrl, setCompanyUrl] = useState("");
-  const [done, setDone] = useState<{ coin_id: string; tsd_address: string; name: string } | null>(null);
+  const [done, setDone] = useState<{ coin_id: string; tsd_address: string; name: string; live?: boolean; emailed?: boolean } | null>(null);
 
   const set = (k: keyof typeof empty) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
 
