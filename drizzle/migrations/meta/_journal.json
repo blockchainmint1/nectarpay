@@ -218,6 +218,13 @@
       "when": 1793460440009,
       "tag": "0030_sticker_invoice_atomic_start",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1793462649171,
+      "tag": "0031_fast_enrollment_website",
+      "breakpoints": true
     }
   ]
 }

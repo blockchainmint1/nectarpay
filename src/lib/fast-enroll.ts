@@ -66,3 +66,37 @@ export const HONEYPOT_FIELD = "company_url";
 export function honeypotFilled(value: string | undefined | null): boolean {
   return typeof value === "string" && value.trim() !== "";
 }
+
+/* ------------------------------------------------------------------ */
+/* Optional business website                                            */
+/* ------------------------------------------------------------------ */
+
+export const WEBSITE_MAX = 200;
+
+export type WebsiteResult = { ok: true; value: string | null } | { ok: false; message: string };
+
+/**
+ * Merchants type `example.com` or paste a full link; either way we store one
+ * shape — `https://example.com/some/page` — so it is safe to click and can never
+ * carry a `javascript:` payload into the store profile.
+ */
+export function normalizeWebsite(raw: string | null | undefined): WebsiteResult {
+  const input = (raw ?? "").trim();
+  if (!input) return { ok: true, value: null };
+  if (input.length > WEBSITE_MAX) return { ok: false, message: "That website address is too long." };
+  if (/\s/.test(input)) return { ok: false, message: "A website address can't contain spaces." };
+  const candidate = /^https?:\/\//i.test(input) ? input : `https://${input}`;
+  let url: URL;
+  try {
+    url = new URL(candidate);
+  } catch {
+    return { ok: false, message: "That doesn't look like a website address." };
+  }
+  if (url.protocol !== "https:" && url.protocol !== "http:") return { ok: false, message: "That doesn't look like a website address." };
+  if (url.username || url.password) return { ok: false, message: "That doesn't look like a website address." };
+  if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/.test(url.hostname)) {
+    return { ok: false, message: "Websites look like example.com — please check the spelling." };
+  }
+  const path = url.pathname === "/" ? "" : url.pathname.replace(/\/+$/, "");
+  return { ok: true, value: `https://${url.hostname}${url.port ? `:${url.port}` : ""}${path}` };
+}
