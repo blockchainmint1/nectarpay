@@ -11,6 +11,7 @@ import {
   ipWithinLimit,
   isTxcAddress,
   normalizeCoinId,
+  normalizeWebsite,
 } from "@/lib/fast-enroll";
 
 const CSC_LOOKUP = "https://admin.coldstoragecoins.com/api/public/v5/coin-details";
@@ -71,6 +72,7 @@ const Enroll = z.object({
   contactName: z.string().trim().min(1).max(120),
   email: z.string().trim().email().max(255),
   phone: opt(40),
+  website: z.string().max(300).optional().default(""),
   category: opt(80),
   street: opt(200),
   city: opt(120),
@@ -91,6 +93,8 @@ export const submitFastEnrollment = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const coinId = normalizeCoinId(data.coinId);
     if (!coinId) throw new Error("Coin IDs are exactly 6 letters or numbers.");
+    const site = normalizeWebsite(data.website);
+    if (!site.ok) throw new Error(site.message);
     const coin = await lookupCoin(coinId);
     if (!coin.ok) throw new Error(coin.message);
 
@@ -124,6 +128,7 @@ export const submitFastEnrollment = createServerFn({ method: "POST" })
         contact_name: data.contactName,
         email: data.email.toLowerCase(),
         phone: data.phone,
+        website: site.value,
         category: data.category,
         street: data.street,
         city: data.city,
@@ -150,7 +155,7 @@ export const listFastEnrollments = createServerFn({ method: "GET" })
     const { data } = await context.supabase
       .from("fast_enrollments")
       .select(
-        "id, coin_id, tsd_address, business_name, contact_name, email, phone, category, street, city, region, postal_code, country, egiving_opt_in, status, ip, created_at, store_id, activated_at",
+        "id, coin_id, tsd_address, business_name, contact_name, email, phone, website, category, street, city, region, postal_code, country, egiving_opt_in, status, ip, created_at, store_id, activated_at",
       )
       .order("created_at", { ascending: false })
       .limit(200);
