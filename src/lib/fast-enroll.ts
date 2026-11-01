@@ -158,3 +158,8 @@ export function consentSummary(
   }`;
 }
 
+
+/** Statuses that count as "the test payment arrived" (instant TSD shows as detected). */
+export function testPaymentArrived(status: string | null | undefined): boolean {
+  return status === "detected" || status === "confirmed";
+}
