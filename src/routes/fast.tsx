@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { cloneElement, isValidElement, useId, useState } from "react";
 import { toast } from "sonner";
-import { CheckCircle2, Coins, Loader2, Store, ShieldCheck, Zap } from "lucide-react";
+import { CheckCircle2, Coins, Loader2, Store, ShieldCheck, Zap, ScanLine } from "lucide-react";
 
 import { MarketingFooter, MarketingNav } from "@/components/marketing-shell";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CountryRegionFields } from "@/components/store/CountryRegionFields";
 import { FastSignaturePad } from "@/components/fast-signature-pad";
+import { FastCoinScanner } from "@/components/fast-coin-scanner";
 import { FAST_ACKNOWLEDGEMENTS } from "@/lib/fast-consent";
 import { HONEYPOT_FIELD } from "@/lib/fast-enroll";
 import { checkFastCoin, submitFastEnrollment, type CoinCheck } from "@/lib/fast-enroll.functions";
@@ -47,6 +48,8 @@ const empty = {
 function FastPage() {
   const [f, setF] = useState(empty);
   const [coinId, setCoinId] = useState("");
+  const [publicKey, setPublicKey] = useState("");
+  const [scannerOpen, setScannerOpen] = useState(false);
   const [coin, setCoin] = useState<CoinCheck | null>(null);
   const [checking, setChecking] = useState(false);
   const [give, setGive] = useState(true);
@@ -60,10 +63,17 @@ function FastPage() {
 
   const set = (k: keyof typeof empty) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
 
-  async function check() {
+  async function check(id = coinId, scannedKey?: string | null) {
     setChecking(true);
     try {
-      setCoin(await checkFastCoin({ data: { coinId } }));
+      const found = await checkFastCoin({ data: { coinId: id } });
+      if (found.ok && scannedKey && found.address !== scannedKey) {
+        setCoin({ ok: false, message: "The scanned public key doesn't match Cold Storage Coins. Please check the coin." });
+        setPublicKey("");
+      } else {
+        setCoin(found);
+        setPublicKey(found.ok ? found.address : "");
+      }
     } catch {
       setCoin({ ok: false, message: "Lookup failed. Try again." });
     }
@@ -80,6 +90,7 @@ function FastPage() {
       setDone({ ...row, name: f.businessName });
       setF(empty);
       setCoinId("");
+      setPublicKey("");
       setCoin(null);
       setGive(true);
       setCompanyUrl("");
@@ -133,29 +144,32 @@ function FastPage() {
         <form onSubmit={submit} className="grid gap-6 md:grid-cols-2 md:gap-8">
           <div className="space-y-5">
           <section className="border-b border-border pb-5">
-            <h2 className="flex items-center gap-2 font-medium">
+            <div className="flex items-center justify-between gap-2"><h2 className="flex items-center gap-2 font-medium">
               <Coins className="h-4 w-4" /> Cold Storage Coin
-            </h2>
+            </h2><Button type="button" variant="outline" disabled={checking} onClick={() => setScannerOpen(true)}><ScanLine className="h-4 w-4" /> Scan QR</Button></div>
             <div className="mt-3 flex gap-2">
               <Input
                 value={coinId}
                 onChange={(e) => {
                   setCoinId(e.target.value.trim());
                   setCoin(null);
+                  setPublicKey("");
                 }}
+                disabled={checking}
                 placeholder="e.g. oaRhmG"
                 maxLength={6}
                 autoCapitalize="off"
                 autoCorrect="off"
                 spellCheck={false}
                 className="h-12 font-mono text-xl tracking-widest"
-                aria-label="Coin ID"
+                aria-label="Coin asset ID"
               />
-              <Button type="button" className="h-12" onClick={check} disabled={coinId.length !== 6 || checking}>
+              <Button type="button" className="h-12" onClick={() => void check()} disabled={coinId.length !== 6 || checking}>
                 {checking ? <Loader2 className="h-4 w-4 animate-spin" /> : "Check"}
               </Button>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">Six characters, upper and lower case matter.</p>
+            <div className="mt-3 space-y-1.5"><Label htmlFor="fast-public-key">Full public key · TSD receive address</Label><Input id="fast-public-key" value={publicKey} readOnly placeholder="Filled after scanning or checking the coin" className="h-10 min-w-0 font-mono text-xs" /></div>
             {coin && !coin.ok && <p className="mt-2 text-sm text-destructive">{coin.message}</p>}
             {coin?.ok && coin.taken && (
               <p className="mt-2 text-sm text-destructive">This coin is already assigned to another merchant.</p>
@@ -269,6 +283,13 @@ function FastPage() {
         </form>
       </main>
       <MarketingFooter />
+      <FastCoinScanner open={scannerOpen} onOpenChange={setScannerOpen} onResult={(scanned) => {
+        setScannerOpen(false);
+        setCoinId(scanned.coinId);
+        setPublicKey(scanned.publicKey ?? "");
+        setCoin(null);
+        void check(scanned.coinId, scanned.publicKey);
+      }} />
     </div>
   );
 }
