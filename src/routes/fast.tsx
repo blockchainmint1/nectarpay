@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useId, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { CheckCircle2, Coins, Loader2, Store, ShieldCheck, Zap } from "lucide-react";
 
@@ -274,9 +274,8 @@ function FastPage() {
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  const id = useId();
   return (
-    <Label htmlFor={id} className="block space-y-1.5">
+    <Label className="block space-y-1.5">
       <span className="block">{label}</span>
       {children}
     </Label>
