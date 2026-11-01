@@ -2,8 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { fastConsentSchema, fastConsentRecord, FAST_SIGNATURE_BUCKET } from "@/lib/fast-consent";
+import { fastConsentSchema, fastConsentRecord } from "@/lib/fast-consent";
 import { parseSignatureDataUrl } from "@/lib/sale-signature";
+import { fastSignatureDataUrl, removeFastSignature, storeFastSignature } from "@/lib/fast-consent.server";
 import {
   coinIdMatchesAddress,
   clientIpFromHeaders,
@@ -122,12 +123,10 @@ export const submitFastEnrollment = createServerFn({ method: "POST" })
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const signature = parseSignatureDataUrl(data.signature);
-    if (!signature) throw new Error("Please add your signature.");
+    if (!parseSignatureDataUrl(data.signature)) throw new Error("Please add your signature.");
     const enrollmentId = crypto.randomUUID();
-    const signaturePath = `${enrollmentId}.${signature.mime === "image/png" ? "png" : "jpg"}`;
-    const { error: uploadError } = await supabaseAdmin.storage.from(FAST_SIGNATURE_BUCKET).upload(signaturePath, signature.bytes, { contentType: signature.mime, upsert: false });
-    if (uploadError) throw new Error("Couldn't save your signature. Please try again.");
+    const signaturePath = await storeFastSignature(enrollmentId, data.signature);
+    if (!signaturePath) throw new Error("Couldn't save your signature. Please try again.");
     const { data: row, error } = await supabaseAdmin
       .from("fast_enrollments")
       .insert({
@@ -156,7 +155,7 @@ export const submitFastEnrollment = createServerFn({ method: "POST" })
       .select("id, coin_id, tsd_address")
       .single();
     if (error) {
-      await supabaseAdmin.storage.from(FAST_SIGNATURE_BUCKET).remove([signaturePath]);
+      await removeFastSignature(signaturePath);
       if (error.code === "23505") throw new Error("That coin is already assigned to another merchant.");
       throw new Error("Couldn't save the enrollment.");
     }
@@ -174,7 +173,7 @@ export const listFastEnrollments = createServerFn({ method: "GET" })
     const { data } = await context.supabase
       .from("fast_enrollments")
       .select(
-        "id, coin_id, tsd_address, business_name, contact_name, email, phone, website, category, street, city, region, postal_code, country, egiving_opt_in, status, ip, created_at, store_id, activated_at, welcome_sent_at, welcome_error",
+        "id, coin_id, tsd_address, business_name, contact_name, email, phone, website, category, street, city, region, postal_code, country, egiving_opt_in, directory_opt_in, signature_path, signed_at, consent_record, status, ip, created_at, store_id, activated_at, welcome_sent_at, welcome_error",
       )
       .order("created_at", { ascending: false })
       .limit(200);
@@ -196,4 +195,27 @@ export const activateFastEnrollment = createServerFn({ method: "POST" })
     const live = await activateAndWelcome(data.id);
     if (!live.storeId) throw new Error("Activation failed. Nothing changed.");
     return { storeId: live.storeId, emailed: live.emailed };
+  });
+
+/**
+ * Admin only: the merchant's signature image plus the exact agreement version
+ * they ticked, kept for reference after the fact. The file itself stays in the
+ * private bucket — this hands it to a caller already confirmed as an admin.
+ */
+export const fastEnrollmentSignature = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error: readError } = await supabaseAdmin
+      .from("fast_enrollments")
+      .select("signature_path, signed_at, consent_record")
+      .eq("id", data.id)
+      .single();
+    if (readError || !row) throw new Error("Enrollment not found.");
+    if (!row.signature_path) return { dataUrl: null, signedAt: null, consent: null };
+    const dataUrl = await fastSignatureDataUrl(row.signature_path);
+    if (!dataUrl) throw new Error("The signature file could not be read.");
+    return { dataUrl, signedAt: row.signed_at, consent: row.consent_record ?? null };
   });

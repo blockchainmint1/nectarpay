@@ -8,11 +8,14 @@ import {
   ipWithinLimit,
   normalizeCoinId,
   normalizeWebsite,
+  consentSummary,
+  signatureOnFile,
   stickerPath,
   stickerCreditEligible,
   storeIsLive,
   welcomeEmailOutstanding,
 } from "./fast-enroll";
+import { fastConsentRecord, FAST_CONSENT_VERSION } from "./fast-consent";
 
 describe("fast enrollment coin IDs", () => {
   it("keeps case and requires exactly 6 characters", () => {
@@ -105,5 +108,26 @@ describe("auto go-live queue rules", () => {
     expect(welcomeEmailOutstanding({ status: "activated", store_id: "store-1", welcome_sent_at: null })).toBe(true);
     expect(welcomeEmailOutstanding({ status: "activated", store_id: "store-1", welcome_sent_at: "2026-10-31T16:00:00Z" })).toBe(false);
     expect(welcomeEmailOutstanding(unfinished)).toBe(false);
+  });
+});
+
+describe("the signed enrollment record", () => {
+  it("only counts a signature that was saved as a file", () => {
+    expect(signatureOnFile({ signature_path: "31bad3f0-fe4f-454d-b494-78f70b448648.png" })).toBe(true);
+    expect(signatureOnFile({ signature_path: null })).toBe(false);
+  });
+
+  it("states the agreement version and the merchant's directory choice", () => {
+    const signed = consentSummary(fastConsentRecord(true), true);
+    expect(signed).toContain(FAST_CONSENT_VERSION);
+    expect(signed).toContain("directory listing: yes");
+    expect(signed).not.toContain("incomplete");
+    expect(consentSummary(fastConsentRecord(false), false)).toContain("directory listing: no");
+  });
+
+  it("says so when acknowledgements are missing or the record is unreadable", () => {
+    expect(consentSummary({ version: "2026-11-01", directoryOptIn: true }, true)).toContain("incomplete");
+    expect(consentSummary(null, false)).toBeNull();
+    expect(consentSummary("not a record", false)).toBeNull();
   });
 });
