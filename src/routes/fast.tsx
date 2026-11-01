@@ -160,7 +160,7 @@ function FastPage() {
       <MarketingNav />
       <main className="mx-auto max-w-6xl px-5 pb-10 pt-6 sm:px-8">
         <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
-          <div><p className="mb-1 text-xs font-medium uppercase tracking-widest text-primary">Coin. Sticker. Open for business.</p>
+          <div><p className="mb-1 text-xs font-medium uppercase tracking-widest text-primary">COIN. STICKERS. OPEN FOR BUSINESS.</p>
             <h1 className="text-3xl font-semibold">Fast Start Program</h1></div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground"><Zap className="h-4 w-4 text-primary" /> TSD on TEXITcoin · Instant acceptance</div>
         </header>
