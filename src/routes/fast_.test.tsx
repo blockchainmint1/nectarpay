@@ -61,8 +61,8 @@ function FastTest() {
           <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">You're live</p>
           <h1 className="mt-2 text-4xl font-semibold">Let's give it a test.</h1>
           <ol className="mt-6 space-y-4 text-lg">
-            <li className="flex gap-3"><Smartphone className="mt-1 h-5 w-5 shrink-0 text-primary" />Your rep, a friend, or your own wallet scans this code and sends <strong>any amount</strong> in TSD.</li>
-            <li className="flex gap-3"><Mail className="mt-1 h-5 w-5 shrink-0 text-primary" />You get a payment alert by email (and Telegram, once connected from your welcome email).</li>
+            <li className="flex gap-3"><Smartphone className="mt-1 h-5 w-5 shrink-0 text-primary" /><span>Your rep, a friend, or your own wallet scans this code and sends <strong className="font-semibold">any amount</strong> in TSD.</span></li>
+            <li className="flex gap-3"><Mail className="mt-1 h-5 w-5 shrink-0 text-primary" /><span>You get a payment alert by email (and Telegram, once connected from your welcome email).</span></li>
           </ol>
           <div className="mt-8 flex items-center gap-3 rounded-xl border bg-muted/40 p-4 text-sm">
             <Loader2 className="h-5 w-5 animate-spin text-primary" /> Watching for the payment… this page moves on by itself.
