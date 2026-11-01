@@ -184,7 +184,32 @@ function AdminFast() {
                             <Detail label="Wallet (TSD)" value={r.tsd_address} mono />
                             <Detail label="Submitted from" value={r.ip} mono />
                             <Detail label="Welcome email" value={r.welcome_sent_at ? `Sent ${new Date(r.welcome_sent_at).toLocaleString()}` : r.welcome_error ? `Failed: ${r.welcome_error}` : r.status === "activated" ? "Not sent" : null} />
+                            <Detail label="Signed" value={r.signed_at ? new Date(r.signed_at).toLocaleString() : null} />
                           </dl>
+                          <p className="mt-3 text-xs text-muted-foreground">
+                            {consentSummary(r.consent_record, r.directory_opt_in) ?? "No agreement record saved for this submission."}
+                          </p>
+                          <div className="mt-3">
+                            {!signatureOnFile(r) ? (
+                              <p className="text-xs text-muted-foreground">No signature image was saved for this submission.</p>
+                            ) : signed?.id === r.id && signed.dataUrl ? (
+                              <figure className="max-w-sm">
+                                <img
+                                  src={signed.dataUrl}
+                                  alt={`Signature saved for ${r.business_name}`}
+                                  className="w-full rounded-md border border-border bg-paper"
+                                />
+                                <figcaption className="mt-1 text-xs text-muted-foreground">
+                                  Signed {signed.signedAt ? new Date(signed.signedAt).toLocaleString() : "at an unrecorded time"} · image kept in private storage
+                                </figcaption>
+                              </figure>
+                            ) : (
+                              <Button variant="outline" disabled={signBusy === r.id} onClick={() => loadSignature(r)}>
+                                <PenLine className="mr-2 h-4 w-4" />
+                                {signBusy === r.id ? "Opening…" : "Show signature"}
+                              </Button>
+                            )}
+                          </div>
                           <div className="mt-4 flex flex-wrap items-center gap-3">
                             {(!storeIsLive(r) || welcomeEmailOutstanding(r)) && (
                               <Button disabled={busy === r.id} onClick={() => retry(r)}>
