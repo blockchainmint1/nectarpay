@@ -796,6 +796,7 @@ export type Database = {
       fast_enrollments: {
         Row: {
           activated_at: string | null
+          business_description: string | null
           business_name: string
           category: string | null
           city: string | null
@@ -825,6 +826,7 @@ export type Database = {
         }
         Insert: {
           activated_at?: string | null
+          business_description?: string | null
           business_name: string
           category?: string | null
           city?: string | null
@@ -854,6 +856,7 @@ export type Database = {
         }
         Update: {
           activated_at?: string | null
+          business_description?: string | null
           business_name?: string
           category?: string | null
           city?: string | null
