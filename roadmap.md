@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Fast merchant sticker launch
+- [ ] Connect CryptoPOP sticker scanning to a signed merchant/TSD lookup and tracked invoice creation; coordinate wallet-side changes from its read-only project snapshot.
 - [x] Connect case-sensitive coin/sticker codes to an approved live merchant and checkout.
 - [x] Add atomic admin-managed starter-store activation and printable sticker access; no email-only account ownership claims.
 - [x] Verify public dQdbix enrollment, admin activation, printable QR and $1 TSD invoice at the correct cold-coin address; wrong-case and overlapping checkout refused; 20 tests passed.
