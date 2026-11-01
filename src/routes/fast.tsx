@@ -237,7 +237,7 @@ function FastPage() {
             <h2 className="flex items-center gap-2 font-medium"><ShieldCheck className="h-4 w-4 text-primary" /> Acknowledge & sign</h2>
             <label className="flex cursor-pointer items-start gap-3">
               <Checkbox checked={nonCustodial} onCheckedChange={(v) => setNonCustodial(v === true)} className="mt-1" />
-              <span className="text-sm"><span className="mb-1 block font-semibold">My wallet. My funds. My responsibility. *</span><span className="text-muted-foreground">{FAST_ACKNOWLEDGEMENTS.nonCustodial}</span></span>
+              <span className="text-sm"><span className="mb-1 block font-semibold">NectarPay is non-custodial. *</span><span className="text-muted-foreground">{FAST_ACKNOWLEDGEMENTS.nonCustodial}</span></span>
             </label>
             <label className="flex cursor-pointer items-start gap-3">
               <Checkbox checked={basicSetup} onCheckedChange={(v) => setBasicSetup(v === true)} className="mt-1" />
