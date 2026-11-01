@@ -182,7 +182,7 @@ function FastPage() {
           </section>
 
           <section className="grid gap-x-4 gap-y-3 sm:grid-cols-2">
-            <h2 className="flex items-center gap-2 font-medium sm:col-span-2"><Store className="h-4 w-4 text-primary" /> Business details</h2>
+            <h2 className="flex items-center gap-2 font-medium sm:col-span-2"><Store className="h-4 w-4 text-primary" /> Business details · USA</h2>
             <Field label="Business name *">
               <Input required value={f.businessName} onChange={set("businessName")} maxLength={120} />
             </Field>
@@ -216,11 +216,12 @@ function FastPage() {
             <Field label="City">
               <Input value={f.city} onChange={set("city")} maxLength={120} />
             </Field>
-            <Field label="ZIP / postal code">
+            <Field label="ZIP code">
               <Input value={f.postalCode} onChange={set("postalCode")} maxLength={20} />
             </Field>
             <CountryRegionFields
-              country={f.country}
+              country="United States"
+              showCountry={false}
               region={f.region}
               onCountry={(c) => setF((p) => ({ ...p, country: c, region: "" }))}
               onRegion={(r) => setF((p) => ({ ...p, region: r }))}
