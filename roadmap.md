@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Fast merchant sticker launch
+- [ ] Fix wallet-paid sticker settlement: include sticker bills in scheduled scans, add a signed transaction-hint callback, recheck Bobby’s 2.55 TSD sale, and update CryptoPOP handoff.
 - [x] Move Website first and prefill editable business/contact/address/description; real Cold Storage Coins website returned name/email/description, preserved entered phone, left unavailable address blank; description saved with enrollment and copied during activation.
 - [x] Put coin heading, scan, asset ID, Check and public key on one tablet/desktop line; verified at 1207px and no overflow on phone.
 - [x] Improve /fast for iPad with private signature capture, required non-custodial/basic-setup acknowledgements, directory listing and TSD-only/instant-confirm defaults; tablet/phone interactions checked, schema and activation defaults verified.
