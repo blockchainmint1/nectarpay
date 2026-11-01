@@ -174,7 +174,42 @@ function FastPage() {
             {websiteMessage && <p role="status" className="text-xs text-muted-foreground">{websiteMessage}</p>}
           </section>
 
-          <div className="space-y-5"><section className="grid gap-x-4 gap-y-3 sm:grid-cols-2">
+          <div className="space-y-5">
+            <section className="space-y-2 border-b border-border pb-4">
+              <h2 className="flex items-center gap-2 text-sm font-medium"><Coins className="h-4 w-4" /> Cold Storage Coin</h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button type="button" variant="outline" className="h-10 shrink-0" disabled={checking} onClick={() => setScannerOpen(true)}><ScanLine className="h-4 w-4" /> Scan QR</Button>
+                <Input
+                  value={coinId}
+                  onChange={(e) => {
+                    setCoinId(e.target.value.trim());
+                    setCoin(null);
+                    setPublicKey("");
+                  }}
+                  disabled={checking}
+                  placeholder="e.g. oaRhmG"
+                  maxLength={6}
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  className="h-10 w-32 min-w-0 font-mono text-base"
+                  aria-label="Coin asset ID"
+                />
+                <Button type="button" className="h-10" onClick={() => void check()} disabled={coinId.length !== 6 || checking}>
+                  {checking ? <Loader2 className="h-4 w-4 animate-spin" /> : "Check"}
+                </Button>
+              </div>
+              <Label htmlFor="fast-public-key" className="sr-only">Full public key · TSD receive address</Label>
+              <Input id="fast-public-key" value={publicKey} readOnly placeholder="Full public key · TSD receive address" className="h-10 w-full min-w-0 font-mono text-xs" />
+              {coin && !coin.ok && <p className="text-sm text-destructive">{coin.message}</p>}
+              {coin?.ok && coin.taken && <p className="text-sm text-destructive">This coin is already assigned to another merchant.</p>}
+              {coin?.ok && !coin.taken && (
+                <p className="break-all text-sm text-primary">
+                  ✓ Found{coin.chain ? ` on ${coin.chain}` : ""}: <span className="font-mono">{coin.address}</span>
+                </p>
+              )}
+            </section>
+            <section className="grid gap-x-4 gap-y-3 sm:grid-cols-2">
             <h2 className="flex items-center gap-2 font-medium sm:col-span-2"><Store className="h-4 w-4 text-primary" /> Business details · USA</h2>
             <Field label="Business name *">
               <Input required value={f.businessName} onChange={set("businessName")} maxLength={120} />
