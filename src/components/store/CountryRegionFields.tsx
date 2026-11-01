@@ -16,11 +16,13 @@ export function CountryRegionFields({
   region,
   onCountry,
   onRegion,
+  showCountry = true,
 }: {
   country: string;
   region: string;
   onCountry: (c: string) => void;
   onRegion: (r: string) => void;
+  showCountry?: boolean;
 }) {
   const match = useMemo(() => {
     const c = country.trim().toLowerCase();
@@ -37,7 +39,7 @@ export function CountryRegionFields({
 
   return (
     <>
-      <div>
+      {showCountry && <div>
         <Label>Country</Label>
         <Select value={match?.[0] ?? ""} onValueChange={onCountry}>
           <SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger>
@@ -47,7 +49,7 @@ export function CountryRegionFields({
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </div>}
       <div>
         <Label>State</Label>
         {regions.length > 0 ? (
