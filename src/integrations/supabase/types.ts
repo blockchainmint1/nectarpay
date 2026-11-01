@@ -800,9 +800,11 @@ export type Database = {
           category: string | null
           city: string | null
           coin_id: string
+          consent_record: Json | null
           contact_name: string
           country: string | null
           created_at: string
+          directory_opt_in: boolean
           egiving_opt_in: boolean
           email: string
           enrolled_by: string | null
@@ -811,6 +813,8 @@ export type Database = {
           phone: string | null
           postal_code: string | null
           region: string | null
+          signature_path: string | null
+          signed_at: string | null
           status: string
           store_id: string | null
           street: string | null
@@ -825,9 +829,11 @@ export type Database = {
           category?: string | null
           city?: string | null
           coin_id: string
+          consent_record?: Json | null
           contact_name: string
           country?: string | null
           created_at?: string
+          directory_opt_in?: boolean
           egiving_opt_in?: boolean
           email: string
           enrolled_by?: string | null
@@ -836,6 +842,8 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           region?: string | null
+          signature_path?: string | null
+          signed_at?: string | null
           status?: string
           store_id?: string | null
           street?: string | null
@@ -850,9 +858,11 @@ export type Database = {
           category?: string | null
           city?: string | null
           coin_id?: string
+          consent_record?: Json | null
           contact_name?: string
           country?: string | null
           created_at?: string
+          directory_opt_in?: boolean
           egiving_opt_in?: boolean
           email?: string
           enrolled_by?: string | null
@@ -861,6 +871,8 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           region?: string | null
+          signature_path?: string | null
+          signed_at?: string | null
           status?: string
           store_id?: string | null
           street?: string | null
