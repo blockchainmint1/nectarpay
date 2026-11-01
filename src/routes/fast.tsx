@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { toast } from "sonner";
-import { CheckCircle2, Coins, Loader2, Store, Tags } from "lucide-react";
+import { CheckCircle2, Coins, Loader2, Store, ShieldCheck, Zap } from "lucide-react";
 
 import { MarketingFooter, MarketingNav } from "@/components/marketing-shell";
 import { Button } from "@/components/ui/button";
@@ -9,15 +9,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CountryRegionFields } from "@/components/store/CountryRegionFields";
+import { FastSignaturePad } from "@/components/fast-signature-pad";
+import { FAST_ACKNOWLEDGEMENTS } from "@/lib/fast-consent";
 import { HONEYPOT_FIELD } from "@/lib/fast-enroll";
 import { checkFastCoin, submitFastEnrollment, type CoinCheck } from "@/lib/fast-enroll.functions";
 
 export const Route = createFileRoute("/fast")({
   head: () => ({
     meta: [
-      { title: "Fast merchant enrollment — NectarPay" },
+      { title: "Fast Start Program — NectarPay" },
       { name: "description", content: "Sign a new merchant up in a few minutes with nothing but their Cold Storage Coin ID." },
-      { property: "og:title", content: "Fast merchant enrollment — NectarPay" },
+      { property: "og:title", content: "Fast Start Program — NectarPay" },
       { property: "og:description", content: "Bring a business into TEXITcoin payments with the coin ID printed on its sticker." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -48,6 +50,10 @@ function FastPage() {
   const [coin, setCoin] = useState<CoinCheck | null>(null);
   const [checking, setChecking] = useState(false);
   const [give, setGive] = useState(true);
+  const [directory, setDirectory] = useState(true);
+  const [nonCustodial, setNonCustodial] = useState(false);
+  const [basicSetup, setBasicSetup] = useState(false);
+  const [signature, setSignature] = useState("");
   const [saving, setSaving] = useState(false);
   const [companyUrl, setCompanyUrl] = useState("");
   const [done, setDone] = useState<{ coin_id: string; tsd_address: string; name: string; live?: boolean; emailed?: boolean } | null>(null);
@@ -67,15 +73,17 @@ function FastPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!coin?.ok || coin.taken) return toast.error("Check the coin ID first.");
+    if (!nonCustodial || !basicSetup || !signature) return toast.error("Please acknowledge both statements and sign.");
     setSaving(true);
     try {
-      const row = await submitFastEnrollment({ data: { ...f, coinId, egivingOptIn: give, companyUrl } });
+      const row = await submitFastEnrollment({ data: { ...f, coinId, egivingOptIn: give, companyUrl, directoryOptIn: directory, nonCustodial: true, basicSetup: true, signature } });
       setDone({ ...row, name: f.businessName });
       setF(empty);
       setCoinId("");
       setCoin(null);
       setGive(true);
       setCompanyUrl("");
+      setSignature(""); setNonCustodial(false); setBasicSetup(false); setDirectory(true);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Couldn't save.");
     }
@@ -116,28 +124,15 @@ function FastPage() {
   return (
     <div className="min-h-screen bg-background">
       <MarketingNav />
-      <main className="mx-auto max-w-2xl px-4 pb-16 pt-8 sm:px-6">
-        <h1 className="text-3xl font-semibold tracking-tight">Fast merchant enrollment</h1>
-        <p className="mt-2 text-muted-foreground">
-          The six-character Cold Storage Coin ID is your merchant and sticker code.
-          It identifies the coin’s TSD receiving address.
-        </p>
-
-        <ol className="mt-6 grid gap-3 text-sm sm:grid-cols-3">
-          {[
-            { icon: <Coins className="h-4 w-4" />, t: "Check the coin", d: "We confirm it with Cold Storage Coins and show the wallet behind it." },
-            { icon: <Store className="h-4 w-4" />, t: "Add the business", d: "Name, contact and address — that's all we need to get started." },
-            { icon: <Tags className="h-4 w-4" />, t: "Start selling", d: "Your sticker works the moment you submit, and your welcome email arrives." },
-          ].map((s) => (
-            <li key={s.t} className="rounded-xl border border-border p-3">
-              <span className="flex items-center gap-2 font-medium">{s.icon}{s.t}</span>
-              <span className="mt-1 block text-muted-foreground">{s.d}</span>
-            </li>
-          ))}
-        </ol>
-
-        <form onSubmit={submit} className="mt-8 space-y-6">
-          <section className="rounded-xl border border-border p-4">
+      <main className="mx-auto max-w-6xl px-5 pb-10 pt-6 sm:px-8">
+        <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <div><p className="mb-1 text-xs font-medium uppercase tracking-widest text-primary">Coin. Sticker. Open for business.</p>
+            <h1 className="text-3xl font-semibold">Fast Start Program</h1></div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground"><Zap className="h-4 w-4 text-primary" /> TSD on TEXITcoin · Instant acceptance</div>
+        </header>
+        <form onSubmit={submit} className="grid gap-6 md:grid-cols-2 md:gap-8">
+          <div className="space-y-5">
+          <section className="border-b border-border pb-5">
             <h2 className="flex items-center gap-2 font-medium">
               <Coins className="h-4 w-4" /> Cold Storage Coin
             </h2>
@@ -172,8 +167,8 @@ function FastPage() {
             )}
           </section>
 
-          <section className="grid gap-4 rounded-xl border border-border p-4 sm:grid-cols-2">
-            <h2 className="font-medium sm:col-span-2">Business details</h2>
+          <section className="grid gap-x-4 gap-y-3 sm:grid-cols-2">
+            <h2 className="flex items-center gap-2 font-medium sm:col-span-2"><Store className="h-4 w-4 text-primary" /> Business details</h2>
             <Field label="Business name *">
               <Input required value={f.businessName} onChange={set("businessName")} maxLength={120} />
             </Field>
@@ -218,7 +213,16 @@ function FastPage() {
             />
           </section>
 
-          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border p-4">
+          </div>
+          <div className="space-y-5 md:border-l md:border-border md:pl-8">
+          <section className="space-y-4 border-b border-border pb-5">
+          <h2 className="font-medium">Your starter options</h2>
+          <label className="flex cursor-pointer items-start gap-3">
+            <Checkbox checked={directory} onCheckedChange={(v) => setDirectory(v === true)} className="mt-1" />
+            <span><span className="font-medium">List my business in the shop directory</span>
+            <span className="mt-1 block text-sm text-muted-foreground">Publish my business name, category, location, phone and website. My contact name, email and signature stay private.</span></span>
+          </label>
+          <label className="flex cursor-pointer items-start gap-3">
             <Checkbox checked={give} onCheckedChange={(v) => setGive(v === true)} className="mt-1" />
             <span>
               <span className="font-medium">Join the Give Back program</span>
@@ -228,6 +232,20 @@ function FastPage() {
             </span>
           </label>
 
+          </section>
+          <section className="space-y-4">
+            <h2 className="flex items-center gap-2 font-medium"><ShieldCheck className="h-4 w-4 text-primary" /> Acknowledge & sign</h2>
+            <label className="flex cursor-pointer items-start gap-3">
+              <Checkbox checked={nonCustodial} onCheckedChange={(v) => setNonCustodial(v === true)} className="mt-1" />
+              <span className="text-sm"><span className="mb-1 block font-semibold">My wallet. My funds. My responsibility. *</span><span className="text-muted-foreground">{FAST_ACKNOWLEDGEMENTS.nonCustodial}</span></span>
+            </label>
+            <label className="flex cursor-pointer items-start gap-3">
+              <Checkbox checked={basicSetup} onCheckedChange={(v) => setBasicSetup(v === true)} className="mt-1" />
+              <span className="text-sm"><span className="mb-1 block font-semibold">Basic setup & instant acceptance *</span><span className="text-muted-foreground">{FAST_ACKNOWLEDGEMENTS.basicSetup}</span></span>
+            </label>
+            <FastSignaturePad value={signature} onChange={setSignature} />
+            <p className="text-xs text-muted-foreground">By signing, I confirm I am authorized to enroll this business and acknowledge the statements above.</p>
+          </section>
           {/* Bot trap: hidden from people, tempting to a script scraping field names. */}
           <div className="hidden" aria-hidden="true">
             <label htmlFor={HONEYPOT_FIELD}>Company website URL</label>
@@ -241,12 +259,13 @@ function FastPage() {
             />
           </div>
 
-          <Button type="submit" className="h-14 w-full text-lg" disabled={saving || !coin?.ok || coin.taken}>
-            {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : "Enroll merchant"}
+          <Button type="submit" className="h-14 w-full text-lg" disabled={saving || !coin?.ok || coin.taken || !nonCustodial || !basicSetup || !signature}>
+            {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : "Start accepting TSD"}
           </Button>
           <p className="text-center text-xs text-muted-foreground">
             Already have a NectarPay account? Add the store from your dashboard instead — it goes live right away.
           </p>
+          </div>
         </form>
       </main>
       <MarketingFooter />
@@ -255,10 +274,11 @@ function FastPage() {
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  const id = useId();
   return (
-    <div className="space-y-1.5">
-      <Label>{label}</Label>
+    <Label htmlFor={id} className="block space-y-1.5">
+      <span className="block">{label}</span>
       {children}
-    </div>
+    </Label>
   );
 }
