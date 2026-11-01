@@ -12,6 +12,108 @@ export type Chapter = { id: string; title: string; summary: string; sections: Se
 
 export const CHAPTERS: Chapter[] = [
   {
+    id: "fast-start",
+    title: "Fast Start Program",
+    summary: "A Cold Storage Coin, matching stickers, and a simple merchant form: start accepting TSD without a terminal or a separate activation step.",
+    sections: [
+      {
+        id: "kit",
+        title: "The coin-and-sticker starter kit",
+        body: [
+          "Give the merchant a Cold Storage Coin and stickers carrying that coin's six-character ID. That same ID becomes their NectarPay merchant code and sticker code. Capitalization matters: dQdbix and dqdbix are not interchangeable.",
+          "The sticker opens the merchant's payment page; the coin identifies the TSD receiving address. A terminal is not required for this starter payment flow. Keep the coin and any wallet recovery or spending information secure—enrollment only needs the coin ID, never a private key.",
+        ],
+      },
+      {
+        id: "enroll",
+        title: "Merchant enrollment → automatic go-live",
+        body: [
+          "The /fast form is public: a new merchant does not need to sign in first. NectarPay checks the coin with Cold Storage Coins, finds its TSD receiving address, and checks that the code has not already been assigned.",
+          "A successful submission sets up the starter store and enables TSD on TEXITcoin automatically. There is no separate Activate button for the merchant or an admin approval step. If setup fails, the screen says so rather than pretending the sticker is ready.",
+        ],
+        steps: [
+          "Open /fast and enter the exact six-character coin ID; choose Check.",
+          "Confirm the coin and receiving address shown belong to the merchant's coin.",
+          "Enter the business name, contact name, email, phone, category and business address; add a website if available.",
+          "Choose whether to accept Give Back community payments.",
+          "Submit the form. When the screen says the business is live, open its payment page and check the merchant name before displaying the stickers.",
+        ],
+        links: [{ label: "Enroll a Fast Start merchant", href: "/fast" }],
+      },
+      {
+        id: "sticker",
+        title: "What goes on the sticker",
+        body: [
+          "The QR contains a website address, not a raw wallet address or a fixed purchase amount: https://app.nectar-pay.com/s/<coin-ID>. Print the matching case-sensitive coin ID beside the QR so the merchant and shopper can identify it.",
+          "For example, the test coin's QR is https://app.nectar-pay.com/s/dQdbix. This is a test merchant, not a sample address to reuse for another business. Every merchant needs the URL containing their own coin ID.",
+          "Admin → Fast enrollments → Sticker provides the merchant's QR and a print option. The code is useful only after successful enrollment. The published website must include the current sticker payment pages for people outside the preview to use them.",
+        ],
+      },
+      {
+        id: "welcome",
+        title: "Welcome email and account handover",
+        body: [
+          "After successful setup, the welcome email contains the merchant's code, payment-page link, a Telegram alerts link when available, and a link to create their NectarPay login using the same email address.",
+          "Receiving payments and controlling the merchant account are separate steps. The starter store is initially managed by the NectarPay team. Creating a login does not automatically establish ownership: the team must confirm the merchant and hand over the store before they can manage its sales, reports and settings.",
+          "If the welcome email fails, a successfully created store can still accept payments. The submission screen reports the email problem, and Admin → Fast enrollments shows the welcome status so the team can resend the welcome kit.",
+        ],
+      },
+      {
+        id: "pay",
+        title: "Shopper flow: scan → merchant → amount → send",
+        body: [
+          "With a phone camera, scan the sticker to open the merchant's NectarPay page. Check the merchant name, enter the full purchase total in USD, and continue to a tracked TSD payment. The payment goes to the coin's receiving address; NectarPay checks the transaction before marking the sale paid.",
+          "The intended CryptoPOP experience stays inside the wallet: scan the same sticker, see the vendor and logo when available, enter the amount, and send TSD. NectarPay's signed merchant/address lookup and tracked-sale connection have been built and tested. CryptoPOP's sticker reader and Send screen still need to be connected and verified; this guide does not claim that wallet flow is finished.",
+        ],
+        bullets: [
+          "Starter payments currently accept $0.50–$250 per sale, in whole cents, using TSD on TEXITcoin only.",
+          "Each checkout lasts 15 minutes. Pay only while the sale is open; start a fresh checkout if it expires.",
+          "Only one shopper can have an active sticker checkout at the shared receiving address. If someone else is paying, wait and try again.",
+          "Always create the tracked sale before sending. Sending to an address copied from an old lookup can leave a payment unmatched.",
+          "Payment sent is not the same as payment confirmed. Wait for NectarPay's paid-sale result before treating the sale as complete.",
+        ],
+      },
+      {
+        id: "alerts",
+        title: "Merchant alerts: email and Telegram",
+        body: [
+          "The starter store is configured to email the enrollment contact when a sale is paid. Telegram alerts are optional: open the link in the welcome email and start the bot to connect alerts to that store. The welcome Telegram link works for 14 days.",
+          "Alerts follow NectarPay's verified payment result, not a shopper's screenshot or the wallet merely saying it sent money. Email and Telegram are the current Fast Start channels; text messages and WhatsApp are not included yet.",
+        ],
+      },
+      {
+        id: "give-pop",
+        title: "Optional Give Back and shopper POP rewards",
+        body: [
+          "A merchant who opts into Give Back accepts a qualifying TSD community split: 90% to the merchant, 8% to an approved church and 2% to the program, all in one payment. The 10% community share is fixed. A normal payment without Give Back sends the full purchase total to the merchant.",
+          "On a $100 Give Back sale, the merchant receives $90, the church $8 and the program $2. Only the merchant portion can be refunded; the church and program shares are non-refundable. Approved churches are supplied through HME Give's signed list, with the last accepted list kept as a backup.",
+          "CryptoPOP rewards use the full sale total, not just the merchant's share: 1 POP per dollar, rounded up, so a $2.50 purchase can earn 3 POP. NectarPay verifies eligibility and CryptoPOP issues the points. POP is not spendable money, and sending a payment is not a guarantee of an immediate award.",
+        ],
+        bullets: [
+          "New stores have a 14-day reward hold; purchases at your own store do not qualify.",
+          "Daily reward limits are 250 POP per shopper per store and 5,000 POP per store. Each sale earns only once.",
+          "The full CryptoPOP sticker payment, Give Back and reward experience still needs a real end-to-end wallet test.",
+        ],
+      },
+      {
+        id: "readiness",
+        title: "Launch checklist and current status",
+        body: [
+          "Verified in NectarPay as of November 1, 2026: signed-out enrollment, automatic starter-store setup, welcome email sending, case-sensitive sticker resolution, and tracked TSD checkout creation. A $2.50 test sale used the enrolled coin's correct receiving address; unsigned wallet lookup requests and overlapping checkouts were refused. No money was sent in that test.",
+          "Still to finish or verify: connect CryptoPOP's sticker scanner and payment screen, confirm both apps' trusted connection, publish the current versions, make a real TSD payment, and check the merchant's paid-sale email and Telegram alert. Merchant account handover remains a team-confirmed step. SMS and WhatsApp are deferred.",
+        ],
+        steps: [
+          "Check that the physical coin, printed code, QR destination and enrolled merchant all match.",
+          "Open the sticker on a shopper's phone and confirm the merchant name and a fresh payment amount.",
+          "Confirm the merchant received the welcome email, created their login, and connected Telegram if wanted.",
+          "After publication and wallet connection, make an owner-approved test payment and wait for NectarPay to confirm it.",
+          "Read the sale back in NectarPay; check email and Telegram delivery and the shopper's eligible or held POP result.",
+          "Confirm store ownership before handing over account controls; choose directory visibility and add the merchant logo when appropriate. Starter stores begin hidden from the public directory.",
+        ],
+      },
+    ],
+  },
+  {
     id: "getting-started",
     title: "Account setup (Getting started)",
     summary: "Create your account, add your first store, and take your first payment.",
@@ -343,6 +445,8 @@ export const CHAPTERS: Chapter[] = [
 ];
 
 export const GLOSSARY: { term: string; meaning: string }[] = [
+  { term: "Fast Start Program", meaning: "NectarPay's coin-and-sticker merchant enrollment: a public form connects a Cold Storage Coin to a starter store for TSD payments." },
+  { term: "Sticker code / Coin ID", meaning: "The six-character, case-sensitive Cold Storage Coin ID used as the Fast Start merchant code and in its sticker payment URL." },
   { term: "HME", meaning: "Honest Money Ecosystem: the family of networks (TXC, ISK, ZCU), wallets and apps NectarPay belongs to." },
   { term: "TEXITcoin (TXC)", meaning: "The Texas-based blockchain NectarPay is built around." },
   { term: "TSD", meaning: "Texas Stable Dollar, a $1 stablecoin on TEXITcoin." },

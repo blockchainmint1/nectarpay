@@ -12,7 +12,7 @@ export const Route = createFileRoute("/docs/")({
       {
         name: "description",
         content:
-          "The complete NectarPay how-to guide: getting started, wallets, Vault and Beekeeper linking, tap-to-pay cards, Give Back, POP rewards, the merchant directory and more.",
+          "The complete NectarPay guide: the Fast Start Program, Cold Storage Coin sticker payments, account setup, wallets, tap-to-pay, Give Back and POP rewards.",
       },
       { property: "og:title", content: "The NectarPay Guide" },
       {
