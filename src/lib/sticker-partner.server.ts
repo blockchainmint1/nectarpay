@@ -1,7 +1,7 @@
-import { StickerLookup, StickerPayment, verifyStickerSignature, stickerResponseSignature } from "./sticker-partner";
+import { StickerLookup, StickerPayment, StickerPaid, verifyStickerSignature, stickerResponseSignature } from "./sticker-partner";
 import { EGIVING_DISCOUNT_PCT, EGIVING_PROGRAM_ADDRESS } from "./egiving";
 
-export async function handleStickerPartner(request: Request, payment: boolean) {
+export async function handleStickerPartner(request: Request, payment: boolean | "paid") {
   const json = (body: unknown, status: number) => Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
   const raw = await request.text();
   if (raw.length > 2048) return json({ error: "Request too large." }, 413);
@@ -17,8 +17,8 @@ export async function handleStickerPartner(request: Request, payment: boolean) {
     const ts = String(Math.floor(Date.now() / 1000));
     return new Response(text, { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store", "X-HME-Timestamp": ts, "X-HME-Signature": stickerResponseSignature(secret, raw, text, ts) } });
   };
-  let input: { code: string; request_id: string; amount?: number };
-  try { input = (payment ? StickerPayment : StickerLookup).parse(JSON.parse(raw)); }
+  let input: { code: string; request_id: string; amount?: number; invoice_id?: string; txid?: string };
+  try { input = (payment === "paid" ? StickerPaid : payment ? StickerPayment : StickerLookup).parse(JSON.parse(raw)); }
   catch { return signed({ error: "Supply a case-sensitive six-character code, request_id UUID, and a valid USD amount for payments." }, 400); }
   const { publicSticker } = await import("./fast-enroll.server");
   const merchant = await publicSticker(input.code);
@@ -27,6 +27,19 @@ export async function handleStickerPartner(request: Request, payment: boolean) {
   const { data: store, error: storeError } = await supabaseAdmin.from("stores").select("name, website, business_logo_url, egiving_enabled").eq("id", merchant.store_id).is("deactivated_at", null).maybeSingle();
   if (enrollmentError || storeError) return signed({ error: "Merchant lookup unavailable." }, 503);
   if (!enrollment || !store) return signed({ error: "Merchant unavailable." }, 404);
+  if (payment === "paid") {
+    if (!input.invoice_id || !input.txid) return signed({ error: "Supply invoice_id and txid." }, 400);
+    const { data: invoice, error: invoiceError } = await supabaseAdmin.from("invoices").select("id, store_id, address, chain, token_symbol, status, sticker_invoice_guards!inner(invoice_id)").eq("id", input.invoice_id).maybeSingle();
+    if (invoiceError) return signed({ error: "Invoice lookup unavailable." }, 503);
+    if (!invoice || invoice.store_id !== merchant.store_id || invoice.address !== enrollment.tsd_address || invoice.chain !== "txc" || invoice.token_symbol !== "TSD") return signed({ error: "Invoice does not match this sticker.", request_id: input.request_id }, 404);
+    const { scanBtcLikeInvoiceNow } = await import("./watcher.functions");
+    try { await scanBtcLikeInvoiceNow(invoice.id, input.txid); }
+    catch { return signed({ error: "Payment verification unavailable. Retry this same invoice and transaction; do not send again.", request_id: input.request_id }, 503); }
+    const { data: fresh, error: freshError } = await supabaseAdmin.from("invoices").select("status").eq("id", invoice.id).single();
+    const { data: tx, error: txError } = await supabaseAdmin.from("transactions").select("confirmed_at").eq("invoice_id", invoice.id).eq("tx_hash", input.txid).maybeSingle();
+    if (freshError || txError || !fresh) return signed({ error: "Payment status unavailable. Retry without sending again." }, 503);
+    return signed({ request_id: input.request_id, code: input.code, invoice_id: invoice.id, txid: input.txid, status: fresh.status, transaction_found: !!tx, paid: !!tx?.confirmed_at && ["confirmed", "overpaid"].includes(fresh.status) });
+  }
   const details = {
     request_id: input.request_id, code: input.code, store_id: merchant.store_id,
     merchant: { id: merchant.store_id, name: store.name, website: store.website, logo_url: store.business_logo_url },

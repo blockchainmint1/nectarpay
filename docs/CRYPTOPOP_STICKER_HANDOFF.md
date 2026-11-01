@@ -73,7 +73,19 @@ Returns the same merchant metadata plus `id`, `invoice_id`, `status`, `fiat_amou
 
 ## 3. Sent → confirmation → POP
 
-Poll existing `GET /api/public/v1/invoices/<invoice_id>/public` (already used by `getNectarInvoiceStatus`). NectarPay's watcher verifies payment, records the sale and emits merchant alerts. Broadcast success is not settlement proof.
+After successful broadcast call **POST https://app.nectar-pay.com/api/public/v1/stickers/paid** from the CryptoPOP server using the same exact-body HMAC and request-bound response verification as lookup/start:
+
+```json
+{"code":"dQdbix","request_id":"dc48a500-9a25-43de-a3c5-5e5d38360114","invoice_id":"15be9491-ae83-4170-b751-7f1df4751d80","txid":"9573726df81ddb1c120c9737a477ecd48ccb73ef73ea850caa156abd7d639861"}
+```
+
+Use the invoice created **before** sending; never create another invoice or rebroadcast to retry this callback. Retain the same callback request_id/invoice_id/txid on retries, with fresh signature timestamps. Persist callback attempts so closing the wallet cannot lose them. Retry network/503 errors with bounded backoff; stop automatic retries on 400/401/404.
+
+The signed reply includes `request_id`, `code`, `invoice_id`, `txid`, `status`, `transaction_found`, and `paid`. `paid: true` requires that this exact transaction was verified and the invoice is confirmed/overpaid. HTTP 200 alone is not payment proof; `paid: false` means wait/retry, not send again. Validate all identifiers against the original event. NectarPay fetches chain data itself and preserves property/address/amount/split/snapshot/atomic-claim checks.
+
+NectarPay also scans sticker invoices on its regular scheduled checker without requiring a browser or an xpub. Expired bills are revisited for a day; only blockchain payments timestamped inside the original checkout window can recover them. The signed callback can request recovery later too. Cancelled/failed bills and ordinary expired invoices remain closed.
+
+CryptoPOP snapshot `2801f97e` confirmed invoice creation already happens before signing/sending. Add this callback after broadcast in `src/components/wallet/nectarpay-sheet.tsx`, via a server function reusing `src/lib/nectarpay-sticker.server.ts`. The current `chaseReward` retries POP but does not trigger invoice verification. Broadcast success is not settlement proof.
 
 Use existing `claimSendReward` → `startClaim` → `POST /api/public/v1/pop/claim`. Rewards use full sale USD, rounded **up**: $2.50 → 3 POP, only if eligible. Do not promise immediate +3 POP: test/new stores have a 14-day hold; own-store purchases and daily caps apply. Do not duplicate minting. Keep errors visible rather than silently routing to a direct address send.
 

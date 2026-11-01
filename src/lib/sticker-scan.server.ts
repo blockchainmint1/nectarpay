@@ -1,4 +1,5 @@
 import { stickerCreditEligible } from "./fast-enroll";
+import { stickerPaymentInWindow } from "./sticker-settlement";
 
 export async function claimStickerCredit(input: {
   invoiceId: string; txid: string; amount: number; invoiceAmount: number;
@@ -9,6 +10,9 @@ export async function claimStickerCredit(input: {
   const { data: guard, error } = await supabaseAdmin.from("sticker_invoice_guards").select("excluded_txids").eq("invoice_id", input.invoiceId).maybeSingle();
   if (error) throw new Error("Could not verify sticker payment guard.");
   if (!guard) return true;
+  const { data: invoice, error: invoiceError } = await supabaseAdmin.from("invoices").select("created_at, expires_at").eq("id", input.invoiceId).maybeSingle();
+  if (invoiceError || !invoice) throw new Error("Could not verify sticker checkout window.");
+  if (!stickerPaymentInWindow(invoice.created_at, invoice.expires_at, input.blockTimeMs)) return false;
   const { data: prior, error: priorError } = await supabaseAdmin.from("sticker_credit_claims").select("invoice_id").eq("tx_hash", input.txid).maybeSingle();
   if (priorError) throw new Error("Could not verify payment claim.");
   if (prior) return prior.invoice_id === input.invoiceId;

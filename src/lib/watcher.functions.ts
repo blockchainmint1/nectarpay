@@ -17,6 +17,7 @@ import { notifyUser } from "./notify.server";
 import { getUsdRate } from "./rates.functions";
 import { identifyEvmAsset } from "./chains/evm-asset";
 import { claimStickerCredit } from "./sticker-scan.server";
+import { stickerPaymentInWindow } from "./sticker-settlement";
 
 const ADDRESS_WINDOW = 20; // BIP44 gap-limit-style lookahead per chain_config
 
@@ -304,6 +305,7 @@ export async function settleInvoice(
   invoiceId: string,
   _ignoredLatestCreditUsd: number,
   amountDueUsd: number,
+  verifiedExpiredSticker = false,
 ): Promise<{ status: string; changed: boolean; paidUsd: number }> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
@@ -311,7 +313,7 @@ export async function settleInvoice(
     .select("id, status, store_id, chain, address, fiat_amount, fiat_currency, external_order_id, token_symbol, rate, stores(name, owner_id, webhook_url, webhook_secret)")
     .eq("id", invoiceId)
     .single();
-  if (!inv || ["confirmed", "overpaid", "expired", "cancelled"].includes(inv.status)) {
+  if (!inv || ["confirmed", "overpaid", "cancelled", "failed"].includes(inv.status) || (inv.status === "expired" && !verifiedExpiredSticker)) {
     return { status: inv?.status ?? "unknown", changed: false, paidUsd: 0 };
   }
 
@@ -345,7 +347,7 @@ export async function settleInvoice(
     .from("invoices")
     .update({ status: newStatus })
     .eq("id", invoiceId)
-    .not("status", "in", '("confirmed","overpaid","expired","cancelled")')
+    .not("status", "in", verifiedExpiredSticker ? '("confirmed","overpaid","cancelled","failed")' : '("confirmed","overpaid","expired","cancelled","failed")')
     .select("id");
   if (!claimedRows?.length) {
     return { status: newStatus, changed: false, paidUsd: paidAmountUsd };
@@ -467,11 +469,14 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string, hintTxid?: string
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
-    .select("id, store_id, chain, address, token_symbol, fiat_amount, status, rate, created_at, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd, egiving_enabled, egiving_discount_pct)")
+    .select("id, store_id, chain, address, token_symbol, fiat_amount, status, rate, created_at, expires_at, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd, egiving_enabled, egiving_discount_pct)")
     .eq("id", invoiceId)
     .maybeSingle();
   if (!inv || !inv.address || !isBtcLikeChain(inv.chain)) return false;
-  if (["confirmed", "overpaid", "expired", "cancelled", "failed"].includes(inv.status)) return false;
+  if (["confirmed", "overpaid", "cancelled", "failed"].includes(inv.status)) return false;
+  const { data: stickerGuard, error: guardError } = await supabaseAdmin.from("sticker_invoice_guards").select("invoice_id").eq("invoice_id", inv.id).maybeSingle();
+  if (guardError) throw new Error("Could not verify sticker invoice type.");
+  if (inv.status === "expired" && !stickerGuard) return false;
 
   const chainKey = inv.chain as ChainKind;
   const net = getNetwork(chainKey) as BtcLikeNetwork;
@@ -506,12 +511,13 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string, hintTxid?: string
     const isConfirmed = credit.confirmations >= required;
     const creditTimeMs = credit.blockTime == null ? null : credit.blockTime * 1000;
     if (creditPredatesInvoice(creditTimeMs, inv.created_at)) continue;
+    if (stickerGuard && !stickerPaymentInWindow(inv.created_at, inv.expires_at, creditTimeMs)) continue;
     if (!await claimStickerCredit({ ...credit, invoiceId: inv.id, amount: paidCrypto, invoiceAmount: Number(inv.fiat_amount), blockTimeMs: creditTimeMs, createdAt: inv.created_at })) continue;
     const recorded = await recordTransaction(inv.id, credit.txid, paidCrypto, credit.confirmations, null, isConfirmed, null, creditTimeMs);
     if (!recorded) continue;
     if (isConfirmed) {
       const due = await applyEgiving(inv.id, inv.stores ?? null, inv.token_symbol, credit as { sendToMany?: boolean; splitRecipients?: Array<{ address: string | null; amount: number }> }, inv.address, paidUsd, Number(inv.fiat_amount));
-      const settled = await settleInvoice(inv.id, paidUsd, due);
+      const settled = await settleInvoice(inv.id, paidUsd, due, !!stickerGuard && inv.status === "expired");
       changed = settled.changed || changed;
     } else {
       changed = (await markInvoiceDetected(inv.id)) || changed;
@@ -678,6 +684,29 @@ async function expireStaleInvoices(): Promise<number> {
 export async function runWatcherTick(): Promise<WatcherResult[]> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const results: WatcherResult[] = [];
+
+  // Static cold-coin wallets have no xpub. Scan their guarded invoices independently,
+  // before expiry, plus a day of expired bills to recover missed in-window payments.
+  const stickerResult: WatcherResult = { chain: "txc-stickers", addresses: 0, credits: 0, invoicesUpdated: 0 };
+  try {
+    const stickerIds: string[] = [];
+    for (let offset = 0; ; offset += 100) {
+      const { data: stickers, error } = await supabaseAdmin.from("invoices")
+        .select("id, sticker_invoice_guards!inner(invoice_id)")
+        .eq("chain", "txc").eq("token_symbol", "TSD")
+        .or(`status.in.(pending,detected,underpaid),and(status.eq.expired,expires_at.gte.${new Date(Date.now() - 86400000).toISOString()})`)
+        .order("created_at").order("id").range(offset, offset + 99);
+      if (error) throw new Error(error.message);
+      stickerIds.push(...(stickers ?? []).map((invoice) => invoice.id));
+      if (!stickers || stickers.length < 100) break;
+    }
+    for (const id of stickerIds) {
+      stickerResult.addresses++;
+      try { if (await scanBtcLikeInvoiceNow(id)) stickerResult.invoicesUpdated++; }
+      catch (error) { stickerResult.error = error instanceof Error ? error.message : "Sticker scan failed"; }
+    }
+  } catch (error) { stickerResult.error = error instanceof Error ? error.message : "Sticker scan failed"; }
+  results.push(stickerResult);
 
   // Release address locks from invoices whose expires_at has passed.
   await expireStaleInvoices();
