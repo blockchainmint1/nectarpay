@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { fastConsentSchema, fastConsentRecord, FAST_SIGNATURE_BUCKET } from "@/lib/fast-consent";
+import { parseSignatureDataUrl } from "@/lib/sale-signature";
 import {
   coinIdMatchesAddress,
   clientIpFromHeaders,
@@ -81,7 +83,7 @@ const Enroll = z.object({
   country: opt(120),
   egivingOptIn: z.boolean(),
   companyUrl: z.string().max(200).optional().default(""),
-});
+}).merge(fastConsentSchema);
 
 /**
  * Public: saves the enrollment as pending for an admin to review. The coin is
@@ -119,9 +121,16 @@ export const submitFastEnrollment = createServerFn({ method: "POST" })
     }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const signature = parseSignatureDataUrl(data.signature);
+    if (!signature) throw new Error("Please add your signature.");
+    const enrollmentId = crypto.randomUUID();
+    const signaturePath = `${enrollmentId}.${signature.mime === "image/png" ? "png" : "jpg"}`;
+    const { error: uploadError } = await supabaseAdmin.storage.from(FAST_SIGNATURE_BUCKET).upload(signaturePath, signature.bytes, { contentType: signature.mime, upsert: false });
+    if (uploadError) throw new Error("Couldn't save your signature. Please try again.");
     const { data: row, error } = await supabaseAdmin
       .from("fast_enrollments")
       .insert({
+        id: enrollmentId,
         coin_id: coinId,
         tsd_address: coin.address,
         business_name: data.businessName,
@@ -136,11 +145,16 @@ export const submitFastEnrollment = createServerFn({ method: "POST" })
         postal_code: data.postalCode,
         country: data.country,
         egiving_opt_in: data.egivingOptIn,
+        directory_opt_in: data.directoryOptIn,
+        signature_path: signaturePath,
+        signed_at: new Date().toISOString(),
+        consent_record: fastConsentRecord(data.directoryOptIn),
         ip,
       })
       .select("id, coin_id, tsd_address")
       .single();
     if (error) {
+      await supabaseAdmin.storage.from(FAST_SIGNATURE_BUCKET).remove([signaturePath]);
       if (error.code === "23505") throw new Error("That coin is already assigned to another merchant.");
       throw new Error("Couldn't save the enrollment.");
     }

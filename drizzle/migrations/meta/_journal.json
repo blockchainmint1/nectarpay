@@ -232,6 +232,20 @@
       "when": 1793464634313,
       "tag": "0032_fast_auto_welcome",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1793527513110,
+      "tag": "0033_fast_start_consent_listing",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1793527871395,
+      "tag": "0034_fast_start_signature_admin_read",
+      "breakpoints": true
     }
   ]
 }

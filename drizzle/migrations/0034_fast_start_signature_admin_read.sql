@@ -1,0 +1,1 @@
+CREATE POLICY "Admins read Fast Start signatures" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'fast-start-signatures' AND public.has_role(auth.uid(), 'admin'));
