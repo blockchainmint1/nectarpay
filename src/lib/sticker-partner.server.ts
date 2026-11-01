@@ -46,7 +46,7 @@ export async function handleStickerPartner(request: Request, payment: boolean | 
     chain: "txc", token_symbol: "TSD", currency: "USD", address: enrollment.tsd_address,
     egiving: { accepted: store.egiving_enabled === true, discountPct: EGIVING_DISCOUNT_PCT, program_address: EGIVING_PROGRAM_ADDRESS },
   };
-  if (!payment || input.amount === undefined) return signed({ ...details, requires_invoice: true, min_amount: 0.5, max_amount: 250, valid_until: new Date(Date.now() + 300_000).toISOString() });
+  if (!payment || input.amount === undefined) return signed({ ...details, requires_invoice: true, valid_until: new Date(Date.now() + 300_000).toISOString() });
   const { createStickerPayment } = await import("./sticker-start.server");
   let id: string;
   try { const result = await createStickerPayment(input.code, input.amount); id = result.id; }

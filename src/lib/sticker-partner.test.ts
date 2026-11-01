@@ -37,12 +37,14 @@ describe("trusted sticker requests", () => {
     expect(StickerPayment.parse({ code: "dQdbix", request_id, amount: 2.5 }).amount).toBe(2.5);
     expect(StickerPayment.safeParse({ code: "dQdbix", request_id, amount: 2.501 }).success).toBe(false);
   });
-  it("keeps the existing $0.50 minimum", () => {
-    expect(StickerPayment.safeParse({ code: "dQdbix", request_id, amount: 0.5 }).success).toBe(true);
-    expect(StickerPayment.safeParse({ code: "dQdbix", request_id, amount: 0.49 }).success).toBe(false);
+  it("accepts any positive amount, however large", () => {
+    expect(StickerPayment.safeParse({ code: "dQdbix", request_id, amount: 0.01 }).success).toBe(true);
+    expect(StickerPayment.safeParse({ code: "dQdbix", request_id, amount: 250.01 }).success).toBe(true);
+    expect(StickerPayment.safeParse({ code: "dQdbix", request_id, amount: 125000 }).success).toBe(true);
   });
-  it("keeps the existing $250 maximum", () => {
-    expect(StickerPayment.safeParse({ code: "dQdbix", request_id, amount: 250 }).success).toBe(true);
-    expect(StickerPayment.safeParse({ code: "dQdbix", request_id, amount: 250.01 }).success).toBe(false);
+  it("still refuses zero, negative and sub-cent amounts", () => {
+    expect(StickerPayment.safeParse({ code: "dQdbix", request_id, amount: 0 }).success).toBe(false);
+    expect(StickerPayment.safeParse({ code: "dQdbix", request_id, amount: -5 }).success).toBe(false);
+    expect(StickerPayment.safeParse({ code: "dQdbix", request_id, amount: 0.001 }).success).toBe(false);
   });
 });
