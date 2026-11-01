@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { cloneElement, isValidElement, useId, useState } from "react";
 import { toast } from "sonner";
 import { CheckCircle2, Coins, Loader2, Store, ShieldCheck, Zap } from "lucide-react";
 
@@ -214,8 +214,8 @@ function FastPage() {
           </section>
 
           </div>
-          <div className="space-y-5 md:border-l md:border-border md:pl-8">
-          <section className="space-y-4 border-b border-border pb-5">
+          <div className="space-y-4 md:border-l md:border-border md:pl-8">
+          <section className="space-y-3 border-b border-border pb-4">
           <h2 className="font-medium">Your starter options</h2>
           <label className="flex cursor-pointer items-start gap-3">
             <Checkbox checked={directory} onCheckedChange={(v) => setDirectory(v === true)} className="mt-1" />
@@ -233,7 +233,7 @@ function FastPage() {
           </label>
 
           </section>
-          <section className="space-y-4">
+          <section className="space-y-3">
             <h2 className="flex items-center gap-2 font-medium"><ShieldCheck className="h-4 w-4 text-primary" /> Acknowledge & sign</h2>
             <label className="flex cursor-pointer items-start gap-3">
               <Checkbox checked={nonCustodial} onCheckedChange={(v) => setNonCustodial(v === true)} className="mt-1" />
@@ -274,10 +274,11 @@ function FastPage() {
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  const id = useId();
   return (
-    <Label className="block space-y-1.5">
-      <span className="block">{label}</span>
-      {children}
-    </Label>
+    <div className="space-y-1.5">
+      <Label htmlFor={id}>{label}</Label>
+      {isValidElement<{ id?: string; className?: string }>(children) ? cloneElement(children, { id, className: "h-10 text-base" }) : children}
+    </div>
   );
 }
