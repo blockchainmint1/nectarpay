@@ -11,7 +11,7 @@ export const getStickerMerchant = createServerFn({ method: "GET" })
   });
 
 export const startStickerPayment = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => Code.extend({ amount: z.number().finite().min(0.5).max(250) }).parse(d))
+  .inputValidator((d: unknown) => Code.extend({ amount: z.number().finite().positive() }).parse(d))
   .handler(async ({ data }) => {
     const code = normalizeCoinId(data.code);
     if (!code) throw new Error("Invalid sticker code.");

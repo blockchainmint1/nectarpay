@@ -40,10 +40,10 @@ function StickerPage() {
       <p className="font-mono text-sm text-muted-foreground">Merchant {code}</p>
       <h1 className="mt-2 text-3xl font-semibold">{merchant?.name ?? "Merchant not activated"}</h1>
       {merchant ? <form className="mt-10 space-y-5" onSubmit={start}>
-        <label className="block space-y-2"><span>Purchase total (USD)</span><Input aria-label="Purchase total (USD)" type="number" inputMode="decimal" min="0.50" max="250" step="0.01" required value={amount} onChange={(e) => setAmount(e.target.value)} className="h-14 text-2xl" /></label>
-        <p className="text-sm text-muted-foreground">TSD on TEXITcoin · $0.50–$250 per payment</p>
+        <label className="block space-y-2"><span>Purchase total (USD)</span><Input aria-label="Purchase total (USD)" type="number" inputMode="decimal" min="0.01" step="0.01" required value={amount} onChange={(e) => setAmount(e.target.value)} className="h-14 text-2xl" /></label>
+        <p className="text-sm text-muted-foreground">TSD on TEXITcoin · any amount, in whole cents</p>
         {merchant.giving && <p className="text-sm text-primary">Give Back accepted · 10% community share</p>}
-        <Button className="h-14 w-full" disabled={busy || Number(amount) < 0.5 || Number(amount) > 250}>{busy ? "Starting payment…" : "Continue to payment"}</Button>
+        <Button className="h-14 w-full" disabled={busy || !(Number(amount) > 0)}>{busy ? "Starting payment…" : "Continue to payment"}</Button>
         <p className="flex items-center gap-2 text-sm text-muted-foreground"><ShieldCheck className="h-4 w-4" /> Paid directly to the merchant’s coin</p>
       </form> : <p className="mt-6 text-muted-foreground">This sticker is not accepting payments yet.</p>}
     </main><MarketingFooter />

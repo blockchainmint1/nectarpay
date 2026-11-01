@@ -1,0 +1,8 @@
+CREATE OR REPLACE FUNCTION public.create_sticker_invoice(_code text, _amount numeric, _excluded text[])
+ RETURNS uuid
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$ DECLARE f fast_enrollments%ROWTYPE; sid uuid; iid uuid; BEGIN SELECT * INTO f FROM fast_enrollments WHERE coin_id=_code FOR UPDATE; IF NOT FOUND OR f.status <> 'activated' OR f.store_id IS NULL THEN RAISE EXCEPTION 'Merchant not activated'; END IF; IF _amount <= 0 OR _amount <> round(_amount,2) THEN RAISE EXCEPTION 'Amount must be a positive amount in whole cents'; END IF; IF EXISTS(SELECT 1 FROM stores WHERE id=f.store_id AND deactivated_at IS NOT NULL) THEN RAISE EXCEPTION 'Merchant unavailable'; END IF; IF EXISTS(SELECT 1 FROM invoices i JOIN sticker_invoice_guards g ON g.invoice_id=i.id WHERE i.address=f.tsd_address AND i.status IN ('pending','detected','underpaid') AND i.expires_at>now()) THEN RAISE EXCEPTION 'Another shopper is paying. Please try again shortly.'; END IF;
+INSERT INTO invoices(store_id,chain,token_symbol,fiat_amount,fiat_currency,crypto_amount,rate,address,status,description,expires_at,address_index,derivation_index) VALUES(f.store_id,'txc','TSD',_amount,'USD',_amount,1,f.tsd_address,'pending','Sticker payment · '||f.coin_id,now()+interval '15 minutes',0,0) RETURNING id INTO iid;
+INSERT INTO sticker_invoice_guards(invoice_id,excluded_txids) VALUES(iid,_excluded); RETURN iid; END $function$

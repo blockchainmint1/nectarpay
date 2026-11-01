@@ -36,7 +36,7 @@ Generate a fresh request UUID per user action. Reply:
   "chain":"txc","token_symbol":"TSD","currency":"USD",
   "address":"TdQdbixtqGqKL1S1MxPrZ7pXDyesTQCTck",
   "egiving":{"accepted":true,"discountPct":10,"program_address":"ToaRhmGqAW7PyvPJvbLJo69mnZwhaaA1vu"},
-  "requires_invoice":true,"min_amount":0.5,"max_amount":250,
+  "requires_invoice":true,
   "valid_until":"<actual UTC expiry>"
 }
 ```
@@ -65,7 +65,7 @@ Use constant-time comparison, five-minute response freshness, matching request_i
 
 Returns the same merchant metadata plus `id`, `invoice_id`, `status`, `fiat_amount`, `crypto_amount`, `address`, `expires_at`, `checkout_url`, and `egiving.merchantMinimumUsd`. Uses **USD full sale amount**, not the discounted merchant slice. TSD amount is equal to USD. Use this invoice's address, and refuse to send after expiry. Reconfirm vendor if details changed since scan.
 
-- Existing range: $0.50–$250, whole cents.
+- **No amount ceiling.** Any positive USD amount in whole cents is accepted (0.01 up through very large sales). NectarPay no longer returns `min_amount`/`max_amount`; drop those checks on the wallet side.
 - One active checkout per static address. Concurrent/replayed creation returns 409, not another payable invoice.
 - No automatic creation retries. A response lost after creation is not permission to broadcast from cached lookup data; open checkout or wait for expiry.
 - Existing pre-checkout tx snapshot and atomic txid claim are preserved. Never send first and register later.

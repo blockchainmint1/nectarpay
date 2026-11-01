@@ -253,6 +253,13 @@
       "when": 1793528503424,
       "tag": "0035_fast_start_business_description",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1793531009753,
+      "tag": "0036_sticker_any_amount",
+      "breakpoints": true
     }
   ]
 }
