@@ -129,3 +129,32 @@ export function welcomeEmailOutstanding(row: {
 }): boolean {
   return storeIsLive(row) && !row.welcome_sent_at;
 }
+
+/* ------------------------------------------------------------------ */
+/* The signed enrollment record                                         */
+/* ------------------------------------------------------------------ */
+
+/** True when the merchant's signature is kept as a file we can show later. */
+export function signatureOnFile(row: { signature_path: string | null }): boolean {
+  return !!row.signature_path;
+}
+
+/**
+ * One plain-English line describing what the merchant agreed to, so an admin
+ * can see the agreement version beside the signature without opening JSON.
+ */
+export function consentSummary(
+  consent: unknown,
+  directoryOptIn: boolean | null,
+): string | null {
+  if (!consent || typeof consent !== "object" || Array.isArray(consent)) return null;
+  const record = consent as Record<string, unknown>;
+  const version = typeof record.version === "string" ? record.version : "unknown version";
+  const accepted = ["nonCustodialAccepted", "basicSetupAccepted"].every((key) => record[key] === true);
+  const directory =
+    typeof record.directoryOptIn === "boolean" ? record.directoryOptIn : !!directoryOptIn;
+  return `Signed the ${version} agreement${accepted ? "" : " (acknowledgements incomplete)"} · directory listing: ${
+    directory ? "yes" : "no"
+  }`;
+}
+
