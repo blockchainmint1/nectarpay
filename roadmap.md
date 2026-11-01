@@ -1,7 +1,7 @@
 # Roadmap
 
 ## Fast merchant sticker launch
-- [ ] Document the Fast Start Program on /docs: coin/sticker kit, public enrollment, automatic go-live, welcome/account handover, shopper payments, alerts, Give/POP and verified launch status.
+- [x] Document the Fast Start Program as the first /docs chapter: coin/sticker kit, public enrollment, automatic go-live, welcome/account handover, shopper payments, alerts, Give/POP and verified launch status; contents navigation and phone layout checked, no browser errors.
 - [x] Add signed partner sticker lookup/invoice APIs; screenshot QR verified as /s/dQdbix; $2.50 invoice created at the correct TSD address, signed responses checked, unsigned/wrong-case/overlapping requests refused, checkout visible, 39 tests passed.
 - [ ] Finish CryptoPOP scanner/Send connection: requires edits in the CryptoPOP project (read-only here); exact contract and wallet changes are in docs/CRYPTOPOP_STICKER_HANDOFF.md. Republish both apps, verify CryptoPOP-origin shared-key authentication, and perform an owner-approved funded payment.
 - [x] Connect case-sensitive coin/sticker codes to an approved live merchant and checkout.
