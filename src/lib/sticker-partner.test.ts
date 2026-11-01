@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createHmac } from "crypto";
-import { StickerLookup, StickerPayment, verifyStickerSignature, stickerResponseSignature } from "./sticker-partner";
+import { StickerLookup, StickerPayment, StickerPaid, verifyStickerSignature, stickerResponseSignature } from "./sticker-partner";
 
 const secret = "unit-test-only-key";
 const ts = "1793525940";
@@ -10,6 +10,12 @@ const raw = JSON.stringify({ code: "dQdbix", request_id });
 const signature = createHmac("sha256", secret).update(`${ts}.${raw}`).digest("hex");
 
 describe("trusted sticker requests", () => {
+  it("accepts a bound payment hint but never a supplied paid status", () => {
+    const hint = { code: "dQdbix", request_id, invoice_id: request_id, txid: "9573726df81ddb1c120c9737a477ecd48ccb73ef73ea850caa156abd7d639861" };
+    expect(StickerPaid.parse(hint).txid).toBe(hint.txid);
+    expect(StickerPaid.safeParse({ ...hint, status: "confirmed" }).success).toBe(false);
+    expect(StickerPaid.safeParse({ ...hint, txid: "not-a-transaction" }).success).toBe(false);
+  });
   it("preserves the exact mixed-case coin code", () => {
     expect(StickerLookup.parse({ code: "dQdbix", request_id }).code).toBe("dQdbix");
   });

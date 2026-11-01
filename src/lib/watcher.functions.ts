@@ -689,6 +689,7 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
   // before expiry, plus a day of expired bills to recover missed in-window payments.
   const stickerResult: WatcherResult = { chain: "txc-stickers", addresses: 0, credits: 0, invoicesUpdated: 0 };
   try {
+    const stickerIds: string[] = [];
     for (let offset = 0; ; offset += 100) {
       const { data: stickers, error } = await supabaseAdmin.from("invoices")
         .select("id, sticker_invoice_guards!inner(invoice_id)")
@@ -696,14 +697,13 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
         .or(`status.in.(pending,detected,underpaid),and(status.eq.expired,expires_at.gte.${new Date(Date.now() - 86400000).toISOString()})`)
         .order("created_at").order("id").range(offset, offset + 99);
       if (error) throw new Error(error.message);
-      for (const invoice of stickers ?? []) {
-        stickerResult.addresses++;
-        try { if (await scanBtcLikeInvoiceNow(invoice.id)) stickerResult.invoicesUpdated++; }
-        catch (error) { stickerResult.error = error instanceof Error ? error.message : "Sticker scan failed"; }
-      }
+      stickerIds.push(...(stickers ?? []).map((invoice) => invoice.id));
       if (!stickers || stickers.length < 100) break;
-      // Settlement removes candidates: restart the first page rather than skip rows.
-      if (stickerResult.invoicesUpdated) break;
+    }
+    for (const id of stickerIds) {
+      stickerResult.addresses++;
+      try { if (await scanBtcLikeInvoiceNow(id)) stickerResult.invoicesUpdated++; }
+      catch (error) { stickerResult.error = error instanceof Error ? error.message : "Sticker scan failed"; }
     }
   } catch (error) { stickerResult.error = error instanceof Error ? error.message : "Sticker scan failed"; }
   results.push(stickerResult);
