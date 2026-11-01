@@ -1,7 +1,7 @@
 # Roadmap
 
 ## Fast merchant sticker launch
-- [ ] Fix wallet-paid sticker settlement: include sticker bills in scheduled scans, add a signed transaction-hint callback, recheck Bobby’s 2.55 TSD sale, and update CryptoPOP handoff.
+- [x] Fix wallet-paid sticker settlement: signed /stickers/paid checks invoice/sticker binding and blockchain evidence, cron includes static-address bills; Bobby’s 2.55 TSD tx recovered to confirmed with one claim, repeat callback safe, customer page shows Payment received; scheduled checker scans two remaining sticker bills with no errors; 47 tests passed; CryptoPOP handoff updated.
 - [x] Move Website first and prefill editable business/contact/address/description; real Cold Storage Coins website returned name/email/description, preserved entered phone, left unavailable address blank; description saved with enrollment and copied during activation.
 - [x] Put coin heading, scan, asset ID, Check and public key on one tablet/desktop line; verified at 1207px and no overflow on phone.
 - [x] Improve /fast for iPad with private signature capture, required non-custodial/basic-setup acknowledgements, directory listing and TSD-only/instant-confirm defaults; tablet/phone interactions checked, schema and activation defaults verified.
@@ -9,14 +9,14 @@
 - [x] Keep a Fast Start signature retrievable later: the drawn signature is stored as an image file in private storage beside the agreement version and signing time, and Admin → Fast enrollments opens it on demand. Verified with a signature drawn live on the /fast pad (11,491-byte PNG) placed on the test enrollment — it rendered in the merchant record with the agreement line and signing time; 19 tests passed.
 - [x] Document the Fast Start Program as the first /docs chapter: coin/sticker kit, public enrollment, automatic go-live, welcome/account handover, shopper payments, alerts, Give/POP and verified launch status; contents navigation and phone layout checked, no browser errors.
 - [x] Add signed partner sticker lookup/invoice APIs; screenshot QR verified as /s/dQdbix; $2.50 invoice created at the correct TSD address, signed responses checked, unsigned/wrong-case/overlapping requests refused, checkout visible, 39 tests passed.
-- [ ] Finish CryptoPOP scanner/Send connection: requires edits in the CryptoPOP project (read-only here); exact contract and wallet changes are in docs/CRYPTOPOP_STICKER_HANDOFF.md. Republish both apps, verify CryptoPOP-origin shared-key authentication, and perform an owner-approved funded payment.
+- [ ] Finish CryptoPOP post-send reporting: snapshot confirms scanner/invoice-before-send work and Bobby paid 2.55 TSD; CryptoPOP must add the signed /stickers/paid call after broadcast and persist retries (read-only from this chat). Republish NectarPay and CryptoPOP; confirm real reward response, subject to own-store/new-store safeguards.
 - [x] Connect case-sensitive coin/sticker codes to an approved live merchant and checkout.
 - [x] Add atomic admin-managed starter-store activation and printable sticker access; no email-only account ownership claims.
 - [x] Verify public dQdbix enrollment, admin activation, printable QR and $1 TSD invoice at the correct cold-coin address; wrong-case and overlapping checkout refused; 20 tests passed.
 - [x] Collect an optional merchant website on the public /fast form (normalized to a real link, shown in Admin, copied into the store profile when the starter store is activated); 145 tests passed.
 - [x] Auto go-live after the double coin check, welcome email (sticker link, 14-day Telegram alert link, create-login link), store-level Telegram alerts; admin sees welcome status; 148 tests passed.
 - [ ] Text-message and WhatsApp alerts: deferred by Bobby (need Twilio / Meta approval).
-- [ ] Verify real payment and merchant alert: Bobby must pay the test invoice after website publication; no funds sent. Starter safety defaults are one checkout at a time and $0.50–$250.
+- [ ] Confirm real merchant alert delivery: Bobby’s 2.55 TSD payment is verified and recovered; inbox/Telegram delivery needs merchant confirmation. Starter safety defaults are one checkout at a time and $0.50–$250.
 - [ ] Merchant account claiming/transfer remains a later ownership-verification step; starter stores are admin-managed, not falsely assigned to submitted emails.
 - [x] Confirm sticker format: preserve existing https://app.nectar-pay.com/s/<case-sensitive-coin-ID>; CryptoPOP must recognize it and call the signed lookup/start contract before sending.
 - [x] Fix address-bar opens of admin pages landing on Overview: the admin layout now renders only in the browser, so /admin/fast, /admin/give and /admin/invoices open directly and survive a refresh.
