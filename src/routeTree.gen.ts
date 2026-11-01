@@ -172,6 +172,8 @@ import { Route as ApiPublicV1LinksSlugRouteImport } from './routes/api.public.v1
 import { Route as ApiPublicV1PayInvoiceIdRouteImport } from './routes/api/public/v1/pay/$invoiceId'
 import { Route as ApiPublicV1PopClaimRouteImport } from './routes/api/public/v1/pop.claim'
 import { Route as ApiPublicV1StatsLiveRouteImport } from './routes/api/public/v1/stats/live'
+import { Route as ApiPublicV1StickersInvoiceRouteImport } from './routes/api/public/v1/stickers.invoice'
+import { Route as ApiPublicV1StickersLookupRouteImport } from './routes/api/public/v1/stickers.lookup'
 import { Route as ApiPublicV1TerminalsHeartbeatRouteImport } from './routes/api/public/v1/terminals/heartbeat'
 import { Route as ApiPublicV1TerminalsInvoiceRouteImport } from './routes/api/public/v1/terminals/invoice'
 import { Route as ApiPublicV1TerminalsInvoicesRouteImport } from './routes/api/public/v1/terminals/invoices'
@@ -1063,6 +1065,18 @@ const ApiPublicV1StatsLiveRoute = ApiPublicV1StatsLiveRouteImport.update({
   path: '/public/v1/stats/live',
   getParentRoute: () => ApiRoute,
 } as any)
+const ApiPublicV1StickersInvoiceRoute =
+  ApiPublicV1StickersInvoiceRouteImport.update({
+    id: '/public/v1/stickers/invoice',
+    path: '/public/v1/stickers/invoice',
+    getParentRoute: () => ApiRoute,
+  } as any)
+const ApiPublicV1StickersLookupRoute =
+  ApiPublicV1StickersLookupRouteImport.update({
+    id: '/public/v1/stickers/lookup',
+    path: '/public/v1/stickers/lookup',
+    getParentRoute: () => ApiRoute,
+  } as any)
 const ApiPublicV1TerminalsHeartbeatRoute =
   ApiPublicV1TerminalsHeartbeatRouteImport.update({
     id: '/public/v1/terminals/heartbeat',
@@ -1299,6 +1313,8 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/pop/claim': typeof ApiPublicV1PopClaimRoute
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
+  '/api/public/v1/stickers/invoice': typeof ApiPublicV1StickersInvoiceRoute
+  '/api/public/v1/stickers/lookup': typeof ApiPublicV1StickersLookupRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
   '/api/public/v1/terminals/invoices': typeof ApiPublicV1TerminalsInvoicesRoute
@@ -1468,6 +1484,8 @@ export interface FileRoutesByTo {
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/pop/claim': typeof ApiPublicV1PopClaimRoute
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
+  '/api/public/v1/stickers/invoice': typeof ApiPublicV1StickersInvoiceRoute
+  '/api/public/v1/stickers/lookup': typeof ApiPublicV1StickersLookupRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
   '/api/public/v1/terminals/invoices': typeof ApiPublicV1TerminalsInvoicesRoute
@@ -1646,6 +1664,8 @@ export interface FileRoutesById {
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/pop/claim': typeof ApiPublicV1PopClaimRoute
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
+  '/api/public/v1/stickers/invoice': typeof ApiPublicV1StickersInvoiceRoute
+  '/api/public/v1/stickers/lookup': typeof ApiPublicV1StickersLookupRoute
   '/api/public/v1/terminals/heartbeat': typeof ApiPublicV1TerminalsHeartbeatRoute
   '/api/public/v1/terminals/invoice': typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
   '/api/public/v1/terminals/invoices': typeof ApiPublicV1TerminalsInvoicesRoute
@@ -1824,6 +1844,8 @@ export interface FileRouteTypes {
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/pop/claim'
     | '/api/public/v1/stats/live'
+    | '/api/public/v1/stickers/invoice'
+    | '/api/public/v1/stickers/lookup'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
     | '/api/public/v1/terminals/invoices'
@@ -1993,6 +2015,8 @@ export interface FileRouteTypes {
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/pop/claim'
     | '/api/public/v1/stats/live'
+    | '/api/public/v1/stickers/invoice'
+    | '/api/public/v1/stickers/lookup'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
     | '/api/public/v1/terminals/invoices'
@@ -2170,6 +2194,8 @@ export interface FileRouteTypes {
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/pop/claim'
     | '/api/public/v1/stats/live'
+    | '/api/public/v1/stickers/invoice'
+    | '/api/public/v1/stickers/lookup'
     | '/api/public/v1/terminals/heartbeat'
     | '/api/public/v1/terminals/invoice'
     | '/api/public/v1/terminals/invoices'
@@ -3380,6 +3406,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1StatsLiveRouteImport
       parentRoute: typeof ApiRoute
     }
+    '/api/public/v1/stickers/invoice': {
+      id: '/api/public/v1/stickers/invoice'
+      path: '/public/v1/stickers/invoice'
+      fullPath: '/api/public/v1/stickers/invoice'
+      preLoaderRoute: typeof ApiPublicV1StickersInvoiceRouteImport
+      parentRoute: typeof ApiRoute
+    }
+    '/api/public/v1/stickers/lookup': {
+      id: '/api/public/v1/stickers/lookup'
+      path: '/public/v1/stickers/lookup'
+      fullPath: '/api/public/v1/stickers/lookup'
+      preLoaderRoute: typeof ApiPublicV1StickersLookupRouteImport
+      parentRoute: typeof ApiRoute
+    }
     '/api/public/v1/terminals/heartbeat': {
       id: '/api/public/v1/terminals/heartbeat'
       path: '/public/v1/terminals/heartbeat'
@@ -3807,6 +3847,8 @@ interface ApiRouteChildren {
   ApiPublicV1PayInvoiceIdRoute: typeof ApiPublicV1PayInvoiceIdRoute
   ApiPublicV1PopClaimRoute: typeof ApiPublicV1PopClaimRoute
   ApiPublicV1StatsLiveRoute: typeof ApiPublicV1StatsLiveRoute
+  ApiPublicV1StickersInvoiceRoute: typeof ApiPublicV1StickersInvoiceRoute
+  ApiPublicV1StickersLookupRoute: typeof ApiPublicV1StickersLookupRoute
   ApiPublicV1TerminalsHeartbeatRoute: typeof ApiPublicV1TerminalsHeartbeatRoute
   ApiPublicV1TerminalsInvoiceRoute: typeof ApiPublicV1TerminalsInvoiceRouteWithChildren
   ApiPublicV1TerminalsInvoicesRoute: typeof ApiPublicV1TerminalsInvoicesRoute
@@ -3845,6 +3887,8 @@ const ApiRouteChildren: ApiRouteChildren = {
   ApiPublicV1PayInvoiceIdRoute: ApiPublicV1PayInvoiceIdRoute,
   ApiPublicV1PopClaimRoute: ApiPublicV1PopClaimRoute,
   ApiPublicV1StatsLiveRoute: ApiPublicV1StatsLiveRoute,
+  ApiPublicV1StickersInvoiceRoute: ApiPublicV1StickersInvoiceRoute,
+  ApiPublicV1StickersLookupRoute: ApiPublicV1StickersLookupRoute,
   ApiPublicV1TerminalsHeartbeatRoute: ApiPublicV1TerminalsHeartbeatRoute,
   ApiPublicV1TerminalsInvoiceRoute:
     ApiPublicV1TerminalsInvoiceRouteWithChildren,

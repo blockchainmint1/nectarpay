@@ -17,7 +17,7 @@ export async function handleStickerPartner(request: Request, payment: boolean) {
     const ts = String(Math.floor(Date.now() / 1000));
     return new Response(text, { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store", "X-HME-Timestamp": ts, "X-HME-Signature": stickerResponseSignature(secret, raw, text, ts) } });
   };
-  let input;
+  let input: { code: string; request_id: string; amount?: number };
   try { input = (payment ? StickerPayment : StickerLookup).parse(JSON.parse(raw)); }
   catch { return signed({ error: "Supply a case-sensitive six-character code, request_id UUID, and a valid USD amount for payments." }, 400); }
   const { publicSticker } = await import("./fast-enroll.server");
@@ -33,7 +33,7 @@ export async function handleStickerPartner(request: Request, payment: boolean) {
     chain: "txc", token_symbol: "TSD", currency: "USD", address: enrollment.tsd_address,
     egiving: { accepted: store.egiving_enabled === true, discountPct: EGIVING_DISCOUNT_PCT, program_address: EGIVING_PROGRAM_ADDRESS },
   };
-  if (!payment || !("amount" in input)) return signed({ ...details, requires_invoice: true, min_amount: 0.5, max_amount: 250, valid_until: new Date(Date.now() + 300_000).toISOString() });
+  if (!payment || input.amount === undefined) return signed({ ...details, requires_invoice: true, min_amount: 0.5, max_amount: 250, valid_until: new Date(Date.now() + 300_000).toISOString() });
   const { createStickerPayment } = await import("./sticker-start.server");
   let id: string;
   try { const result = await createStickerPayment(input.code, input.amount); id = result.id; }
