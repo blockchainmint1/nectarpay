@@ -2,17 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { Fragment, useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, HeartHandshake, Loader2, Printer, CheckCircle2 } from "lucide-react";
+import { ChevronDown, ChevronRight, HeartHandshake, Loader2, Printer, CheckCircle2, PenLine } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { qrToDataURL } from "@/lib/qr";
-import { stickerPath, storeIsLive, welcomeEmailOutstanding } from "@/lib/fast-enroll";
+import { consentSummary, signatureOnFile, stickerPath, storeIsLive, welcomeEmailOutstanding } from "@/lib/fast-enroll";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { SortHeader } from "@/components/admin/sort-header";
 import { sortRows, toggleSort, type SortState } from "@/lib/table-sort";
-import { listFastEnrollments, activateFastEnrollment } from "@/lib/fast-enroll.functions";
+import { activateFastEnrollment, fastEnrollmentSignature, listFastEnrollments } from "@/lib/fast-enroll.functions";
 
 type Enrollment = NonNullable<Awaited<ReturnType<typeof listFastEnrollments>>>[number];
 type Key = "business_name" | "city" | "coin_id" | "status" | "egiving_opt_in" | "created_at";
@@ -43,11 +43,14 @@ export const Route = createFileRoute("/_authenticated/admin/fast")({
 function AdminFast() {
   const fn = useServerFn(listFastEnrollments);
   const activate = useServerFn(activateFastEnrollment);
+  const showSignature = useServerFn(fastEnrollmentSignature);
   const [busy, setBusy] = useState<string | null>(null);
   const [sticker, setSticker] = useState<{ code: string; name: string; qr: string } | null>(null);
   const q = useQuery({ queryKey: ["admin", "fast-enrollments"], queryFn: () => fn() });
   const [sort, setSort] = useState<SortState<Key>>({ key: "created_at", dir: "desc" });
   const [open, setOpen] = useState<string | null>(null);
+  const [signed, setSigned] = useState<{ id: string; dataUrl: string | null; signedAt: string | null; consent: unknown } | null>(null);
+  const [signBusy, setSignBusy] = useState<string | null>(null);
 
   const rows = useMemo(() => sortRows(q.data ?? [], sort, ACCESSORS), [q.data, sort]);
   const onSort = (key: Key) => setSort((s) => toggleSort(s, key));
@@ -68,6 +71,17 @@ function AdminFast() {
   async function showSticker(r: Enrollment) {
     try { const qr = await qrToDataURL(`https://app.nectar-pay.com${stickerPath(r.coin_id)}`, { width: 640, margin: 3, errorCorrectionLevel: "M" }); setSticker({ code: r.coin_id, name: r.business_name, qr }); }
     catch { toast.error("Could not create sticker."); }
+  }
+
+  async function loadSignature(r: Enrollment) {
+    setSignBusy(r.id);
+    try {
+      setSigned({ id: r.id, ...(await showSignature({ data: { id: r.id } })) });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not open the signature.");
+    } finally {
+      setSignBusy(null);
+    }
   }
 
   if (q.isLoading) {
