@@ -1,13 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { cloneElement, isValidElement, useId, useState } from "react";
+import { cloneElement, isValidElement, useId, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { CheckCircle2, Coins, Loader2, Store, ShieldCheck, Zap, ScanLine } from "lucide-react";
+import { CheckCircle2, Coins, Loader2, Store, ShieldCheck, Zap, ScanLine, Search, Globe } from "lucide-react";
 
 import { MarketingFooter, MarketingNav } from "@/components/marketing-shell";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { lookupFastWebsite } from "@/lib/fast-website.functions";
+import { mergeWebsiteDetails } from "@/lib/fast-website";
 import { CountryRegionFields } from "@/components/store/CountryRegionFields";
 import { FastSignaturePad } from "@/components/fast-signature-pad";
 import { FastCoinScanner } from "@/components/fast-coin-scanner";
@@ -37,6 +41,7 @@ const empty = {
   email: "",
   phone: "",
   website: "",
+  description: "",
   category: "",
   street: "",
   city: "",
@@ -47,6 +52,11 @@ const empty = {
 
 function FastPage() {
   const [f, setF] = useState(empty);
+  const websiteLookup = useServerFn(lookupFastWebsite);
+  const [lookingUp, setLookingUp] = useState(false);
+  const [websiteMessage, setWebsiteMessage] = useState("");
+  const currentWebsite = useRef(f.website);
+  currentWebsite.current = f.website;
   const [coinId, setCoinId] = useState("");
   const [publicKey, setPublicKey] = useState("");
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -62,6 +72,19 @@ function FastPage() {
   const [done, setDone] = useState<{ coin_id: string; tsd_address: string; name: string; live?: boolean; emailed?: boolean } | null>(null);
 
   const set = (k: keyof typeof empty) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
+
+  async function fillFromWebsite() {
+    const requested = f.website;
+    setLookingUp(true); setWebsiteMessage("");
+    try {
+      const found = await websiteLookup({ data: { website: requested } });
+      if (currentWebsite.current !== requested) return;
+      if (!found.ok) { setWebsiteMessage(found.message); return; }
+      setF((p) => mergeWebsiteDetails(p, found.details));
+      setWebsiteMessage(Object.values(found.details).some(Boolean) ? "Website details found — please review them before signing." : "No contact details found. Please fill in the remaining fields.");
+    } catch (err) { setWebsiteMessage(err instanceof Error ? err.message : "Couldn't read the website. Please enter the details."); }
+    finally { setLookingUp(false); }
+  }
 
   async function check(id = coinId, scannedKey?: string | null) {
     setChecking(true);
@@ -142,12 +165,18 @@ function FastPage() {
           <div className="flex items-center gap-2 text-sm text-muted-foreground"><Zap className="h-4 w-4 text-primary" /> TSD on TEXITcoin · Instant acceptance</div>
         </header>
         <form onSubmit={submit} className="grid gap-6 md:grid-cols-2 md:gap-8">
-          <div className="space-y-5">
-          <section className="border-b border-border pb-5">
-            <div className="flex items-center justify-between gap-2"><h2 className="flex items-center gap-2 font-medium">
+          <section className="space-y-2 border-b border-border pb-4 md:col-span-2">
+            <Label htmlFor="fast-website" className="flex items-center gap-2"><Globe className="h-4 w-4 text-primary" /> Business website</Label>
+            <div className="flex gap-2">
+              <Input id="fast-website" type="text" inputMode="url" autoComplete="url" spellCheck={false} value={f.website} onChange={(e) => { setF((p) => ({ ...p, website: e.target.value })); setWebsiteMessage(""); }} maxLength={200} placeholder="example.com" className="h-12 min-w-0 text-base" />
+              <Button type="button" variant="outline" className="h-12 shrink-0" disabled={lookingUp || !f.website.trim()} onClick={() => void fillFromWebsite()}>{lookingUp ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />} {lookingUp ? "Reading…" : "Look up"}</Button>
+            </div>
+            {websiteMessage && <p role="status" className="text-xs text-muted-foreground">{websiteMessage}</p>}
+          </section>
+          <section className="border-b border-border pb-4 md:col-span-2">
+            <div className="grid items-center gap-2 sm:grid-cols-[auto_auto_minmax(120px,160px)_auto_minmax(0,1fr)]"><h2 className="flex items-center gap-2 whitespace-nowrap text-sm font-medium">
               <Coins className="h-4 w-4" /> Cold Storage Coin
-            </h2><Button type="button" variant="outline" disabled={checking} onClick={() => setScannerOpen(true)}><ScanLine className="h-4 w-4" /> Scan QR</Button></div>
-            <div className="mt-3 flex gap-2">
+            </h2><Button type="button" variant="outline" className="h-10" disabled={checking} onClick={() => setScannerOpen(true)}><ScanLine className="h-4 w-4" /> Scan QR</Button>
               <Input
                 value={coinId}
                 onChange={(e) => {
@@ -161,15 +190,14 @@ function FastPage() {
                 autoCapitalize="off"
                 autoCorrect="off"
                 spellCheck={false}
-                className="h-12 font-mono text-xl tracking-widest"
+                className="h-10 min-w-0 font-mono text-base"
                 aria-label="Coin asset ID"
               />
-              <Button type="button" className="h-12" onClick={() => void check()} disabled={coinId.length !== 6 || checking}>
+              <Button type="button" className="h-10" onClick={() => void check()} disabled={coinId.length !== 6 || checking}>
                 {checking ? <Loader2 className="h-4 w-4 animate-spin" /> : "Check"}
               </Button>
+              <div className="min-w-0"><Label htmlFor="fast-public-key" className="sr-only">Full public key · TSD receive address</Label><Input id="fast-public-key" value={publicKey} readOnly placeholder="Full public key · TSD receive address" className="h-10 min-w-0 font-mono text-xs" /></div>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">Six characters, upper and lower case matter.</p>
-            <div className="mt-3 space-y-1.5"><Label htmlFor="fast-public-key">Full public key · TSD receive address</Label><Input id="fast-public-key" value={publicKey} readOnly placeholder="Filled after scanning or checking the coin" className="h-10 min-w-0 font-mono text-xs" /></div>
             {coin && !coin.ok && <p className="mt-2 text-sm text-destructive">{coin.message}</p>}
             {coin?.ok && coin.taken && (
               <p className="mt-2 text-sm text-destructive">This coin is already assigned to another merchant.</p>
@@ -181,7 +209,7 @@ function FastPage() {
             )}
           </section>
 
-          <section className="grid gap-x-4 gap-y-3 sm:grid-cols-2">
+          <div className="space-y-5"><section className="grid gap-x-4 gap-y-3 sm:grid-cols-2">
             <h2 className="flex items-center gap-2 font-medium sm:col-span-2"><Store className="h-4 w-4 text-primary" /> Business details · USA</h2>
             <Field label="Business name *">
               <Input required value={f.businessName} onChange={set("businessName")} maxLength={120} />
@@ -197,18 +225,6 @@ function FastPage() {
             </Field>
             <Field label="Phone">
               <Input type="tel" value={f.phone} onChange={set("phone")} maxLength={40} />
-            </Field>
-            <Field label="Website">
-              <Input
-                type="text"
-                inputMode="url"
-                autoComplete="url"
-                spellCheck={false}
-                value={f.website}
-                onChange={set("website")}
-                maxLength={200}
-                placeholder="example.com"
-              />
             </Field>
             <Field label="Street address">
               <Input value={f.street} onChange={set("street")} maxLength={200} />
@@ -226,6 +242,7 @@ function FastPage() {
               onCountry={(c) => setF((p) => ({ ...p, country: c, region: "" }))}
               onRegion={(r) => setF((p) => ({ ...p, region: r }))}
             />
+            <div className="space-y-1.5 sm:col-span-2"><Label htmlFor="fast-description">Business description</Label><Textarea id="fast-description" value={f.description} onChange={(e) => setF((p) => ({ ...p, description: e.target.value }))} maxLength={1000} rows={2} /></div>
           </section>
 
           </div>
@@ -274,7 +291,7 @@ function FastPage() {
             />
           </div>
 
-          <Button type="submit" className="h-14 w-full text-lg" disabled={saving || !coin?.ok || coin.taken || !nonCustodial || !basicSetup || !signature}>
+          <Button type="submit" className="h-14 w-full text-lg" disabled={saving || lookingUp || !coin?.ok || coin.taken || !nonCustodial || !basicSetup || !signature}>
             {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : "Start accepting TSD"}
           </Button>
           <p className="text-center text-xs text-muted-foreground">
