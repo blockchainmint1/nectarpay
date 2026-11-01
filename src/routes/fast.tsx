@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { cloneElement, isValidElement, useId, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -69,6 +69,7 @@ function FastPage() {
   const [signature, setSignature] = useState("");
   const [saving, setSaving] = useState(false);
   const [companyUrl, setCompanyUrl] = useState("");
+  const navigate = useNavigate();
   const [done, setDone] = useState<{ coin_id: string; tsd_address: string; name: string; live?: boolean; emailed?: boolean } | null>(null);
 
   const set = (k: keyof typeof empty) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
@@ -110,7 +111,8 @@ function FastPage() {
     setSaving(true);
     try {
       const row = await submitFastEnrollment({ data: { ...f, coinId, egivingOptIn: give, companyUrl, directoryOptIn: directory, nonCustodial: true, basicSetup: true, signature } });
-      setDone({ ...row, name: f.businessName });
+      if (row.live) { navigate({ to: "/fast/test", search: { code: row.coin_id, name: f.businessName } }); }
+      else setDone({ ...row, name: f.businessName });
       setF(empty);
       setCoinId("");
       setPublicKey("");
