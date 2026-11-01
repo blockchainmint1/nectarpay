@@ -36,6 +36,7 @@
 
   /* A signature is ink on paper: the sheet stays white in every theme. */
   --color-paper: oklch(1 0 0);
+  --color-paper-ink: oklch(0.15 0 0);
 
 
   --radius-sm: calc(var(--radius) - 4px);

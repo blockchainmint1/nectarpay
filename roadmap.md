@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Fast merchant sticker launch
+- [x] Add Avery 5160/8160 and 5163/8163 template selection, quantities/start position, alignment adjustments, merchant sticker formatting, PDF download and print opening in Admin → Fast Start; signed-in merchant downloads verified, both PDF sheets visually inspected, spacing/blank preview corrected, both QR codes decoded at 300dpi to the exact sticker URL; 4 placement tests passed. Physical label alignment needs a plain-paper printer check.
 - [x] Fix wallet-paid sticker settlement: signed /stickers/paid checks invoice/sticker binding and blockchain evidence, cron includes static-address bills; Bobby’s 2.55 TSD tx recovered to confirmed with one claim, repeat callback safe, customer page shows Payment received; scheduled checker scans two remaining sticker bills with no errors; 47 tests passed; CryptoPOP handoff updated.
 - [x] Move Website first and prefill editable business/contact/address/description; real Cold Storage Coins website returned name/email/description, preserved entered phone, left unavailable address blank; description saved with enrollment and copied during activation.
 - [x] Put coin heading, scan, asset ID, Check and public key on one tablet/desktop line; verified at 1207px and no overflow on phone.
