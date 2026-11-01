@@ -18,7 +18,7 @@
 - [x] Collect an optional merchant website on the public /fast form (normalized to a real link, shown in Admin, copied into the store profile when the starter store is activated); 145 tests passed.
 - [x] Auto go-live after the double coin check, welcome email (sticker link, 14-day Telegram alert link, create-login link), store-level Telegram alerts; admin sees welcome status; 148 tests passed.
 - [ ] Text-message and WhatsApp alerts: deferred by Bobby (need Twilio / Meta approval).
-- [ ] Confirm real merchant alert delivery: Bobby’s 2.55 TSD payment is verified and recovered; inbox/Telegram delivery needs merchant confirmation. Starter safety defaults are one checkout at a time and $0.50–$250.
+- [ ] Confirm real merchant alert delivery: Bobby’s 2.55 TSD payment is verified and recovered; inbox/Telegram delivery needs merchant confirmation. Starter safety defaults are one checkout at a time; sticker sales have no amount ceiling.
 - [ ] Merchant account claiming/transfer remains a later ownership-verification step; starter stores are admin-managed, not falsely assigned to submitted emails.
 - [x] Confirm sticker format: preserve existing https://app.nectar-pay.com/s/<case-sensitive-coin-ID>; CryptoPOP must recognize it and call the signed lookup/start contract before sending.
 - [x] Fix address-bar opens of admin pages landing on Overview: the admin layout now renders only in the browser, so /admin/fast, /admin/give and /admin/invoices open directly and survive a refresh.
