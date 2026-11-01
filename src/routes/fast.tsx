@@ -165,8 +165,7 @@ function FastPage() {
           <div className="flex items-center gap-2 text-sm text-muted-foreground"><Zap className="h-4 w-4 text-primary" /> TSD on TEXITcoin · Instant acceptance</div>
         </header>
         <form onSubmit={submit} className="grid gap-6 md:grid-cols-2 md:gap-8">
-          <div className="space-y-5">
-          <section className="space-y-2 border-b border-border pb-4">
+          <section className="space-y-2 border-b border-border pb-4 md:col-span-2">
             <Label htmlFor="fast-website" className="flex items-center gap-2"><Globe className="h-4 w-4 text-primary" /> Business website</Label>
             <div className="flex gap-2">
               <Input id="fast-website" type="text" inputMode="url" autoComplete="url" spellCheck={false} value={f.website} onChange={(e) => { setF((p) => ({ ...p, website: e.target.value })); setWebsiteMessage(""); }} maxLength={200} placeholder="example.com" className="h-12 min-w-0 text-base" />
@@ -174,11 +173,10 @@ function FastPage() {
             </div>
             {websiteMessage && <p role="status" className="text-xs text-muted-foreground">{websiteMessage}</p>}
           </section>
-          <section className="border-b border-border pb-5">
-            <div className="flex items-center justify-between gap-2"><h2 className="flex items-center gap-2 font-medium">
+          <section className="border-b border-border pb-4 md:col-span-2">
+            <div className="grid items-center gap-2 sm:grid-cols-[auto_auto_minmax(120px,160px)_auto_minmax(0,1fr)]"><h2 className="flex items-center gap-2 whitespace-nowrap text-sm font-medium">
               <Coins className="h-4 w-4" /> Cold Storage Coin
-            </h2><Button type="button" variant="outline" disabled={checking} onClick={() => setScannerOpen(true)}><ScanLine className="h-4 w-4" /> Scan QR</Button></div>
-            <div className="mt-3 flex gap-2">
+            </h2><Button type="button" variant="outline" className="h-10" disabled={checking} onClick={() => setScannerOpen(true)}><ScanLine className="h-4 w-4" /> Scan QR</Button>
               <Input
                 value={coinId}
                 onChange={(e) => {
@@ -192,15 +190,14 @@ function FastPage() {
                 autoCapitalize="off"
                 autoCorrect="off"
                 spellCheck={false}
-                className="h-12 font-mono text-xl tracking-widest"
+                className="h-10 min-w-0 font-mono text-base"
                 aria-label="Coin asset ID"
               />
-              <Button type="button" className="h-12" onClick={() => void check()} disabled={coinId.length !== 6 || checking}>
+              <Button type="button" className="h-10" onClick={() => void check()} disabled={coinId.length !== 6 || checking}>
                 {checking ? <Loader2 className="h-4 w-4 animate-spin" /> : "Check"}
               </Button>
+              <div className="min-w-0"><Label htmlFor="fast-public-key" className="sr-only">Full public key · TSD receive address</Label><Input id="fast-public-key" value={publicKey} readOnly placeholder="Full public key · TSD receive address" className="h-10 min-w-0 font-mono text-xs" /></div>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">Six characters, upper and lower case matter.</p>
-            <div className="mt-3 space-y-1.5"><Label htmlFor="fast-public-key">Full public key · TSD receive address</Label><Input id="fast-public-key" value={publicKey} readOnly placeholder="Filled after scanning or checking the coin" className="h-10 min-w-0 font-mono text-xs" /></div>
             {coin && !coin.ok && <p className="mt-2 text-sm text-destructive">{coin.message}</p>}
             {coin?.ok && coin.taken && (
               <p className="mt-2 text-sm text-destructive">This coin is already assigned to another merchant.</p>
@@ -212,7 +209,7 @@ function FastPage() {
             )}
           </section>
 
-          <section className="grid gap-x-4 gap-y-3 sm:grid-cols-2">
+          <div className="space-y-5"><section className="grid gap-x-4 gap-y-3 sm:grid-cols-2">
             <h2 className="flex items-center gap-2 font-medium sm:col-span-2"><Store className="h-4 w-4 text-primary" /> Business details · USA</h2>
             <Field label="Business name *">
               <Input required value={f.businessName} onChange={set("businessName")} maxLength={120} />
