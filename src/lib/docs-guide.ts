@@ -66,7 +66,7 @@ export const CHAPTERS: Chapter[] = [
           "The intended CryptoPOP experience stays inside the wallet: scan the same sticker, see the vendor and logo when available, enter the amount, and send TSD. NectarPay's signed merchant/address lookup and tracked-sale connection have been built and tested. CryptoPOP's sticker reader and Send screen still need to be connected and verified; this guide does not claim that wallet flow is finished.",
         ],
         bullets: [
-          "Starter payments currently accept $0.50–$250 per sale, in whole cents, using TSD on TEXITcoin only.",
+          "Starter payments accept any positive amount in whole cents, using TSD on TEXITcoin only — there is no per-sale ceiling.",
           "Each checkout lasts 15 minutes. Pay only while the sale is open; start a fresh checkout if it expires.",
           "Only one shopper can have an active sticker checkout at the shared receiving address. If someone else is paying, wait and try again.",
           "Always create the tracked sale before sending. Sending to an address copied from an old lookup can leave a payment unmatched.",
