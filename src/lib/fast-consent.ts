@@ -5,7 +5,7 @@ export const FAST_CONSENT_VERSION = "2026-11-01";
 export const FAST_SIGNATURE_BUCKET = "fast-start-signatures";
 export const FAST_ACKNOWLEDGEMENTS = {
   nonCustodial: "Payments go directly to my wallet. NectarPay holds neither my funds nor my private keys and cannot recover lost keys. Keeping my coin and wallet secure is my responsibility.",
-  basicSetup: "I start with TSD on TEXITcoin only. Instant acceptance happens before block confirmation and carries risk. I can complete my account and improve my listing and settings later.",
+  basicSetup: "I start with TSD on TEXITcoin only. Instant acceptance happens before block confirmation. I can complete my account and improve my listing and settings later.",
 } as const;
 export const fastConsentSchema = z.object({
   nonCustodial: z.literal(true, { errorMap: () => ({ message: "Please acknowledge that NectarPay is non-custodial." }) }),
