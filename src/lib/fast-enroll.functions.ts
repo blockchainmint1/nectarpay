@@ -4,7 +4,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { fastConsentSchema, fastConsentRecord } from "@/lib/fast-consent";
 import { parseSignatureDataUrl } from "@/lib/sale-signature";
-import { removeFastSignature, storeFastSignature } from "@/lib/fast-consent.server";
+import { fastSignatureDataUrl, removeFastSignature, storeFastSignature } from "@/lib/fast-consent.server";
 import {
   coinIdMatchesAddress,
   clientIpFromHeaders,
@@ -195,4 +195,27 @@ export const activateFastEnrollment = createServerFn({ method: "POST" })
     const live = await activateAndWelcome(data.id);
     if (!live.storeId) throw new Error("Activation failed. Nothing changed.");
     return { storeId: live.storeId, emailed: live.emailed };
+  });
+
+/**
+ * Admin only: the merchant's signature image plus the exact agreement version
+ * they ticked, kept for reference after the fact. The file itself stays in the
+ * private bucket — this hands it to a caller already confirmed as an admin.
+ */
+export const fastEnrollmentSignature = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error: readError } = await supabaseAdmin
+      .from("fast_enrollments")
+      .select("signature_path, signed_at, consent_record")
+      .eq("id", data.id)
+      .single();
+    if (readError || !row) throw new Error("Enrollment not found.");
+    if (!row.signature_path) return { dataUrl: null, signedAt: null, consent: null };
+    const dataUrl = await fastSignatureDataUrl(row.signature_path);
+    if (!dataUrl) throw new Error("The signature file could not be read.");
+    return { dataUrl, signedAt: row.signed_at, consent: row.consent_record ?? null };
   });
