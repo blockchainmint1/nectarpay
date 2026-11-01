@@ -1,6 +1,8 @@
 # Roadmap
 
 ## Fast merchant sticker launch
+- [x] Add signed partner sticker lookup/invoice APIs; screenshot QR verified as /s/dQdbix; $2.50 invoice created at the correct TSD address, signed responses checked, unsigned/wrong-case/overlapping requests refused, checkout visible, 39 tests passed.
+- [ ] Finish CryptoPOP scanner/Send connection: requires edits in the CryptoPOP project (read-only here); exact contract and wallet changes are in docs/CRYPTOPOP_STICKER_HANDOFF.md. Republish both apps, verify CryptoPOP-origin shared-key authentication, and perform an owner-approved funded payment.
 - [x] Connect case-sensitive coin/sticker codes to an approved live merchant and checkout.
 - [x] Add atomic admin-managed starter-store activation and printable sticker access; no email-only account ownership claims.
 - [x] Verify public dQdbix enrollment, admin activation, printable QR and $1 TSD invoice at the correct cold-coin address; wrong-case and overlapping checkout refused; 20 tests passed.
@@ -9,7 +11,7 @@
 - [ ] Text-message and WhatsApp alerts: deferred by Bobby (need Twilio / Meta approval).
 - [ ] Verify real payment and merchant alert: Bobby must pay the test invoice after website publication; no funds sent. Starter safety defaults are one checkout at a time and $0.50–$250.
 - [ ] Merchant account claiming/transfer remains a later ownership-verification step; starter stores are admin-managed, not falsely assigned to submitted emails.
-- [ ] Confirm what the sticker QR must carry so our supported wallets recognize it; today it encodes the payment-page web address, not a wallet-native payment request.
+- [x] Confirm sticker format: preserve existing https://app.nectar-pay.com/s/<case-sensitive-coin-ID>; CryptoPOP must recognize it and call the signed lookup/start contract before sending.
 - [x] Fix address-bar opens of admin pages landing on Overview: the admin layout now renders only in the browser, so /admin/fast, /admin/give and /admin/invoices open directly and survive a refresh.
 
 ## CryptoPOP NFC checkout
