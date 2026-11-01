@@ -57,7 +57,24 @@ export function FastStickerPrinter({ merchant, onClose }: { merchant: { code: st
           <p className="text-xs text-muted-foreground">US Letter · Actual size / 100% · No “Fit to page”. Test on plain paper before using label stock.</p>
         </div>
         <div className="min-w-0">
-          {busy ? <div className="flex h-96 items-center justify-center text-muted-foreground"><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating PDF…</div> : pdfUrl ? <iframe src={`${pdfUrl}#toolbar=0&view=FitH`} title="Avery sticker sheet PDF" className="h-[520px] w-full rounded border border-border bg-paper" /> : <div className="flex h-96 items-center justify-center text-muted-foreground">PDF preview unavailable</div>}
+          {busy ? <div className="flex h-96 items-center justify-center text-muted-foreground"><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating PDF…</div> : pdfUrl ? <div className="space-y-2">
+            <svg viewBox="0 0 612 792" role="img" aria-label="First page of merchant sticker sheet" className="mx-auto max-h-[520px] w-full border border-border bg-paper text-paper-ink">
+              {labelPlacements(template, quantity, start, offsetX, offsetY).filter((p) => p.page === 0).map((p) => {
+                const size = Math.min(p.height - 14, p.width * 0.45);
+                const top = 792 - p.y - p.height;
+                const x = p.x + 14 + size;
+                const small = p.height < 100;
+                return <g key={p.slot} fill="currentColor">
+                  <image href={merchant.qr} x={p.x + 7} y={top + (p.height - size) / 2} width={size} height={size} />
+                  <text x={x} y={top + (small ? 14 : 24)} fontFamily="Arial" fontWeight="bold" fontSize={small ? 10 : 17}>Pay with TSD</text>
+                  <text x={x} y={top + (small ? 27 : 46)} fontFamily="Arial" fontSize={small ? 7 : 11} textLength={Math.min((merchant.name.length * (small ? 3.5 : 5.5)), p.x + p.width - 7 - x)} lengthAdjust="spacingAndGlyphs">{merchant.name}</text>
+                  <text x={x} y={top + (small ? 44 : 78)} fontFamily="monospace" fontWeight="bold" fontSize={small ? 13 : 22}>{merchant.code}</text>
+                  <text x={x} y={top + p.height - (small ? 8 : 15)} fontFamily="Arial" fontSize={small ? 5.5 : 8}>NectarPay · honest.money</text>
+                </g>;
+              })}
+            </svg>
+            <p className="text-center text-xs text-muted-foreground">Page 1 of {Math.ceil((start - 1 + quantity) / capacity)} · {quantity} stickers</p>
+          </div> : <div className="flex h-96 items-center justify-center text-muted-foreground">PDF preview unavailable</div>}
         </div>
       </div>
     </DialogContent>

@@ -38,7 +38,7 @@ export async function createFastStickerPdf(input: { name: string; code: string; 
       else lines[lines.length - 1] = `${current} ${word}`.trim();
     }
     for (const line of lines) { draw(line, regular, nameSize); y -= small ? 9 : 14; }
-    y -= small ? 1 : 5;
+    y -= small ? 4 : 9;
     draw(input.code, mono, small ? 13 : 22);
     y = p.y + (small ? 8 : 15);
     draw("NectarPay · honest.money", regular, small ? 5.5 : 8);
