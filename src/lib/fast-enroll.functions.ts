@@ -2,6 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { fastConsentSchema, fastConsentRecord, FAST_SIGNATURE_BUCKET } from "@/lib/fast-consent";
+import { parseSignatureDataUrl } from "@/lib/sale-signature";
 import {
   coinIdMatchesAddress,
   clientIpFromHeaders,
@@ -81,7 +83,7 @@ const Enroll = z.object({
   country: opt(120),
   egivingOptIn: z.boolean(),
   companyUrl: z.string().max(200).optional().default(""),
-});
+}).merge(fastConsentSchema);
 
 /**
  * Public: saves the enrollment as pending for an admin to review. The coin is
