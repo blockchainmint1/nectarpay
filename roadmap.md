@@ -1,8 +1,8 @@
 # Roadmap
 
 ## Fast merchant sticker launch
-- [ ] Move Website first and prefill editable business/contact/address/description from the merchant website; verify a real lookup and preserve manual edits.
-- [ ] Put the screenshot-highlighted Fast Start fields on one line.
+- [x] Move Website first and prefill editable business/contact/address/description; real Cold Storage Coins website returned name/email/description, preserved entered phone, left unavailable address blank; description saved with enrollment and copied during activation.
+- [x] Put coin heading, scan, asset ID, Check and public key on one tablet/desktop line; verified at 1207px and no overflow on phone.
 - [x] Improve /fast for iPad with private signature capture, required non-custodial/basic-setup acknowledgements, directory listing and TSD-only/instant-confirm defaults; tablet/phone interactions checked, schema and activation defaults verified.
 - [ ] Verify a newly signed Fast Start enrollment saves its signature and directory choice and goes live: requires an unused merchant coin ID; existing dQdbix is already enrolled and was not overwritten.
 - [x] Document the Fast Start Program as the first /docs chapter: coin/sticker kit, public enrollment, automatic go-live, welcome/account handover, shopper payments, alerts, Give/POP and verified launch status; contents navigation and phone layout checked, no browser errors.
