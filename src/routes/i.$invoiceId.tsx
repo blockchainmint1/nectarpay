@@ -92,8 +92,9 @@ function paymentUri(
   amount: number | null,
   tokenSymbol: string | null = null,
   label?: string | null,
+  invoiceId?: string | null,
 ): string {
-  return buildPaymentUri(chain, address, amount, tokenSymbol, { multiChainEvm: chain === "eth", label });
+  return buildPaymentUri(chain, address, amount, tokenSymbol, { multiChainEvm: chain === "eth", label, invoiceId });
 }
 
 
@@ -471,7 +472,7 @@ function PayingFrame({
 
   const uri = addressOnlyQr
     ? inv.address
-    : paymentUri(inv.chain, inv.address, inv.cryptoAmount, inv.tokenSymbol, storeName);
+    : paymentUri(inv.chain, inv.address, inv.cryptoAmount, inv.tokenSymbol, storeName, inv.id === "demo" ? null : inv.id);
 
 
 

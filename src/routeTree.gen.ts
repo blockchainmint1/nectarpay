@@ -173,6 +173,7 @@ import { Route as ApiPublicV1InvoicesIdRouteImport } from './routes/api.public.v
 import { Route as ApiPublicV1LinksSlugRouteImport } from './routes/api.public.v1.links.$slug'
 import { Route as ApiPublicV1PayInvoiceIdRouteImport } from './routes/api/public/v1/pay/$invoiceId'
 import { Route as ApiPublicV1PopClaimRouteImport } from './routes/api/public/v1/pop.claim'
+import { Route as ApiPublicV1QrLookupRouteImport } from './routes/api/public/v1/qr.lookup'
 import { Route as ApiPublicV1StatsLiveRouteImport } from './routes/api/public/v1/stats/live'
 import { Route as ApiPublicV1StickersInvoiceRouteImport } from './routes/api/public/v1/stickers.invoice'
 import { Route as ApiPublicV1StickersLookupRouteImport } from './routes/api/public/v1/stickers.lookup'
@@ -1073,6 +1074,11 @@ const ApiPublicV1PopClaimRoute = ApiPublicV1PopClaimRouteImport.update({
   path: '/public/v1/pop/claim',
   getParentRoute: () => ApiRoute,
 } as any)
+const ApiPublicV1QrLookupRoute = ApiPublicV1QrLookupRouteImport.update({
+  id: '/public/v1/qr/lookup',
+  path: '/public/v1/qr/lookup',
+  getParentRoute: () => ApiRoute,
+} as any)
 const ApiPublicV1StatsLiveRoute = ApiPublicV1StatsLiveRouteImport.update({
   id: '/public/v1/stats/live',
   path: '/public/v1/stats/live',
@@ -1332,6 +1338,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/links/$slug': typeof ApiPublicV1LinksSlugRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/pop/claim': typeof ApiPublicV1PopClaimRoute
+  '/api/public/v1/qr/lookup': typeof ApiPublicV1QrLookupRoute
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
   '/api/public/v1/stickers/invoice': typeof ApiPublicV1StickersInvoiceRoute
   '/api/public/v1/stickers/lookup': typeof ApiPublicV1StickersLookupRoute
@@ -1506,6 +1513,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/links/$slug': typeof ApiPublicV1LinksSlugRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/pop/claim': typeof ApiPublicV1PopClaimRoute
+  '/api/public/v1/qr/lookup': typeof ApiPublicV1QrLookupRoute
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
   '/api/public/v1/stickers/invoice': typeof ApiPublicV1StickersInvoiceRoute
   '/api/public/v1/stickers/lookup': typeof ApiPublicV1StickersLookupRoute
@@ -1689,6 +1697,7 @@ export interface FileRoutesById {
   '/api/public/v1/links/$slug': typeof ApiPublicV1LinksSlugRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
   '/api/public/v1/pop/claim': typeof ApiPublicV1PopClaimRoute
+  '/api/public/v1/qr/lookup': typeof ApiPublicV1QrLookupRoute
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
   '/api/public/v1/stickers/invoice': typeof ApiPublicV1StickersInvoiceRoute
   '/api/public/v1/stickers/lookup': typeof ApiPublicV1StickersLookupRoute
@@ -1872,6 +1881,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/links/$slug'
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/pop/claim'
+    | '/api/public/v1/qr/lookup'
     | '/api/public/v1/stats/live'
     | '/api/public/v1/stickers/invoice'
     | '/api/public/v1/stickers/lookup'
@@ -2046,6 +2056,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/links/$slug'
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/pop/claim'
+    | '/api/public/v1/qr/lookup'
     | '/api/public/v1/stats/live'
     | '/api/public/v1/stickers/invoice'
     | '/api/public/v1/stickers/lookup'
@@ -2228,6 +2239,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/links/$slug'
     | '/api/public/v1/pay/$invoiceId'
     | '/api/public/v1/pop/claim'
+    | '/api/public/v1/qr/lookup'
     | '/api/public/v1/stats/live'
     | '/api/public/v1/stickers/invoice'
     | '/api/public/v1/stickers/lookup'
@@ -3451,6 +3463,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1PopClaimRouteImport
       parentRoute: typeof ApiRoute
     }
+    '/api/public/v1/qr/lookup': {
+      id: '/api/public/v1/qr/lookup'
+      path: '/public/v1/qr/lookup'
+      fullPath: '/api/public/v1/qr/lookup'
+      preLoaderRoute: typeof ApiPublicV1QrLookupRouteImport
+      parentRoute: typeof ApiRoute
+    }
     '/api/public/v1/stats/live': {
       id: '/api/public/v1/stats/live'
       path: '/public/v1/stats/live'
@@ -3905,6 +3924,7 @@ interface ApiRouteChildren {
   ApiPublicV1HooksAffiliateSaleRoute: typeof ApiPublicV1HooksAffiliateSaleRoute
   ApiPublicV1PayInvoiceIdRoute: typeof ApiPublicV1PayInvoiceIdRoute
   ApiPublicV1PopClaimRoute: typeof ApiPublicV1PopClaimRoute
+  ApiPublicV1QrLookupRoute: typeof ApiPublicV1QrLookupRoute
   ApiPublicV1StatsLiveRoute: typeof ApiPublicV1StatsLiveRoute
   ApiPublicV1StickersInvoiceRoute: typeof ApiPublicV1StickersInvoiceRoute
   ApiPublicV1StickersLookupRoute: typeof ApiPublicV1StickersLookupRoute
@@ -3946,6 +3966,7 @@ const ApiRouteChildren: ApiRouteChildren = {
   ApiPublicV1HooksAffiliateSaleRoute: ApiPublicV1HooksAffiliateSaleRoute,
   ApiPublicV1PayInvoiceIdRoute: ApiPublicV1PayInvoiceIdRoute,
   ApiPublicV1PopClaimRoute: ApiPublicV1PopClaimRoute,
+  ApiPublicV1QrLookupRoute: ApiPublicV1QrLookupRoute,
   ApiPublicV1StatsLiveRoute: ApiPublicV1StatsLiveRoute,
   ApiPublicV1StickersInvoiceRoute: ApiPublicV1StickersInvoiceRoute,
   ApiPublicV1StickersLookupRoute: ApiPublicV1StickersLookupRoute,
