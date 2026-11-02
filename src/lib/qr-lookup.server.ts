@@ -51,7 +51,7 @@ export async function handleQrLookup(request: Request) {
     fiat_amount: inv.fiatAmount, currency: inv.fiatCurrency, chain: inv.chain, token_symbol: inv.tokenSymbol,
     crypto_amount: inv.cryptoAmount, address: inv.address, expires_at: inv.expiresAt,
     merchant: st ? { id: storeRow!.store_id, name: st.name, website: st.website, logo_url: st.business_logo_url, slug: st.url_slug } : null,
-    egiving: "egiving" in result ? { ...result.egiving, program_address: result.egiving.accepted ? EGIVING_PROGRAM_ADDRESS : undefined } : { accepted: false },
+    egiving: "egiving" in result && result.egiving ? { ...result.egiving, program_address: result.egiving.accepted ? EGIVING_PROGRAM_ADDRESS : undefined } : { accepted: false },
     checkout_url: `https://app.nectar-pay.com/i/${inv.id}`,
   });
 }
