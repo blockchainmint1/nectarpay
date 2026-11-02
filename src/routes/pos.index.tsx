@@ -656,11 +656,11 @@ function ChainScreen({
 
 
 
-function paymentUri(chain: string, address: string, amount: number | null, tokenSymbol: string | null, label?: string | null): string {
+function paymentUri(chain: string, address: string, amount: number | null, tokenSymbol: string | null, label?: string | null, invoiceId?: string | null): string {
   // `chain === "eth"` is our multi-chain-EVM umbrella (address valid on ETH/Base/BSC).
   // Emit a bare `ethereum:<addr>` so the payer's wallet picks the chain + token.
   // `label` carries the store name so wallets can name the tx locally.
-  return buildPaymentUri(chain, address, amount, tokenSymbol, { multiChainEvm: chain === "eth", label });
+  return buildPaymentUri(chain, address, amount, tokenSymbol, { multiChainEvm: chain === "eth", label, invoiceId });
 }
 
 
@@ -708,7 +708,7 @@ function WaitingScreen({
             ? preferred
             : invoice.chain)
         : invoice.chain!;
-    return paymentUri(effectiveChain, invoice.address!, invoice.crypto_amount, invoice.token_symbol, storeName);
+    return paymentUri(effectiveChain, invoice.address!, invoice.crypto_amount, invoice.token_symbol, storeName, invoice.id);
   }, [hasWallet, addressOnly, invoice, storeName]);
 
 
@@ -892,7 +892,7 @@ function UnderpaidScreen({
 
   const qrValue = useMemo(() => {
     if (!invoice.chain || !invoice.address) return "";
-    return paymentUri(invoice.chain, invoice.address, dueCrypto, invoice.token_symbol, storeName);
+    return paymentUri(invoice.chain, invoice.address, dueCrypto, invoice.token_symbol, storeName, invoice.id);
   }, [invoice, dueCrypto, storeName]);
 
   useEffect(() => {

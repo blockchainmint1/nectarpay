@@ -34,18 +34,32 @@ function withLabel(uri: string, label?: string | null): string {
   return `${uri}${sep}label=${encodeURIComponent(name)}`;
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/**
+ * BIP-21 lets wallets ignore unknown (non `req-`) params, so a NectarPay sale
+ * id rides along as `inv=` for our own wallets. It is only a pointer: wallets
+ * must fetch store/Give details from the signed QR lookup, never trust the QR.
+ */
+function withInvoice(uri: string, invoiceId?: string | null): string {
+  if (!invoiceId || !UUID_RE.test(invoiceId)) return uri;
+  const sep = uri.includes("?") ? "&" : "?";
+  return `${uri}${sep}inv=${invoiceId.toLowerCase()}`;
+}
+
 export function buildPaymentUri(
   chain: string,
   address: string,
   amount: number | null,
   tokenSymbol: string | null,
-  opts?: { multiChainEvm?: boolean; label?: string | null },
+  opts?: { multiChainEvm?: boolean; label?: string | null; invoiceId?: string | null },
 ): string {
   const label = opts?.label ?? null;
+  // Only BIP-21 style codes get the sale hint; EIP-681 (MetaMask etc.) stays untouched.
+  const L = (uri: string, l: string | null) => withInvoice(withLabel(uri, l), opts?.invoiceId);
   // Lightning: `address` holds the BOLT-11 payment request; the amount is
   // already baked into the invoice, so no query params.
   if (chain === "lightning") return `lightning:${address}`;
-  if (chain === "btc") return withLabel(`bitcoin:${address}${amount ? `?amount=${amount}` : ""}`, label);
+  if (chain === "btc") return L(`bitcoin:${address}${amount ? `?amount=${amount}` : ""}`, label);
   if (chain === "txc") {
     // Omni Layer token on TEXITcoin (e.g. Texas Stable Dollar, property #39):
     // BIP-21 style with an `omni` property hint; `amount` is the token amount.
@@ -55,9 +69,9 @@ export function buildPaymentUri(
       if (amount) params.set("amount", String(amount));
       params.set("omni", omni.address);
       params.set("token", omni.symbol);
-      return withLabel(`texitcoin:${address}?${params.toString()}`, label);
+      return L(`texitcoin:${address}?${params.toString()}`, label);
     }
-    return withLabel(`texitcoin:${address}${amount ? `?amount=${amount}` : ""}`, label);
+    return L(`texitcoin:${address}${amount ? `?amount=${amount}` : ""}`, label);
   }
   // Bitcoin forks that use plain BIP-21 with their own URI scheme.
   const BIP21_SCHEMES: Record<string, string> = {
@@ -66,13 +80,13 @@ export function buildPaymentUri(
     dash: "dash",
   };
   if (BIP21_SCHEMES[chain]) {
-    return withLabel(`${BIP21_SCHEMES[chain]}:${address}${amount ? `?amount=${amount}` : ""}`, label);
+    return L(`${BIP21_SCHEMES[chain]}:${address}${amount ? `?amount=${amount}` : ""}`, label);
   }
   if (chain === "bch") {
     // CashAddr strings already carry the "bitcoincash:" prefix, which is
     // itself the BIP-21 scheme — never prepend it twice.
     const base = address.includes(":") ? address : `bitcoincash:${address}`;
-    return withLabel(`${base}${amount ? `?amount=${amount}` : ""}`, label);
+    return L(`${base}${amount ? `?amount=${amount}` : ""}`, label);
   }
 
 
