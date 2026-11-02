@@ -589,12 +589,15 @@ function ChainScreen({
             No chains enabled for this store yet. Customer will pick on their phone.
           </p>
         )}
-        {options.map((opt) => (
+        {[...options]
+          .map((opt) => ({ opt, tsd: opt.chain === "txc" && (opt.tokenSymbol ?? "").toUpperCase() === "TSD" }))
+          .sort((a, b) => Number(b.tsd) - Number(a.tsd))
+          .map(({ opt, tsd }) => (
           <button
             key={opt.key}
             disabled={busy}
             onClick={() => onPick(opt.key)}
-            className="group flex w-full items-center justify-between rounded-xl border-2 border-white/15 bg-white/[0.03] px-3 py-3 text-left transition hover:border-amber-400/60 hover:bg-amber-400/[0.05] disabled:opacity-40"
+            className={`group flex w-full items-center justify-between rounded-xl border-2 border-white/15 bg-white/[0.03] px-3 py-3 text-left transition hover:border-amber-400/60 hover:bg-amber-400/[0.05] disabled:opacity-40 ${tsd ? "col-span-2" : ""}`}
           >
             <div className="min-w-0 flex-1">
               <div className="text-sm font-bold leading-tight">{opt.label}</div>
