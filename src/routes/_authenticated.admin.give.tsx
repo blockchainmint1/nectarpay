@@ -165,7 +165,11 @@ function WalletRow({ p, recipient, open, onToggle, onChange }: { p: Partner; rec
   async function setDonations(on: boolean) {
     if (on && !p.wallet_address) return toast.error("Save a TEXITcoin wallet for this partner first.");
     const addr = p.wallet_address!;
-    const { error } = recipient
+    const { data: existing } = await supabase.from("egiving_recipients").select("kind").eq("address", addr).maybeSingle();
+    if (existing && existing.kind !== "church") {
+      return toast.error("This wallet is the Give program wallet — it already receives the program share, so it can't also be a donation recipient.");
+    }
+    const { error } = existing
       ? await supabase.from("egiving_recipients").update({ active: on, blocked: false, name: p.name }).eq("address", addr)
       : await supabase.from("egiving_recipients").insert({ address: addr, kind: "church", name: p.name, active: true });
     if (error) return toast.error(error.message);
