@@ -35,7 +35,7 @@ Generate a fresh request UUID per user action. Reply:
   "merchant":{"id":"3d1f9270-4657-4866-8cdb-ff61706c9716","name":"Cold Coin Auto Test","website":null,"logo_url":null},
   "chain":"txc","token_symbol":"TSD","currency":"USD",
   "address":"TdQdbixtqGqKL1S1MxPrZ7pXDyesTQCTck",
-  "egiving":{"accepted":true,"discountPct":10,"program_address":"ToaRhmGqAW7PyvPJvbLJo69mnZwhaaA1vu"},
+  "egiving":{"accepted":true,"discountPct":10,"program_address":"TnrA8dWd4eYZekRVHXZjmwMznEDsVGdpsg"},
   "requires_invoice":true,
   "valid_until":"<actual UTC expiry>"
 }
