@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
-import { ChevronDown, CreditCard, HeartHandshake, Plus } from "lucide-react";
+import { ChevronDown, CreditCard, HeartHandshake, Plus, Store } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -44,10 +44,8 @@ function AdminGive() {
         <p className="text-sm text-muted-foreground">Receives the program share: 2% of each Give Back sale (20% of the donation). Built in — it can't be changed here.</p>
       </Card>
       <WalletsSection />
-      <details className="group">
-        <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">Donation recipient list (synced from HME Give) — show</summary>
-        <div className="pt-4"><RecipientsSection /></div>
-      </details>
+      <RecipientsSection />
+      <MerchantsSection />
     </div>
   );
 }
@@ -261,24 +259,17 @@ function RecipientsSection() {
 
   async function toggle(addr: string, active: boolean) {
     // For HME Give churches, switching off is a local block that survives their next list update.
-    const { error } = await supabase.from("egiving_recipients").update({ active, blocked: !active }).eq("address", addr);
+    const { error } = await supabase.from("egiving_recipients").update({ active, blocked: false }).eq("address", addr);
     if (error) return toast.error(error.message);
     void q.refetch();
   }
-  const sync = useQuery({
-    queryKey: ["admin", "hme-give-sync"],
-    queryFn: async () => (await supabase.from("hme_give_sync").select("last_synced_at, last_error, recipient_count").eq("id", 1).maybeSingle()).data,
-  });
 
   return (
     <section className="space-y-4">
       <SectionHeader icon={<HeartHandshake className="h-5 w-5" />} title="Approved donation recipients"
         text="A payment only gets the community discount when the non-store shares go to a church listed here plus the NectarGive program wallet above."
         onAdd={() => setAdding((a) => !a)} adding={adding} />
-      <p className="text-xs text-muted-foreground">
-        HME Give list: {sync.data?.last_synced_at ? `last updated ${new Date(sync.data.last_synced_at).toLocaleString()} (${sync.data.recipient_count} churches)` : "not received yet"}
-        {sync.data?.last_error ? ` · last problem: ${sync.data.last_error}` : ""}
-      </p>
+
 
       {adding && (
         <Card className="grid gap-3 p-4 sm:grid-cols-[1fr_2fr_auto] sm:items-center">
@@ -301,7 +292,7 @@ function RecipientsSection() {
               <div className="grid cursor-pointer grid-cols-[1fr_auto_auto_2rem] items-center gap-4 px-4 py-3 hover:bg-muted/30 md:grid-cols-[1fr_auto_1.4fr_auto_2rem]"
                 onClick={() => setOpen(isOpen ? null : r.address)}>
                 <span className="font-medium">{r.name}</span>
-                <Pill tone={r.source === "hme_give" ? "good" : "primary"}>{r.source === "hme_give" ? (r.blocked ? "HME Give · blocked" : "HME Give") : "Added here"}</Pill>
+                <Pill tone={r.source === "hme_give" ? "good" : "primary"}>{r.source === "hme_give" ? "Old HME Give entry" : "Church"}</Pill>
                 <span className="hidden truncate font-mono text-xs text-muted-foreground md:block">{r.address.slice(0, 8)}…{r.address.slice(-6)}</span>
                 <div onClick={(e) => e.stopPropagation()}>
                   <Switch checked={r.active} onCheckedChange={(v) => toggle(r.address, v)} aria-label={`${r.name} on`} />
@@ -357,5 +348,48 @@ function CauseDetails({ r, onSaved }: { r: CauseRow; onSaved: () => void }) {
       </label>
       <div className="sm:text-right"><Button size="sm" onClick={save}>Save details</Button></div>
     </div>
+  );
+}
+
+/* ---------------- Participating merchants ---------------- */
+
+function MerchantsSection() {
+  const [filter, setFilter] = useState("");
+  const q = useQuery({
+    queryKey: ["admin", "egiving-merchants"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("stores").select("id, name, egiving_enabled").order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+  async function toggle(id: string, v: boolean) {
+    const { error } = await supabase.from("stores").update({ egiving_enabled: v }).eq("id", id);
+    if (error) return toast.error(error.message);
+    void q.refetch();
+  }
+  const rows = (q.data ?? []).filter((s) => s.name.toLowerCase().includes(filter.toLowerCase()))
+    .sort((a, b) => Number(b.egiving_enabled) - Number(a.egiving_enabled));
+  const on = (q.data ?? []).filter((s) => s.egiving_enabled).length;
+  return (
+    <section className="space-y-4">
+      <div className="flex gap-3">
+        <div className="mt-0.5 text-primary"><Store className="h-5 w-5" /></div>
+        <div>
+          <h2 className="text-lg font-semibold">Participating merchants</h2>
+          <p className="max-w-2xl text-sm text-muted-foreground">Stores that accept Give payments at the community discount. {on} of {q.data?.length ?? 0} are in.</p>
+        </div>
+      </div>
+      <Input placeholder="Find a store" value={filter} onChange={(e) => setFilter(e.target.value)} className="max-w-sm" />
+      <Card className="max-h-[28rem] overflow-y-auto p-0">
+        {q.isLoading ? <p className="p-4 text-sm text-muted-foreground">Loading…</p> : rows.length === 0 ? <p className="p-4 text-sm text-muted-foreground">No stores found.</p> :
+          rows.map((s) => (
+            <div key={s.id} className="flex items-center justify-between gap-4 border-b border-border/60 px-4 py-3 last:border-0">
+              <span className="font-medium">{s.name}</span>
+              <Switch checked={s.egiving_enabled} onCheckedChange={(v) => toggle(s.id, v)} aria-label={`${s.name} in Give`} />
+            </div>
+          ))}
+      </Card>
+    </section>
   );
 }
