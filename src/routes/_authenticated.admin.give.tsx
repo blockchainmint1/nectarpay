@@ -138,7 +138,7 @@ function WalletsSection() {
         {q.isLoading ? <p className="p-4 text-sm text-muted-foreground">Loading…</p> :
           (q.data ?? []).length === 0 ? <p className="p-4 text-sm text-muted-foreground">No wallets yet.</p> :
           (q.data ?? []).map((p) => (
-            <WalletRow key={p.id} p={p} recipient={(rq.data ?? []).find((r) => r.address === p.wallet_address) ?? null} open={open === p.id} onToggle={() => setOpen(open === p.id ? null : p.id)} onChange={() => { void q.refetch(); void rq.refetch(); }} />
+            <WalletRow key={p.id} p={p} recipient={(rq.data ?? []).find((r) => r.address === (p.donation_address ?? p.wallet_address)) ?? null} open={open === p.id} onToggle={() => setOpen(open === p.id ? null : p.id)} onChange={() => { void q.refetch(); void rq.refetch(); }} />
           ))}
       </Card>
     </section>
@@ -149,12 +149,13 @@ function WalletRow({ p, recipient, open, onToggle, onChange }: { p: Partner; rec
   const [url, setUrl] = useState(p.pay_url);
   const [domains, setDomains] = useState(p.card_domains.join(", "));
   const [wallet, setWallet] = useState(p.wallet_address ?? "");
+  const [donation, setDonation] = useState(p.donation_address ?? "");
   const [key, setKey] = useState("");
   const [shown, setShown] = useState("");
   const saveKey = useServerFn(setCardPartnerSecret);
   const hasKey = Boolean(p.secret_fingerprint) || p.uses_legacy_secret;
 
-  async function update(patch: Partial<Pick<Partner, "pay_url" | "card_domains" | "wallet_address" | "active" | "is_default">>) {
+  async function update(patch: Partial<Pick<Partner, "pay_url" | "card_domains" | "wallet_address" | "donation_address" | "active" | "is_default">>) {
     if (patch.is_default) {
       const { error } = await supabase.from("card_partners").update({ is_default: false }).eq("is_default", true);
       if (error) return toast.error(error.message);
@@ -166,8 +167,8 @@ function WalletRow({ p, recipient, open, onToggle, onChange }: { p: Partner; rec
   }
 
   async function setDonations(on: boolean) {
-    if (on && !p.wallet_address) return toast.error("Save a TEXITcoin wallet for this partner first.");
-    const addr = p.wallet_address!;
+    const addr = p.donation_address ?? p.wallet_address;
+    if (on && !addr) return toast.error("Save a donation recipient TSD address (or a wallet) for this partner first.");
     const { data: existing } = await supabase.from("egiving_recipients").select("kind").eq("address", addr).maybeSingle();
     if (existing && existing.kind !== "church") {
       return toast.error("This wallet is the Give program wallet — it already receives the program share, so it can't also be a donation recipient.");
