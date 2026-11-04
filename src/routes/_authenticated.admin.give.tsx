@@ -99,14 +99,16 @@ function WalletsSection() {
   const [url, setUrl] = useState("");
   const [domains, setDomains] = useState("");
   const [wallet, setWallet] = useState("");
+  const [donation, setDonation] = useState("");
 
   async function add() {
     if (wallet.trim() && !/^[A-Za-z0-9]{25,90}$/.test(wallet.trim())) return toast.error("Enter a valid TEXITcoin wallet address.");
+    if (donation.trim() && !/^[A-Za-z0-9]{25,90}$/.test(donation.trim())) return toast.error("Enter a valid donation recipient TSD address.");
     if (!name.trim() || !/^https:\/\/\S+$/.test(url.trim())) return toast.error("Enter a name and an https:// payment address.");
     const { data, error } = await supabase.from("card_partners")
-      .insert({ name: name.trim(), pay_url: url.trim(), card_domains: normalizeDomains(domains), wallet_address: wallet.trim() || null, active: false }).select("id").single();
+      .insert({ name: name.trim(), pay_url: url.trim(), card_domains: normalizeDomains(domains), wallet_address: wallet.trim() || null, donation_address: donation.trim() || null, active: false }).select("id").single();
     if (error) return toast.error(error.message);
-    setName(""); setUrl(""); setDomains(""); setWallet(""); setAdding(false);
+    setName(""); setUrl(""); setDomains(""); setWallet(""); setDonation(""); setAdding(false);
     toast.success("Wallet added. Set its key, then switch it on.");
     await q.refetch();
     if (data) setOpen(data.id);
@@ -119,11 +121,12 @@ function WalletsSection() {
         onAdd={() => setAdding((a) => !a)} adding={adding} />
 
       {adding && (
-        <Card className="grid gap-3 p-4 md:grid-cols-[1fr_1.5fr_1.5fr_1.2fr_auto] md:items-center">
+        <Card className="grid gap-3 p-4 md:grid-cols-[1fr_1.5fr_1.5fr_1.2fr_1.2fr_auto] md:items-center">
           <Input placeholder="Wallet name (e.g. HME Wallet)" value={name} onChange={(e) => setName(e.target.value)} />
           <Input placeholder="Payment address (https://…/card/pay)" value={url} onChange={(e) => setUrl(e.target.value)} className="font-mono" />
           <Input placeholder="Card domains (e.g. hmewallet.com)" value={domains} onChange={(e) => setDomains(e.target.value)} />
           <Input placeholder="TEXITcoin wallet (signer)" value={wallet} onChange={(e) => setWallet(e.target.value)} className="font-mono" />
+          <Input placeholder="Donation recipient TSD address" value={donation} onChange={(e) => setDonation(e.target.value)} className="font-mono" />
           <Button onClick={add}>Add wallet</Button>
         </Card>
       )}
