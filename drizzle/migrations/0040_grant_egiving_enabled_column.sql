@@ -1,0 +1,1 @@
+GRANT SELECT (egiving_enabled), UPDATE (egiving_enabled) ON public.stores TO authenticated;
