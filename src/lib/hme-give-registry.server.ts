@@ -2,6 +2,9 @@
 // database (rows + raw backup), so if HME Give is unreachable we keep using it.
 import { parseSignedRegistry, effectiveActive } from "./hme-give-registry";
 
+/** Give recipients are managed in NectarPay Admin → Give; the HME Give feed is switched off. */
+export const HME_GIVE_SYNC_ENABLED = false;
+
 type Result = { ok: boolean; applied?: number; error?: string; skipped?: string };
 
 function config() {
@@ -12,6 +15,7 @@ function config() {
 }
 
 export async function applySignedRegistry(body: unknown): Promise<Result> {
+  if (!HME_GIVE_SYNC_ENABLED) return { ok: false, skipped: "HME Give list is disconnected" };
   const { signer } = config();
   if (!signer) return { ok: false, error: "HME Give signer address is not configured" };
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -60,6 +64,7 @@ export async function applySignedRegistry(body: unknown): Promise<Result> {
 
 /** Pull HME Give's published list, at most once per `minAgeSec`. Failures keep the last good list. */
 export async function syncHmeGive(minAgeSec = 0): Promise<Result> {
+  if (!HME_GIVE_SYNC_ENABLED) return { ok: true, skipped: "HME Give list is disconnected" };
   const { url } = config();
   if (!url) return { ok: false, skipped: "HME Give list address not configured" };
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
