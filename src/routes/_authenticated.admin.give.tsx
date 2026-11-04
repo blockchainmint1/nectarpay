@@ -168,7 +168,7 @@ function WalletRow({ p, recipient, open, onToggle, onChange }: { p: Partner; rec
 
   async function setDonations(on: boolean) {
     const addr = p.donation_address ?? p.wallet_address;
-    if (on && !addr) return toast.error("Save a donation recipient TSD address (or a wallet) for this partner first.");
+    if (!addr) return toast.error("Save a donation recipient TSD address (or a wallet) for this partner first.");
     const { data: existing } = await supabase.from("egiving_recipients").select("kind").eq("address", addr).maybeSingle();
     if (existing && existing.kind !== "church") {
       return toast.error("This wallet is the Give program wallet — it already receives the program share, so it can't also be a donation recipient.");
