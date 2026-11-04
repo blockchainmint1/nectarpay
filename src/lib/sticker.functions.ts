@@ -3,20 +3,36 @@ import { z } from "zod";
 import { normalizeCoinId } from "./fast-enroll";
 
 const Code = z.object({ code: z.string().regex(/^[0-9A-Za-z]{6}$/) });
-export const getStickerMerchant = createServerFn({ method: "GET" })
-  .inputValidator((d: unknown) => Code.parse(d))
-  .handler(async ({ data }) => {
+// Sticker codes: a case-sensitive 6-char coin ID, or a store web code (slug).
+const AnyCode = z.object({ code: z.string().min(1).max(64).regex(/^[0-9A-Za-z-]+$/) });
+
+async function resolve(code: string) {
+  const coin = normalizeCoinId(code);
+  if (coin) {
     const { publicSticker } = await import("./fast-enroll.server");
-    return publicSticker(data.code);
-  });
+    const m = await publicSticker(coin);
+    if (m) return { kind: "coin" as const, code: m.code, name: m.name, store_id: m.store_id, giving: m.giving };
+  }
+  const { storeStickerMerchant } = await import("./store-sticker.server");
+  return storeStickerMerchant(code);
+}
+
+export const getStickerMerchant = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => AnyCode.parse(d))
+  .handler(async ({ data }) => resolve(data.code));
 
 export const startStickerPayment = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => Code.extend({ amount: z.number().finite().positive() }).parse(d))
+  .inputValidator((d: unknown) => AnyCode.extend({ amount: z.number().finite().positive() }).parse(d))
   .handler(async ({ data }) => {
-    const code = normalizeCoinId(data.code);
-    if (!code) throw new Error("Invalid sticker code.");
-    const { createStickerPayment } = await import("./sticker-start.server");
-    return createStickerPayment(code, Math.round(data.amount * 100) / 100);
+    const m = await resolve(data.code);
+    if (!m) throw new Error("This sticker is not accepting payments yet.");
+    const amount = Math.round(data.amount * 100) / 100;
+    if (m.kind === "coin") {
+      const { createStickerPayment } = await import("./sticker-start.server");
+      return createStickerPayment(m.code, amount);
+    }
+    const { createStoreStickerPayment } = await import("./store-sticker.server");
+    return createStoreStickerPayment(m.code, amount);
   });
 /** Public: has a sticker sale for this merchant arrived since `since`? Returns only paid/amount. */
 export const fastTestPayment = createServerFn({ method: "POST" })
