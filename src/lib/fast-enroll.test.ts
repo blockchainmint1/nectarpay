@@ -23,8 +23,8 @@ describe("fast enrollment coin IDs", () => {
     expect(normalizeCoinId("12345")).toBeNull();
   });
   it("sticker code must be the 6 characters after the leading T", () => {
-    expect(coinIdMatchesAddress("oaRhmG", "ToaRhmGqAW7PyvPJvbLJo69mnZwhaaA1vu")).toBe(true);
-    expect(coinIdMatchesAddress("OARHMG", "ToaRhmGqAW7PyvPJvbLJo69mnZwhaaA1vu")).toBe(false);
+    expect(coinIdMatchesAddress("ocTK1P", "TocTK1PFEXcQa5tW8W2wuS1tTiAGBLWi5z")).toBe(true);
+    expect(coinIdMatchesAddress("OCTK1P", "TocTK1PFEXcQa5tW8W2wuS1tTiAGBLWi5z")).toBe(false);
   });
 });
 
