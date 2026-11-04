@@ -260,6 +260,13 @@
       "when": 1793531009753,
       "tag": "0036_sticker_any_amount",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1793798453993,
+      "tag": "0037_card_partner_wallet_address",
+      "breakpoints": true
     }
   ]
 }
