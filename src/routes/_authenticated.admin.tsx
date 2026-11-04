@@ -48,7 +48,7 @@ function AdminLayout() {
           <NavItem to="/admin/merchants" icon={<StoreIcon className="h-4 w-4" />}>Merchants</NavItem>
           <NavItem to="/admin/setup" icon={<StoreIcon className="h-4 w-4" />}>Unfinished setups</NavItem>
           <NavItem to="/admin/fast" icon={<Rocket className="h-4 w-4" />}>Fast Start</NavItem>
-          <NavItem to="/admin/give" icon={<HeartHandshake className="h-4 w-4" />}>Give</NavItem>
+          <NavItem to="/admin/give" icon={<HeartHandshake className="h-4 w-4" />}>Wallets &amp; Give</NavItem>
           <NavItem to="/admin/invoices" icon={<Receipt className="h-4 w-4" />}>Invoices</NavItem>
           <NavItem to="/admin/verify" icon={<SearchCheck className="h-4 w-4" />}>Verify address</NavItem>
           <NavItem to="/admin/lightning" icon={<Zap className="h-4 w-4" />}>Lightning</NavItem>
