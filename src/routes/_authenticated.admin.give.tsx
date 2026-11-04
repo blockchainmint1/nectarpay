@@ -172,7 +172,9 @@ function WalletRow({ p, recipient, open, onToggle, onChange }: { p: Partner; rec
     const { error } = existing
       ? await supabase.from("egiving_recipients").update({ active: on, blocked: false, name: p.name }).eq("address", addr)
       : await supabase.from("egiving_recipients").insert({ address: addr, kind: "church", name: p.name, active: true });
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(error.message.includes("egiving_recipients_pkey")
+      ? "This wallet is already on the Give list (it's a program wallet), so it can't also be a donation recipient."
+      : error.message);
     toast.success(on ? `${p.name} now gets donations.` : `${p.name} no longer gets donations.`);
     onChange();
   }
