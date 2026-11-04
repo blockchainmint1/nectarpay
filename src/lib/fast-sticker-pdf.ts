@@ -1,13 +1,14 @@
 import { PDFDocument, StandardFonts, type PDFFont } from "pdf-lib";
 import { labelPlacements, type LabelTemplate } from "./fast-sticker-labels";
-import { stickerPath } from "./fast-enroll";
+import { stickerPath, storeStickerPath, STORE_SLUG_RE } from "./fast-enroll";
 
 function printable(text: string, font: PDFFont) {
   return Array.from(text).map((char) => { try { font.encodeText(char); return char; } catch { return "-"; } }).join("").replace(/[\r\n\t]/g, " ");
 }
 
 export async function createFastStickerPdf(input: { name: string; code: string; qr: string; template: LabelTemplate; quantity: number; startPosition: number; offsetX?: number; offsetY?: number }) {
-  if (!/^[A-Za-z0-9]{6}$/.test(input.code)) throw new Error("Invalid merchant sticker code.");
+  const isCoin = /^[A-Za-z0-9]{6}$/.test(input.code);
+  if (!isCoin && !STORE_SLUG_RE.test(input.code)) throw new Error("Invalid merchant sticker code.");
   const placements = labelPlacements(input.template, input.quantity, input.startPosition, input.offsetX, input.offsetY);
   const pdf = await PDFDocument.create();
   pdf.setTitle(`NectarPay Fast Start stickers · ${input.code} · Avery ${input.template.id}`);
@@ -27,7 +28,7 @@ export async function createFastStickerPdf(input: { name: string; code: string; 
       const size = Math.min(desired, width / Math.max(1, font.widthOfTextAtSize(safe, 1)));
       page.drawText(safe, { x, y, font, size });
     };
-    draw("Pay with TSD", bold, small ? 10 : 17);
+    draw(isCoin ? "Pay with TSD" : "Pay with crypto", bold, small ? 10 : 17);
     y -= small ? 13 : 22;
     const words = printable(input.name, regular).split(/\s+/);
     const nameSize = small ? 7 : 11;
@@ -43,6 +44,6 @@ export async function createFastStickerPdf(input: { name: string; code: string; 
     y = p.y + (small ? 8 : 15);
     draw("NectarPay · honest.money", regular, small ? 5.5 : 8);
   }
-  pdf.setSubject(`Merchant payment URL: https://app.nectar-pay.com${stickerPath(input.code)}. Print US Letter at 100%, actual size.`);
+  pdf.setSubject(`Merchant payment URL: https://app.nectar-pay.com${isCoin ? stickerPath(input.code) : storeStickerPath(input.code)}. Print US Letter at 100%, actual size.`);
   return pdf.save();
 }

@@ -131,3 +131,9 @@ describe("the signed enrollment record", () => {
     expect(consentSummary("not a record", false)).toBeNull();
   });
 });
+
+import { storeStickerPath as _ssp } from "./fast-enroll";
+describe("store slug stickers", () => {
+  it("uses the store web code", () => { expect(_ssp("limon-urban-kitchen")).toBe("/s/limon-urban-kitchen"); });
+  it("rejects uppercase or junk", () => { expect(() => _ssp("Limon!")).toThrow(); });
+});

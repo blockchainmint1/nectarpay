@@ -163,3 +163,10 @@ export function consentSummary(
 export function testPaymentArrived(status: string | null | undefined): boolean {
   return status === "detected" || status === "confirmed";
 }
+
+/** Store web codes (url_slug) used for stickers when a store has no Cold Storage Coin. */
+export const STORE_SLUG_RE = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;
+export function storeStickerPath(slug: string): string {
+  if (!STORE_SLUG_RE.test(slug)) throw new Error("Invalid store code");
+  return `/s/${slug}`;
+}

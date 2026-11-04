@@ -18,6 +18,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { FastStickerPrinter } from "@/components/admin/fast-sticker-printer";
+import { qrToDataURL } from "@/lib/qr";
+import { storeStickerPath } from "@/lib/fast-enroll";
 
 export const Route = createFileRoute("/_authenticated/admin/merchants")({
   component: AdminMerchants,
@@ -58,6 +61,7 @@ function AdminMerchants() {
   const [sort, setSort] = useState<SortState<MerchantSortKey>>({ key: "signed_up", dir: "desc" });
   const [target, setTarget] = useState<Merchant | null>(null);
   const [reason, setReason] = useState("");
+  const [sticker, setSticker] = useState<{ code: string; name: string; qr: string } | null>(null);
   const deactivateFn = useServerFn(setAccountActive);
 
   const accountMut = useMutation({
@@ -247,7 +251,7 @@ function AdminMerchants() {
                               const isEditing = editing === s.id;
                               return (
                                 <tr key={s.id} className="border-t border-border/30">
-                                  <td className="px-2 py-1.5 font-medium">{s.name}</td>
+                                  <td className="px-2 py-1.5 font-medium">{s.name}{s.url_slug && <Button size="sm" variant="outline" className="ml-2 h-6 px-2 text-[10px]" onClick={async () => { try { const qr = await qrToDataURL(`https://app.nectar-pay.com${storeStickerPath(s.url_slug!)}`, { width: 640, margin: 3, errorCorrectionLevel: "M" }); setSticker({ code: s.url_slug!, name: s.name, qr }); } catch { toast.error("Could not make sticker."); } }}>Stickers</Button>}</td>
                                   <td className="px-2 py-1.5 text-muted-foreground whitespace-nowrap">
                                     {new Date(s.created_at).toLocaleDateString()}
                                   </td>
@@ -396,6 +400,7 @@ function AdminMerchants() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {sticker && <FastStickerPrinter merchant={sticker} onClose={() => setSticker(null)} />}
     </div>
   );
 
