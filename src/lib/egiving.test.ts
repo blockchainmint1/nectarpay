@@ -46,3 +46,8 @@ test("a stored 5% or 50% discount cannot change the fixed 10% rule", () => {
 test("a program row in the list no longer counts; only the NectarGive wallet does", () => {
   expect(egivingDecision({ ...base, creditUsd: 4.5, recipients: split(4.5, 0.4, 0.1, "church", "program") }).program).toBeNull();
 });
+
+test("the program share goes to the wallet the site owner confirmed", () => {
+  expect(EGIVING_PROGRAM_ADDRESS).toBe("TnrA8dWd4eYZekRVHXZjmwMznEDsVGdpsg");
+});
+
