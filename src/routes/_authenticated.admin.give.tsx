@@ -237,7 +237,12 @@ function WalletRow({ p, recipient, open, onToggle, onChange }: { p: Partner; rec
               if (!/^https:\/\/\S+$/.test(url.trim())) return toast.error("Payment address must start with https://");
               if (wallet.trim() && !/^[A-Za-z0-9]{25,90}$/.test(wallet.trim())) return toast.error("Enter a valid TEXITcoin wallet address.");
               if (donation.trim() && !/^[A-Za-z0-9]{25,90}$/.test(donation.trim())) return toast.error("Enter a valid donation recipient TSD address.");
-              void update({ pay_url: url.trim(), card_domains: normalizeDomains(domains), wallet_address: wallet.trim() || null, donation_address: donation.trim() || null });
+              const nextDonation = donation.trim() || null;
+              if (recipient && nextDonation && nextDonation !== recipient.address) {
+                const { error } = await supabase.from("egiving_recipients").update({ address: nextDonation }).eq("address", recipient.address);
+                if (error) return toast.error(error.message);
+              }
+              void update({ pay_url: url.trim(), card_domains: normalizeDomains(domains), wallet_address: wallet.trim() || null, donation_address: nextDonation });
             }}>Save</Button>
           </div>
           {shown && (
