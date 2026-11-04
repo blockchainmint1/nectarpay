@@ -222,17 +222,20 @@ function WalletRow({ p, recipient, open, onToggle, onChange }: { p: Partner; rec
           <p className="text-xs text-muted-foreground">
             Key: {p.secret_fingerprint ? <>fingerprint <span className="font-mono">{p.secret_fingerprint}</span></> : p.uses_legacy_secret ? "using the original NFC payment key" : "not set"}
           </p>
-          <div className="grid gap-3 md:grid-cols-[2fr_1.5fr_2fr_auto] md:items-end">
+          <div className="grid gap-3 md:grid-cols-[2fr_1.5fr_2fr_2fr_auto] md:items-end">
             <label className="space-y-1 text-xs text-muted-foreground">Payment address
               <Input value={url} onChange={(e) => setUrl(e.target.value)} className="font-mono" /></label>
             <label className="space-y-1 text-xs text-muted-foreground">Card domains
               <Input value={domains} onChange={(e) => setDomains(e.target.value)} /></label>
             <label className="space-y-1 text-xs text-muted-foreground">TEXITcoin wallet (signs requests)
               <Input value={wallet} onChange={(e) => setWallet(e.target.value)} className="font-mono" /></label>
+            <label className="space-y-1 text-xs text-muted-foreground">Donation recipient TSD address
+              <Input value={donation} onChange={(e) => setDonation(e.target.value)} placeholder="Defaults to the wallet above" className="font-mono" /></label>
             <Button variant="outline" onClick={() => {
               if (!/^https:\/\/\S+$/.test(url.trim())) return toast.error("Payment address must start with https://");
               if (wallet.trim() && !/^[A-Za-z0-9]{25,90}$/.test(wallet.trim())) return toast.error("Enter a valid TEXITcoin wallet address.");
-              void update({ pay_url: url.trim(), card_domains: normalizeDomains(domains), wallet_address: wallet.trim() || null });
+              if (donation.trim() && !/^[A-Za-z0-9]{25,90}$/.test(donation.trim())) return toast.error("Enter a valid donation recipient TSD address.");
+              void update({ pay_url: url.trim(), card_domains: normalizeDomains(domains), wallet_address: wallet.trim() || null, donation_address: donation.trim() || null });
             }}>Save</Button>
           </div>
           {shown && (
