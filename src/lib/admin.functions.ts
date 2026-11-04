@@ -189,7 +189,7 @@ export const listAdminMerchants = createServerFn({ method: "GET" })
 
     const { data: allStores, error } = await supabaseAdmin
       .from("stores")
-      .select("id, name, owner_id, fiat_currency, business_city, business_country, admin_market, admin_rep, created_at")
+      .select("id, name, url_slug, owner_id, fiat_currency, business_city, business_country, admin_market, admin_rep, created_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
 
@@ -262,6 +262,7 @@ export const listAdminMerchants = createServerFn({ method: "GET" })
         return {
           id: s.id,
           name: s.name,
+          url_slug: s.url_slug ?? null,
           fiat_currency: s.fiat_currency,
           market: m,
           rep: s.admin_rep ?? null,
