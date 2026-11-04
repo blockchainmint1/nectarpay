@@ -44,7 +44,10 @@ function AdminGive() {
         <p className="text-sm text-muted-foreground">Receives the program share: 2% of each Give Back sale (20% of the donation). Built in — it can't be changed here.</p>
       </Card>
       <WalletsSection />
-      <RecipientsSection />
+      <details className="group">
+        <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">Donation recipient list (synced from HME Give) — show</summary>
+        <div className="pt-4"><RecipientsSection /></div>
+      </details>
     </div>
   );
 }
@@ -73,14 +76,14 @@ function Pill({ children, tone = "muted" }: { children: ReactNode; tone?: "muted
 
 /* ---------------- Approved wallets ---------------- */
 
-type Partner = { id: string; name: string; pay_url: string; card_domains: string[]; secret_fingerprint: string | null; uses_legacy_secret: boolean; is_default: boolean; active: boolean };
+type Partner = { id: string; name: string; pay_url: string; card_domains: string[]; wallet_address: string | null; secret_fingerprint: string | null; uses_legacy_secret: boolean; is_default: boolean; active: boolean };
 
 function WalletsSection() {
   const q = useQuery({
     queryKey: ["admin", "card-partners"],
     queryFn: async () => {
       const { data, error } = await supabase.from("card_partners")
-        .select("id, name, pay_url, card_domains, secret_fingerprint, uses_legacy_secret, is_default, active").order("created_at");
+        .select("id, name, pay_url, card_domains, wallet_address, secret_fingerprint, uses_legacy_secret, is_default, active").order("created_at");
       if (error) throw error;
       return data as Partner[];
     },
@@ -90,13 +93,15 @@ function WalletsSection() {
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
   const [domains, setDomains] = useState("");
+  const [wallet, setWallet] = useState("");
 
   async function add() {
+    if (wallet.trim() && !/^[A-Za-z0-9]{25,90}$/.test(wallet.trim())) return toast.error("Enter a valid TEXITcoin wallet address.");
     if (!name.trim() || !/^https:\/\/\S+$/.test(url.trim())) return toast.error("Enter a name and an https:// payment address.");
     const { data, error } = await supabase.from("card_partners")
-      .insert({ name: name.trim(), pay_url: url.trim(), card_domains: normalizeDomains(domains), active: false }).select("id").single();
+      .insert({ name: name.trim(), pay_url: url.trim(), card_domains: normalizeDomains(domains), wallet_address: wallet.trim() || null, active: false }).select("id").single();
     if (error) return toast.error(error.message);
-    setName(""); setUrl(""); setDomains(""); setAdding(false);
+    setName(""); setUrl(""); setDomains(""); setWallet(""); setAdding(false);
     toast.success("Wallet added. Set its key, then switch it on.");
     await q.refetch();
     if (data) setOpen(data.id);
@@ -104,22 +109,23 @@ function WalletsSection() {
 
   return (
     <section className="space-y-4">
-      <SectionHeader icon={<CreditCard className="h-5 w-5" />} title="Approved wallets"
-        text="Wallets whose tap cards can pay at NectarPay terminals. A card's web address picks its wallet; unrecognised cards go to the default. Every payment is still checked on the blockchain."
+      <SectionHeader icon={<CreditCard className="h-5 w-5" />} title="Approved wallets & givers"
+        text="Each partner's TEXITcoin wallet signs its requests to NectarPay. A card's web address picks its partner; unrecognised cards go to the default. Every payment is still checked on the blockchain."
         onAdd={() => setAdding((a) => !a)} adding={adding} />
 
       {adding && (
-        <Card className="grid gap-3 p-4 md:grid-cols-[1fr_2fr_1.5fr_auto] md:items-center">
+        <Card className="grid gap-3 p-4 md:grid-cols-[1fr_1.5fr_1.5fr_1.2fr_auto] md:items-center">
           <Input placeholder="Wallet name (e.g. HME Wallet)" value={name} onChange={(e) => setName(e.target.value)} />
           <Input placeholder="Payment address (https://…/card/pay)" value={url} onChange={(e) => setUrl(e.target.value)} className="font-mono" />
           <Input placeholder="Card domains (e.g. hmewallet.com)" value={domains} onChange={(e) => setDomains(e.target.value)} />
+          <Input placeholder="TEXITcoin wallet (signer)" value={wallet} onChange={(e) => setWallet(e.target.value)} className="font-mono" />
           <Button onClick={add}>Add wallet</Button>
         </Card>
       )}
 
       <Card className="overflow-hidden p-0">
-        <div className="hidden grid-cols-[1fr_1.4fr_auto_auto_2rem] gap-4 border-b border-border bg-muted/40 px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground md:grid">
-          <span>Wallet</span><span>Card domains</span><span>Key</span><span>On</span><span />
+        <div className="hidden grid-cols-[1fr_1fr_1.2fr_auto_auto_2rem] gap-4 border-b border-border bg-muted/40 px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground md:grid">
+          <span>Partner</span><span>Card domains</span><span>Wallet</span><span>Key</span><span>On</span><span />
         </div>
         {q.isLoading ? <p className="p-4 text-sm text-muted-foreground">Loading…</p> :
           (q.data ?? []).length === 0 ? <p className="p-4 text-sm text-muted-foreground">No wallets yet.</p> :
@@ -134,12 +140,13 @@ function WalletsSection() {
 function WalletRow({ p, open, onToggle, onChange }: { p: Partner; open: boolean; onToggle: () => void; onChange: () => void }) {
   const [url, setUrl] = useState(p.pay_url);
   const [domains, setDomains] = useState(p.card_domains.join(", "));
+  const [wallet, setWallet] = useState(p.wallet_address ?? "");
   const [key, setKey] = useState("");
   const [shown, setShown] = useState("");
   const saveKey = useServerFn(setCardPartnerSecret);
   const hasKey = Boolean(p.secret_fingerprint) || p.uses_legacy_secret;
 
-  async function update(patch: Partial<Pick<Partner, "pay_url" | "card_domains" | "active" | "is_default">>) {
+  async function update(patch: Partial<Pick<Partner, "pay_url" | "card_domains" | "wallet_address" | "active" | "is_default">>) {
     if (patch.is_default) {
       const { error } = await supabase.from("card_partners").update({ is_default: false }).eq("is_default", true);
       if (error) return toast.error(error.message);
@@ -169,11 +176,12 @@ function WalletRow({ p, open, onToggle, onChange }: { p: Partner; open: boolean;
 
   return (
     <div className="border-b border-border/60 last:border-0">
-      <div className="grid cursor-pointer grid-cols-[1fr_auto_2rem] items-center gap-4 px-4 py-3 hover:bg-muted/30 md:grid-cols-[1fr_1.4fr_auto_auto_2rem]" onClick={onToggle}>
+      <div className="grid cursor-pointer grid-cols-[1fr_auto_2rem] items-center gap-4 px-4 py-3 hover:bg-muted/30 md:grid-cols-[1fr_1fr_1.2fr_auto_auto_2rem]" onClick={onToggle}>
         <div className="flex flex-wrap items-center gap-2 font-medium">
           {p.name}{p.is_default && <Pill tone="primary">Default</Pill>}
         </div>
         <div className="hidden truncate text-sm text-muted-foreground md:block">{p.card_domains.join(", ") || "—"}</div>
+        <div className="hidden truncate font-mono text-xs text-muted-foreground md:block">{p.wallet_address ? `${p.wallet_address.slice(0, 8)}…${p.wallet_address.slice(-6)}` : "—"}</div>
         <div className="hidden md:block">{hasKey ? <Pill tone="good">Set</Pill> : <Pill>Missing</Pill>}</div>
         <div onClick={(e) => e.stopPropagation()}>
           <Switch checked={p.active} disabled={!hasKey && !p.active} onCheckedChange={(v) => update({ active: v })} aria-label={`${p.name} on`} />
@@ -185,14 +193,17 @@ function WalletRow({ p, open, onToggle, onChange }: { p: Partner; open: boolean;
           <p className="text-xs text-muted-foreground">
             Key: {p.secret_fingerprint ? <>fingerprint <span className="font-mono">{p.secret_fingerprint}</span></> : p.uses_legacy_secret ? "using the original NFC payment key" : "not set"}
           </p>
-          <div className="grid gap-3 md:grid-cols-[2fr_1.5fr_auto] md:items-end">
+          <div className="grid gap-3 md:grid-cols-[2fr_1.5fr_2fr_auto] md:items-end">
             <label className="space-y-1 text-xs text-muted-foreground">Payment address
               <Input value={url} onChange={(e) => setUrl(e.target.value)} className="font-mono" /></label>
             <label className="space-y-1 text-xs text-muted-foreground">Card domains
               <Input value={domains} onChange={(e) => setDomains(e.target.value)} /></label>
+            <label className="space-y-1 text-xs text-muted-foreground">TEXITcoin wallet (signs requests)
+              <Input value={wallet} onChange={(e) => setWallet(e.target.value)} className="font-mono" /></label>
             <Button variant="outline" onClick={() => {
               if (!/^https:\/\/\S+$/.test(url.trim())) return toast.error("Payment address must start with https://");
-              void update({ pay_url: url.trim(), card_domains: normalizeDomains(domains) });
+              if (wallet.trim() && !/^[A-Za-z0-9]{25,90}$/.test(wallet.trim())) return toast.error("Enter a valid TEXITcoin wallet address.");
+              void update({ pay_url: url.trim(), card_domains: normalizeDomains(domains), wallet_address: wallet.trim() || null });
             }}>Save</Button>
           </div>
           {shown && (
