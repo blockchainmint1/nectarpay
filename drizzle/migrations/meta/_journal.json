@@ -281,6 +281,13 @@
       "when": 1793820543131,
       "tag": "0039_admins_can_update_stores",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1793821519714,
+      "tag": "0040_grant_egiving_enabled_column",
+      "breakpoints": true
     }
   ]
 }
