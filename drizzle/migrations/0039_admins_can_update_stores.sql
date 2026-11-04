@@ -1,0 +1,1 @@
+ALTER POLICY "Owners manage own stores" ON public.stores WITH CHECK ((auth.uid() = owner_id) OR public.has_role(auth.uid(), 'admin'::app_role));
