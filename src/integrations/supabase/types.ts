@@ -334,6 +334,7 @@ export type Database = {
           secret_fingerprint: string | null
           updated_at: string
           uses_legacy_secret: boolean
+          wallet_address: string | null
         }
         Insert: {
           active?: boolean
@@ -347,6 +348,7 @@ export type Database = {
           secret_fingerprint?: string | null
           updated_at?: string
           uses_legacy_secret?: boolean
+          wallet_address?: string | null
         }
         Update: {
           active?: boolean
@@ -360,6 +362,7 @@ export type Database = {
           secret_fingerprint?: string | null
           updated_at?: string
           uses_legacy_secret?: boolean
+          wallet_address?: string | null
         }
         Relationships: []
       }
