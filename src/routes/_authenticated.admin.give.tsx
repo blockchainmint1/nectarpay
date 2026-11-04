@@ -135,6 +135,7 @@ function WalletRow({ p, open, onToggle, onChange }: { p: Partner; open: boolean;
   const [url, setUrl] = useState(p.pay_url);
   const [domains, setDomains] = useState(p.card_domains.join(", "));
   const [key, setKey] = useState("");
+  const [shown, setShown] = useState("");
   const saveKey = useServerFn(setCardPartnerSecret);
   const hasKey = Boolean(p.secret_fingerprint) || p.uses_legacy_secret;
 
@@ -149,13 +150,21 @@ function WalletRow({ p, open, onToggle, onChange }: { p: Partner; open: boolean;
     onChange();
   }
 
-  async function storeKey() {
+  async function storeKey(secret = key) {
     try {
-      const r = await saveKey({ data: { id: p.id, secret: key } });
+      const r = await saveKey({ data: { id: p.id, secret } });
       setKey("");
-      toast.success(`Key saved — fingerprint ${r.fingerprint}, ${r.length} characters.`);
+      toast.success(`Key saved — fingerprint ${r.fingerprint}.`);
       onChange();
-    } catch { toast.error("Key must be 24–256 characters."); }
+      return true;
+    } catch { toast.error("Key must be 24–256 characters."); return false; }
+  }
+
+  async function createKey() {
+    if (hasKey && !confirm(`Replace ${p.name}'s key? Their wallet stops working until they paste the new one.`)) return;
+    const bytes = crypto.getRandomValues(new Uint8Array(32));
+    const secret = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+    if (await storeKey(secret)) setShown(secret);
   }
 
   return (
@@ -186,10 +195,24 @@ function WalletRow({ p, open, onToggle, onChange }: { p: Partner; open: boolean;
               void update({ pay_url: url.trim(), card_domains: normalizeDomains(domains) });
             }}>Save</Button>
           </div>
+          {shown && (
+            <div className="space-y-2 rounded-md border border-primary/50 bg-primary/10 p-3">
+              <p className="text-sm font-medium text-foreground">New key for {p.name} — copy it now and send it to them. It won't be shown again.</p>
+              <div className="flex gap-2">
+                <Input readOnly value={shown} className="font-mono" onFocus={(e) => e.currentTarget.select()} />
+                <Button onClick={() => { void navigator.clipboard.writeText(shown); toast.success("Key copied."); }}>Copy</Button>
+                <Button variant="outline" onClick={() => setShown("")}>Done</Button>
+              </div>
+            </div>
+          )}
+          <div className="flex flex-wrap items-center gap-3">
+            <Button onClick={createKey}>{hasKey ? "Create new key (replaces old one)" : "Create key"}</Button>
+            <span className="text-xs text-muted-foreground">Makes a strong key, saves it here, and shows it once for you to copy to them.</span>
+          </div>
           <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
-            <label className="space-y-1 text-xs text-muted-foreground">{hasKey ? "Replace shared key" : "Shared key (paste the same key the wallet uses)"}
+            <label className="space-y-1 text-xs text-muted-foreground">{hasKey ? "Or paste a replacement key they gave you" : "Or paste a key the wallet already uses"}
               <Input type="password" autoComplete="off" value={key} onChange={(e) => setKey(e.target.value)} className="font-mono" /></label>
-            <Button disabled={key.trim().length < 24} onClick={storeKey}>Save key</Button>
+            <Button variant="outline" disabled={key.trim().length < 24} onClick={() => storeKey()}>Save key</Button>
           </div>
           {!p.is_default && <Button size="sm" variant="outline" onClick={() => update({ is_default: true })}>Make default</Button>}
         </div>
