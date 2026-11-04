@@ -61,6 +61,7 @@ function AdminMerchants() {
   const [sort, setSort] = useState<SortState<MerchantSortKey>>({ key: "signed_up", dir: "desc" });
   const [target, setTarget] = useState<Merchant | null>(null);
   const [reason, setReason] = useState("");
+  const [sticker, setSticker] = useState<{ code: string; name: string; qr: string } | null>(null);
   const deactivateFn = useServerFn(setAccountActive);
 
   const accountMut = useMutation({
@@ -399,6 +400,7 @@ function AdminMerchants() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {sticker && <FastStickerPrinter merchant={sticker} onClose={() => setSticker(null)} />}
     </div>
   );
 
