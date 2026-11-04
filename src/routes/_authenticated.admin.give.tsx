@@ -73,14 +73,14 @@ function Pill({ children, tone = "muted" }: { children: ReactNode; tone?: "muted
 
 /* ---------------- Approved wallets ---------------- */
 
-type Partner = { id: string; name: string; pay_url: string; card_domains: string[]; wallet_address: string | null; secret_fingerprint: string | null; uses_legacy_secret: boolean; is_default: boolean; active: boolean };
+type Partner = { id: string; name: string; pay_url: string; card_domains: string[]; wallet_address: string | null; donation_address: string | null; secret_fingerprint: string | null; uses_legacy_secret: boolean; is_default: boolean; active: boolean };
 
 function WalletsSection() {
   const q = useQuery({
     queryKey: ["admin", "card-partners"],
     queryFn: async () => {
       const { data, error } = await supabase.from("card_partners")
-        .select("id, name, pay_url, card_domains, wallet_address, secret_fingerprint, uses_legacy_secret, is_default, active").order("created_at");
+        .select("id, name, pay_url, card_domains, wallet_address, donation_address, secret_fingerprint, uses_legacy_secret, is_default, active").order("created_at");
       if (error) throw error;
       return data as Partner[];
     },
