@@ -1,0 +1,2 @@
+ALTER TABLE public.card_partners ADD COLUMN donation_address text;
+COMMENT ON COLUMN public.card_partners.donation_address IS 'TSD/TEXITcoin address that receives this partner''s Give donation share. Falls back to wallet_address when empty.';

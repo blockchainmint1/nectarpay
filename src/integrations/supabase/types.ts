@@ -326,6 +326,7 @@ export type Database = {
           active: boolean
           card_domains: string[]
           created_at: string
+          donation_address: string | null
           id: string
           is_default: boolean
           name: string
@@ -340,6 +341,7 @@ export type Database = {
           active?: boolean
           card_domains?: string[]
           created_at?: string
+          donation_address?: string | null
           id?: string
           is_default?: boolean
           name: string
@@ -354,6 +356,7 @@ export type Database = {
           active?: boolean
           card_domains?: string[]
           created_at?: string
+          donation_address?: string | null
           id?: string
           is_default?: boolean
           name?: string

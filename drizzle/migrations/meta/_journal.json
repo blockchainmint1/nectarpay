@@ -267,6 +267,13 @@
       "when": 1793798453993,
       "tag": "0037_card_partner_wallet_address",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1793819855921,
+      "tag": "0038_card_partner_donation_address",
+      "breakpoints": true
     }
   ]
 }

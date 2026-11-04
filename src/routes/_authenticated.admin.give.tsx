@@ -73,14 +73,14 @@ function Pill({ children, tone = "muted" }: { children: ReactNode; tone?: "muted
 
 /* ---------------- Approved wallets ---------------- */
 
-type Partner = { id: string; name: string; pay_url: string; card_domains: string[]; wallet_address: string | null; secret_fingerprint: string | null; uses_legacy_secret: boolean; is_default: boolean; active: boolean };
+type Partner = { id: string; name: string; pay_url: string; card_domains: string[]; wallet_address: string | null; donation_address: string | null; secret_fingerprint: string | null; uses_legacy_secret: boolean; is_default: boolean; active: boolean };
 
 function WalletsSection() {
   const q = useQuery({
     queryKey: ["admin", "card-partners"],
     queryFn: async () => {
       const { data, error } = await supabase.from("card_partners")
-        .select("id, name, pay_url, card_domains, wallet_address, secret_fingerprint, uses_legacy_secret, is_default, active").order("created_at");
+        .select("id, name, pay_url, card_domains, wallet_address, donation_address, secret_fingerprint, uses_legacy_secret, is_default, active").order("created_at");
       if (error) throw error;
       return data as Partner[];
     },
@@ -99,14 +99,16 @@ function WalletsSection() {
   const [url, setUrl] = useState("");
   const [domains, setDomains] = useState("");
   const [wallet, setWallet] = useState("");
+  const [donation, setDonation] = useState("");
 
   async function add() {
     if (wallet.trim() && !/^[A-Za-z0-9]{25,90}$/.test(wallet.trim())) return toast.error("Enter a valid TEXITcoin wallet address.");
+    if (donation.trim() && !/^[A-Za-z0-9]{25,90}$/.test(donation.trim())) return toast.error("Enter a valid donation recipient TSD address.");
     if (!name.trim() || !/^https:\/\/\S+$/.test(url.trim())) return toast.error("Enter a name and an https:// payment address.");
     const { data, error } = await supabase.from("card_partners")
-      .insert({ name: name.trim(), pay_url: url.trim(), card_domains: normalizeDomains(domains), wallet_address: wallet.trim() || null, active: false }).select("id").single();
+      .insert({ name: name.trim(), pay_url: url.trim(), card_domains: normalizeDomains(domains), wallet_address: wallet.trim() || null, donation_address: donation.trim() || null, active: false }).select("id").single();
     if (error) return toast.error(error.message);
-    setName(""); setUrl(""); setDomains(""); setWallet(""); setAdding(false);
+    setName(""); setUrl(""); setDomains(""); setWallet(""); setDonation(""); setAdding(false);
     toast.success("Wallet added. Set its key, then switch it on.");
     await q.refetch();
     if (data) setOpen(data.id);
@@ -119,11 +121,12 @@ function WalletsSection() {
         onAdd={() => setAdding((a) => !a)} adding={adding} />
 
       {adding && (
-        <Card className="grid gap-3 p-4 md:grid-cols-[1fr_1.5fr_1.5fr_1.2fr_auto] md:items-center">
+        <Card className="grid gap-3 p-4 md:grid-cols-[1fr_1.5fr_1.5fr_1.2fr_1.2fr_auto] md:items-center">
           <Input placeholder="Wallet name (e.g. HME Wallet)" value={name} onChange={(e) => setName(e.target.value)} />
           <Input placeholder="Payment address (https://…/card/pay)" value={url} onChange={(e) => setUrl(e.target.value)} className="font-mono" />
           <Input placeholder="Card domains (e.g. hmewallet.com)" value={domains} onChange={(e) => setDomains(e.target.value)} />
           <Input placeholder="TEXITcoin wallet (signer)" value={wallet} onChange={(e) => setWallet(e.target.value)} className="font-mono" />
+          <Input placeholder="Donation recipient TSD address" value={donation} onChange={(e) => setDonation(e.target.value)} className="font-mono" />
           <Button onClick={add}>Add wallet</Button>
         </Card>
       )}
@@ -135,7 +138,7 @@ function WalletsSection() {
         {q.isLoading ? <p className="p-4 text-sm text-muted-foreground">Loading…</p> :
           (q.data ?? []).length === 0 ? <p className="p-4 text-sm text-muted-foreground">No wallets yet.</p> :
           (q.data ?? []).map((p) => (
-            <WalletRow key={p.id} p={p} recipient={(rq.data ?? []).find((r) => r.address === p.wallet_address) ?? null} open={open === p.id} onToggle={() => setOpen(open === p.id ? null : p.id)} onChange={() => { void q.refetch(); void rq.refetch(); }} />
+            <WalletRow key={p.id} p={p} recipient={(rq.data ?? []).find((r) => r.address === (p.donation_address ?? p.wallet_address)) ?? null} open={open === p.id} onToggle={() => setOpen(open === p.id ? null : p.id)} onChange={() => { void q.refetch(); void rq.refetch(); }} />
           ))}
       </Card>
     </section>
@@ -146,12 +149,13 @@ function WalletRow({ p, recipient, open, onToggle, onChange }: { p: Partner; rec
   const [url, setUrl] = useState(p.pay_url);
   const [domains, setDomains] = useState(p.card_domains.join(", "));
   const [wallet, setWallet] = useState(p.wallet_address ?? "");
+  const [donation, setDonation] = useState(p.donation_address ?? "");
   const [key, setKey] = useState("");
   const [shown, setShown] = useState("");
   const saveKey = useServerFn(setCardPartnerSecret);
   const hasKey = Boolean(p.secret_fingerprint) || p.uses_legacy_secret;
 
-  async function update(patch: Partial<Pick<Partner, "pay_url" | "card_domains" | "wallet_address" | "active" | "is_default">>) {
+  async function update(patch: Partial<Pick<Partner, "pay_url" | "card_domains" | "wallet_address" | "donation_address" | "active" | "is_default">>) {
     if (patch.is_default) {
       const { error } = await supabase.from("card_partners").update({ is_default: false }).eq("is_default", true);
       if (error) return toast.error(error.message);
@@ -163,8 +167,8 @@ function WalletRow({ p, recipient, open, onToggle, onChange }: { p: Partner; rec
   }
 
   async function setDonations(on: boolean) {
-    if (on && !p.wallet_address) return toast.error("Save a TEXITcoin wallet for this partner first.");
-    const addr = p.wallet_address!;
+    const addr = p.donation_address ?? p.wallet_address;
+    if (!addr) return toast.error("Save a donation recipient TSD address (or a wallet) for this partner first.");
     const { data: existing } = await supabase.from("egiving_recipients").select("kind").eq("address", addr).maybeSingle();
     if (existing && existing.kind !== "church") {
       return toast.error("This wallet is the Give program wallet — it already receives the program share, so it can't also be a donation recipient.");
@@ -203,7 +207,9 @@ function WalletRow({ p, recipient, open, onToggle, onChange }: { p: Partner; rec
           {p.name}{p.is_default && <Pill tone="primary">Default</Pill>}
         </div>
         <div className="hidden truncate text-sm text-muted-foreground md:block">{p.card_domains.join(", ") || "—"}</div>
-        <div className="hidden truncate font-mono text-xs text-muted-foreground md:block">{p.wallet_address ? `${p.wallet_address.slice(0, 8)}…${p.wallet_address.slice(-6)}` : "—"}</div>
+        <div className="hidden truncate font-mono text-xs text-muted-foreground md:block" title={p.donation_address ? `Donations to ${p.donation_address}` : undefined}>
+          {p.donation_address ? `${p.donation_address.slice(0, 8)}…${p.donation_address.slice(-6)}` : p.wallet_address ? `${p.wallet_address.slice(0, 8)}…${p.wallet_address.slice(-6)}` : "—"}
+        </div>
         <div className="hidden md:block" onClick={(e) => e.stopPropagation()}>
           <Switch checked={Boolean(recipient?.active)} onCheckedChange={(v) => void setDonations(v)} aria-label={`${p.name} gets donations`} />
         </div>
@@ -218,17 +224,25 @@ function WalletRow({ p, recipient, open, onToggle, onChange }: { p: Partner; rec
           <p className="text-xs text-muted-foreground">
             Key: {p.secret_fingerprint ? <>fingerprint <span className="font-mono">{p.secret_fingerprint}</span></> : p.uses_legacy_secret ? "using the original NFC payment key" : "not set"}
           </p>
-          <div className="grid gap-3 md:grid-cols-[2fr_1.5fr_2fr_auto] md:items-end">
+          <div className="grid gap-3 md:grid-cols-[2fr_1.5fr_2fr_2fr_auto] md:items-end">
             <label className="space-y-1 text-xs text-muted-foreground">Payment address
               <Input value={url} onChange={(e) => setUrl(e.target.value)} className="font-mono" /></label>
             <label className="space-y-1 text-xs text-muted-foreground">Card domains
               <Input value={domains} onChange={(e) => setDomains(e.target.value)} /></label>
             <label className="space-y-1 text-xs text-muted-foreground">TEXITcoin wallet (signs requests)
               <Input value={wallet} onChange={(e) => setWallet(e.target.value)} className="font-mono" /></label>
-            <Button variant="outline" onClick={() => {
+            <label className="space-y-1 text-xs text-muted-foreground">Donation recipient TSD address
+              <Input value={donation} onChange={(e) => setDonation(e.target.value)} placeholder="Defaults to the wallet above" className="font-mono" /></label>
+            <Button variant="outline" onClick={async () => {
               if (!/^https:\/\/\S+$/.test(url.trim())) return toast.error("Payment address must start with https://");
               if (wallet.trim() && !/^[A-Za-z0-9]{25,90}$/.test(wallet.trim())) return toast.error("Enter a valid TEXITcoin wallet address.");
-              void update({ pay_url: url.trim(), card_domains: normalizeDomains(domains), wallet_address: wallet.trim() || null });
+              if (donation.trim() && !/^[A-Za-z0-9]{25,90}$/.test(donation.trim())) return toast.error("Enter a valid donation recipient TSD address.");
+              const nextDonation = donation.trim() || null;
+              if (recipient && nextDonation && nextDonation !== recipient.address) {
+                const { error } = await supabase.from("egiving_recipients").update({ address: nextDonation }).eq("address", recipient.address);
+                if (error) return toast.error(error.message);
+              }
+              void update({ pay_url: url.trim(), card_domains: normalizeDomains(domains), wallet_address: wallet.trim() || null, donation_address: nextDonation });
             }}>Save</Button>
           </div>
           {shown && (
