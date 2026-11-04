@@ -274,6 +274,13 @@
       "when": 1793819855921,
       "tag": "0038_card_partner_donation_address",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1793820543131,
+      "tag": "0039_admins_can_update_stores",
+      "breakpoints": true
     }
   ]
 }
