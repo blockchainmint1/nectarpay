@@ -233,7 +233,7 @@ function WalletRow({ p, recipient, open, onToggle, onChange }: { p: Partner; rec
               <Input value={wallet} onChange={(e) => setWallet(e.target.value)} className="font-mono" /></label>
             <label className="space-y-1 text-xs text-muted-foreground">Donation recipient TSD address
               <Input value={donation} onChange={(e) => setDonation(e.target.value)} placeholder="Defaults to the wallet above" className="font-mono" /></label>
-            <Button variant="outline" onClick={() => {
+            <Button variant="outline" onClick={async () => {
               if (!/^https:\/\/\S+$/.test(url.trim())) return toast.error("Payment address must start with https://");
               if (wallet.trim() && !/^[A-Za-z0-9]{25,90}$/.test(wallet.trim())) return toast.error("Enter a valid TEXITcoin wallet address.");
               if (donation.trim() && !/^[A-Za-z0-9]{25,90}$/.test(donation.trim())) return toast.error("Enter a valid donation recipient TSD address.");
