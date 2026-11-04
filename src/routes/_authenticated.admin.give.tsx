@@ -18,9 +18,9 @@ export const Route = createFileRoute("/_authenticated/admin/give")({
   component: AdminGive,
   head: () => ({
     meta: [
-      { title: "Give · NectarPay Admin" },
+      { title: "Wallets & Give · NectarPay Admin" },
       { name: "description", content: "Approved tap-card wallets and approved eGiving donation recipients." },
-      { property: "og:title", content: "Give · NectarPay Admin" },
+      { property: "og:title", content: "Wallets & Give · NectarPay Admin" },
       { property: "og:description", content: "Manage approved wallets and donation recipients for eGiving." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -32,7 +32,7 @@ function AdminGive() {
   return (
     <div className="space-y-10">
       <div>
-        <h1 className="text-xl font-semibold">Give</h1>
+        <h1 className="text-xl font-semibold">Wallets & Give</h1>
         <p className="text-sm text-muted-foreground">
           Who can pay with a tap card, and where the church and program shares are allowed to go.
         </p>
