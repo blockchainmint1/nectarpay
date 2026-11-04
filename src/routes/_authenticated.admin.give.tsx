@@ -207,7 +207,9 @@ function WalletRow({ p, recipient, open, onToggle, onChange }: { p: Partner; rec
           {p.name}{p.is_default && <Pill tone="primary">Default</Pill>}
         </div>
         <div className="hidden truncate text-sm text-muted-foreground md:block">{p.card_domains.join(", ") || "—"}</div>
-        <div className="hidden truncate font-mono text-xs text-muted-foreground md:block">{p.wallet_address ? `${p.wallet_address.slice(0, 8)}…${p.wallet_address.slice(-6)}` : "—"}</div>
+        <div className="hidden truncate font-mono text-xs text-muted-foreground md:block" title={p.donation_address ? `Donations to ${p.donation_address}` : undefined}>
+          {p.donation_address ? `${p.donation_address.slice(0, 8)}…${p.donation_address.slice(-6)}` : p.wallet_address ? `${p.wallet_address.slice(0, 8)}…${p.wallet_address.slice(-6)}` : "—"}
+        </div>
         <div className="hidden md:block" onClick={(e) => e.stopPropagation()}>
           <Switch checked={Boolean(recipient?.active)} onCheckedChange={(v) => void setDonations(v)} aria-label={`${p.name} gets donations`} />
         </div>
