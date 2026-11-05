@@ -288,6 +288,13 @@
       "when": 1793821519714,
       "tag": "0040_grant_egiving_enabled_column",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1793907114298,
+      "tag": "0041_reset_index_on_xpub_change",
+      "breakpoints": true
     }
   ]
 }
