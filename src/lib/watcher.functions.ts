@@ -792,6 +792,22 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
   // Release address locks from invoices whose expires_at has passed.
   await expireStaleInvoices();
 
+  // Wallet keys whose 4-hour wait is over take over now (audit + alert follow).
+  try {
+    const { error: promoteErr } = await supabaseAdmin.rpc("promote_due_chain_keys");
+    if (promoteErr) console.error("[watcher] key promotion failed:", promoteErr.message);
+  } catch (e) {
+    console.error("[watcher] key promotion failed:", (e as Error).message);
+  }
+
+  // Risky-change alerts (webhooks, admins, API keys, terminals, code lockouts).
+  try {
+    const { dispatchSecurityEvents } = await import("./security-events.server");
+    await dispatchSecurityEvents();
+  } catch (e) {
+    console.error("[watcher] security-event dispatch failed:", (e as Error).message);
+  }
+
   // Fire Telegram alerts for any chain_config xpub/address changes since last tick.
   try {
     const { dispatchXpubChangeAlerts } = await import("./xpub-alerts.server");

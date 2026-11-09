@@ -527,11 +527,23 @@ export const Route = createFileRoute("/api/public/v1/wallet-link")({
           }
 
 
+          // Replacement keys wait 4 hours (DB cooling-off) before taking payments.
+          const { data: pendingRows } = await supabaseAdmin
+            .from("chain_configs")
+            .select("chain, pending_activates_at")
+            .eq("store_id", store.id)
+            .not("pending_activates_at", "is", null);
+          const chainsScheduled = (pendingRows ?? []).map((r) => ({
+            chain: r.chain,
+            activates_at: r.pending_activates_at,
+          }));
+
           return json({
             ok: true,
             store_id: store.id,
             merchant_name: store.name,
             chains_linked: chainsLinked,
+            chains_scheduled: chainsScheduled,
             rejected,
           });
         } catch (err) {
