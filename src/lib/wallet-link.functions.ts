@@ -32,14 +32,9 @@ export const requestWalletLinkVerification = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ storeId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    // RLS confirms ownership.
-    const { data: store, error: sErr } = await context.supabase
-      .from("stores")
-      .select("id, name")
-      .eq("id", data.storeId)
-      .maybeSingle();
-    if (sErr) throw new Error(sErr.message);
-    if (!store) throw new Error("Store not found or not yours.");
+    // Same gate as the key change itself: full store access + 2-step login.
+    const { authorizeKeyChange } = await import("@/lib/chain-keys.server");
+    const { store } = await authorizeKeyChange(context.supabase, context.userId, data.storeId);
 
     const email = (context.claims as { email?: string })?.email;
     if (!email) throw new Error("No email on this account — contact support.");
@@ -114,14 +109,9 @@ export const createWalletLinkCode = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    // RLS confirms ownership.
-    const { data: store, error: sErr } = await context.supabase
-      .from("stores")
-      .select("id, name")
-      .eq("id", data.storeId)
-      .maybeSingle();
-    if (sErr) throw new Error(sErr.message);
-    if (!store) throw new Error("Store not found or not yours.");
+    // Full access + 2-step login (when enabled).
+    const { authorizeKeyChange } = await import("@/lib/chain-keys.server");
+    const { store, actingAsAdmin } = await authorizeKeyChange(context.supabase, context.userId, data.storeId);
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -133,7 +123,8 @@ export const createWalletLinkCode = createServerFn({ method: "POST" })
       .eq("store_id", store.id);
     const firstLink = (existingKeys ?? 0) === 0;
 
-    if (!firstLink) {
+    // Admins changing someone else's store always confirm by email.
+    if (!firstLink || actingAsAdmin) {
       const { consumeWalletLinkChallenge } = await import("@/lib/wallet-link-challenge.server");
       await consumeWalletLinkChallenge(context.userId, store.id, data.verificationCode);
     }

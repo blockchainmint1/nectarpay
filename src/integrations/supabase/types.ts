@@ -496,6 +496,10 @@ export type Database = {
           network: string
           next_address_index: number
           next_derivation_index: number
+          pending_activates_at: string | null
+          pending_requested_at: string | null
+          pending_xpub: string | null
+          pending_xpub_or_address: string | null
           qr_address_only: boolean
           stables: string[]
           store_id: string
@@ -513,6 +517,10 @@ export type Database = {
           network?: string
           next_address_index?: number
           next_derivation_index?: number
+          pending_activates_at?: string | null
+          pending_requested_at?: string | null
+          pending_xpub?: string | null
+          pending_xpub_or_address?: string | null
           qr_address_only?: boolean
           stables?: string[]
           store_id: string
@@ -530,6 +538,10 @@ export type Database = {
           network?: string
           next_address_index?: number
           next_derivation_index?: number
+          pending_activates_at?: string | null
+          pending_requested_at?: string | null
+          pending_xpub?: string | null
+          pending_xpub_or_address?: string | null
           qr_address_only?: boolean
           stables?: string[]
           store_id?: string
@@ -2031,6 +2043,36 @@ export type Database = {
         }
         Relationships: []
       }
+      security_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          detail: Json
+          id: string
+          kind: string
+          notified_at: string | null
+          store_id: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          detail?: Json
+          id?: string
+          kind: string
+          notified_at?: string | null
+          store_id?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          detail?: Json
+          id?: string
+          kind?: string
+          notified_at?: string | null
+          store_id?: string | null
+        }
+        Relationships: []
+      }
       sensitive_action_codes: {
         Row: {
           action: string
@@ -3337,8 +3379,10 @@ export type Database = {
       }
       increment_affiliate_click: { Args: { _code: string }; Returns: undefined }
       is_subscription_active: { Args: { _user_id: string }; Returns: boolean }
+      mfa_ok: { Args: never; Returns: boolean }
       next_txc_deposit_index: { Args: never; Returns: number }
       owns_store: { Args: { _store_id: string }; Returns: boolean }
+      promote_due_chain_keys: { Args: never; Returns: number }
       purge_expired_wallet_challenges: { Args: never; Returns: undefined }
       store_access_level: { Args: { _store_id: string }; Returns: number }
       store_slugify: { Args: { _name: string }; Returns: string }

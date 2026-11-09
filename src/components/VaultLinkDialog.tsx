@@ -134,6 +134,12 @@ export function VaultLinkDialog({ storeId, open, onOpenChange, onLinked }: { sto
     try {
       const r = await link({ data: { storeId, pairing, verificationCode: code } });
       toast.success(`Linked HME Vault: ${r.linked.map((c) => c.toUpperCase()).join(", ")}`);
+      if (r.scheduled?.length) {
+        toast.info(
+          `For your safety, the new ${r.scheduled.map((s) => s.chain.toUpperCase()).join(", ")} key takes over ${new Date(r.scheduled[0].activatesAt).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })}. Sales keep paying your current wallet until then.`,
+          { duration: 12_000 },
+        );
+      }
       onLinked();
       onOpenChange(false);
     } catch (e) {

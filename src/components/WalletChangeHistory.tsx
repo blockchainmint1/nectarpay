@@ -58,7 +58,10 @@ export function WalletChangeHistory({ history }: { history: ReturnType<typeof us
           {rows.map((row) => (
             <li key={row.id} className="py-4">
               <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                <span className="text-sm font-medium">{NETWORK_NAMES[row.chain] ?? row.chain.toUpperCase()} · {row.action === "insert" ? "Wallet key added" : "Wallet key changed"}</span>
+                <span className="text-sm font-medium">{NETWORK_NAMES[row.chain] ?? row.chain.toUpperCase()} · {row.action === "insert" ? "Wallet key added"
+                  : row.action === "scheduled" ? "Wallet key change requested (4-hour wait)"
+                  : row.action === "cancelled" ? "Requested change cancelled"
+                  : "Wallet key changed"}</span>
                 <time dateTime={row.created_at} className="text-xs text-muted-foreground">{walletHistoryDate(row.created_at)}</time>
               </div>
               <div className="mt-2 grid gap-1 text-xs sm:grid-cols-2">

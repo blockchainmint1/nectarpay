@@ -31,7 +31,17 @@ export async function consumeWalletLinkChallenge(userId: string, storeId: string
   const a = Buffer.from(challenge.code_hash);
   const b = Buffer.from(sha256(code ?? ""));
   if (!code || a.length !== b.length || !timingSafeEqual(a, b)) {
-    await supabaseAdmin.from("sensitive_action_codes").update({ attempts: challenge.attempts + 1 }).eq("id", challenge.id);
+    const attempts = challenge.attempts + 1;
+    await supabaseAdmin.from("sensitive_action_codes").update({ attempts }).eq("id", challenge.id);
+    if (attempts >= MAX_ATTEMPTS) {
+      // Someone guessed wrong 5 times on a wallet-key change: tell the admins.
+      await supabaseAdmin.from("security_events").insert({
+        kind: "code_lockout",
+        store_id: storeId,
+        actor_id: userId,
+        detail: { action: WALLET_LINK_ACTION },
+      });
+    }
     throw new Error("Incorrect code.");
   }
   // Conditional burn: a parallel request using the same code loses.

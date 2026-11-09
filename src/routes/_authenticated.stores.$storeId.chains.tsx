@@ -27,6 +27,7 @@ import { getStoreBtcPayoutAddress } from "@/lib/chain-payout.functions";
 import { qrToDataURL } from "@/lib/qr";
 import { VaultLinkDialog } from "@/components/VaultLinkDialog";
 import { WalletChangeHistory, useWalletChangeHistory, walletHistoryDate } from "@/components/WalletChangeHistory";
+import { PendingKeyNotice, useKeyChangeSave } from "@/components/store/KeyChangeStepUp";
 // Inlined client-safe validators (mirror src/lib/chains/derive.server.ts).
 function isXpubLike(s: string): boolean {
   return /^([xtuvyz]pub)[1-9A-HJ-NP-Za-km-z]{100,120}$/.test(s.trim());
@@ -173,6 +174,9 @@ type Row = {
   xpub_or_address: string;
   enabled: boolean;
   stables: string[];
+  /** Replacement key waiting out the 4-hour safety delay. */
+  pending_activates_at: string | null;
+  pending_key: string | null;
 };
 
 // Standard setup defaults: TEXITcoin is enabled by default and Texas Stable
@@ -188,6 +192,8 @@ function emptyRow(chain: ChainKey): Row {
     xpub_or_address: "",
     enabled: DEFAULT_ENABLED[chain] ?? false,
     stables: [...(DEFAULT_STABLES[chain] ?? [])],
+    pending_activates_at: null,
+    pending_key: null,
   };
 }
 
@@ -201,7 +207,7 @@ function ChainsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("chain_configs")
-        .select("id, chain, xpub, xpub_or_address, enabled, stables")
+        .select("id, chain, xpub, xpub_or_address, enabled, stables, pending_xpub, pending_xpub_or_address, pending_activates_at")
         .eq("store_id", storeId);
       if (error) throw error;
       return data ?? [];
@@ -252,6 +258,8 @@ function ChainsPage() {
         xpub_or_address: r.xpub_or_address ?? "",
         enabled: r.enabled,
         stables: (r.stables ?? []) as string[],
+        pending_activates_at: r.pending_activates_at ?? null,
+        pending_key: r.pending_xpub || r.pending_xpub_or_address || null,
       };
     }
     setRows(next as Record<ChainKey, Row>);
@@ -384,6 +392,7 @@ function ZcuCard({
   onSaved: () => void;
 }) {
   const [saving, setSaving] = useState(false);
+  const { save: saveKey, dialog } = useKeyChangeSave(storeId);
   const enabled = !!zcuRow?.enabled;
   const ethXpub = ethRow.xpub ?? (isXpubLike(ethRow.xpub_or_address) ? ethRow.xpub_or_address : null);
 
@@ -394,22 +403,10 @@ function ZcuCard({
     }
     setSaving(true);
     try {
-      const { error } = next
-        ? await supabase.from("chain_configs").upsert(
-            {
-              store_id: storeId,
-              chain: "zcu",
-              network: "mainnet",
-              xpub: ethXpub,
-              xpub_or_address: ethXpub!,
-              enabled: true,
-              stables: [],
-            },
-            { onConflict: "store_id,chain" },
-          )
-        : await supabase.from("chain_configs").update({ enabled: false }).eq("id", zcuRow!.id);
-      if (error) throw new Error(error.message);
-      toast.success(next ? "ZCU is on — customers can now pay with ZCU." : "ZCU is off.");
+      // The server copies the EVM key; wallet-key rules (code, 4-hour wait) apply.
+      const res = await saveKey({ storeId, chain: "zcu", value: null, enabled: next, stables: [] });
+      if (!res) return;
+      if (res.status === "saved") toast.success(next ? "ZCU is on — customers can now pay with ZCU." : "ZCU is off.");
       onSaved();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Save failed.");
@@ -435,6 +432,7 @@ function ZcuCard({
           <Switch id="enabled-zcu" checked={enabled} disabled={saving} onCheckedChange={toggle} />
         </div>
       </div>
+      {dialog}
     </div>
   );
 }
@@ -667,6 +665,7 @@ function ChainCard({
   lightning?: { row: Row; onChange: (r: Row) => void };
 }) {
   const [saving, setSaving] = useState(false);
+  const { save: saveKey, dialog } = useKeyChangeSave(storeId);
   const [editing, setEditing] = useState(false);
   const [copied, setCopied] = useState(false);
   const persisted = !!row.id;
@@ -742,19 +741,8 @@ function ChainCard({
     if (!v && meta.inputKind === "btc-address") {
       setSaving(true);
       try {
-        const payload = {
-          store_id: storeId,
-          chain: meta.key,
-          network: "mainnet",
-          xpub: null,
-          xpub_or_address: "",
-          enabled: row.enabled,
-          stables: row.stables,
-        };
-        const { error } = await supabase
-          .from("chain_configs")
-          .upsert(payload, { onConflict: "store_id,chain" });
-        if (error) throw new Error(error.message || "Save failed.");
+        const res = await saveKey({ storeId, chain: meta.key, value: "", enabled: row.enabled, stables: row.stables });
+        if (!res) return;
         toast.success(`${meta.name} saved — payouts will go to fresh addresses from your linked Bitcoin wallet.`);
         onSaved();
       } catch (e) {
@@ -776,25 +764,10 @@ function ChainCard({
     }
     setSaving(true);
     try {
-      const payload = {
-        store_id: storeId,
-        chain: meta.key,
-        network: "mainnet",
-        xpub: meta.inputKind === "address" || meta.inputKind === "btc-address" ? null : (isXpubLike(v) ? v : null),
-        xpub_or_address: v,
-        enabled: row.enabled,
-        stables: row.stables,
-      };
-
-
-      const { error } = await supabase
-        .from("chain_configs")
-        .upsert(payload, { onConflict: "store_id,chain" });
-      if (error) {
-        console.error("chain_configs upsert failed", { error, payload });
-        throw new Error(error.message || error.details || error.hint || "Save failed.");
-      }
-      toast.success(`${meta.name} saved.`);
+      // Wallet keys go through the server: emailed code, 2-step login, 4-hour wait.
+      const res = await saveKey({ storeId, chain: meta.key, value: v, enabled: row.enabled, stables: row.stables });
+      if (!res) return;
+      if (res.status === "saved") toast.success(`${meta.name} saved.`);
       setEditing(false);
       onSaved();
     } catch (e) {
@@ -943,12 +916,23 @@ function ChainCard({
         </div>
       )}
 
+      {row.pending_activates_at && (
+        <PendingKeyNotice
+          storeId={storeId}
+          chain={meta.key}
+          activatesAt={row.pending_activates_at}
+          pendingKey={row.pending_key}
+          onChanged={onSaved}
+        />
+      )}
+
       <div className="mt-4 flex justify-end">
         <Button onClick={onSave} disabled={saving}>
           <Save className="mr-2 h-4 w-4" />
           {saving ? "Saving…" : "Save"}
         </Button>
       </div>
+      {dialog}
 
       {lightning && (
         <LightningSection
@@ -977,6 +961,7 @@ function LightningSection({
   btcXpub: string;
 }) {
   const [saving, setSaving] = useState(false);
+  const { save: saveKey, dialog } = useKeyChangeSave(storeId);
   const [prefilling, setPrefilling] = useState(false);
   const derive = useServerFn(getStoreBtcPayoutAddress);
   const address = row.xpub_or_address ?? "";
@@ -1021,28 +1006,10 @@ function LightningSection({
     }
     setSaving(true);
     try {
-      if (row.id) {
-        const { error } = await supabase
-          .from("chain_configs")
-          .update({ enabled: row.enabled, xpub_or_address: v, xpub: null })
-          .eq("id", row.id);
-        if (error) throw new Error(error.message);
-      } else {
-        const { error } = await supabase.from("chain_configs").upsert(
-          {
-            store_id: storeId,
-            chain: "lightning",
-            network: "mainnet",
-            xpub: null,
-            xpub_or_address: v,
-            enabled: row.enabled,
-            stables: row.stables,
-          },
-          { onConflict: "store_id,chain" },
-        );
-        if (error) throw new Error(error.message);
-      }
-      toast.success("Lightning settings saved.");
+      // The payout address decides where Lightning money goes: same rules as wallet keys.
+      const res = await saveKey({ storeId, chain: "lightning", value: v, enabled: row.enabled, stables: [] });
+      if (!res) return;
+      if (res.status === "saved") toast.success("Lightning settings saved.");
       onSaved();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Save failed.");
@@ -1053,6 +1020,16 @@ function LightningSection({
 
   return (
     <div className="mt-4 rounded-md border border-primary/30 bg-primary/5 p-4">
+      {dialog}
+      {row.pending_activates_at && (
+        <PendingKeyNotice
+          storeId={storeId}
+          chain="lightning"
+          activatesAt={row.pending_activates_at}
+          pendingKey={row.pending_key}
+          onChanged={onSaved}
+        />
+      )}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-sm font-medium">
