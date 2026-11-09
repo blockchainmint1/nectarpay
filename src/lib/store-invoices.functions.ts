@@ -173,6 +173,9 @@ export const cancelStoreInvoice = createServerFn({ method: "POST" })
     if (["confirmed", "overpaid"].includes(inv.status)) {
       throw new Error("Paid invoices cannot be cancelled.");
     }
+    if (inv.status === "detected") {
+      throw new Error("A payment for this invoice is arriving — it can't be cancelled now.");
+    }
     const { error } = await supabase
       .from("invoices")
       .update({ status: "cancelled" })
