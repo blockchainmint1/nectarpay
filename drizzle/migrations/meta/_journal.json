@@ -330,6 +330,13 @@
       "when": 1794250130171,
       "tag": "0046_wallet_key_cooloff_mfa_security_events",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1794251200644,
+      "tag": "0047_guard_invoice_user_writes",
+      "breakpoints": true
     }
   ]
 }
