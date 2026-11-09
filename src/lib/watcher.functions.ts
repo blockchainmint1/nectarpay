@@ -18,6 +18,7 @@ import { getUsdRate } from "./rates.functions";
 import { identifyEvmAsset } from "./chains/evm-asset";
 import { claimStickerCredit } from "./sticker-scan.server";
 import { stickerPaymentInWindow } from "./sticker-settlement";
+import { isSharedEvmInvoice, pickSharedInvoice } from "./evm-shared-address";
 
 const ADDRESS_WINDOW = 20; // BIP44 gap-limit-style lookahead per chain_config
 
@@ -637,7 +638,7 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
-    .select("id, store_id, chain, address, fiat_amount, status, rate, token_symbol, created_at, expires_at, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd)")
+    .select("id, store_id, chain, address, address_index, fiat_amount, status, rate, token_symbol, created_at, expires_at, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd)")
     .eq("id", invoiceId)
     .maybeSingle();
 
@@ -691,6 +692,21 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
 
       const blockNum = parseInt(t.blockNum, 16);
       const confirmations = Math.max(0, tip - blockNum + 1);
+      if (isSharedEvmInvoice(inv)) {
+        // Shared main address: this transfer may belong to another sale.
+        const owner = await resolveSharedEvmTransfer({
+          address: invoiceAddress,
+          storeId: inv.store_id,
+          chain: net.symbol,
+          tokenSymbol: token || null,
+          human,
+          txHash: t.hash,
+          txTimeMs: Number.isFinite(blockTime) ? blockTime : null,
+          confirmations,
+          blockHeight: blockNum,
+        });
+        if (owner !== inv.id) continue;
+      }
       const lockedRate = inv.rate == null ? null : Number(inv.rate);
       const paidUsd = token ? human : human * (lockedRate && lockedRate > 0 ? lockedRate : await getUsdRate(net.symbol));
       const required = effectiveConfsRequired(inv.stores ?? null, net.confirmationsRequired, paidUsd, net.symbol);
