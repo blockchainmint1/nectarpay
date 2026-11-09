@@ -99,3 +99,15 @@
 ## HME Give church list
 - [x] Accept HME Give's signed church list (pull every 5 min + push hook), keep last good list as backup, local admin block
 - [ ] Go live — their list URL and signing address are saved here; waiting on their list page going live and our website publish
+
+## Security audit (Nov 9 2026)
+- [x] Block script "return links" on checkout (input check, safe render, database rule); 4 booby-trapped test sales cleaned.
+- [x] Remove the Android signing-key helper that printed the key into build logs; remove the outdated package-lock.json.
+- [x] Wallet-key change alerts can't be muted (sign-in email + every linked Telegram) and admins get a copy.
+- [ ] Bobby: check GitHub Actions history for "Generate Android Keystore" runs; delete those logs/artifacts and decide on rotating the APK key.
+- [ ] Decide: take platform admins out of wallet-key writes (awaiting Bobby).
+- [ ] Decide: emailed code for every manual wallet-key paste, plus enforced MFA on the server for users who turned it on (awaiting Bobby).
+- [ ] Decide: cooling-off period before a new wallet key takes payments (awaiting Bobby).
+- [ ] Monitoring: audit + admin alerts for webhook URL/secret changes, admin role grants, new API keys/terminals.
+- [ ] Still open from earlier report: Lightning sweep race, resettable free trial, Capacitor upgrade check.
+- [ ] Solana amount rounding overcharge (e.g. $5 SOL sale asked 0.0649 SOL ≈ $5.63).
