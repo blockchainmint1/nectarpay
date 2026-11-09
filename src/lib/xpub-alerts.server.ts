@@ -119,7 +119,7 @@ export async function dispatchXpubChangeAlerts(): Promise<{ processed: number; s
         await notifyUser(adminId, {
           event: "security_xpub_change",
           subject: `[Admin copy] ${subject}`,
-          text: lines.slice(0, -2).join("\n"),
+          text: (lines.includes("") ? lines.slice(0, lines.indexOf("")) : lines).join("\n"),
           force: true,
           metadata: { ...metadata, admin_copy: true },
         });
