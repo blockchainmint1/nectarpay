@@ -21,6 +21,8 @@ import { toast } from "sonner";
 import { FastStickerPrinter } from "@/components/admin/fast-sticker-printer";
 import { qrToDataURL } from "@/lib/qr";
 import { storeStickerPath } from "@/lib/fast-enroll";
+import { testAccountFlag } from "@/lib/signup-email";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/admin/merchants")({
   component: AdminMerchants,
@@ -77,6 +79,13 @@ function AdminMerchants() {
   });
 
   const { data, isLoading, error } = useQuery({ queryKey: ["admin-merchants"], queryFn: () => fn() });
+  const { data: blockedDomains = [] } = useQuery({
+    queryKey: ["blocked-email-domains"],
+    queryFn: async () => {
+      const { data: rows } = await supabase.from("blocked_email_domains").select("domain");
+      return (rows ?? []).map((r) => r.domain);
+    },
+  });
 
   const mut = useMutation({
     mutationFn: (vars: { store_id: string; market: string; rep: string }) =>
@@ -166,6 +175,17 @@ function AdminMerchants() {
                     </td>
                     <td className="px-3 py-2">
                       <div className="font-medium">{m.email ?? m.display_name ?? m.owner_id.slice(0, 8) + "…"}</div>
+                      {(() => {
+                        const flag = testAccountFlag(m.email, blockedDomains);
+                        return flag ? (
+                          <div
+                            className="mt-1 mr-1 inline-block rounded bg-accent px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-accent-foreground"
+                            title="This sign-up looks like a robot or test account"
+                          >
+                            Looks like a test · {flag}
+                          </div>
+                        ) : null;
+                      })()}
                       {m.deactivated_at && (
                         <div className="mt-1 inline-block rounded bg-destructive/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-destructive">
                           Deactivated {new Date(m.deactivated_at).toLocaleDateString()}

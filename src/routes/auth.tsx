@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { ArrowRight, Mail, Wallet } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { signupEmailBlocked } from "@/lib/signup-guard";
+import { BLOCKED_SIGNUP_MESSAGE, friendlySignupError } from "@/lib/signup-email";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth-context";
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
@@ -594,6 +596,10 @@ function EmailSignIn({
     }
     setBusy(true);
     try {
+      if (await signupEmailBlocked(trimmed)) {
+        toast.error(BLOCKED_SIGNUP_MESSAGE);
+        return;
+      }
       const target = redirect ?? "/dashboard";
       const { error } = await supabase.auth.signInWithOtp({
         email: trimmed,
@@ -605,7 +611,7 @@ function EmailSignIn({
       if (error) throw error;
       setSent(true);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not send your code");
+      toast.error(e instanceof Error ? friendlySignupError(e.message) : "Could not send your code");
     } finally {
       setBusy(false);
     }

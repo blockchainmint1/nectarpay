@@ -295,6 +295,13 @@
       "when": 1793907114298,
       "tag": "0041_reset_index_on_xpub_change",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1794247156040,
+      "tag": "0042_block_throwaway_signups_and_directory_wallet_rule",
+      "breakpoints": true
     }
   ]
 }

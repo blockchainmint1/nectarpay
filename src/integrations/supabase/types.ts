@@ -321,6 +321,24 @@ export type Database = {
         }
         Relationships: []
       }
+      blocked_email_domains: {
+        Row: {
+          created_at: string
+          domain: string
+          reason: string | null
+        }
+        Insert: {
+          created_at?: string
+          domain: string
+          reason?: string | null
+        }
+        Update: {
+          created_at?: string
+          domain?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
       card_partners: {
         Row: {
           active: boolean
@@ -3196,6 +3214,7 @@ export type Database = {
         Args: { _amount: number; _code: string; _excluded: string[] }
         Returns: string
       }
+      email_domain_blocked: { Args: { _email: string }; Returns: boolean }
       fast_enrollment_coin_taken: {
         Args: { _coin_id: string }
         Returns: boolean

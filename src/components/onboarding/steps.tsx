@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 
 import { supabase } from "@/integrations/supabase/client";
+import { signupEmailBlocked } from "@/lib/signup-guard";
+import { BLOCKED_SIGNUP_MESSAGE, friendlySignupError } from "@/lib/signup-email";
 import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { createWalletLinkCode, requestWalletLinkVerification } from "@/lib/wallet-link.functions";
@@ -82,6 +84,10 @@ export function Welcome({ signedIn, redirectTo = "/start" }: { signedIn: boolean
     }
     setBusy(true);
     try {
+      if (await signupEmailBlocked(trimmed)) {
+        toast.error(BLOCKED_SIGNUP_MESSAGE);
+        return;
+      }
       const { error } = await supabase.auth.signInWithOtp({
         email: trimmed,
         options: {
@@ -92,7 +98,7 @@ export function Welcome({ signedIn, redirectTo = "/start" }: { signedIn: boolean
       if (error) throw error;
       setSent(true);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not send your code");
+      toast.error(e instanceof Error ? friendlySignupError(e.message) : "Could not send your code");
     } finally {
       setBusy(false);
     }
