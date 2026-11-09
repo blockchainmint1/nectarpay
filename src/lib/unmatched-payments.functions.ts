@@ -5,7 +5,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
 
 const PAY_COLS = "id, store_id, chain, address, tx_hash, token_symbol, amount, confirmations, block_time, reason, created_at";
 
@@ -40,13 +42,12 @@ export const listUnmatchedPayments = createServerFn({ method: "POST" })
     return { payments, sales: sales ?? [] };
   });
 
-async function assertManager(
-  supabase: { rpc: (fn: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown }> },
-  storeId: string,
-) {
+async function assertManager(supabase: SupabaseClient<Database>, storeId: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rpc = supabase.rpc.bind(supabase) as any;
   const [{ data: owns }, { data: level }] = await Promise.all([
-    supabase.rpc("owns_store", { _store_id: storeId }),
-    supabase.rpc("store_access_level", { _store_id: storeId }),
+    rpc("owns_store", { _store_id: storeId }),
+    rpc("store_access_level", { _store_id: storeId }),
   ]);
   if (owns !== true && Number(level ?? 0) < 2) throw new Error("Only the store's owner or a manager can do this.");
 }
