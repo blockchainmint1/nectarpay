@@ -78,9 +78,8 @@ export async function deriveInvoiceAddress(
   }
 
   let address: string;
-  // Index 0 is never handed out or monitored — it's the account's "public"
-  // address (payout hints, wallet UIs, manual sends), so derivation for
-  // invoices always starts at 1.
+  // Rotating derivation starts at 1: index 0 is the account's main address,
+  // used only by single-address EVM mode below (strict amount matching).
   let index = Math.max(1, cfg.next_address_index ?? 0);
   let recycledEvmAddress = false;
   let evmSharedAddress = false;
