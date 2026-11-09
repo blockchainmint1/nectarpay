@@ -568,6 +568,71 @@ async function alchemyAssetTransfersForAddress(
   return json.result?.transfers ?? [];
 }
 
+/**
+ * Single-address EVM mode: decide which open sale (if any) a transfer to the
+ * store's main address pays. Already-credited transfers keep their sale;
+ * otherwise strict tail matching (pickSharedInvoice). A transfer nobody fits
+ * is parked in unmatched_payments for the merchant — never guessed.
+ */
+async function resolveSharedEvmTransfer(t: {
+  address: string;
+  storeId: string;
+  chain: string;
+  tokenSymbol: string | null;
+  human: number;
+  txHash: string;
+  txTimeMs: number | null;
+  confirmations: number;
+  blockHeight: number | null;
+}): Promise<string | null> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const isStable = t.tokenSymbol != null;
+
+  const { data: claimed } = await supabaseAdmin
+    .from("transactions").select("invoice_id").eq("tx_hash", t.txHash).limit(1);
+  if (claimed?.length) return claimed[0].invoice_id as string;
+
+  const matchChains = (isStable ? ["eth", "base", "bsc"] : [t.chain, "eth"]) as never[];
+  const { data: rows } = await supabaseAdmin
+    .from("invoices")
+    .select("id, address_index, crypto_amount, rate, token_symbol, created_at")
+    .ilike("address", t.address)
+    .in("chain", matchChains)
+    .in("status", ["pending", "detected", "underpaid"]);
+  const eligible = (rows ?? []).filter((c) =>
+    isSharedEvmInvoice(c)
+    && (c.token_symbol ?? "").toUpperCase() === (t.tokenSymbol ?? "").toUpperCase()
+    && !creditPredatesInvoice(t.txTimeMs, c.created_at),
+  );
+  const picked = pickSharedInvoice(
+    eligible.map((c) => ({
+      id: c.id,
+      crypto_amount: c.crypto_amount,
+      usdPerUnit: isStable ? 1 : Number(c.rate ?? 0),
+    })),
+    t.human,
+    isStable,
+  );
+  if (picked) return picked;
+
+  // Nothing fits: keep a record so the merchant can apply it to a sale.
+  const { error } = await supabaseAdmin.from("unmatched_payments").upsert({
+    store_id: t.storeId,
+    chain: t.chain,
+    address: t.address,
+    tx_hash: t.txHash,
+    token_symbol: t.tokenSymbol,
+    amount: t.human,
+    confirmations: t.confirmations,
+    block_height: t.blockHeight,
+    block_time: t.txTimeMs ? new Date(t.txTimeMs).toISOString() : null,
+    reason: eligible.length ? "amount_mismatch" : "no_open_sale",
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "chain,tx_hash,address" });
+  if (error) console.error("[watcher] could not park unmatched EVM payment:", error);
+  return null;
+}
+
 export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
