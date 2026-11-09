@@ -109,6 +109,8 @@
 - [x] Emailed 6-digit code for every wallet-key change except a store's very first key; 2-step login enforced by the database for users who turned it on. Code prompt verified in browser (code sent, nothing saved without it).
 - [x] 4-hour wait before a replacement key takes payments; old wallet keeps getting paid, owner can Cancel. Verified hand-over in an undone practice run and Cancel in the browser.
 - [x] Monitoring: unmutable alerts to owner + admins for webhook changes, new platform/store admins, new API keys, new terminals, code lockouts; webhook alert verified (no secrets in it).
+- [x] Auditor follow-up on booby-trapped return links: all 4 found (probe accounts only); nobody else opened them; no real wallet/admin/team/API-key/webhook changes; closed the hole letting merchants mark their own sales paid (11 fake paid sales, all probe/test stores).
+- [ ] Decide: revoke the 4 probe-store API keys and suspend the probe accounts (awaiting Bobby).
 - [ ] Real end-to-end replacement with an emailed code typed in, and real alert email arrival: needs Bobby to try it on a test store.
 - [ ] Still open from earlier report: Lightning sweep race, resettable free trial, Capacitor upgrade check.
 - [ ] Solana amount rounding overcharge (e.g. $5 SOL sale asked 0.0649 SOL ≈ $5.63).
