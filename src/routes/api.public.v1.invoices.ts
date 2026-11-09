@@ -7,6 +7,7 @@
 // chains. When omitted, `address` / `crypto_amount` / `rate` are null until
 // the customer makes a selection.
 
+import { isSafeHttpUrl } from "@/lib/safe-url";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 

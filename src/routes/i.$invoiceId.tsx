@@ -1,3 +1,4 @@
+import { safeHttpUrl } from "@/lib/safe-url";
 import { useEffect, useRef, useState } from "react";
 import hiveMark from "@/assets/nectar-hive-mark.png.asset.json";
 
