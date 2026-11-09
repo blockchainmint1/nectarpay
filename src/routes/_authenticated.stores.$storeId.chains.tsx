@@ -1020,6 +1020,16 @@ function LightningSection({
 
   return (
     <div className="mt-4 rounded-md border border-primary/30 bg-primary/5 p-4">
+      {dialog}
+      {row.pending_activates_at && (
+        <PendingKeyNotice
+          storeId={storeId}
+          chain="lightning"
+          activatesAt={row.pending_activates_at}
+          pendingKey={row.pending_key}
+          onChanged={onSaved}
+        />
+      )}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-sm font-medium">
