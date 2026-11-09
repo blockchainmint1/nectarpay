@@ -976,18 +976,37 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               ) as never[];
               const invQuery = supabaseAdmin
                 .from("invoices")
-                .select("id, fiat_amount, status, chain, token_symbol, created_at")
+                .select("id, store_id, fiat_amount, status, chain, token_symbol, created_at, address, address_index")
                 .ilike("address", t.to) // EVM addresses are stored checksum-cased; match case-insensitively
                 .in("chain", matchChains)
                 .in("status", ["pending", "detected", "underpaid"]);
               const { data: candidates } = await invQuery;
-              const inv = (candidates ?? []).find((c) =>
+              const sameToken = (candidates ?? []).filter((c) =>
                 t.isNative ? c.token_symbol == null : (c.token_symbol ?? "").toUpperCase() === t.asset.toUpperCase(),
               );
+              let inv = sameToken[0];
               if (!inv) continue;
 
               const rawAmount = BigInt(t.rawValue);
               const human = Number(rawAmount) / 10 ** t.decimals;
+
+              if (sameToken.some((c) => isSharedEvmInvoice(c))) {
+                // Shared main address: strict amount-tail matching, never "first open sale".
+                const owner = await resolveSharedEvmTransfer({
+                  address: inv.address ?? t.to,
+                  storeId: inv.store_id,
+                  chain: net.symbol,
+                  tokenSymbol: t.isNative ? null : t.asset,
+                  human,
+                  txHash: t.txHash,
+                  txTimeMs: t.blockTimeMs ?? null,
+                  confirmations: tip - t.blockNum + 1,
+                  blockHeight: t.blockNum,
+                });
+                const owned = owner ? sameToken.find((c) => c.id === owner) : undefined;
+                if (!owned) continue;
+                inv = owned;
+              }
               // Stables = $1; native uses live rate.
               const usd = t.isNative ? human * (await getUsdRate(net.symbol)) : human;
               const confirmations = tip - t.blockNum + 1;
