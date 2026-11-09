@@ -392,6 +392,7 @@ function ZcuCard({
   onSaved: () => void;
 }) {
   const [saving, setSaving] = useState(false);
+  const { save: saveKey, dialog } = useKeyChangeSave(storeId);
   const enabled = !!zcuRow?.enabled;
   const ethXpub = ethRow.xpub ?? (isXpubLike(ethRow.xpub_or_address) ? ethRow.xpub_or_address : null);
 
@@ -402,22 +403,10 @@ function ZcuCard({
     }
     setSaving(true);
     try {
-      const { error } = next
-        ? await supabase.from("chain_configs").upsert(
-            {
-              store_id: storeId,
-              chain: "zcu",
-              network: "mainnet",
-              xpub: ethXpub,
-              xpub_or_address: ethXpub!,
-              enabled: true,
-              stables: [],
-            },
-            { onConflict: "store_id,chain" },
-          )
-        : await supabase.from("chain_configs").update({ enabled: false }).eq("id", zcuRow!.id);
-      if (error) throw new Error(error.message);
-      toast.success(next ? "ZCU is on — customers can now pay with ZCU." : "ZCU is off.");
+      // The server copies the EVM key; wallet-key rules (code, 4-hour wait) apply.
+      const res = await saveKey({ storeId, chain: "zcu", value: null, enabled: next, stables: [] });
+      if (!res) return;
+      if (res.status === "saved") toast.success(next ? "ZCU is on — customers can now pay with ZCU." : "ZCU is off.");
       onSaved();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Save failed.");
