@@ -1368,19 +1368,24 @@ function StablecoinSuggestionDialog({
     setBusy(true);
     try {
       const suggested = ["USDT", "USDC", "PYUSD"];
-      const mergedStables = Array.from(new Set([...(ethRow.stables ?? []), ...suggested]));
-      const payload = {
-        store_id: storeId,
-        chain: "eth" as const,
-        network: "mainnet",
-        xpub: ethRow.xpub,
-        xpub_or_address: ethRow.xpub_or_address || ethRow.xpub || "",
-        enabled: true,
-        stables: mergedStables,
-      };
+      // Re-read the saved EVM row: the page's copy can be stale while the wallet
+      // is still saving keys, and writing it back would erase the new key.
+      const { data: cur, error: readErr } = await supabase
+        .from("chain_configs")
+        .select("id, stables")
+        .eq("store_id", storeId)
+        .eq("chain", "eth")
+        .maybeSingle();
+      if (readErr) throw readErr;
+      if (!cur) {
+        toast.error("Your EVM wallet is still linking. Give it a few seconds and try again.");
+        return;
+      }
+      const mergedStables = Array.from(new Set([...(cur.stables ?? ethRow.stables ?? []), ...suggested]));
       const { error } = await supabase
         .from("chain_configs")
-        .upsert(payload, { onConflict: "store_id,chain" });
+        .update({ enabled: true, stables: mergedStables })
+        .eq("id", cur.id);
       if (error) throw error;
       toast.success("EVM stablecoins enabled — USDT, USDC, PYUSD.");
       onApplied();
