@@ -7,6 +7,7 @@
 // chains. When omitted, `address` / `crypto_amount` / `rate` are null until
 // the customer makes a selection.
 
+import { isSafeHttpUrl } from "@/lib/safe-url";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
@@ -31,7 +32,9 @@ const Body = z.object({
   currency: z.string().min(3).max(8).default("USD"),
   order_id: z.string().max(128).nullable().optional(),
   description: z.string().max(512).nullable().optional(),
-  redirect_url: z.string().url().max(1024).nullable().optional(),
+  redirect_url: z.string().max(1024)
+    .refine((u) => isSafeHttpUrl(u), "redirect_url must be an http(s) link")
+    .nullable().optional(),
   buyer_email: z.string().email().max(255).nullable().optional(),
   expires_in_seconds: z.number().int().min(60).max(86_400).optional(),
 });

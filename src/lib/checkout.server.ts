@@ -1,3 +1,4 @@
+import { safeHttpUrl } from "@/lib/safe-url";
 import { VALID_CHAIN_SET } from "@/lib/chains/networks";
 import { EGIVING_DISCOUNT_PCT } from "@/lib/egiving";
 import type { CheckoutPaymentOption } from "./checkout.functions";
@@ -186,7 +187,7 @@ export async function readPublicInvoice(data: { id: string }) {
         address: inv.address as string | null,
         status: inv.status,
         description: inv.description,
-        redirectUrl: inv.redirect_url,
+        redirectUrl: safeHttpUrl(inv.redirect_url),
         paymentProgram: (inv.payment_program as string | null) ?? null,
         discountUsd: inv.discount_usd == null ? null : Number(inv.discount_usd),
         discountPct: inv.discount_pct == null ? null : Number(inv.discount_pct),

@@ -10,7 +10,17 @@ function mask(s: string | null | undefined): string {
   return `${v.slice(0, 8)}…${v.slice(-6)}`;
 }
 
+let adminIdCache: string[] | null = null;
+async function adminIds(): Promise<string[]> {
+  if (adminIdCache) return adminIdCache;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "admin");
+  adminIdCache = Array.from(new Set((data ?? []).map((r) => r.user_id as string)));
+  return adminIdCache;
+}
+
 export async function dispatchXpubChangeAlerts(): Promise<{ processed: number; sent: number }> {
+  adminIdCache = null;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
   const { data: rows, error } = await supabaseAdmin
@@ -56,17 +66,27 @@ export async function dispatchXpubChangeAlerts(): Promise<{ processed: number; s
       lines.push("");
       lines.push("If this wasn't you, sign in immediately and revert it.");
 
+      const metadata = { store_id: r.store_id, chain: r.chain, action: r.action, audit_id: r.id };
+      // Wallet-key changes can't be muted: the owner hears on every channel,
+      // including their sign-in email, and platform admins get a copy.
       await notifyUser(owner.ownerId, {
         event: "security_xpub_change",
         subject,
         text: lines.join("\n"),
-        metadata: {
-          store_id: r.store_id,
-          chain: r.chain,
-          action: r.action,
-          audit_id: r.id,
-        },
+        storeId: r.store_id,
+        force: true,
+        metadata,
       });
+      for (const adminId of await adminIds()) {
+        if (adminId === owner.ownerId) continue;
+        await notifyUser(adminId, {
+          event: "security_xpub_change",
+          subject: `[Admin copy] ${subject}`,
+          text: lines.slice(0, -2).join("\n"),
+          force: true,
+          metadata: { ...metadata, admin_copy: true },
+        });
+      }
       sent++;
     }
 

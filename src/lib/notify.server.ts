@@ -22,6 +22,12 @@ export interface NotifyPayload {
   text: string;
   /** When set, a per-store override (if any) replaces account-level prefs. */
   storeId?: string;
+  /**
+   * Security alerts: ignore on/off switches and event toggles, email the
+   * account's sign-in address (not just the editable alert address) and use
+   * every linked Telegram chat. A hijacked session can't mute these first.
+   */
+  force?: boolean;
   metadata?: Record<string, unknown>;
 }
 
@@ -126,6 +132,11 @@ export async function notifyUser(
     }
   }
 
+  if (payload.force) {
+    await notifyForced(userId, payload, accountPrefs, override);
+    return;
+  }
+
   if (override && !override.enabled) return;
 
   const prefs = override
@@ -203,6 +214,56 @@ export async function notifyUser(
     });
   }
 
+}
+
+/** Unmutable delivery for security alerts (see NotifyPayload.force). */
+async function notifyForced(
+  userId: string,
+  payload: NotifyPayload,
+  accountPrefs: { email_address?: string | null; telegram_chat_id?: string | null } | null,
+  override: { email_address: string | null; telegram_chat_id: string | null } | null,
+): Promise<void> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(userId);
+  const loginEmail = authUser?.user?.email ?? null;
+  const isWalletOnly = !loginEmail || loginEmail.endsWith("@wallet.payhme.local");
+
+  const emails = new Set<string>();
+  if (!isWalletOnly && loginEmail) emails.add(loginEmail.toLowerCase());
+  for (const e of [accountPrefs?.email_address, override?.email_address]) {
+    if (e && e.includes("@")) emails.add(e.trim().toLowerCase());
+  }
+  const chats = new Set<string>();
+  for (const c of [accountPrefs?.telegram_chat_id, override?.telegram_chat_id]) {
+    if (c) chats.add(String(c));
+  }
+
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  for (const chatId of chats) {
+    if (!token) break;
+    const result = await sendTelegram(token, chatId, `<b>${escapeHtml(payload.subject)}</b>\n${escapeHtml(payload.text)}`);
+    await supabaseAdmin.from("notification_log").insert({
+      user_id: userId, channel: "telegram", event: payload.event, recipient: chatId,
+      subject: payload.subject, body: payload.text,
+      status: result.ok ? "sent" : "failed", error: result.error ?? null,
+      metadata: { ...(payload.metadata ?? {}), forced: true } as never,
+    });
+  }
+
+  if (emails.size) {
+    const { enqueueAppEmail, renderAlertEmail } = await import("@/lib/email/enqueue.server");
+    const html = renderAlertEmail(payload.subject, payload.text.split("\n"));
+    for (const to of emails) {
+      const result = await enqueueAppEmail({ to, subject: payload.subject, html, text: payload.text, label: payload.event });
+      await supabaseAdmin.from("notification_log").insert({
+        user_id: userId, channel: "email", event: payload.event, recipient: to,
+        subject: payload.subject, body: payload.text,
+        status: result.ok ? "sent" : result.error === "email_suppressed" ? "skipped" : "failed",
+        error: result.error ?? null,
+        metadata: { ...(payload.metadata ?? {}), forced: true } as never,
+      });
+    }
+  }
 }
 
 function escapeHtml(s: string): string {

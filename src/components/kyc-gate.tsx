@@ -1,3 +1,4 @@
+import { safeHttpUrl } from "@/lib/safe-url";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -65,7 +66,9 @@ export function KycGate({
       const res = await startAdv({
         data: { invoiceId, returnUrl: window.location.href },
       });
-      window.location.href = res.redirectUrl;
+      const next = safeHttpUrl(res.redirectUrl);
+      if (!next) throw new Error("Could not start verification.");
+      window.location.assign(next);
     } catch (err) {
       setReasons([err instanceof Error ? err.message : "Could not start verification."]);
       setBusy(false);
