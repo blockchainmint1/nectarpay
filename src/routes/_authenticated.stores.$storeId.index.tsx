@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useStoreRef } from "@/lib/store-ref";
 import { StoreInfoForm } from "@/components/store/StoreInfoForm";
 import { StoreWalletBalance } from "@/components/store/StoreWalletBalance";
+import { UnmatchedPaymentsCard } from "@/components/store/UnmatchedPaymentsCard";
 
 export const Route = createFileRoute("/_authenticated/stores/$storeId/")({
   head: () => ({
@@ -66,6 +67,8 @@ function StoreDetailPage() {
         </div>
         <StoreWalletBalance storeId={storeId} storeSlug={storeSlug} />
       </div>
+
+      <UnmatchedPaymentsCard storeId={storeId} />
 
       <Section title="Your Store Info" hint="What customers see on the map, receipts and your listing.">
         <StoreInfoForm storeId={storeId} storeSlug={storeSlug} />

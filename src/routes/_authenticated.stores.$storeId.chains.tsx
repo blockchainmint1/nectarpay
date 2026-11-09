@@ -629,9 +629,10 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
             <p className="text-xs text-muted-foreground">
               On: every Ethereum / Base / BSC order gets its own address — best privacy, but each
               one has to be moved to your main address separately (a network fee per address).
-              Off: all EVM orders are paid to your first address, so everything pools in one place
-              and you pay one fee to move it. We tell overlapping orders apart by a tiny unique
-              amount adjustment. Leave it on if you take a lot of orders at once.
+              Off: all EVM orders are paid to your wallet's main address (the first one your wallet
+              shows), so everything pools in one place you can always see. We tell overlapping
+              orders apart by a tiny unique amount tail (under a cent). A payment that doesn't match
+              exactly one order is held on your store page for you to apply — never guessed.
             </p>
           </div>
         </label>
