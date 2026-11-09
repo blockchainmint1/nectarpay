@@ -302,6 +302,13 @@
       "when": 1794247156040,
       "tag": "0042_block_throwaway_signups_and_directory_wallet_rule",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1794248801648,
+      "tag": "0043_evm_single_address_default",
+      "breakpoints": true
     }
   ]
 }

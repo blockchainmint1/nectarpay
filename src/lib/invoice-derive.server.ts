@@ -14,6 +14,7 @@ import {
   deriveTronAddress,
 } from "@/lib/chains/derive.server";
 import { getUsdRate } from "@/lib/rates.functions";
+import { EVM_SHARED_INDEX, applyTail, pickFreeTail, tailOf } from "@/lib/evm-shared-address";
 
 export interface DeriveResult {
   address: string;
@@ -77,9 +78,8 @@ export async function deriveInvoiceAddress(
   }
 
   let address: string;
-  // Index 0 is never handed out or monitored — it's the account's "public"
-  // address (payout hints, wallet UIs, manual sends), so derivation for
-  // invoices always starts at 1.
+  // Rotating derivation starts at 1: index 0 is the account's main address,
+  // used only by single-address EVM mode below (strict amount matching).
   let index = Math.max(1, cfg.next_address_index ?? 0);
   let recycledEvmAddress = false;
   let evmSharedAddress = false;
@@ -88,12 +88,13 @@ export async function deriveInvoiceAddress(
   if (net.kind === "btc-like") {
     address = deriveBtcLikeAddress(xpub, net, index);
   } else if (net.kind === "evm" && !(await evmRotationEnabled(supabaseAdmin, storeId))) {
-    // Rotation switched off by the merchant: every EVM invoice is paid to the
-    // single first receive address (index 1). Cheaper to sweep (one address,
-    // one gas payment), at the cost of address privacy. Concurrent invoices are
-    // told apart by the amount nonce below, same as Solana.
-    index = 1;
-    address = deriveEvmAddress(xpub, net, 1);
+    // Rotation switched off (the default for new stores): every EVM invoice is
+    // paid to the wallet's main address (#0) — the one the merchant's wallet
+    // shows first, so funds are never hidden past a gap limit. Concurrent
+    // invoices are told apart by a unique amount tail and matched strictly
+    // (src/lib/evm-shared-address.ts).
+    index = EVM_SHARED_INDEX;
+    address = deriveEvmAddress(xpub, net, EVM_SHARED_INDEX);
     evmSharedAddress = true;
   } else if (net.kind === "evm") {
     // EVM is account-based — each derived address must be swept individually
@@ -139,7 +140,9 @@ export async function deriveInvoiceAddress(
   const isSharedAddress =
     net.kind === "solana" || (net.kind === "tron" && xpub.startsWith("T")) || evmSharedAddress;
   let cryptoAmount: number;
-  if (isSharedAddress) {
+  if (evmSharedAddress) {
+    cryptoAmount = await applyEvmSharedTail(supabaseAdmin, address, tokenSymbol, baseAmount);
+  } else if (isSharedAddress) {
     cryptoAmount = await applyAmountNonce(
       supabaseAdmin,
       chain,
@@ -265,6 +268,37 @@ async function applyAmountNonce(
 }
 
 /**
+ * Unique amount tail for single-address EVM invoices. Open invoices on the
+ * address with the same token may pay on any EVM chain (stables share one
+ * option across Ethereum/Base/BSC), so tails are reserved across all of them.
+ */
+async function applyEvmSharedTail(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabaseAdmin: any,
+  address: string,
+  tokenSymbol: string | null,
+  baseAmount: number,
+): Promise<number> {
+  const isStable = tokenSymbol != null;
+  const { data: pend } = await supabaseAdmin
+    .from("invoices")
+    .select("crypto_amount, token_symbol")
+    .ilike("address", address)
+    .in("status", ["pending", "detected", "underpaid"])
+    .not("crypto_amount", "is", null);
+  const used = new Set<number>();
+  for (const r of (pend ?? []) as Array<{ crypto_amount: number; token_symbol: string | null }>) {
+    if ((r.token_symbol ?? "").toUpperCase() !== (tokenSymbol ?? "").toUpperCase()) continue;
+    used.add(tailOf(Number(r.crypto_amount), isStable));
+  }
+  const tail = pickFreeTail(used);
+  if (tail < 0) {
+    throw new Error("Too many open payments on this wallet right now — please try again in a few minutes.");
+  }
+  return applyTail(baseAmount, tail, isStable);
+}
+
+/**
  * Find an EVM address from a prior invoice on this store+chain that we can
  * safely hand to a new invoice.
  *
@@ -351,8 +385,9 @@ async function findRecyclableEvmAddress(
 
 
 /**
- * Per-store switch: when off, EVM invoices all use the first receive address
- * (index 1) instead of rotating through derived addresses. Defaults to on.
+ * Per-store switch: when off, EVM invoices all use the main address (#0)
+ * instead of rotating through derived addresses. New stores start with it
+ * off; stores created before the change keep rotating until switched.
  */
 async function evmRotationEnabled(
   admin: { from: (t: string) => any },
