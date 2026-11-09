@@ -105,9 +105,10 @@
 - [x] Remove the Android signing-key helper that printed the key into build logs; remove the outdated package-lock.json.
 - [x] Wallet-key change alerts can't be muted (sign-in email + every linked Telegram) and admins get a copy.
 - [ ] Bobby: check GitHub Actions history for "Generate Android Keystore" runs; delete those logs/artifacts and decide on rotating the APK key.
-- [ ] Decide: take platform admins out of wallet-key writes (awaiting Bobby).
-- [ ] Decide: emailed code for every manual wallet-key paste, plus enforced MFA on the server for users who turned it on (awaiting Bobby).
-- [ ] Decide: cooling-off period before a new wallet key takes payments (awaiting Bobby).
-- [ ] Monitoring: audit + admin alerts for webhook URL/secret changes, admin role grants, new API keys/terminals.
+- [x] Wallet keys can only be changed through the server (browser direct writes removed); owner/full-access team/admin only. Admins kept, but always need the emailed code.
+- [x] Emailed 6-digit code for every wallet-key change except a store's very first key; 2-step login enforced by the database for users who turned it on. Code prompt verified in browser (code sent, nothing saved without it).
+- [x] 4-hour wait before a replacement key takes payments; old wallet keeps getting paid, owner can Cancel. Verified hand-over in an undone practice run and Cancel in the browser.
+- [x] Monitoring: unmutable alerts to owner + admins for webhook changes, new platform/store admins, new API keys, new terminals, code lockouts; webhook alert verified (no secrets in it).
+- [ ] Real end-to-end replacement with an emailed code typed in, and real alert email arrival: needs Bobby to try it on a test store.
 - [ ] Still open from earlier report: Lightning sweep race, resettable free trial, Capacitor upgrade check.
 - [ ] Solana amount rounding overcharge (e.g. $5 SOL sale asked 0.0649 SOL ≈ $5.63).
