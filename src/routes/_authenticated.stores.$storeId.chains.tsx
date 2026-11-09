@@ -27,6 +27,7 @@ import { getStoreBtcPayoutAddress } from "@/lib/chain-payout.functions";
 import { qrToDataURL } from "@/lib/qr";
 import { VaultLinkDialog } from "@/components/VaultLinkDialog";
 import { WalletChangeHistory, useWalletChangeHistory, walletHistoryDate } from "@/components/WalletChangeHistory";
+import { PendingKeyNotice, useKeyChangeSave } from "@/components/store/KeyChangeStepUp";
 // Inlined client-safe validators (mirror src/lib/chains/derive.server.ts).
 function isXpubLike(s: string): boolean {
   return /^([xtuvyz]pub)[1-9A-HJ-NP-Za-km-z]{100,120}$/.test(s.trim());
@@ -173,6 +174,9 @@ type Row = {
   xpub_or_address: string;
   enabled: boolean;
   stables: string[];
+  /** Replacement key waiting out the 4-hour safety delay. */
+  pending_activates_at: string | null;
+  pending_key: string | null;
 };
 
 // Standard setup defaults: TEXITcoin is enabled by default and Texas Stable
@@ -188,6 +192,8 @@ function emptyRow(chain: ChainKey): Row {
     xpub_or_address: "",
     enabled: DEFAULT_ENABLED[chain] ?? false,
     stables: [...(DEFAULT_STABLES[chain] ?? [])],
+    pending_activates_at: null,
+    pending_key: null,
   };
 }
 
@@ -201,7 +207,7 @@ function ChainsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("chain_configs")
-        .select("id, chain, xpub, xpub_or_address, enabled, stables")
+        .select("id, chain, xpub, xpub_or_address, enabled, stables, pending_xpub, pending_xpub_or_address, pending_activates_at")
         .eq("store_id", storeId);
       if (error) throw error;
       return data ?? [];
@@ -252,6 +258,8 @@ function ChainsPage() {
         xpub_or_address: r.xpub_or_address ?? "",
         enabled: r.enabled,
         stables: (r.stables ?? []) as string[],
+        pending_activates_at: r.pending_activates_at ?? null,
+        pending_key: r.pending_xpub || r.pending_xpub_or_address || null,
       };
     }
     setRows(next as Record<ChainKey, Row>);
