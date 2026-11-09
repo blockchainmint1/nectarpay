@@ -316,6 +316,13 @@
       "when": 1794249615461,
       "tag": "0044_invoice_redirect_url_http_only",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1794249689822,
+      "tag": "0045_validate_invoice_redirect_url_http_only",
+      "breakpoints": true
     }
   ]
 }

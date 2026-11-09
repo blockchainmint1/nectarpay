@@ -1,0 +1,1 @@
+ALTER TABLE public.invoices VALIDATE CONSTRAINT invoices_redirect_url_http_only;
