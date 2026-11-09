@@ -961,6 +961,7 @@ function LightningSection({
   btcXpub: string;
 }) {
   const [saving, setSaving] = useState(false);
+  const { save: saveKey, dialog } = useKeyChangeSave(storeId);
   const [prefilling, setPrefilling] = useState(false);
   const derive = useServerFn(getStoreBtcPayoutAddress);
   const address = row.xpub_or_address ?? "";
@@ -1005,28 +1006,10 @@ function LightningSection({
     }
     setSaving(true);
     try {
-      if (row.id) {
-        const { error } = await supabase
-          .from("chain_configs")
-          .update({ enabled: row.enabled, xpub_or_address: v, xpub: null })
-          .eq("id", row.id);
-        if (error) throw new Error(error.message);
-      } else {
-        const { error } = await supabase.from("chain_configs").upsert(
-          {
-            store_id: storeId,
-            chain: "lightning",
-            network: "mainnet",
-            xpub: null,
-            xpub_or_address: v,
-            enabled: row.enabled,
-            stables: row.stables,
-          },
-          { onConflict: "store_id,chain" },
-        );
-        if (error) throw new Error(error.message);
-      }
-      toast.success("Lightning settings saved.");
+      // The payout address decides where Lightning money goes: same rules as wallet keys.
+      const res = await saveKey({ storeId, chain: "lightning", value: v, enabled: row.enabled, stables: [] });
+      if (!res) return;
+      if (res.status === "saved") toast.success("Lightning settings saved.");
       onSaved();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Save failed.");
