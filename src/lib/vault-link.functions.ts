@@ -37,7 +37,9 @@ export const linkVaultPairing = createServerFn({ method: "POST" })
     Input.extend({ verificationCode: z.string().regex(/^\d{6}$/, "Enter the 6-digit code from your email.") }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const store = await assertOwnStore(context.supabase, data.storeId);
+    // Full access + 2-step login (when enabled); the code below is always required.
+    const { authorizeKeyChange } = await import("@/lib/chain-keys.server");
+    const { store } = await authorizeKeyChange(context.supabase, context.userId, data.storeId);
     const parsed = parseVaultPairing(data.pairing);
     await previewAddresses(parsed.keys); // refuse keys we can't derive from
 
@@ -69,5 +71,13 @@ export const linkVaultPairing = createServerFn({ method: "POST" })
       if (error) throw new Error(`Could not save ${chain.toUpperCase()}: ${error.message}`);
       linked.push(chain);
     }
-    return { linked, evmAddressOnly: parsed.evmAddressOnly };
+    // Replacement keys wait (DB cooling-off); report when they take over.
+    const { data: pendingRows } = await supabaseAdmin
+      .from("chain_configs")
+      .select("chain, pending_activates_at")
+      .eq("store_id", store.id)
+      .in("chain", linked)
+      .not("pending_activates_at", "is", null);
+    const scheduled = (pendingRows ?? []).map((r) => ({ chain: r.chain as string, activatesAt: r.pending_activates_at as string }));
+    return { linked, evmAddressOnly: parsed.evmAddressOnly, scheduled };
   });
