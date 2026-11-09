@@ -323,6 +323,13 @@
       "when": 1794249689822,
       "tag": "0045_validate_invoice_redirect_url_http_only",
       "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1794250130171,
+      "tag": "0046_wallet_key_cooloff_mfa_security_events",
+      "breakpoints": true
     }
   ]
 }
