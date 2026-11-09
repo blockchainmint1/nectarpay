@@ -36,6 +36,8 @@ export async function deriveInvoiceAddress(
   // Lightning has no derived address — we ask the shared node for a BOLT-11
   // payment request and store that string where an address would go.
   if (chain === "lightning") {
+    const { LIGHTNING_ENABLED } = await import("@/lib/lightning-switch");
+    if (!LIGHTNING_ENABLED) throw new Error("Lightning payments are not available.");
     const { createLightningInvoice } = await import("@/lib/lightning.server");
     const ln = await createLightningInvoice(storeId, fiatAmount, invoiceId);
     const { data: lnCfg } = await supabaseAdmin

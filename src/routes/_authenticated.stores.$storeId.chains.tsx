@@ -934,7 +934,7 @@ function ChainCard({
       </div>
       {dialog}
 
-      {lightning && (
+      {LIGHTNING_ENABLED && lightning && (
         <LightningSection
           storeId={storeId}
           row={lightning.row}

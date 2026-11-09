@@ -4,6 +4,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { requireCronAuth } from "@/lib/cron-auth.server";
 
 async function run() {
+  const { LIGHTNING_ENABLED } = await import("@/lib/lightning-switch");
+  if (!LIGHTNING_ENABLED) return { skipped: "lightning_disabled" };
   const { runLightningWatcherTick, runLightningSweepTick } = await import(
     "@/lib/lightning.server"
   );
