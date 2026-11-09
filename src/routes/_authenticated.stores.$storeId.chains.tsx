@@ -432,6 +432,7 @@ function ZcuCard({
           <Switch id="enabled-zcu" checked={enabled} disabled={saving} onCheckedChange={toggle} />
         </div>
       </div>
+      {dialog}
     </div>
   );
 }
@@ -664,6 +665,7 @@ function ChainCard({
   lightning?: { row: Row; onChange: (r: Row) => void };
 }) {
   const [saving, setSaving] = useState(false);
+  const { save: saveKey, dialog } = useKeyChangeSave(storeId);
   const [editing, setEditing] = useState(false);
   const [copied, setCopied] = useState(false);
   const persisted = !!row.id;
@@ -739,19 +741,8 @@ function ChainCard({
     if (!v && meta.inputKind === "btc-address") {
       setSaving(true);
       try {
-        const payload = {
-          store_id: storeId,
-          chain: meta.key,
-          network: "mainnet",
-          xpub: null,
-          xpub_or_address: "",
-          enabled: row.enabled,
-          stables: row.stables,
-        };
-        const { error } = await supabase
-          .from("chain_configs")
-          .upsert(payload, { onConflict: "store_id,chain" });
-        if (error) throw new Error(error.message || "Save failed.");
+        const res = await saveKey({ storeId, chain: meta.key, value: "", enabled: row.enabled, stables: row.stables });
+        if (!res) return;
         toast.success(`${meta.name} saved — payouts will go to fresh addresses from your linked Bitcoin wallet.`);
         onSaved();
       } catch (e) {
@@ -773,25 +764,10 @@ function ChainCard({
     }
     setSaving(true);
     try {
-      const payload = {
-        store_id: storeId,
-        chain: meta.key,
-        network: "mainnet",
-        xpub: meta.inputKind === "address" || meta.inputKind === "btc-address" ? null : (isXpubLike(v) ? v : null),
-        xpub_or_address: v,
-        enabled: row.enabled,
-        stables: row.stables,
-      };
-
-
-      const { error } = await supabase
-        .from("chain_configs")
-        .upsert(payload, { onConflict: "store_id,chain" });
-      if (error) {
-        console.error("chain_configs upsert failed", { error, payload });
-        throw new Error(error.message || error.details || error.hint || "Save failed.");
-      }
-      toast.success(`${meta.name} saved.`);
+      // Wallet keys go through the server: emailed code, 2-step login, 4-hour wait.
+      const res = await saveKey({ storeId, chain: meta.key, value: v, enabled: row.enabled, stables: row.stables });
+      if (!res) return;
+      if (res.status === "saved") toast.success(`${meta.name} saved.`);
       setEditing(false);
       onSaved();
     } catch (e) {
@@ -940,12 +916,23 @@ function ChainCard({
         </div>
       )}
 
+      {row.pending_activates_at && (
+        <PendingKeyNotice
+          storeId={storeId}
+          chain={meta.key}
+          activatesAt={row.pending_activates_at}
+          pendingKey={row.pending_key}
+          onChanged={onSaved}
+        />
+      )}
+
       <div className="mt-4 flex justify-end">
         <Button onClick={onSave} disabled={saving}>
           <Save className="mr-2 h-4 w-4" />
           {saving ? "Saving…" : "Save"}
         </Button>
       </div>
+      {dialog}
 
       {lightning && (
         <LightningSection
