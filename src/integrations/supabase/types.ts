@@ -2956,6 +2956,81 @@ export type Database = {
         }
         Relationships: []
       }
+      unmatched_payments: {
+        Row: {
+          address: string
+          amount: number
+          block_height: number | null
+          block_time: string | null
+          chain: string
+          confirmations: number
+          created_at: string
+          dismissed_at: string | null
+          id: string
+          reason: string
+          resolved_at: string | null
+          resolved_by: string | null
+          resolved_invoice_id: string | null
+          store_id: string
+          token_symbol: string | null
+          tx_hash: string
+          updated_at: string
+        }
+        Insert: {
+          address: string
+          amount: number
+          block_height?: number | null
+          block_time?: string | null
+          chain: string
+          confirmations?: number
+          created_at?: string
+          dismissed_at?: string | null
+          id?: string
+          reason?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          resolved_invoice_id?: string | null
+          store_id: string
+          token_symbol?: string | null
+          tx_hash: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string
+          amount?: number
+          block_height?: number | null
+          block_time?: string | null
+          chain?: string
+          confirmations?: number
+          created_at?: string
+          dismissed_at?: string | null
+          id?: string
+          reason?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          resolved_invoice_id?: string | null
+          store_id?: string
+          token_symbol?: string | null
+          tx_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unmatched_payments_resolved_invoice_id_fkey"
+            columns: ["resolved_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unmatched_payments_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       usage_counters: {
         Row: {
           created_at: string
