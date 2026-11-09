@@ -51,6 +51,7 @@ export async function dispatchSecurityEvents(): Promise<{ processed: number }> {
 
     const recipients = new Set<string>(adminIds);
     if (store && ownerShouldHear(r.kind)) recipients.add(store.owner_id);
+    let delivered = 0;
     for (const userId of recipients) {
       try {
         await notifyUser(userId, {
@@ -60,9 +61,14 @@ export async function dispatchSecurityEvents(): Promise<{ processed: number }> {
           force: true,
           metadata: { security_event_id: r.id, kind: r.kind, store_id: r.store_id },
         });
+        delivered++;
       } catch (e) {
         console.error("[security-events] alert failed", { id: r.id, message: (e as Error).message });
       }
+    }
+    // Nobody reached (e.g. email outage): release the claim so the next tick retries.
+    if (recipients.size > 0 && delivered === 0) {
+      await supabaseAdmin.from("security_events").update({ notified_at: null }).eq("id", r.id);
     }
   }
   return { processed: rows.length };
