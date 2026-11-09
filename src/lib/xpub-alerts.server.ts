@@ -2,12 +2,53 @@
 // been notified yet. Called from the watcher cron tick.
 
 import { notifyUser } from "@/lib/notify.server";
+import { KEY_COOL_OFF_HOURS } from "@/lib/chain-key-input";
 
 function mask(s: string | null | undefined): string {
   const v = (s ?? "").trim();
   if (!v) return "(empty)";
   if (v.length <= 12) return v;
   return `${v.slice(0, 8)}…${v.slice(-6)}`;
+}
+
+/** Alert wording for wallet-key audit rows (immediate, scheduled, activated, cancelled). */
+export function describeKeyChange(r: {
+  chainLabel: string;
+  storeName: string;
+  action: string;
+  source: string | null;
+  oldVal: string | null;
+  newVal: string | null;
+  createdAt: string;
+}): { subject: string; lines: string[] } {
+  const base = [`Store: ${r.storeName}`, `Chain: ${r.chainLabel}`];
+  if (r.action === "scheduled") {
+    const at = new Date(new Date(r.createdAt).getTime() + KEY_COOL_OFF_HOURS * 3_600_000);
+    return {
+      subject: `⚠️ ${r.chainLabel} wallet key change REQUESTED on "${r.storeName}"`,
+      lines: [...base, `Current: ${mask(r.oldVal)}`, `Requested: ${mask(r.newVal)}`,
+        `Takes effect: ${at.toUTCString()} (sales keep paying the current wallet until then)`, "",
+        "If this wasn't you, sign in now and press Cancel on the Wallets & Chains page."],
+    };
+  }
+  if (r.action === "cancelled") {
+    return {
+      subject: `${r.chainLabel} wallet key change cancelled on "${r.storeName}"`,
+      lines: [...base, `Kept: ${mask(r.oldVal)}`, `Cancelled: ${mask(r.newVal)}`],
+    };
+  }
+  if (r.source === "scheduled_change_activated") {
+    return {
+      subject: `⚠️ ${r.chainLabel} wallet key change is now ACTIVE on "${r.storeName}"`,
+      lines: [...base, `Previous: ${mask(r.oldVal)}`, `Now paying: ${mask(r.newVal)}`, "",
+        "If this wasn't you, sign in immediately and change it back."],
+    };
+  }
+  const verb = r.action === "insert" ? "set" : "CHANGED";
+  const lines = [...base, `Action: ${r.action}`];
+  if (r.action === "update") lines.push(`Previous: ${mask(r.oldVal)}`);
+  lines.push(`New: ${mask(r.newVal)}`, "", "If this wasn't you, sign in immediately and revert it.");
+  return { subject: `⚠️ ${r.chainLabel} xpub ${verb} on "${r.storeName}"`, lines };
 }
 
 let adminIdCache: string[] | null = null;
@@ -25,7 +66,7 @@ export async function dispatchXpubChangeAlerts(): Promise<{ processed: number; s
 
   const { data: rows, error } = await supabaseAdmin
     .from("chain_config_audit")
-    .select("id, store_id, chain, action, old_xpub, new_xpub, old_xpub_or_address, new_xpub_or_address, created_at")
+    .select("id, store_id, chain, action, source, old_xpub, new_xpub, old_xpub_or_address, new_xpub_or_address, created_at")
     .is("notified_at", null)
     .order("created_at", { ascending: true })
     .limit(50);
@@ -52,19 +93,15 @@ export async function dispatchXpubChangeAlerts(): Promise<{ processed: number; s
 
     if (owner) {
       const chainLabel = String(r.chain).toUpperCase();
-      const verb = r.action === "insert" ? "set" : "CHANGED";
-      const subject = `⚠️ ${chainLabel} xpub ${verb} on "${owner.name}"`;
-      const oldVal = r.old_xpub ?? r.old_xpub_or_address;
-      const newVal = r.new_xpub ?? r.new_xpub_or_address;
-      const lines = [
-        `Store: ${owner.name}`,
-        `Chain: ${chainLabel}`,
-        `Action: ${r.action}`,
-      ];
-      if (r.action === "update") lines.push(`Previous: ${mask(oldVal)}`);
-      lines.push(`New: ${mask(newVal)}`);
-      lines.push("");
-      lines.push("If this wasn't you, sign in immediately and revert it.");
+      const { subject, lines } = describeKeyChange({
+        chainLabel,
+        storeName: owner.name,
+        action: r.action,
+        source: r.source,
+        oldVal: r.old_xpub ?? r.old_xpub_or_address,
+        newVal: r.new_xpub ?? r.new_xpub_or_address,
+        createdAt: r.created_at,
+      });
 
       const metadata = { store_id: r.store_id, chain: r.chain, action: r.action, audit_id: r.id };
       // Wallet-key changes can't be muted: the owner hears on every channel,
