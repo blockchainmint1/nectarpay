@@ -337,6 +337,13 @@
       "when": 1794251200644,
       "tag": "0047_guard_invoice_user_writes",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1794251379049,
+      "tag": "0048_migration",
+      "breakpoints": true
     }
   ]
 }

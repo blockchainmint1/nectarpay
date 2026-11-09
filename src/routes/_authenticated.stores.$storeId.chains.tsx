@@ -28,6 +28,7 @@ import { qrToDataURL } from "@/lib/qr";
 import { VaultLinkDialog } from "@/components/VaultLinkDialog";
 import { WalletChangeHistory, useWalletChangeHistory, walletHistoryDate } from "@/components/WalletChangeHistory";
 import { PendingKeyNotice, useKeyChangeSave } from "@/components/store/KeyChangeStepUp";
+import { LIGHTNING_ENABLED } from "@/lib/lightning-switch";
 // Inlined client-safe validators (mirror src/lib/chains/derive.server.ts).
 function isXpubLike(s: string): boolean {
   return /^([xtuvyz]pub)[1-9A-HJ-NP-Za-km-z]{100,120}$/.test(s.trim());
@@ -934,7 +935,7 @@ function ChainCard({
       </div>
       {dialog}
 
-      {lightning && (
+      {LIGHTNING_ENABLED && lightning && (
         <LightningSection
           storeId={storeId}
           row={lightning.row}
