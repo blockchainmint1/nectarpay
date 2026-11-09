@@ -669,12 +669,14 @@ function PayingFrame({
 
 function SuccessFrame({ inv, txs, store }: { inv: Invoice; txs: Tx[]; store: { name: string; website: string | null } | null }) {
   const tx = txs[0];
+  // Never trust the stored link: only plain web links may be followed.
+  const redirectUrl = safeHttpUrl(inv.redirectUrl);
   useEffect(() => {
-    if (inv.redirectUrl) {
-      const t = setTimeout(() => { window.location.href = inv.redirectUrl!; }, 4000);
+    if (redirectUrl) {
+      const t = setTimeout(() => { window.location.assign(redirectUrl); }, 4000);
       return () => clearTimeout(t);
     }
-  }, [inv.redirectUrl]);
+  }, [redirectUrl]);
 
   return (
     <div className="relative p-8 text-center md:p-12">
@@ -710,10 +712,10 @@ function SuccessFrame({ inv, txs, store }: { inv: Invoice; txs: Tx[]; store: { n
         </p>
       )}
 
-      {inv.redirectUrl && (
+      {redirectUrl && (
         <div className="mt-6">
           <Button asChild>
-            <a href={inv.redirectUrl}>
+            <a href={redirectUrl} rel="noopener noreferrer">
               Continue <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
             </a>
           </Button>
