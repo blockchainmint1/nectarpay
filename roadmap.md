@@ -118,6 +118,6 @@
 ## Lightning node wind-down (Nov 10 2026)
 - [x] Closed the ACINQ channel cooperatively (closing tx 9cb9a2aa…8ffb, ~14,468 sats back to node wallet).
 - [x] Sent 1,472,089 sats to Bobby's address bc1qf0xln3lctddltcgtpenqyj6s36w4smkgtcjrj0 (tx 4eacee1e…1bab).
-- [ ] Sweep the last ~14,468 sats (channel close output + released reserve) to the same address once close tx 9cb9a2aa… confirms (waiting on a bitcoin block).
-- [ ] Bobby: write down / confirm the 24-word seed is safe, then destroy the droplet in DigitalOcean after the sweep confirms.
-- [ ] After the droplet is gone: remove the node settings (LND_REST_URL / LND_MACAROON_HEX) and retire Admin → Lightning.
+- [x] Close confirmed; sent the last 14,171 sats to the same address (tx 7825b2f6…f9d9). Node wallet is at 0.
+- [x] Bobby confirmed he has the 24-word seed.
+- [ ] Bobby: once tx 7825b2f6… confirms, stop LND, power off, snapshot, then destroy the droplet (copy/paste steps given Nov 10). Kept node settings and Admin → Lightning so it can be revived later.
