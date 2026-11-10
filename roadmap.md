@@ -114,3 +114,9 @@
 - [ ] Real end-to-end replacement with an emailed code typed in, and real alert email arrival: needs Bobby to try it on a test store.
 - [ ] Still open from earlier report: Lightning sweep race, resettable free trial, Capacitor upgrade check.
 - [ ] Solana amount rounding overcharge (e.g. $5 SOL sale asked 0.0649 SOL ≈ $5.63).
+
+## Lightning node wind-down (Nov 10 2026)
+- [x] Closed the ACINQ channel cooperatively (closing tx 9cb9a2aa…8ffb, ~14,468 sats back to node wallet).
+- [ ] Sweep all node bitcoin to Bobby's vault (awaiting Bobby's confirmation of the destination address; send after channel close confirms).
+- [ ] Bobby: write down / confirm the 24-word seed is safe, then destroy the droplet in DigitalOcean after the sweep confirms.
+- [ ] After the droplet is gone: remove the node settings (LND_REST_URL / LND_MACAROON_HEX) and retire Admin → Lightning.
