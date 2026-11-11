@@ -60,7 +60,6 @@ import { Route as DocsTapToPayTangemRouteImport } from './routes/docs.tap-to-pay
 import { Route as DocsWalletSetupRouteImport } from './routes/docs.wallet-setup'
 import { Route as DocsApiKeysRouteImport } from './routes/docs_.api-keys'
 import { Route as FastSuccessRouteImport } from './routes/fast_.success'
-import { Route as FastTestRouteImport } from './routes/fast_.test'
 import { Route as GoKitRouteImport } from './routes/go.kit'
 import { Route as IInvoiceIdRouteImport } from './routes/i.$invoiceId'
 import { Route as IntegrationsIndexRouteImport } from './routes/integrations.index'
@@ -445,11 +444,6 @@ const DocsApiKeysRoute = DocsApiKeysRouteImport.update({
 const FastSuccessRoute = FastSuccessRouteImport.update({
   id: '/fast_/success',
   path: '/fast/success',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FastTestRoute = FastTestRouteImport.update({
-  id: '/fast_/test',
-  path: '/fast/test',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GoKitRoute = GoKitRouteImport.update({
@@ -1224,7 +1218,6 @@ export interface FileRoutesByFullPath {
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/docs/api-keys': typeof DocsApiKeysRoute
   '/fast/success': typeof FastSuccessRoute
-  '/fast/test': typeof FastTestRoute
   '/go/kit': typeof GoKitRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/prestashop': typeof IntegrationsPrestashopRoute
@@ -1402,7 +1395,6 @@ export interface FileRoutesByTo {
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/docs/api-keys': typeof DocsApiKeysRoute
   '/fast/success': typeof FastSuccessRoute
-  '/fast/test': typeof FastTestRoute
   '/go/kit': typeof GoKitRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/prestashop': typeof IntegrationsPrestashopRoute
@@ -1583,7 +1575,6 @@ export interface FileRoutesById {
   '/docs/wallet-setup': typeof DocsWalletSetupRoute
   '/docs_/api-keys': typeof DocsApiKeysRoute
   '/fast_/success': typeof FastSuccessRoute
-  '/fast_/test': typeof FastTestRoute
   '/go/kit': typeof GoKitRoute
   '/i/$invoiceId': typeof IInvoiceIdRoute
   '/integrations/prestashop': typeof IntegrationsPrestashopRoute
@@ -1767,7 +1758,6 @@ export interface FileRouteTypes {
     | '/docs/wallet-setup'
     | '/docs/api-keys'
     | '/fast/success'
-    | '/fast/test'
     | '/go/kit'
     | '/i/$invoiceId'
     | '/integrations/prestashop'
@@ -1945,7 +1935,6 @@ export interface FileRouteTypes {
     | '/docs/wallet-setup'
     | '/docs/api-keys'
     | '/fast/success'
-    | '/fast/test'
     | '/go/kit'
     | '/i/$invoiceId'
     | '/integrations/prestashop'
@@ -2125,7 +2114,6 @@ export interface FileRouteTypes {
     | '/docs/wallet-setup'
     | '/docs_/api-keys'
     | '/fast_/success'
-    | '/fast_/test'
     | '/go/kit'
     | '/i/$invoiceId'
     | '/integrations/prestashop'
@@ -2296,7 +2284,6 @@ export interface RootRouteChildren {
   DevTangemTestRoute: typeof DevTangemTestRoute
   DocsApiKeysRoute: typeof DocsApiKeysRoute
   FastSuccessRoute: typeof FastSuccessRoute
-  FastTestRoute: typeof FastTestRoute
   GoKitRoute: typeof GoKitRoute
   IInvoiceIdRoute: typeof IInvoiceIdRoute
   IntegrationsPrestashopRoute: typeof IntegrationsPrestashopRoute
@@ -2670,13 +2657,6 @@ declare module '@tanstack/react-router' {
       path: '/fast/success'
       fullPath: '/fast/success'
       preLoaderRoute: typeof FastSuccessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/fast_/test': {
-      id: '/fast_/test'
-      path: '/fast/test'
-      fullPath: '/fast/test'
-      preLoaderRoute: typeof FastTestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/go/kit': {
@@ -4081,7 +4061,6 @@ const rootRouteChildren: RootRouteChildren = {
   DevTangemTestRoute: DevTangemTestRoute,
   DocsApiKeysRoute: DocsApiKeysRoute,
   FastSuccessRoute: FastSuccessRoute,
-  FastTestRoute: FastTestRoute,
   GoKitRoute: GoKitRoute,
   IInvoiceIdRoute: IInvoiceIdRoute,
   IntegrationsPrestashopRoute: IntegrationsPrestashopRoute,
