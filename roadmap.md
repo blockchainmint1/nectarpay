@@ -120,4 +120,5 @@
 - [x] Sent 1,472,089 sats to Bobby's address bc1qf0xln3lctddltcgtpenqyj6s36w4smkgtcjrj0 (tx 4eacee1e…1bab).
 - [x] Close confirmed; sent the last 14,171 sats to the same address (tx 7825b2f6…f9d9). Node wallet is at 0.
 - [x] Bobby confirmed he has the 24-word seed.
-- [ ] Bobby: once tx 7825b2f6… confirms, stop LND, power off, snapshot, then destroy the droplet (copy/paste steps given Nov 10). Kept node settings and Admin → Lightning so it can be revived later.
+- [x] Bobby stopped LND, powered off, snapshotted and destroyed the droplet (Nov 11). Verified from here: SSH closed, P2P port closed, node REST unreachable — nothing is running or billing. Node settings and Admin → Lightning kept so it can be revived later from the snapshot plus the 24-word seed.
+- [ ] Optional cleanup: node-btc.honest.money still points at the dead droplet IP 157.245.49.73 in honest.money's DNS. Harmless, but worth deleting (or repointing when a new node is made).
