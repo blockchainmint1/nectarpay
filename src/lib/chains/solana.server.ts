@@ -83,6 +83,8 @@ export async function getSolanaCreditsTo(
   net: SolanaNetwork,
   key: string,
   address: string,
+  /** Skip signatures whose block time is older than this (ms); they cannot pay an open sale. */
+  notBeforeMs = 0,
 ): Promise<SolanaCredit[]> {
   const url = net.rpcUrl(key);
   const stableMints = new Set(net.stables.map((s) => s.mint));
@@ -94,6 +96,9 @@ export async function getSolanaCreditsTo(
   const credits: SolanaCredit[] = [];
   for (const s of sigs) {
     if (s.err) continue;
+    // getSignaturesForAddress is newest-first, so once we pass the cutoff
+    // everything after is older too — stop instead of fetching each one.
+    if (notBeforeMs > 0 && s.blockTime != null && s.blockTime * 1000 < notBeforeMs) break;
     const tx = await rpc<SolTxJson | null>(url, "getTransaction", [
       s.signature,
       { encoding: "jsonParsed", maxSupportedTransactionVersion: 0, commitment: "confirmed" },

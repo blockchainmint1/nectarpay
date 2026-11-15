@@ -13,6 +13,7 @@ import { getOmniToken } from "./chains/networks";
 import { getBlockNumber, getTransfersTo } from "./chains/evm.server";
 import { getTronBlockNumber, getTronTransfersTo } from "./chains/tron.server";
 import { getSolanaSlot, getSolanaCreditsTo } from "./chains/solana.server";
+import { planOpenAddressScans } from "./watcher-scan-plan";
 import { notifyUser } from "./notify.server";
 import { getUsdRate } from "./rates.functions";
 import { identifyEvmAsset } from "./chains/evm-asset";
@@ -1094,9 +1095,18 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           .from("derived_addresses")
           .select("address")
           .in("chain_config_id", configList.map((c) => c.id));
-        r.addresses = addrs?.length ?? 0;
+        // Only wallets with an open Tron sale can be paid; skip the rest.
+        const { data: tronOpen } = await supabaseAdmin
+          .from("invoices")
+          .select("address, created_at")
+          .eq("chain", "tron")
+          .in("store_id", configList.map((c) => c.store_id))
+          .in("status", ["pending", "detected", "underpaid"])
+          .not("address", "is", null);
+        const tronPlan = planOpenAddressScans((addrs ?? []).map((a) => a.address), tronOpen ?? [], PRE_INVOICE_GRACE_MS);
+        r.addresses = tronPlan.size;
 
-        for (const a of addrs ?? []) {
+        for (const a of (addrs ?? []).filter((x) => tronPlan.has(x.address))) {
           const credits = await getTronTransfersTo(net, key, a.address).catch(() => []);
           r.credits += credits.length;
           for (const t of credits) {
@@ -1212,10 +1222,20 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           .from("derived_addresses")
           .select("address, store_id")
           .in("chain_config_id", configList.map((c) => c.id));
-        r.addresses = addrs?.length ?? 0;
+        // Only wallets with an open Solana sale can be paid; each scan costs
+        // one getSignaturesForAddress plus a getTransaction per signature.
+        const { data: solOpen } = await supabaseAdmin
+          .from("invoices")
+          .select("address, created_at")
+          .eq("chain", "sol")
+          .in("store_id", configList.map((c) => c.store_id))
+          .in("status", ["pending", "detected", "underpaid"])
+          .not("address", "is", null);
+        const solPlan = planOpenAddressScans((addrs ?? []).map((a) => a.address), solOpen ?? [], PRE_INVOICE_GRACE_MS);
+        r.addresses = solPlan.size;
 
-        for (const a of addrs ?? []) {
-          const credits = await getSolanaCreditsTo(net, key, a.address).catch(() => []);
+        for (const a of (addrs ?? []).filter((x) => solPlan.has(x.address))) {
+          const credits = await getSolanaCreditsTo(net, key, a.address, solPlan.get(a.address) ?? 0).catch(() => []);
           r.credits += credits.length;
           for (const c of credits) {
             // Match priority: memo (invoice id prefix) within this store, then
