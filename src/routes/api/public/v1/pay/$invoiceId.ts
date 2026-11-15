@@ -96,7 +96,7 @@ export const Route = createFileRoute("/api/public/v1/pay/$invoiceId")({
           const nonce = url.searchParams.get("t") ?? "";
           const raw = await request.json().catch(() => null);
           const v = SelectBody.safeParse(raw);
-          if (!v.success) return json({ error: v.error.errors[0]?.message ?? "Bad body" }, 400);
+          if (!v.success) return json({ error: v.error.issues[0]?.message ?? "Bad body" }, 400);
 
           const [chainRaw, tokenRaw] = v.data.option.split(":");
           const chain = chainRaw.toLowerCase();

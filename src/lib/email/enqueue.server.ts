@@ -212,7 +212,10 @@ function detailRow(label: string, value: string): string {
 }
 
 /** Branded security email for the wallet-key step-up code. */
-export function renderWalletLinkVerificationEmail(storeName: string, code: string): string {
+export function renderWalletLinkVerificationEmail(storeName: string, code: string, requestedBy: string | null = null): string {
+  const intro = requestedBy
+    ? `A team member (<strong style="color:#0D1B33;">${escapeHtml(requestedBy)}</strong>) is asking to change where payments go for <strong style="color:#0D1B33;">${escapeHtml(storeName)}</strong>. Only give them this code if you approve the change.`
+    : `Enter this one-time code in NectarPay to approve new wallet keys for <strong style="color:#0D1B33;">${escapeHtml(storeName)}</strong>.`;
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:#2B3242;">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Use ${escapeHtml(code)} to confirm the wallet change for ${escapeHtml(storeName)}. Expires in 10 minutes.</div>
@@ -225,7 +228,7 @@ export function renderWalletLinkVerificationEmail(storeName: string, code: strin
       <tr><td style="padding:36px 32px 30px;background:#ffffff;">
         <div style="font-size:12px;line-height:1.4;font-weight:800;letter-spacing:1.5px;color:#E8880C;">WALLET SECURITY</div>
         <h1 style="margin:8px 0 10px;font-size:30px;line-height:1.15;color:#0D1B33;">Confirm your wallet change</h1>
-        <p style="margin:0 0 24px;font-size:16px;line-height:1.55;color:#4B5563;">Enter this one-time code in NectarPay to approve new wallet keys for <strong style="color:#0D1B33;">${escapeHtml(storeName)}</strong>.</p>
+        <p style="margin:0 0 24px;font-size:16px;line-height:1.55;color:#4B5563;">${intro}</p>
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;background:#FFF8E8;border:1px solid #F2D7A3;border-radius:10px;">
           <tr><td align="center" style="padding:24px 16px;">
             <div style="font-size:12px;font-weight:800;letter-spacing:1.5px;color:#B96A00;">YOUR CONFIRMATION CODE</div>

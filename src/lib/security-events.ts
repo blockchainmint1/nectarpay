@@ -7,7 +7,9 @@ export type SecurityEventKind =
   | "store_admin_added"
   | "api_key_created"
   | "terminal_paired"
-  | "code_lockout";
+  | "code_lockout"
+  | "payout_address_changed"
+  | "payout_address_cancelled";
 
 export interface SecurityEventRow {
   kind: string;
@@ -62,6 +64,29 @@ export function describeSecurityEvent(
       return {
         subject: `⚠️ Wallet-key code guessed wrong 5 times on ${store}`,
         lines: [`Account: ${who}`, when, "", "Someone tried to change this store's wallet keys and failed the emailed code. The code is now locked."],
+      };
+    case "payout_address_changed":
+      return d.scheduled
+        ? {
+            subject: `⚠️ Tap-to-pay payout address change on ${store}`,
+            lines: [
+              `Requested by: ${who}`,
+              `Current: ${s(d.old_address) ?? "(none)"}`,
+              `New: ${s(d.new_address) ?? "(none)"}`,
+              `Takes over: ${s(d.activates_at) ? new Date(String(d.activates_at)).toUTCString() : "in 4 hours"}`,
+              when,
+              "",
+              "Tap-to-pay USDC keeps going to the current address until then. If this wasn't you, sign in and cancel it on the store's Tap-to-Pay page.",
+            ],
+          }
+        : {
+            subject: `⚠️ Tap-to-pay payout address removed on ${store}`,
+            lines: [`Removed by: ${who}`, `Was: ${s(d.old_address) ?? "(none)"}`, when],
+          };
+    case "payout_address_cancelled":
+      return {
+        subject: `Tap-to-pay payout address change cancelled on ${store}`,
+        lines: [`Cancelled by: ${who}`, when, "", "The current payout address stays."],
       };
     default:
       return { subject: `Security event on ${store}`, lines: [`Type: ${e.kind}`, `By: ${who}`, when] };

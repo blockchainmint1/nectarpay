@@ -99,10 +99,28 @@ export const saveChainKey = createServerFn({ method: "POST" })
 
 export const cancelPendingChainKey = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ storeId: z.string().uuid(), chain: z.enum(CHAINS) }).parse(d))
-  .handler(async ({ data, context }) => {
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        storeId: z.string().uuid(),
+        chain: z.enum(CHAINS),
+        verificationCode: z.string().regex(/^\d{6}$/).optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }): Promise<{ cancelled: boolean; status?: "code_required" }> => {
     const { authorizeKeyChange } = await import("@/lib/chain-keys.server");
-    const { store } = await authorizeKeyChange(context.supabase, context.userId, data.storeId);
+    const actor = await authorizeKeyChange(context.supabase, context.userId, data.storeId);
+    const { store } = actor;
+    // Owners and platform admins cancel in one click (fastest way to stop a
+    // hijack). A team member needs the owner's emailed code, so a planted
+    // account cannot keep cancelling the owner's own changes.
+    const { codeRecipient } = await import("@/lib/key-change-code");
+    if (codeRecipient(actor) === "owner") {
+      if (!data.verificationCode) return { cancelled: false, status: "code_required" };
+      const { consumeWalletLinkChallenge } = await import("@/lib/wallet-link-challenge.server");
+      await consumeWalletLinkChallenge(context.userId, store.id, data.verificationCode);
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row } = await supabaseAdmin
       .from("chain_configs")

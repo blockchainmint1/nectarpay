@@ -1,13 +1,24 @@
 import { useStoreRef } from "@/lib/store-ref";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronLeft, Save, Nfc } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { ChevronLeft, Save, Nfc, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { PendingChangeBanner, keyActivationTime } from "@/components/store/KeyChangeStepUp";
+import { cancelTangemPayout, getTangemPayout, saveTangemPayout } from "@/lib/tangem-payout.functions";
+import { requestWalletLinkVerification } from "@/lib/wallet-link.functions";
 
 export const Route = createFileRoute("/_authenticated/stores/$storeId/tangem")({
   head: () => ({ meta: [{ title: "Tap-to-Pay (Tangem) · Nectar.Pay" }] }),
@@ -18,31 +29,57 @@ const ETH_ADDRESS = /^0x[a-fA-F0-9]{40}$/;
 
 function TangemSettingsPage() {
   const { storeId, storeSlug } = useStoreRef();
+  const getPayout = useServerFn(getTangemPayout);
+  const savePayout = useServerFn(saveTangemPayout);
+  const cancelPayout = useServerFn(cancelTangemPayout);
+  const requestCode = useServerFn(requestWalletLinkVerification);
   const [address, setAddress] = useState("");
   const [initial, setInitial] = useState("");
+  const [pending, setPending] = useState<{ address: string; activatesAt: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [codePrompt, setCodePrompt] = useState<{ sentTo: string; value: string } | null>(null);
+  const [code, setCode] = useState("");
+
+  const load = useCallback(async () => {
+    try {
+      const r = await getPayout({ data: { storeId } });
+      setAddress(r.current ?? "");
+      setInitial(r.current ?? "");
+      setPending(r.pending && r.activatesAt ? { address: r.pending, activatesAt: r.activatesAt } : null);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not load the payout address.");
+    } finally {
+      setLoading(false);
+    }
+  }, [getPayout, storeId]);
 
   useEffect(() => {
-    (async () => {
-      const { data, error } = await supabase
-        .from("stores")
-        .select("usdc_payout_address_eth")
-        .eq("id", storeId)
-        .maybeSingle();
-      if (error) {
-        toast.error(error.message);
-      } else {
-        const v = data?.usdc_payout_address_eth ?? "";
-        setAddress(v);
-        setInitial(v);
-      }
-      setLoading(false);
-    })();
-  }, [storeId]);
+    void load();
+  }, [load]);
 
   const dirty = address.trim() !== initial;
   const valid = address === "" || ETH_ADDRESS.test(address.trim());
+
+  async function submit(value: string | null, verificationCode?: string) {
+    const res = await savePayout({ data: { storeId, address: value, verificationCode } });
+    if (res.status === "code_required") {
+      const sent = await requestCode({ data: { storeId } });
+      setCode("");
+      setCodePrompt({ sentTo: sent.sent_to, value: value ?? "" });
+      return;
+    }
+    setCodePrompt(null);
+    if (res.status === "scheduled") {
+      toast.success(
+        `New payout address saved. For your safety it takes over ${keyActivationTime(res.activatesAt)} — tap-to-pay keeps paying the current address until then.`,
+        { duration: 10_000 },
+      );
+    } else if (res.status === "cleared") {
+      toast.success("Payout address removed. Tangem tap-to-pay is off for this store.");
+    }
+    await load();
+  }
 
   async function save() {
     if (!valid) {
@@ -50,18 +87,25 @@ function TangemSettingsPage() {
       return;
     }
     setSaving(true);
-    const value = address.trim() === "" ? null : address.trim();
-    const { error } = await supabase
-      .from("stores")
-      .update({ usdc_payout_address_eth: value })
-      .eq("id", storeId);
-    setSaving(false);
-    if (error) {
-      toast.error(error.message);
-      return;
+    try {
+      await submit(address.trim() === "" ? null : address.trim());
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Save failed.");
+    } finally {
+      setSaving(false);
     }
-    setInitial(value ?? "");
-    toast.success("Payout address saved.");
+  }
+
+  async function confirmCode() {
+    if (!codePrompt) return;
+    setSaving(true);
+    try {
+      await submit(codePrompt.value, code);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not confirm.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -110,9 +154,22 @@ function TangemSettingsPage() {
               Not a valid Ethereum address.
             </p>
           )}
-          <div className="mt-4 flex items-center justify-between">
+          {pending ? (
+            <PendingChangeBanner
+              storeId={storeId}
+              title={`New payout address waiting: takes over ${keyActivationTime(pending.activatesAt)}`}
+              detail={pending.address}
+              onCancel={async (verificationCode) => {
+                const r = await cancelPayout({ data: { storeId, verificationCode } });
+                return r.status === "code_required" ? "code_required" : "cancelled";
+              }}
+              cancelledMessage="Payout change cancelled — the current address stays."
+              onChanged={() => void load()}
+            />
+          ) : null}
+          <div className="mt-4 flex items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
-              Leave blank to disable Tangem tap-to-pay for this store.
+              Leave blank to disable Tangem tap-to-pay for this store. A new address needs an emailed code and takes over after 4 hours.
             </p>
             <Button
               onClick={save}
@@ -124,6 +181,35 @@ function TangemSettingsPage() {
             </Button>
           </div>
         </div>
+
+        <Dialog open={!!codePrompt} onOpenChange={(o) => { if (!o) setCodePrompt(null); }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-primary" /> Confirm this payout change
+              </DialogTitle>
+              <DialogDescription>
+                We emailed a 6-digit code to {codePrompt?.sentTo ?? "your email"}. Changing where payments go always needs it.
+              </DialogDescription>
+            </DialogHeader>
+            <Input
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              placeholder="123456"
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+              className="text-center font-mono text-lg tracking-[0.4em]"
+              aria-label="6-digit code from your email"
+            />
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setCodePrompt(null)} disabled={saving}>Cancel</Button>
+              <Button onClick={confirmCode} disabled={saving || code.length !== 6}>
+                {saving ? "Checking…" : "Confirm"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <div className="mt-6 rounded-xl border border-border bg-muted/30 p-6 text-sm text-muted-foreground">
           <h2 className="font-medium text-foreground">How it works</h2>

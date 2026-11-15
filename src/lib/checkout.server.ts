@@ -256,26 +256,30 @@ export async function selectPublicInvoiceChain(data: { id: string; option: strin
       }
     }
 
-    const derived = await deriveInvoiceAddress(
-      inv.store_id,
-      chain as never,
-      Number(inv.fiat_amount),
-      tokenSymbol,
-      inv.id,
-    );
-
-    const { error: updErr } = await supabaseAdmin
-      .from("invoices")
-      .update({
-        chain: chain as never,
-        token_symbol: tokenSymbol,
-        address: derived.address,
-        crypto_amount: derived.cryptoAmount,
-        rate: derived.rate,
-        derivation_index: derived.index,
-        address_index: derived.index,
-      })
-      .eq("id", inv.id);
+    const { isOpenAmountCollision, OPEN_AMOUNT_ATTEMPTS } = await import("@/lib/open-amount-collision");
+    let updErr: { code?: string; message: string } | null = null;
+    for (let attempt = 0; attempt < OPEN_AMOUNT_ATTEMPTS; attempt++) {
+      const derived = await deriveInvoiceAddress(
+        inv.store_id,
+        chain as never,
+        Number(inv.fiat_amount),
+        tokenSymbol,
+        inv.id,
+      );
+      ({ error: updErr } = await supabaseAdmin
+        .from("invoices")
+        .update({
+          chain: chain as never,
+          token_symbol: tokenSymbol,
+          address: derived.address,
+          crypto_amount: derived.cryptoAmount,
+          rate: derived.rate,
+          derivation_index: derived.index,
+          address_index: derived.index,
+        })
+        .eq("id", inv.id));
+      if (!isOpenAmountCollision(updErr)) break;
+    }
     if (updErr) throw new Error(updErr.message);
 
     return { ok: true as const };

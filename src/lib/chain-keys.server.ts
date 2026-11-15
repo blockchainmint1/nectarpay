@@ -8,6 +8,10 @@ export interface KeyChangeActor {
   store: { id: string; name: string; owner_id: string };
   /** A platform admin changing someone else's store: always needs the emailed code. */
   actingAsAdmin: boolean;
+  /** The caller owns the store. */
+  isOwner: boolean;
+  /** The caller is a platform admin. */
+  isPlatformAdmin: boolean;
 }
 
 /**
@@ -51,5 +55,5 @@ export async function authorizeKeyChange(
       .maybeSingle();
     actingAsAdmin = membership?.role !== "admin";
   }
-  return { store, actingAsAdmin };
+  return { store, actingAsAdmin, isOwner: store.owner_id === userId, isPlatformAdmin: isAdmin === true };
 }

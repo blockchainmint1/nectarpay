@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { freeTierStartPatch } from "@/lib/free-tier";
 
 
 export type BillingOverview = {
@@ -205,15 +207,22 @@ export const getBillingOverview = createServerFn({ method: "GET" })
 
 export const setFreeTierMetric = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { metric: "days" | "invoices" | "volume" }) => d)
+  .inputValidator((d: unknown) => z.object({ metric: z.enum(["days", "invoices", "volume"]) }).parse(d))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    // Switching how the free tier is measured never restarts its clock: the
+    // start date is written only the first time (see freeTierStartPatch).
+    const { data: sub, error: readErr } = await supabaseAdmin
+      .from("subscriptions")
+      .select("free_tier_started_at")
+      .eq("user_id", context.userId)
+      .eq("plan_id", "free")
+      .maybeSingle();
+    if (readErr) throw readErr;
+    if (!sub) return { ok: true };
     const { error } = await supabaseAdmin
       .from("subscriptions")
-      .update({
-        free_tier_metric: data.metric,
-        free_tier_started_at: new Date().toISOString(),
-      })
+      .update({ free_tier_metric: data.metric, ...freeTierStartPatch(sub.free_tier_started_at) })
       .eq("user_id", context.userId)
       .eq("plan_id", "free");
     if (error) throw error;

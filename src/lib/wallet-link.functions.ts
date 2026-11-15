@@ -34,12 +34,22 @@ export const requestWalletLinkVerification = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     // Same gate as the key change itself: full store access + 2-step login.
     const { authorizeKeyChange } = await import("@/lib/chain-keys.server");
-    const { store } = await authorizeKeyChange(context.supabase, context.userId, data.storeId);
+    const { store, isOwner, isPlatformAdmin } = await authorizeKeyChange(context.supabase, context.userId, data.storeId);
 
-    const email = (context.claims as { email?: string })?.email;
-    if (!email) throw new Error("No email on this account — contact support.");
-
+    const actorEmail = (context.claims as { email?: string })?.email ?? null;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // A full-access team member's own mailbox proves nothing about the
+    // owner's consent, so their code goes to the store owner's sign-in email.
+    // Owners and platform admins confirm through their own address.
+    const { codeRecipient } = await import("@/lib/key-change-code");
+    const recipient = codeRecipient({ isOwner, isPlatformAdmin });
+    let email = actorEmail;
+    if (recipient === "owner") {
+      const { data: owner } = await supabaseAdmin.auth.admin.getUserById(store.owner_id);
+      email = owner?.user?.email ?? null;
+    }
+    if (!email) throw new Error("No email on this account — contact support.");
 
     // Simple per-user rate limit.
     const since = new Date(Date.now() - 60 * 60_000).toISOString();
@@ -70,7 +80,9 @@ export const requestWalletLinkVerification = createServerFn({ method: "POST" })
     const lines = [
       `Your confirmation code is: ${code}`,
       "",
-      `Someone (hopefully you) is changing the wallet keys for "${store.name}".`,
+      recipient === "owner"
+        ? `A team member (${actorEmail ?? "unknown"}) is asking to change the wallet keys for "${store.name}". Only give them this code if you approve the change.`
+        : `Someone (hopefully you) is changing the wallet keys for "${store.name}".`,
       "This code expires in 10 minutes and can only be used once.",
       "",
       "If this wasn't you, do NOT share this code — your payouts could be redirected. Change your password and contact support immediately.",
@@ -78,12 +90,16 @@ export const requestWalletLinkVerification = createServerFn({ method: "POST" })
     await enqueueAppEmail({
       to: email,
       subject,
-      html: renderWalletLinkVerificationEmail(store.name, code),
+      html: renderWalletLinkVerificationEmail(store.name, code, recipient === "owner" ? actorEmail ?? "a team member" : null),
       text: lines.join("\n"),
       label: "wallet_link_verification",
     });
 
-    return { sent_to: maskEmail(email), expires_at };
+    return {
+      sent_to: recipient === "owner" ? `the store owner at ${maskEmail(email)} (ask them for it)` : maskEmail(email),
+      sent_to_owner: recipient === "owner",
+      expires_at,
+    };
   });
 
 function maskEmail(email: string): string {

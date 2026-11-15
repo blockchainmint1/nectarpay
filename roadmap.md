@@ -112,7 +112,7 @@
 - [x] Auditor follow-up on booby-trapped return links: all 4 found (probe accounts only); nobody else opened them; no real wallet/admin/team/API-key/webhook changes; closed the hole letting merchants mark their own sales paid (11 fake paid sales, all probe/test stores).
 - [ ] Decide: revoke the 4 probe-store API keys and suspend the probe accounts (awaiting Bobby).
 - [ ] Real end-to-end replacement with an emailed code typed in, and real alert email arrival: needs Bobby to try it on a test store.
-- [ ] Still open from earlier report: Lightning sweep race, resettable free trial, Capacitor upgrade check.
+- [x] Still open from earlier report: free trial fixed and Capacitor upgraded Nov 15; Lightning sweep race moot while Lightning is off.
 - [ ] Solana amount rounding overcharge (e.g. $5 SOL sale asked 0.0649 SOL ≈ $5.63).
 
 ## Lightning node wind-down (Nov 10 2026)
@@ -122,3 +122,16 @@
 - [x] Bobby confirmed he has the 24-word seed.
 - [x] Bobby stopped LND, powered off, snapshotted and destroyed the droplet (Nov 11). Verified from here: SSH closed, P2P port closed, node REST unreachable — nothing is running or billing. Node settings and Admin → Lightning kept so it can be revived later from the snapshot plus the 24-word seed.
 - [ ] Optional cleanup: node-btc.honest.money still points at the dead droplet IP 157.245.49.73 in honest.money's DNS. Harmless, but worth deleting (or repointing when a new node is made).
+
+## Security re-audit (Nov 15 2026)
+- [x] Upgrade the app shell (Capacitor 8.4.1 → 8.6.2), seroval (1.6.8 → 1.6.12) and zod (3.25 → 4.6.7); 226 tests passed, main pages load.
+- [x] N1 Tangem USDC payout address behind the emailed code, 4-hour hold and alerts; browser direct writes refused. Verified end-to-end on Cold Coin Auto Test (code → waiting banner → cancel; both alerts delivered).
+- [x] N3 4-hour hold for a new coin's first key on an established store (brand-new stores and same-wallet reuse stay immediate); rolled-back practice run verified.
+- [x] N2 2-step login enforced in team invite/role/remove/accept; key-change code goes to the owner when a team member acts.
+- [x] N4 team-member cancels of pending changes need the owner's code; owners still cancel in one click.
+- [x] N5 website lookup capped (10 per visitor per 10 min, 200 site-wide per hour); HME Give hook returns "disconnected" and calls nothing.
+- [x] N6 duplicate open amounts on shared addresses refused by the database; sale creation retries with a new tail (practice run verified).
+- [x] M3 free-trial clock can no longer be restarted by switching the trial type.
+- [x] M6 merchants can no longer change store owner, admin market/rep/notes, or reactivate a switched-off store (practice run verified).
+- [ ] Rebuild the POS APK with the new app shell: Bobby runs GitHub → Actions → "POS APK" → Run workflow (or pushes to pos-app).
+- [ ] Still open from the audit, not done this round: M4 terminal secrets stored plainly (already unreadable from browsers), M7 address-counter race, M8 plan change not atomic, M9 webhook URL private-network guard, M10 email relay limits, M11 debuggable register app / pinned Tangem SDK.

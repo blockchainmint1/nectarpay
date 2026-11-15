@@ -31,8 +31,23 @@ async function sha256Hex(input: string) {
     .join("");
 }
 
-/** Throws unless the caller owns the store. */
-async function assertOwner(userId: string, storeId: string) {
+type AuthedContext = { userId: string; supabase: { rpc: (fn: string, args?: Record<string, unknown>) => unknown } };
+
+/**
+ * Team changes are written with the service role, so the restrictive
+ * mfa_ok() row rule never runs: check it here. Users who turned on 2-step
+ * login must have passed it this session before granting store access.
+ */
+async function assertMfa(context: AuthedContext) {
+  const { data, error } = (await context.supabase.rpc("mfa_ok", {})) as { data: unknown; error: { message: string } | null };
+  if (error) throw new Error(error.message);
+  if (data !== true) throw new Error("Finish your 2-step login (authenticator code) first, then try again.");
+}
+
+/** Throws unless the caller owns the store and has passed 2-step login (when enabled). */
+async function assertOwner(context: AuthedContext, storeId: string) {
+  const userId = context.userId;
+  await assertMfa(context);
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin
     .from("stores")
@@ -62,7 +77,7 @@ export const listStoreTeam = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ store_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    await assertOwner(context.userId, data.store_id);
+    await assertOwner(context as unknown as AuthedContext, data.store_id);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const [membersRes, invitesRes] = await Promise.all([
@@ -118,7 +133,7 @@ export const inviteStoreUser = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const store = await assertOwner(context.userId, data.store_id);
+    const store = await assertOwner(context as unknown as AuthedContext, data.store_id);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const email = data.email.trim().toLowerCase();
 
@@ -186,7 +201,7 @@ export const inviteStoreUserMulti = createServerFn({ method: "POST" })
     const names: string[] = [];
 
     for (const storeId of data.store_ids) {
-      const store = await assertOwner(context.userId, storeId);
+      const store = await assertOwner(context as unknown as AuthedContext, storeId);
       names.push(store.name);
 
       await supabaseAdmin
@@ -341,7 +356,7 @@ export const updateStoreMemberRole = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    await assertOwner(context.userId, data.store_id);
+    await assertOwner(context as unknown as AuthedContext, data.store_id);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("store_members")
@@ -358,7 +373,7 @@ export const removeStoreMember = createServerFn({ method: "POST" })
     z.object({ store_id: z.string().uuid(), member_id: z.string().uuid() }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    await assertOwner(context.userId, data.store_id);
+    await assertOwner(context as unknown as AuthedContext, data.store_id);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("store_members")
@@ -375,7 +390,7 @@ export const revokeStoreInvite = createServerFn({ method: "POST" })
     z.object({ store_id: z.string().uuid(), invite_id: z.string().uuid() }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    await assertOwner(context.userId, data.store_id);
+    await assertOwner(context as unknown as AuthedContext, data.store_id);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("store_invites")
@@ -393,6 +408,7 @@ export const revokeStoreInviteGroup = createServerFn({ method: "POST" })
     z.object({ group_id: z.string().min(10).max(128) }).parse(d),
   )
   .handler(async ({ data, context }) => {
+    await assertMfa(context as unknown as AuthedContext);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: stores, error: storesErr } = await supabaseAdmin
       .from("stores")
@@ -441,6 +457,7 @@ export const acceptStoreInvite = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ token: z.string().min(10).max(128) }).parse(d))
   .handler(async ({ data, context }) => {
+    await assertMfa(context as unknown as AuthedContext);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const tokenHash = await sha256Hex(data.token);
 

@@ -28,3 +28,15 @@ export function mergeWebsiteDetails<T extends Record<string, string>>(form: T, d
   }
   return next;
 }
+/** Website lookups spend scraping credits, so the public /fast page is capped. */
+export const WEBSITE_LOOKUP_LIMITS = {
+  perVisitor: 10,
+  perVisitorWindowSec: 10 * 60,
+  site: 200,
+  siteWindowSec: 60 * 60,
+} as const;
+
+/** `mine`/`everyone` are counts including this request. */
+export function websiteLookupAllowed(mine: number, everyone: number): boolean {
+  return mine <= WEBSITE_LOOKUP_LIMITS.perVisitor && everyone <= WEBSITE_LOOKUP_LIMITS.site;
+}
