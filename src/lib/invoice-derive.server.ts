@@ -33,6 +33,9 @@ export async function deriveInvoiceAddress(
 ): Promise<DeriveResult> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+  const { isChainRetired } = await import("@/lib/network-switch");
+  if (isChainRetired(chain)) throw new Error("This network is no longer available.");
+
   // Lightning has no derived address — we ask the shared node for a BOLT-11
   // payment request and store that string where an address would go.
   if (chain === "lightning") {
