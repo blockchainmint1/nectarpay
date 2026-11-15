@@ -344,6 +344,13 @@
       "when": 1794251379049,
       "tag": "0048_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1794703984848,
+      "tag": "0049_payout_hold_first_key_hold_admin_columns",
+      "breakpoints": true
     }
   ]
 }

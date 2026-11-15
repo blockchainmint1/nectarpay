@@ -2355,6 +2355,9 @@ export type Database = {
           mempool_max_usd: number | null
           name: string
           owner_id: string
+          pending_usdc_payout_activates_at: string | null
+          pending_usdc_payout_address_eth: string | null
+          pending_usdc_payout_requested_at: string | null
           pop_rewards_enabled: boolean
           pos_custom_tenders: Json
           pos_email_receipt_enabled: boolean
@@ -2439,6 +2442,9 @@ export type Database = {
           mempool_max_usd?: number | null
           name: string
           owner_id: string
+          pending_usdc_payout_activates_at?: string | null
+          pending_usdc_payout_address_eth?: string | null
+          pending_usdc_payout_requested_at?: string | null
           pop_rewards_enabled?: boolean
           pos_custom_tenders?: Json
           pos_email_receipt_enabled?: boolean
@@ -2523,6 +2529,9 @@ export type Database = {
           mempool_max_usd?: number | null
           name?: string
           owner_id?: string
+          pending_usdc_payout_activates_at?: string | null
+          pending_usdc_payout_address_eth?: string | null
+          pending_usdc_payout_requested_at?: string | null
           pop_rewards_enabled?: boolean
           pos_custom_tenders?: Json
           pos_email_receipt_enabled?: boolean
