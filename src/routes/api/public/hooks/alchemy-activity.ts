@@ -11,7 +11,7 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import { createHmac, timingSafeEqual } from "crypto";
-import { ETH_NETWORK, BASE_NETWORK, BSC_NETWORK, type EvmNetwork } from "@/lib/chains/networks";
+import { ETH_NETWORK, BASE_NETWORK, type EvmNetwork } from "@/lib/chains/networks";
 import { scanEvmInvoiceNow } from "@/lib/watcher.functions";
 import { identifyEvmAsset } from "@/lib/chains/evm-asset";
 
@@ -39,7 +39,6 @@ interface AlchemyPayload {
 const NETWORK_TO_CHAIN: Record<string, { chain: string; net: EvmNetwork }> = {
   ETH_MAINNET: { chain: "eth", net: ETH_NETWORK },
   BASE_MAINNET: { chain: "base", net: BASE_NETWORK },
-  BNB_MAINNET: { chain: "bsc", net: BSC_NETWORK },
 };
 
 function verifySignature(body: string, signature: string, signingKey: string): boolean {

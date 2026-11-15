@@ -26,10 +26,10 @@ const NOTIFY_BASE = "https://dashboard.alchemy.com/api";
 const CHAIN_TO_NETWORK: Record<string, string> = {
   eth: "ETH_MAINNET",
   base: "BASE_MAINNET",
-  bsc: "BNB_MAINNET",
 };
 
-export const SUPPORTED_EVM_CHAINS = ["eth", "base", "bsc"] as const;
+// BNB Chain retired (src/lib/network-switch.ts): no longer synced or watched.
+export const SUPPORTED_EVM_CHAINS = ["eth", "base"] as const;
 
 function authToken(): string {
   const t = process.env.ALCHEMY_AUTH_TOKEN;
