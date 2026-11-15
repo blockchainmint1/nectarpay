@@ -291,7 +291,8 @@ export const BSC_NETWORK: EvmNetwork = {
 };
 
 /** EVM networks that share a derivation path — one xpub covers all of them. */
-export const EVM_NETWORKS: EvmNetwork[] = [ETH_NETWORK, BASE_NETWORK, BSC_NETWORK];
+// BNB Chain (BSC_NETWORK) is retired platform-wide: never received a payment.
+export const EVM_NETWORKS: EvmNetwork[] = [ETH_NETWORK, BASE_NETWORK];
 
 /**
  * ZCU (Zero Chill Units) — go-ethereum fork, Scrypt PoW. Uses the same EVM
@@ -383,11 +384,10 @@ export function pinPreferredOptions<T extends { key: string }>(options: T[]): T[
  * on any of these networks (same address), so we surface a single combined
  * option labeled e.g. "USDC on Ethereum, Base or BSC".
  */
-export const EVM_CHAIN_KEYS = ["eth", "base", "bsc"] as const;
+export const EVM_CHAIN_KEYS = ["eth", "base"] as const;
 export const EVM_CHAIN_LABEL: Record<(typeof EVM_CHAIN_KEYS)[number], string> = {
   eth: "Ethereum",
   base: "Base",
-  bsc: "BSC",
 };
 /** EVM chains on which a given stable token is recognized by the watcher. */
 export function evmChainsForStable(symbol: string): (typeof EVM_CHAIN_KEYS)[number][] {
