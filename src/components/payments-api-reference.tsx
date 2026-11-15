@@ -7,8 +7,6 @@ const CHAINS = [
   ["txc", "TEXITcoin"],
   ["eth", "Ethereum (ETH + USDC/USDT/PYUSD/DAI)"],
   ["base", "Base (ETH + stablecoins)"],
-  ["tron", "Tron (TRX + USDT)"],
-  ["sol", "Solana (SOL + SPL tokens)"],
   ["doge", "Dogecoin"],
   ["ltc", "Litecoin"],
   ["bch", "Bitcoin Cash"],

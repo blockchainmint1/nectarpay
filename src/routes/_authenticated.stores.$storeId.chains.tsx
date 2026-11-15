@@ -29,6 +29,7 @@ import { VaultLinkDialog } from "@/components/VaultLinkDialog";
 import { WalletChangeHistory, useWalletChangeHistory, walletHistoryDate } from "@/components/WalletChangeHistory";
 import { PendingKeyNotice, useKeyChangeSave } from "@/components/store/KeyChangeStepUp";
 import { LIGHTNING_ENABLED } from "@/lib/lightning-switch";
+import { isChainRetired } from "@/lib/network-switch";
 // Inlined client-safe validators (mirror src/lib/chains/derive.server.ts).
 function isXpubLike(s: string): boolean {
   return /^([xtuvyz]pub)[1-9A-HJ-NP-Za-km-z]{100,120}$/.test(s.trim());
@@ -339,7 +340,7 @@ function ChainsPage() {
         <div className="mt-8 text-sm text-muted-foreground">Loading…</div>
       ) : (
         <div className="mt-6 space-y-4">
-          {CHAINS.filter((c) => c.key !== "lightning").map((meta) => (
+          {CHAINS.filter((c) => c.key !== "lightning" && !isChainRetired(c.key)).map((meta) => (
             <Fragment key={meta.key}>
             <ChainCard
               meta={meta}
