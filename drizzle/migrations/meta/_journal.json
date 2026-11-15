@@ -358,6 +358,13 @@
       "when": 1794704186567,
       "tag": "0050_public_rate_limits_and_unique_open_amounts",
       "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1794704410995,
+      "tag": "0051_fix_store_admin_columns_guard_role_check",
+      "breakpoints": true
     }
   ]
 }
