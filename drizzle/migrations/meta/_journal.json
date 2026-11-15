@@ -372,6 +372,13 @@
       "when": 1794784187268,
       "tag": "0052_retire_tron_solana",
       "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1794784313622,
+      "tag": "0053_retire_dash_bch",
+      "breakpoints": true
     }
   ]
 }

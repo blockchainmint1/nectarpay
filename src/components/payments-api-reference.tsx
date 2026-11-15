@@ -9,8 +9,6 @@ const CHAINS = [
   ["base", "Base (ETH + stablecoins)"],
   ["doge", "Dogecoin"],
   ["ltc", "Litecoin"],
-  ["bch", "Bitcoin Cash"],
-  ["dash", "Dash"],
   ["isk", "Iskander Network"],
   ["zcu", "ZCU (Zero Chill)"],
 ] as const;
