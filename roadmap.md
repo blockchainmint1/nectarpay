@@ -122,3 +122,15 @@
 - [x] Bobby confirmed he has the 24-word seed.
 - [x] Bobby stopped LND, powered off, snapshotted and destroyed the droplet (Nov 11). Verified from here: SSH closed, P2P port closed, node REST unreachable — nothing is running or billing. Node settings and Admin → Lightning kept so it can be revived later from the snapshot plus the 24-word seed.
 - [ ] Optional cleanup: node-btc.honest.money still points at the dead droplet IP 157.245.49.73 in honest.money's DNS. Harmless, but worth deleting (or repointing when a new node is made).
+
+## Security re-audit (Nov 15 2026)
+- [x] Upgrade the app shell (Capacitor 8.4.1 → 8.6.2) and seroval (1.6.8 → 1.6.12).
+- [ ] N1 Tangem USDC payout address behind the emailed code, 4-hour hold and alerts.
+- [ ] N3 4-hour hold for a new coin's first key on a store that already has keys.
+- [ ] N2 2-step login enforced in team management; key-change code goes to the owner when a team member acts.
+- [ ] N4 non-owner cancels of pending key changes need the owner's code.
+- [ ] N5 rate-limit the website lookup; HME Give hook does nothing while sync is off.
+- [ ] N6 amount-tail reservation race.
+- [ ] M3 free trial cannot be restarted.
+- [ ] zod 3 → 4 upgrade decision (60 files use it).
+- [ ] Rebuild the POS APK with the new app shell (GitHub "POS APK" workflow).
