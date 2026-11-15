@@ -1,16 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Clock, Globe, MapPin, Phone, Search, Store } from "lucide-react";
 
 import { MarketingNav, MarketingFooter } from "@/components/marketing-shell";
 import { Input } from "@/components/ui/input";
-import { getPublicDirectory } from "@/lib/directory.functions";
+import { directoryQuery } from "@/lib/directory-query";
 import type { DirectoryStore } from "@/lib/directory.server";
 import { cn } from "@/lib/utils";
-
-const directoryQuery = () =>
-  queryOptions({ queryKey: ["public-directory"], queryFn: () => getPublicDirectory(), staleTime: 60_000 });
 
 export const Route = createFileRoute("/directory")({
   head: () => ({
