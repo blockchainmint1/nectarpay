@@ -96,25 +96,30 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice")({
 
             try {
               const { deriveInvoiceAddress } = await import("@/lib/invoice-derive.server");
-              const derived = await deriveInvoiceAddress(
-                store.id,
-                chain as never,
-                fiatAmount,
-                tokenSymbol,
-                inserted.id,
-              );
-              const { error: updErr } = await supabaseAdmin
-                .from("invoices")
-                .update({
-                  chain: chain as never,
-                  token_symbol: tokenSymbol,
-                  address: derived.address,
-                  crypto_amount: derived.cryptoAmount,
-                  rate: derived.rate,
-                  derivation_index: derived.index,
-                  address_index: derived.index,
-                })
-                .eq("id", inserted.id);
+              const { isOpenAmountCollision, OPEN_AMOUNT_ATTEMPTS } = await import("@/lib/open-amount-collision");
+              let updErr: { code?: string; message: string } | null = null;
+              for (let attempt = 0; attempt < OPEN_AMOUNT_ATTEMPTS; attempt++) {
+                const derived = await deriveInvoiceAddress(
+                  store.id,
+                  chain as never,
+                  fiatAmount,
+                  tokenSymbol,
+                  inserted.id,
+                );
+                ({ error: updErr } = await supabaseAdmin
+                  .from("invoices")
+                  .update({
+                    chain: chain as never,
+                    token_symbol: tokenSymbol,
+                    address: derived.address,
+                    crypto_amount: derived.cryptoAmount,
+                    rate: derived.rate,
+                    derivation_index: derived.index,
+                    address_index: derived.index,
+                  })
+                  .eq("id", inserted.id));
+                if (!isOpenAmountCollision(updErr)) break;
+              }
               if (updErr) return json({ error: updErr.message }, 500);
               preselectedChain = chain;
               preselectedToken = tokenSymbol;

@@ -197,14 +197,18 @@ export const Route = createFileRoute("/api/public/v1/invoices")({
           }
 
           // Merchant pre-selected the chain — derive immediately.
-          let derived;
+          const { isOpenAmountCollision, OPEN_AMOUNT_ATTEMPTS } = await import("@/lib/open-amount-collision");
+          let derived!: Awaited<ReturnType<typeof deriveInvoiceAddress>>;
+          let inserted: { id: string } | null = null;
+          let insErr: { code?: string; message: string } | null = null;
+          for (let attempt = 0; attempt < OPEN_AMOUNT_ATTEMPTS; attempt++) {
           try {
             derived = await deriveInvoiceAddress(store.id, body.chain, fiatAmount);
           } catch (e) {
             return json({ error: e instanceof Error ? e.message : "Derivation failed" }, 400);
           }
 
-          const { data: inserted, error: insErr } = await supabaseAdmin
+          ({ data: inserted, error: insErr } = await supabaseAdmin
             .from("invoices")
             .insert({
               store_id: store.id,
@@ -224,7 +228,9 @@ export const Route = createFileRoute("/api/public/v1/invoices")({
               expires_at: expiresAt,
             })
             .select("id")
-            .single();
+            .single());
+          if (!isOpenAmountCollision(insErr)) break;
+          }
           if (insErr || !inserted) return json({ error: insErr?.message ?? "Insert failed." }, 500);
 
           if (body.chain === "lightning") {
