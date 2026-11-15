@@ -138,7 +138,7 @@ export const Route = createFileRoute("/api/public/v1/invoices")({
 
           const raw = await request.json().catch(() => null);
           const parse = Body.safeParse(raw);
-          if (!parse.success) return json({ error: parse.error.errors[0]?.message ?? "Invalid body" }, 400);
+          if (!parse.success) return json({ error: parse.error.issues[0]?.message ?? "Invalid body" }, 400);
           const body = parse.data;
 
           const { data: store } = await supabaseAdmin

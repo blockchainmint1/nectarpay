@@ -72,7 +72,7 @@ export const Route = createFileRoute("/api/public/v1/links/$slug")({
 
           const raw = await request.json().catch(() => null);
           const parsed = Patch.safeParse(raw ?? {});
-          if (!parsed.success) return apiJson({ error: parsed.error.errors[0]?.message ?? "Invalid body" }, 400);
+          if (!parsed.success) return apiJson({ error: parsed.error.issues[0]?.message ?? "Invalid body" }, 400);
 
           const { data: existing } = await supabaseAdmin
             .from("public_terminals")

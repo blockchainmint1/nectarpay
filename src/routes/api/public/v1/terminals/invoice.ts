@@ -45,7 +45,7 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice")({
 
           const parsed = (() => { try { return JSON.parse(rawBody); } catch { return null; } })();
           const v = Body.safeParse(parsed);
-          if (!v.success) return json({ error: v.error.errors[0]?.message ?? "Bad body" }, 400);
+          if (!v.success) return json({ error: v.error.issues[0]?.message ?? "Bad body" }, 400);
           const body = v.data;
           const fiatAmount = body.amount_cents / 100;
 

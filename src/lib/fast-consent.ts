@@ -8,8 +8,8 @@ export const FAST_ACKNOWLEDGEMENTS = {
   basicSetup: "I start with TSD on TEXITcoin only. Instant acceptance happens before block confirmation. I can complete my account and improve my listing and settings later.",
 } as const;
 export const fastConsentSchema = z.object({
-  nonCustodial: z.literal(true, { errorMap: () => ({ message: "Please acknowledge that NectarPay is non-custodial." }) }),
-  basicSetup: z.literal(true, { errorMap: () => ({ message: "Please acknowledge the Fast Start setup and instant payment risk." }) }),
+  nonCustodial: z.literal(true, { message: "Please acknowledge that NectarPay is non-custodial." }),
+  basicSetup: z.literal(true, { message: "Please acknowledge the Fast Start setup and instant payment risk." }),
   directoryOptIn: z.boolean(),
   signature: z.string().max(MAX_SIGNATURE_CHARS).refine((v) => parseSignatureDataUrl(v) !== null, "Please add your signature."),
 });
