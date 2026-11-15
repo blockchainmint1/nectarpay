@@ -351,6 +351,13 @@
       "when": 1794703984848,
       "tag": "0049_payout_hold_first_key_hold_admin_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1794704186567,
+      "tag": "0050_public_rate_limits_and_unique_open_amounts",
+      "breakpoints": true
     }
   ]
 }

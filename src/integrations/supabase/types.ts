@@ -1954,6 +1954,27 @@ export type Database = {
         }
         Relationships: []
       }
+      public_rate_counters: {
+        Row: {
+          bucket: string
+          hits: number
+          subject_hash: string
+          window_start: string
+        }
+        Insert: {
+          bucket: string
+          hits?: number
+          subject_hash: string
+          window_start: string
+        }
+        Update: {
+          bucket?: string
+          hits?: number
+          subject_hash?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       public_terminals: {
         Row: {
           active: boolean
@@ -3336,6 +3357,14 @@ export type Database = {
         Returns: string
       }
       api_rate_hit: { Args: { _key_id: string }; Returns: number }
+      bump_public_rate: {
+        Args: {
+          _bucket: string
+          _subject_hash: string
+          _window_seconds: number
+        }
+        Returns: number
+      }
       create_sticker_invoice: {
         Args: { _amount: number; _code: string; _excluded: string[] }
         Returns: string
