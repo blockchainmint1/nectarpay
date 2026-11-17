@@ -3302,39 +3302,45 @@ export type Database = {
           attempt: number
           created_at: string
           delivered_at: string | null
+          event_type: string | null
           id: string
           invoice_id: string
           next_retry_at: string | null
           payload: Json
           response_body: string | null
-          signature: string
+          signature: string | null
           status_code: number | null
+          store_id: string | null
           url: string
         }
         Insert: {
           attempt?: number
           created_at?: string
           delivered_at?: string | null
+          event_type?: string | null
           id?: string
           invoice_id: string
           next_retry_at?: string | null
           payload: Json
           response_body?: string | null
-          signature: string
+          signature?: string | null
           status_code?: number | null
+          store_id?: string | null
           url: string
         }
         Update: {
           attempt?: number
           created_at?: string
           delivered_at?: string | null
+          event_type?: string | null
           id?: string
           invoice_id?: string
           next_retry_at?: string | null
           payload?: Json
           response_body?: string | null
-          signature?: string
+          signature?: string | null
           status_code?: number | null
+          store_id?: string | null
           url?: string
         }
         Relationships: [

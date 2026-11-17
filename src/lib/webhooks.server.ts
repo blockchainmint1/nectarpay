@@ -27,12 +27,15 @@ export function signWebhookBody(secret: string, rawBody: string, nowSec?: number
   return `t=${t},v1=${v1}`;
 }
 
-/** Best-effort POST to the merchant's webhook URL. Logs but never throws. */
+/**
+ * One POST to the merchant's webhook URL. Never throws. Callers that need a
+ * record and retries go through webhook-outbox.server.ts instead.
+ */
 export async function deliverWebhook(opts: {
   url: string;
   secret: string;
   event: WebhookEvent;
-}): Promise<{ ok: boolean; status?: number; error?: string }> {
+}): Promise<{ ok: boolean; status?: number; error?: string; signature: string; responseBody?: string }> {
   const body = JSON.stringify(opts.event);
   const sig = signWebhookBody(opts.secret, body);
   try {
@@ -49,8 +52,10 @@ export async function deliverWebhook(opts: {
       // workerd: bound timeout via AbortSignal
       signal: AbortSignal.timeout(10_000),
     });
-    return { ok: res.ok, status: res.status };
+    let responseBody: string | undefined;
+    try { responseBody = (await res.text()).slice(0, 500); } catch { /* ignore */ }
+    return { ok: res.ok, status: res.status, signature: sig, responseBody };
   } catch (e) {
-    return { ok: false, error: (e as Error).message };
+    return { ok: false, error: (e as Error).message, signature: sig };
   }
 }

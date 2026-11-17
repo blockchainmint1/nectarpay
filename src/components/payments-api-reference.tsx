@@ -256,7 +256,9 @@ if (!hash_equals($expected, $v1)) { http_response_code(401); exit; }`}</Pre>
           Reject timestamps more than ~5 minutes old to stop replay. Events carry a unique{" "}
           <span className="font-mono">id</span> — dedupe on it, because retries can repeat a
           delivery. Reply <span className="font-mono">2xx</span> quickly and process
-          asynchronously.
+          asynchronously. Anything other than a <span className="font-mono">2xx</span> answer
+          (or no answer within 10 seconds) is retried after 1 min, 5 min, 15 min, 1 h, 4 h,
+          12 h and 24 h — 8 attempts in total.
         </p>
         <p>
           Missed one? Trigger a redelivery for a single invoice:

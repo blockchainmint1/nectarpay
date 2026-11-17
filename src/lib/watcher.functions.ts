@@ -243,7 +243,7 @@ export async function recordTransaction(
  *   doesn't show as underpaid.
  * - Stable invoices: each credit is 1 USD per token.
  */
-async function totalPaidUsdForInvoice(
+export async function totalPaidUsdForInvoice(
   invoiceId: string,
   invoiceTokenSymbol: string | null,
   lockedRate: number | null,
@@ -356,6 +356,15 @@ export async function settleInvoice(
   }
 
   const store = inv.stores as { name: string | null; owner_id: string; webhook_url: string | null; webhook_secret: string | null } | null;
+  // Store callbacks first: the status change above already saved them
+  // (invoices_enqueue_webhooks), so if this run is cut short the watcher
+  // sends them on its next tick. Slower emails follow.
+  try {
+    const { deliverInvoiceWebhooksNow } = await import("./webhook-outbox.server");
+    await deliverInvoiceWebhooksNow(inv.id);
+  } catch (err) {
+    console.error(`webhook send failed (invoice ${inv.id}):`, err);
+  }
   if (isPaid) {
     try {
       const { sendCustomerReceipt } = await import("./email/customer-receipt.server");
@@ -408,49 +417,6 @@ export async function settleInvoice(
               : null,
       },
     });
-  }
-
-  // Outbound signed webhook to the merchant's server, if configured.
-  if (
-    store?.webhook_url &&
-    store.webhook_secret &&
-    (newStatus === "confirmed" || newStatus === "overpaid" || newStatus === "underpaid")
-  ) {
-    const { deliverWebhook } = await import("./webhooks.server");
-    // Settled invoices (confirmed/overpaid) get their own event AND a final
-    // `invoice.confirmed`, which every store plugin settles orders on.
-    const eventTypes: ("invoice.paid" | "invoice.underpaid" | "invoice.overpaid" | "invoice.confirmed")[] =
-      newStatus === "underpaid"
-        ? ["invoice.underpaid"]
-        : newStatus === "overpaid"
-          ? ["invoice.overpaid", "invoice.confirmed"]
-          : ["invoice.paid", "invoice.confirmed"];
-    for (const eventType of eventTypes) {
-    const eventId = (crypto as { randomUUID: () => string }).randomUUID();
-    const result = await deliverWebhook({
-      url: store.webhook_url,
-      secret: store.webhook_secret,
-      event: {
-        id: eventId,
-        type: eventType,
-        created_at: new Date().toISOString(),
-        data: {
-          invoice_id: inv.id,
-          store_id: inv.store_id,
-          status: newStatus,
-          chain: inv.chain as string,
-          address: inv.address as string,
-          fiat_amount: Number(inv.fiat_amount),
-          fiat_currency: inv.fiat_currency,
-          paid_amount_usd: paidAmountUsd,
-          order_id: inv.external_order_id ?? null,
-        },
-      },
-    });
-    if (!result.ok) {
-      console.error(`webhook delivery failed (invoice ${inv.id}):`, result.status, result.error);
-    }
-    }
   }
 
   // If this invoice backs a Terminal Kit checkout, forward the order to
@@ -799,6 +765,15 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
     if (promoteErr) console.error("[watcher] key promotion failed:", promoteErr.message);
   } catch (e) {
     console.error("[watcher] key promotion failed:", (e as Error).message);
+  }
+
+  // Store callbacks that are due: retries, and first sends a cut-off run missed.
+  try {
+    const { deliverDueWebhooks, retryInterruptedReceipts } = await import("./webhook-outbox.server");
+    await deliverDueWebhooks();
+    await retryInterruptedReceipts();
+  } catch (e) {
+    console.error("[watcher] webhook retry failed:", (e as Error).message);
   }
 
   // Risky-change alerts (webhooks, admins, API keys, terminals, code lockouts).

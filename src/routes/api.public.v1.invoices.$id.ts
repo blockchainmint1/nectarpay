@@ -122,31 +122,14 @@ export const Route = createFileRoute("/api/public/v1/invoices/$id")({
             return json({ error: `Invoice status is '${inv.status}'; nothing to redeliver.` }, 400);
           }
 
-          const { deliverWebhook } = await import("@/lib/webhooks.server");
-          // Settled invoices redeliver the final `invoice.confirmed` event plugins settle on.
-          const eventType = inv.status === "underpaid" ? "invoice.underpaid" : "invoice.confirmed";
-          const eventId = (crypto as { randomUUID: () => string }).randomUUID();
-          const result = await deliverWebhook({
-            url: store.webhook_url,
-            secret: store.webhook_secret,
-            event: {
-              id: eventId,
-              type: eventType,
-              created_at: new Date().toISOString(),
-              data: {
-                invoice_id: inv.id,
-                store_id: inv.store_id,
-                status: inv.status,
-                chain: (inv.chain ?? "") as string,
-                address: inv.address,
-                fiat_amount: Number(inv.fiat_amount),
-                fiat_currency: inv.fiat_currency,
-                paid_amount_usd: Number(inv.fiat_amount),
-                order_id: inv.external_order_id ?? null,
-              },
-            },
-          });
-          return json({ ok: result.ok, status: result.status ?? null, error: result.error ?? null, event_id: eventId, event_type: eventType });
+          // Saved and logged like automatic callbacks, so it shows in the delivery
+          // history and is retried if the merchant server doesn't answer 2xx.
+          const { redeliverInvoiceWebhook } = await import("@/lib/webhook-outbox.server");
+          const result = await redeliverInvoiceWebhook(
+            { ...inv, chain: (inv.chain ?? null) as string | null },
+            store.webhook_url,
+          );
+          return json({ ok: result.ok, status: result.status, error: result.error, event_id: result.event_id, event_type: result.event_type });
         } catch (err) {
           return json({ error: err instanceof Error ? err.message : "Server error" }, 500);
         }
