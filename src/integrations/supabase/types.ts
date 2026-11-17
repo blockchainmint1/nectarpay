@@ -3422,6 +3422,10 @@ export type Database = {
       owns_store: { Args: { _store_id: string }; Returns: boolean }
       promote_due_chain_keys: { Args: never; Returns: number }
       purge_expired_wallet_challenges: { Args: never; Returns: undefined }
+      rotate_store_webhook_secret: {
+        Args: { _actor: string; _secret: string; _store_id: string }
+        Returns: undefined
+      }
       store_access_level: { Args: { _store_id: string }; Returns: number }
       store_slugify: { Args: { _name: string }; Returns: string }
       txc_balance: { Args: { _user_id: string }; Returns: number }

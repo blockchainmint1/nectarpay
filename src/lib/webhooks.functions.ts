@@ -74,10 +74,12 @@ export const rotateWebhookSecret = createServerFn({ method: "POST" })
     await assertOwnsStore(context.supabase, data.storeId);
     const secret = `whsec_${randomSecret(40)}`;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
-      .from("stores")
-      .update({ webhook_secret: secret })
-      .eq("id", data.storeId);
+    // RPC records the caller as the actor so the security alert names them.
+    const { error } = await supabaseAdmin.rpc("rotate_store_webhook_secret", {
+      _store_id: data.storeId,
+      _secret: secret,
+      _actor: context.userId,
+    });
     if (error) throw new Error(error.message);
     // Returned ONCE — never stored anywhere we'd hand back to the client again.
     return { secret };
