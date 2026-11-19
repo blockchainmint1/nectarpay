@@ -139,3 +139,4 @@
 ## SEEDS BNB Chain payment (Nov 19 2026)
 - [x] Fix the Verify payment crash and look up unrecorded payments live on Ethereum, Base, BNB Chain and ZCU.
 - [x] Mark the SEEDS $400 sale (5954d3c4) paid with the 400.44 USDT BNB Chain payment; callbacks delivered (200), owner alerts sent.
+- [x] Keep BNB Chain hidden from shoppers but watch it for mistaken USDT/USDC payments; exact matches are marked paid (Bobby's choice), others wait for the merchant.

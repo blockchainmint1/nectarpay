@@ -20,6 +20,8 @@ import { identifyEvmAsset } from "./chains/evm-asset";
 import { claimStickerCredit } from "./sticker-scan.server";
 import { stickerPaymentInWindow } from "./sticker-settlement";
 import { isSharedEvmInvoice, pickSharedInvoice } from "./evm-shared-address";
+import { BSC_NETWORK } from "./chains/networks";
+import { bscScanRange, getBscStableTransfersTo, getBscTip } from "./bsc-mistake-watch.server";
 
 const ADDRESS_WINDOW = 20; // BIP44 gap-limit-style lookahead per chain_config
 
@@ -915,12 +917,16 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
 
         const { data: openInvoices } = await supabaseAdmin
           .from("invoices")
-          .select("address")
+          .select("address, token_symbol")
           .in("chain", ["eth", "base", "bsc"])
           .in("store_id", configList.map((c) => c.store_id))
           .in("status", ["pending", "detected", "underpaid"])
           .not("address", "is", null);
         const addrList = Array.from(new Set((openInvoices ?? []).map((a) => a.address).filter(Boolean)));
+        // Addresses with an open stablecoin sale — the only ones the BNB Chain mistake watch reads.
+        const stableAddrList = Array.from(new Set(
+          (openInvoices ?? []).filter((a) => a.token_symbol && a.address).map((a) => a.address as string),
+        ));
         r.addresses = addrList.length;
 
         if (!addrList.length) {
@@ -941,9 +947,15 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
           );
         }
 
-        for (const net of EVM_NETWORKS) {
+        // BNB Chain is retired for new sales but still watched (free public node,
+        // stablecoins only) so a shopper's wrong-network payment isn't lost.
+        const evmSources: { net: EvmNetwork; mistake: boolean }[] = [
+          ...EVM_NETWORKS.map((net) => ({ net, mistake: false })),
+          ...(stableAddrList.length ? [{ net: BSC_NETWORK, mistake: true }] : []),
+        ];
+        for (const { net, mistake } of evmSources) {
           try {
-            const tip = await getBlockNumber(net, key);
+            const tip = mistake ? await getBscTip() : await getBlockNumber(net, key);
             const { data: cursor } = await supabaseAdmin
               .from("watcher_cursors")
               .select("last_height")
@@ -951,7 +963,12 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               .maybeSingle();
             const fromBlock = Math.max(0, Number(cursor?.last_height ?? 0) - 5);
 
-            const transfers = await getTransfersTo(net, key, addrList, fromBlock);
+            const transfers = mistake
+              ? await (() => {
+                  const range = bscScanRange(cursor?.last_height == null ? null : Number(cursor.last_height), tip);
+                  return getBscStableTransfersTo(stableAddrList, range.from, range.to);
+                })()
+              : await getTransfersTo(net, key, addrList, fromBlock);
             r.credits += transfers.length;
 
             for (const t of transfers) {
@@ -1006,6 +1023,11 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
               const required = effectiveConfsRequired(cfg?.stores ?? null, net.confirmationsRequired, usd, net.symbol);
               const isConfirmed = confirmations >= required;
               if (creditPredatesInvoice(t.blockTimeMs ?? null, inv.created_at)) continue;
+              if (mistake && inv.chain !== "bsc") {
+                // Label the sale with the network the money actually arrived on,
+                // so alerts, receipts and reports say BNB Chain, not Ethereum.
+                await supabaseAdmin.from("invoices").update({ chain: "bsc" }).eq("id", inv.id);
+              }
               await recordTransaction(inv.id, t.txHash, human, confirmations, t.blockNum, isConfirmed, t.asset, t.blockTimeMs ?? null);
               if (isConfirmed) {
                 const settled = await settleInvoice(inv.id, usd, Number(inv.fiat_amount));
