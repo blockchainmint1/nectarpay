@@ -381,7 +381,7 @@ export async function settleInvoice(
     const formatMoney = (amount: number) =>
       new Intl.NumberFormat("en-US", { style: "currency", currency }).format(amount);
     const storeName = store.name?.trim() || "Your store";
-    const chainLabel = inv.chain?.toUpperCase() || "Crypto";
+    const chainLabel = inv.chain === "bsc" ? "BNB Chain" : inv.chain?.toUpperCase() || "Crypto";
     const paymentMethod = inv.token_symbol
       ? `${inv.token_symbol.toUpperCase()} on ${chainLabel}`
       : chainLabel;

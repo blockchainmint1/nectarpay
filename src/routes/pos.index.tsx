@@ -690,7 +690,7 @@ function WaitingScreen({
       // the wallet supports for that asset.
       const nets = token
         ? evmChainsForStable(token).map((k) => EVM_CHAIN_LABEL[k].toUpperCase())
-        : ["ETH", "BASE", "BSC"];
+        : ["ETH", "BASE"]; // BNB Chain is retired: never invite it
       if (token) return `${token} on ${joinNets(nets)}`;
       return joinNets(nets);
     }
