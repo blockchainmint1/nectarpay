@@ -174,6 +174,72 @@ export async function runVerify(
         detail: `${t.amount} ${t.token_symbol ?? ""} · ${t.confirmations} conf · first seen ${t.first_seen_at}`,
       });
     }
+    // Not recorded? For 0x hashes, look it up live on every EVM network
+    // (including retired ones) and see whether it paid one of the stores.
+    if (matches.length === 0 && /^0x/i.test(q)) {
+      const { lookupEvmTxEverywhere } = await import("./evm-tx-lookup.server");
+      const { isChainRetired } = await import("./network-switch");
+      const hits = await lookupEvmTxEverywhere(q);
+      for (const h of hits) {
+        const { data: owned } = await supabaseAdmin
+          .from("derived_addresses")
+          .select("store_id, address, address_index")
+          .ilike("address", h.to)
+          .limit(5);
+        const own = (owned ?? []).find((o) => inScope(o.store_id));
+        const info = own ? await storeInfo(own.store_id) : null;
+        let inv: {
+          id: string;
+          status: string;
+          fiat_amount: number;
+          fiat_currency: string;
+          created_at: string;
+        } | null = null;
+        if (own && h.blockTime) {
+          const { data: invs } = await supabaseAdmin
+            .from("invoices")
+            .select("id, status, fiat_amount, fiat_currency, created_at, expires_at")
+            .eq("store_id", own.store_id)
+            .ilike("address", h.to)
+            .lte("created_at", h.blockTime)
+            .gte("expires_at", h.blockTime)
+            .order("created_at", { ascending: false })
+            .limit(1);
+          inv = (invs?.[0] as typeof inv) ?? null;
+        }
+        const retired = isChainRetired(h.chain);
+        matches.push({
+          kind: "transaction",
+          chain: h.chain,
+          store_id: own?.store_id ?? null,
+          store_name: info?.name ?? null,
+          owner_email: info?.email ?? null,
+          address: own ? own.address : h.to,
+          derivation_index: own?.address_index ?? null,
+          invoice_id: inv?.id ?? null,
+          invoice_status: inv?.status ?? null,
+          invoice_amount: inv ? `${inv.fiat_amount} ${inv.fiat_currency}` : null,
+          invoice_created_at: inv?.created_at ?? null,
+          tx_hash: q,
+          detail: `${h.amount} ${h.symbol} on ${h.networkName}${h.success ? "" : " (FAILED on-chain)"}${
+            h.blockTime ? ` · sent ${h.blockTime}` : ""
+          } · not recorded by NectarPay`,
+        });
+        if (own && retired) {
+          notes.push(
+            `This payment was sent on ${h.networkName}, which NectarPay no longer watches, so no sale was marked paid. The money is in the store's wallet: the same wallet key as Ethereum controls this address on ${h.networkName}.`,
+          );
+        } else if (own) {
+          notes.push(
+            `The money reached the store's wallet on ${h.networkName}, but no sale recorded it — likely a late or unmatched payment.`,
+          );
+        } else {
+          notes.push(
+            `Found on ${h.networkName}, but it was sent to ${h.to}, which isn't one of ${scoped ? "your stores'" : "any store's"} addresses.`,
+          );
+        }
+      }
+    }
     if (matches.length === 0) {
       notes.push(
         scoped
@@ -182,7 +248,9 @@ export async function runVerify(
       );
     }
     for (const [key, net] of Object.entries(ALL_NETWORKS)) {
-      const n = net as { name: string; explorerTx: (t: string) => string };
+      const n = net as { name: string; explorerTx?: (t: string) => string };
+      // Lightning has no on-chain explorer; skip anything without one.
+      if (typeof n.explorerTx !== "function") continue;
       if (matches.length && matches[0].chain && matches[0].chain !== key) continue;
       explorers.push({ label: n.name, url: n.explorerTx(q) });
     }
