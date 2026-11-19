@@ -135,3 +135,7 @@
 - [x] M6 merchants can no longer change store owner, admin market/rep/notes, or reactivate a switched-off store (practice run verified).
 - [ ] Rebuild the POS APK with the new app shell: Bobby runs GitHub → Actions → "POS APK" → Run workflow (or pushes to pos-app).
 - [ ] Still open from the audit, not done this round: M4 terminal secrets stored plainly (already unreadable from browsers), M7 address-counter race, M8 plan change not atomic, M9 webhook URL private-network guard, M10 email relay limits, M11 debuggable register app / pinned Tangem SDK.
+
+## SEEDS BNB Chain payment (Nov 19 2026)
+- [x] Fix the Verify payment crash and look up unrecorded payments live on Ethereum, Base, BNB Chain and ZCU.
+- [x] Mark the SEEDS $400 sale (5954d3c4) paid with the 400.44 USDT BNB Chain payment; callbacks delivered (200), owner alerts sent.
