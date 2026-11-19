@@ -188,13 +188,14 @@ export async function runVerify(
           .limit(5);
         const own = (owned ?? []).find((o) => inScope(o.store_id));
         const info = own ? await storeInfo(own.store_id) : null;
-        let inv: {
+        type InvRow = {
           id: string;
           status: string;
           fiat_amount: number;
           fiat_currency: string;
           created_at: string;
-        } | null = null;
+        };
+        let inv: InvRow | null = null;
         if (own && h.blockTime) {
           const { data: invs } = await supabaseAdmin
             .from("invoices")
@@ -205,7 +206,7 @@ export async function runVerify(
             .gte("expires_at", h.blockTime)
             .order("created_at", { ascending: false })
             .limit(1);
-          inv = (invs?.[0] as typeof inv) ?? null;
+          inv = (invs?.[0] as InvRow | undefined) ?? null;
         }
         const retired = isChainRetired(h.chain);
         matches.push({
