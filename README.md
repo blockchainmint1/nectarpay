@@ -5,109 +5,239 @@
 <h1 align="center">Nectar.Pay</h1>
 
 <p align="center">
-  <strong>Non-custodial crypto payments for real shops.</strong><br>
-  A customer pays. The money lands in the merchant's own wallet. Nothing ever sits here.
+  <strong>Take crypto the way you take cash.</strong><br>
+  A customer pays. The money lands in the shop's own wallet. We never hold it, never freeze it, and never take a cut of the sale.
 </p>
 
 <p align="center">
   <a href="https://app.nectar-pay.com"><img src="https://img.shields.io/badge/live-app.nectar--pay.com-F6A21E?style=flat-square&logo=googlechrome&logoColor=0D1B33" alt="Live app"></a>
-  <img src="https://img.shields.io/badge/TanStack%20Start-React%2019-0D1B33?style=flat-square&logo=react&logoColor=F6A21E" alt="TanStack Start">
-  <img src="https://img.shields.io/badge/TypeScript-strict-0D1B33?style=flat-square&logo=typescript&logoColor=F6A21E" alt="TypeScript">
-  <img src="https://img.shields.io/badge/tests-240%20passing-0D1B33?style=flat-square&logo=vitest&logoColor=F6A21E" alt="240 tests passing">
+  <img src="https://img.shields.io/badge/paid%20sales-617-0D1B33?style=flat-square&logoColor=F6A21E" alt="617 paid sales">
   <img src="https://img.shields.io/badge/custody-0%25-0D1B33?style=flat-square&logo=lock&logoColor=F6A21E" alt="Zero custody">
+  <img src="https://img.shields.io/badge/per--sale%20fee-0%25-0D1B33?style=flat-square&logoColor=F6A21E" alt="No per-sale fee">
+  <img src="https://img.shields.io/badge/tests-240%20passing-0D1B33?style=flat-square&logo=vitest&logoColor=F6A21E" alt="240 tests passing">
   <img src="https://img.shields.io/badge/part%20of-honest.money-F6A21E?style=flat-square" alt="Part of the honest.money ecosystem">
 </p>
 
 ---
 
-**Nectar.Pay is a payment gateway that never holds money.** A merchant pastes in their own
-public wallet key, and every sale settles straight into that wallet — Bitcoin, TEXITcoin,
-Litecoin, Dogecoin, Ethereum, Base, or Zero Chill Units. There is no balance, no withdrawal
-queue, and no percentage skimmed off the top. API keys can create a bill and read their own
-sales; they can never move a coin.
+**Nectar.Pay is the till for honest money.** A shop owner links their own wallet once, sticks
+a QR code on the counter, and starts taking Bitcoin, TEXITcoin and digital dollars. Every
+payment goes straight from the customer's wallet to the shop's wallet. There's no account
+balance sitting with us, no payout to wait for, and no percentage skimmed off the top.
 
-Built for the people who actually run the counter: a barista, a bar owner, a market stall, a
-one-person web shop. If you can print a sticker and paste a key, you can take crypto tomorrow
-morning.
-
-> [!NOTE]
-> This repository is the whole product — merchant app, shopper checkout, public REST API,
-> webhooks, shop plugins, and the Android POS terminal, in one TanStack Start codebase.
+It's built for the people behind the counter: a barista, a bar owner, a market stall, a
+one-person web shop. If you can scan a coin and sign your name, you can take crypto today.
 
 ## Contents
 
-- [The idea, in one picture](#the-idea-in-one-picture)
-- [What you get](#what-you-get)
-- [Coins and networks](#coins-and-networks)
-- [Quick start](#quick-start)
-- [Repo map](#repo-map)
-- [How a payment settles](#how-a-payment-settles)
-- [Public API](#public-api)
-- [Drop-in checkout](#drop-in-checkout)
-- [Shop plugins](#shop-plugins)
-- [Mobile apps](#mobile-apps)
-- [Security posture](#security-posture)
-- [Tests and quality](#tests-and-quality)
-- [Docs in this repo](#docs-in-this-repo)
-- [The ecosystem](#the-ecosystem)
+**For Bobby and backers**
+- [Why it exists](#why-it-exists)
+- [Where it's at](#where-its-at)
+- [How money moves](#how-money-moves)
 
-## The idea, in one picture
+**For merchants**
+- [Getting started: the Fast Start Program](#getting-started-the-fast-start-program)
+- [What happens when a customer pays](#what-happens-when-a-customer-pays)
+- [Running your shop](#running-your-shop)
+- [Give Back](#give-back)
+- [POP rewards](#pop-rewards)
+- [Your money stays yours](#your-money-stays-yours)
+- [Coins you can take](#coins-you-can-take)
+
+**For the technical team**
+- [Quick start](#quick-start) · [Repo map](#repo-map) · [How a payment settles](#how-a-payment-settles)
+- [Public API](#public-api) · [Drop-in checkout](#drop-in-checkout) · [Shop plugins](#shop-plugins)
+- [Mobile apps](#mobile-apps) · [Security details](#security-details) · [Tests](#tests-and-quality) · [Docs](#docs-in-this-repo)
+
+[The ecosystem](#the-ecosystem)
+
+---
+
+# For Bobby and backers
+
+## Why it exists
+
+> *Every payment is a vote. When a customer pays with honest money, they walk a small piece of
+> the economy out from under the printing press.*
+> — [The Nectar-Pay Manifesto](https://app.nectar-pay.com/manifesto)
+
+Card processors and online payment companies sit between a shop and its money. They take a
+percentage of every sale, hold the funds for days, and can shut a merchant off whenever they
+choose. Nectar.Pay removes the middle:
+
+- **The merchant holds the money, not us.** Every sale settles to an address the merchant
+  controls. We can't touch it, so we can't freeze it.
+- **No percentage of the sale.** A percentage fee is a tax on doing well. Merchants pay a flat
+  price instead (see [pricing](#what-it-costs)).
+- **One till, many currencies.** Bitcoin, TEXITcoin, its TSD stable dollar, and the main
+  digital dollars all come in through the same counter.
+
+It continues the work Bobby Gray started in 2008 with the American Open Currency Standard and
+carried on in 2024 with TEXITcoin. Nectar.Pay is one piece of the
+[Honest Money Ecosystem](https://honest.money).
+
+## Where it's at
+
+*Figures read from the live system on Nov 20, 2026.*
+
+| | |
+|---|---|
+| **196** | stores set up |
+| **69** | stores that have taken at least one paid sale |
+| **617** | paid sales since the first one on June 21, 2026 |
+| **218** | of those in the last 30 days |
+| **≈ $433,500** | in dollar-priced sales, every cent paid straight to merchants' own wallets |
+| **$0** | of customer money ever held by Nectar.Pay |
+
+**Working today**
+
+- Shops take payments from a printed sticker, a hosted pay link, the in-store register, or a
+  checkout on their own website.
+- New merchants sign up and go live on their own through the Fast Start Program.
+- Owners get a Telegram message and an email the moment a sale lands, and customers get a
+  receipt, including their signature when they signed for the sale.
+- Give Back and POP rewards are switched on in the app.
+- A public map and directory shows which shops take crypto.
+- Nine ready-made plugins connect popular online shop systems, and an Android register app
+  runs on payment terminals.
+
+**Still to finish**
+
+| What | Waiting on |
+|---|---|
+| CryptoPOP reporting a sticker payment back right after it's sent | CryptoPOP adding that step on their side |
+| First real tap with a funded card on a physical terminal | A paired terminal, a funded card and the cardholder's approval |
+| A brand-new Fast Start signup checked end to end | A fresh, unused Cold Storage Coin |
+| Letting a merchant take over a starter store as their own | A safe way to prove they own it |
+| Text-message and WhatsApp alerts | Put on hold by Bobby; needs Twilio and Meta approval |
+
+## How money moves
 
 ```text
-   shopper                  NectarPay                   merchant wallet
+   customer                 Nectar.Pay                  merchant wallet
       │                          │                             │
-      │  scan QR / open link     │                             │
+      │  scan sticker / open link│                             │
       ├─────────────────────────>│                             │
-      │                          │  derive a fresh address     │
-      │                          │  from the merchant's xpub   │
+      │                          │  make a brand-new address   │
+      │                          │  from the merchant's wallet │
       │  "send 412.03 TSD"       │                             │
       │<─────────────────────────┤                             │
       │                          │                             │
       │  pay from their wallet   │                             │
       ├──────────────────────────────────────────────────────> │
       │                          │                             │
-      │                     watch the chain ─────────────────> │  funds arrive
+      │                     watch the blockchain ────────────> │  money arrives
       │                          │                             │
-      │                          │  exact amount? record it    │
-      │  receipt + merchant alert│  email · Telegram · webhook │
+      │                          │  right amount? record it    │
+      │  receipt + shop alert    │  email · Telegram · website │
       │<─────────────────────────┤<────────────────────────────┤
 ```
 
-Money only ever moves **shopper → merchant**. NectarPay watches, matches, and tells everyone
-what happened.
+Money only ever moves **customer → merchant**. Nectar.Pay watches, matches the payment to the
+bill, and tells everyone what happened.
 
-## What you get
+---
+
+# For merchants
+
+## Getting started: the Fast Start Program
 
 <p align="center">
-  <img src="docs/images/nectarpay-onramp.png" alt="Merchant onramp" width="880">
+  <img src="docs/images/nectarpay-onramp.png" alt="The merchant onramp page" width="880">
 </p>
+
+1. **Get your kit.** You receive a Cold Storage Coin and a sheet of matching stickers. The
+   coin's ID is your merchant code, and capital letters count.
+2. **Open [app.nectar-pay.com/fast](https://app.nectar-pay.com/fast)** on a tablet or phone.
+   Type your website first and we fill in your business details from it for you to check.
+3. **Scan the coin.** That fills in the coin ID and its wallet key, so payments go straight to
+   the coin.
+4. **Sign on screen** and tick the agreements. Choose whether to appear in the public shop
+   directory.
+5. **You're live straight away.** No waiting for approval. New stores start out taking TSD on
+   TEXITcoin.
+6. **Check your email.** The welcome message has your sticker link, a link to switch on
+   Telegram alerts, and a link to create your login.
+7. **Try it.** Make a test payment of any amount and watch the alert arrive.
+
+Fast Start is open to shops in the United States for now.
+
+### What it costs
+
+There's no percentage taken from any sale. The terminal kit, including the first year, is
+**$799**, which covers the **$300** first-year merchant fee. See
+[app.nectar-pay.com/onramp](https://app.nectar-pay.com/onramp).
+
+## What happens when a customer pays
+
+1. The customer scans your sticker, taps their card on your terminal, or picks crypto at your
+   online checkout.
+2. They type the amount (or the register fills it in) and pay from their own wallet.
+3. The money goes straight to your wallet. A sticker takes any amount, from a coffee to a car.
+4. You get a Telegram message and an email. The customer gets a receipt.
+5. If someone pays too little, too much, or in a way that doesn't match a bill, it's set aside
+   on your **unmatched payments** list for you to sort out. Nothing is guessed.
+
+## Running your shop
 
 | | |
 |---|---|
-| **Checkout** | Hosted invoice page, BIP-21 payment codes, QR, live countdown and paid-in-full / short / over payments, with a merchant-branded page. |
-| **Fast Start Program** | Paste a Cold Storage Coin ID, sign on screen, and the coin-and-sticker kit ships to a ready-to-take-payments store with its own `/s/<code>` sticker URL. |
-| **Terminal (POS)** | Browser register with a product catalogue, cash/tender split, change, tip, **NFC tap-to-pay cards**, customer signature capture, and a printed or emailed receipt. |
-| **Give Back** | A shopper can pay less by routing part of the sale to a church and the program — a 10% discount, split 8% church / 2% program. |
-| **POP Rewards** | Shoppers earn 1 non-spendable POP per US dollar spent, rounded up, on every sale. |
-| **Merchant Directory** | A public map and listing of shops that accept crypto, with a partner feed anyone can read. |
-| **Reports** | Daily sales by tender and network, CSV export, per-sticker and per-terminal reports, and a customer list with separate marketing consent. |
-| **Alerts** | Email and Telegram when a sale lands, a payment looks wrong, or a wallet key changes. |
-| **Team** | Staff accounts with per-person permissions, MFA, and an audit trail you cannot edit. |
+| **Register** | A point-of-sale screen with your products, cash and crypto, tips, change, signatures, and printed or emailed receipts. |
+| **Tap-to-pay cards** | Customers tap a CryptoPOP card on your terminal, type a PIN, and pay. |
+| **Alerts** | Telegram and email for every sale, anything that looks wrong, and any change to your wallet. |
+| **Reports** | Daily sales by payment type, in your own time zone, with downloads for your bookkeeper. |
+| **Customer list** | Everyone who bought from you. A receipt email never counts as permission to market to them; that's a separate box the customer ticks themselves. |
+| **Team** | Staff logins with their own permissions, and a history of changes nobody can edit. |
+| **Directory** | An optional listing on the public map of shops that take crypto. |
+| **Guide** | A 12-chapter illustrated guide inside the app under **Docs**, from signing up to tap cards. |
 
-## Coins and networks
+## Give Back
 
-| Network | Status | Notes |
+Switch it on yourself in your store's payment settings. Customers paying in TSD get **10% off**,
+and that one payment is split in a single transaction:
+
+| You receive | The customer's church | The program |
+|:---:|:---:|:---:|
+| **90%** | **8%** | **2%** |
+
+Rewards are still earned on the full price. The church and program shares can't be refunded;
+only your share can, and the receipt says so.
+
+## POP rewards
+
+Customers earn **1 POP for every dollar** of the full sale, rounded up to a whole POP, at every
+Nectar.Pay shop and for every way of paying. POP are reward points, not spending money, and
+CryptoPOP sends them out. Each sale can only earn once, and there are limits to stop abuse:
+no rewards for buying from your own store, a 14-day wait for brand-new stores, up to 250 POP per
+customer per store per day, and up to 5,000 POP per store per day.
+
+## Your money stays yours
+
+- **There's nothing here to steal.** We never have your private keys or a balance of your money.
+- **Nobody can mark a sale paid by hand.** Only a real payment on the blockchain does that.
+- **Changing your wallet is slow on purpose.** It needs a code emailed to you, a new wallet waits
+  four hours before it can receive payments, and you always get an alert you can't switch off.
+- **Throwaway email addresses can't sign up.**
+- **Website keys can create bills and read sales, but can never move money.**
+
+## Coins you can take
+
+| Coin or network | Status | Notes |
 |---|---|---|
-| **TEXITcoin** | live | Native coin plus **TSD** stablecoin on the Omni layer; the platform's home chain. |
-| **Bitcoin** | live | Native only, bech32 receive addresses. |
-| **Litecoin / Dogecoin** | live | Native coins; one xpub covers each family. |
-| **Ethereum** | live | Native plus USDC, USDT, PYUSD and DAI. |
-| **Base** | live | Native plus USDC, USDT and DAI. |
-| **Zero Chill Units (ZCU)** | live | EVM fork watched over its own public RPC; native coin only. |
-| **BNB Smart Chain** | retired, but watched | Hidden from shoppers; a free public node still watches for stablecoins sent here by mistake and credits real sales. |
-| **Tron, Solana, Bitcoin Cash, Dash** | retired | Saved keys are kept, new bills are refused, so no watcher burns paid RPC calls. |
-| **Bitcoin Lightning** | off | Gated in code and blocked by a database constraint. |
-| **ISK** | not yet wired | Same shape as TEXITcoin with a different address path. |
+| **TEXITcoin** | live | TEXITcoin plus **TSD**, its stable dollar. The home network. |
+| **Bitcoin** | live | |
+| **Litecoin / Dogecoin** | live | |
+| **Ethereum** | live | ETH plus the digital dollars USDC, USDT, PYUSD and DAI. |
+| **Base** | live | ETH plus USDC, USDT and DAI. |
+| **Zero Chill Units (ZCU)** | live | ZCU only. |
+| **BNB Chain** | not offered, but watched | Hidden from customers. Digital dollars sent here by mistake are still picked up and credited. |
+| **Tron, Solana, Bitcoin Cash, Dash** | retired | No new bills. |
+| **Bitcoin Lightning** | off | |
+| **ISK** | coming | Works like TEXITcoin. |
+
+---
+
+# For the technical team
 
 ## Quick start
 
@@ -286,7 +416,7 @@ under `public/plugins/`:
 | **POS terminal** | A signed Android APK built by the `POS APK` GitHub Action — push the `pos-app` branch or tag `pos-v*`, and the download lands at `/pos.apk`. |
 | **Merchant app** | A Capacitor wrapper around the web app (`bun run sync:merchant`, then open it in Xcode or Android Studio). |
 
-## Security posture
+## Security details
 
 - **Nothing to steal.** No private keys, no stored balances, no withdrawal queue.
 - **Row-level security everywhere.** Every table is locked down by policy; some columns
@@ -332,7 +462,9 @@ mode.
 Merchants get their own illustrated guide in the app at **Docs** — twelve chapters from
 enrollment to tech stuff.
 
-## The ecosystem
+---
+
+# The ecosystem
 
 Nectar.Pay is one piece of the **Honest Money Ecosystem** — [honest.money](https://honest.money).
 
