@@ -15,7 +15,7 @@ import {
 } from "@/lib/chains/derive.server";
 import { getUsdRate } from "@/lib/rates.functions";
 import { EVM_SHARED_INDEX, applyTail, pickFreeTail, tailOf } from "@/lib/evm-shared-address";
-import { RECYCLE_AFTER_OPEN_MS, addressReusable } from "./evm-address-mode";
+import { RECYCLE_AFTER_OPEN_MS, pickRecyclableAddress } from "./evm-address-mode";
 
 export interface DeriveResult {
   address: string;
@@ -83,15 +83,37 @@ export async function deriveInvoiceAddress(
     }
   }
 
+  // Rate first, so a failed price lookup never uses up an address number.
+  // Rate: stable = $1; otherwise look up the chain's native asset.
+  const baseSymbol = tokenSymbol
+    ? tokenSymbol
+    : chain === "base" ? "eth"
+    : chain === "tron" ? "trx"
+    : chain === "sol"  ? "sol"
+    : chain;
+  const rate = await getUsdRate(baseSymbol).catch(() => 0);
+  if (!rate || rate <= 0) throw new Error("Could not fetch exchange rate.");
+  const baseAmount = fiatAmount / rate;
+
   let address: string;
   // Rotating derivation starts at 1: index 0 is the account's main address,
   // used only by single-address EVM mode below (strict amount matching).
+  // A fresh index is claimed atomically (claim_address_index) right before it
+  // is derived, so two sales created at once never share an address.
   let index = Math.max(1, cfg.next_address_index ?? 0);
+  const claimIndex = async (): Promise<number> => {
+    const { data: claimed, error: claimErr } = await supabaseAdmin.rpc("claim_address_index", { _config_id: cfg.id });
+    if (claimErr || typeof claimed !== "number") {
+      throw new Error("Could not reserve a receiving address — please try again.");
+    }
+    return claimed;
+  };
   let recycledEvmAddress = false;
   let evmSharedAddress = false;
   const xpub = cfg.xpub ?? cfg.xpub_or_address;
 
   if (net.kind === "btc-like") {
+    index = await claimIndex();
     address = deriveBtcLikeAddress(xpub, net, index);
   } else if (net.kind === "evm" && !(await evmRotationEnabled(supabaseAdmin, storeId))) {
     // Rotation switched off (the default for new stores): every EVM invoice is
@@ -105,10 +127,9 @@ export async function deriveInvoiceAddress(
   } else if (net.kind === "evm") {
     // EVM is account-based — each derived address must be swept individually
     // (gas per address per token). When an invoice expires unpaid, the index
-    // is wasted forever unless we recycle it. Try to reuse an address from a
-    // prior expired/cancelled invoice on this store+chain that has NEVER
-    // received funds (no pending/detected/underpaid/confirmed/overpaid
-    // invoice ever landed on it). Falls back to fresh derivation.
+    // is wasted forever unless we recycle it. "Rotate and recycle" stores may
+    // reuse an idle address once no sale on it (on any EVM network) is open
+    // and its last sale's late-payment hour is over; else derive a fresh one.
     // "Rotate and never reuse" stores always get a brand-new address.
     const recycled = (await evmReuseEnabled(supabaseAdmin, storeId))
       ? await findRecyclableEvmAddress(supabaseAdmin, storeId, chain)
@@ -118,27 +139,23 @@ export async function deriveInvoiceAddress(
       index = recycled.address_index ?? index;
       recycledEvmAddress = true;
     } else {
+      index = await claimIndex();
       address = deriveEvmAddress(xpub, net, index);
     }
   } else if (net.kind === "tron") {
-    address = xpub.startsWith("T") ? xpub : deriveTronAddress(xpub, index);
-    if (xpub.startsWith("T")) index = 0;
+    if (xpub.startsWith("T")) {
+      address = xpub;
+      index = 0;
+    } else {
+      index = await claimIndex();
+      address = deriveTronAddress(xpub, index);
+    }
   } else {
     address = cfg.xpub_or_address;
     index = 0;
   }
 
 
-  // Rate: stable = $1; otherwise look up the chain's native asset.
-  const baseSymbol = tokenSymbol
-    ? tokenSymbol
-    : chain === "base" ? "eth"
-    : chain === "tron" ? "trx"
-    : chain === "sol"  ? "sol"
-    : chain;
-  const rate = await getUsdRate(baseSymbol).catch(() => 0);
-  if (!rate || rate <= 0) throw new Error("Could not fetch exchange rate.");
-  const baseAmount = fiatAmount / rate;
 
   // ---- Amount-nonce disambiguation ----
   // For chains where the receiving address is shared across invoices (Solana
@@ -165,8 +182,7 @@ export async function deriveInvoiceAddress(
 
   // Bump address counter + log derivation. Skip for:
   //   - shared-address chains (Solana, Tron-static)
-  //   - recycled EVM addresses (counter already advanced when first derived;
-  //     derived_addresses row already exists)
+  //   - recycled EVM addresses (derived_addresses row already exists)
   const isStaticShared =
     net.kind === "solana" || (net.kind === "tron" && xpub.startsWith("T")) || evmSharedAddress;
   if (evmSharedAddress) {
@@ -182,10 +198,7 @@ export async function deriveInvoiceAddress(
       }, { onConflict: "chain_config_id,address_index" });
   }
   if (!isStaticShared && !recycledEvmAddress) {
-    await supabaseAdmin
-      .from("chain_configs")
-      .update({ next_address_index: index + 1, next_derivation_index: index + 1 })
-      .eq("id", cfg.id);
+    // The counter already moved in claim_address_index; only log the address.
     const { error: upsertAddressError } = await supabaseAdmin
       .from("derived_addresses")
       .upsert({
@@ -353,32 +366,23 @@ async function findRecyclableEvmAddress(
     ((validRows ?? []) as Array<{ address: string }>).map((r) => r.address.toLowerCase()),
   );
 
-  const seen = new Set<string>();
-  for (const c of (candidates ?? []) as Array<{ address: string; address_index: number | null }>) {
-    if (seen.has(c.address)) continue;
-    seen.add(c.address);
+  const list = (candidates ?? []) as Array<{ address: string; address_index: number | null }>;
+  if (list.length === 0) return null;
 
-    // Never recycle index 0.
-    if ((c.address_index ?? 0) < 1) continue;
-
-    // Must be derivable from the current xpub.
-    if (!validAddresses.has(c.address.toLowerCase())) continue;
-
-    // Skip if ANY invoice on this address is currently live, or had activity
-    // (of any status) within the recycle window.
-    const { data: siblings } = await supabaseAdmin
-      .from("invoices")
-      .select("status, created_at, expires_at")
-      .eq("store_id", storeId)
-      .eq("chain", chain)
-      .eq("address", c.address);
-    const safe = addressReusable(siblings ?? [], Date.now());
-    if (safe) {
-      return { address: c.address, address_index: c.address_index };
-    }
+  // Every sale on those addresses, on ANY network: one EVM address serves
+  // Ethereum, Base and BSC, so an open Base sale must block an Ethereum reuse.
+  // One query for all candidates instead of one per address.
+  const lookup = Array.from(new Set(list.flatMap((c) => [c.address, c.address.toLowerCase()])));
+  const { data: siblings, error: sibErr } = await supabaseAdmin
+    .from("invoices")
+    .select("address, status, created_at, expires_at")
+    .eq("store_id", storeId)
+    .in("address", lookup);
+  if (sibErr) {
+    console.error("[invoice-derive] recycle sibling check failed:", sibErr.message);
+    return null; // never recycle blind — derive a fresh address instead
   }
-  return null;
-
+  return pickRecyclableAddress(list, siblings ?? [], validAddresses, Date.now());
 }
 
 

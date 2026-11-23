@@ -407,6 +407,13 @@
       "when": 1795457980840,
       "tag": "0057_evm_address_reuse_mode",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1795461953311,
+      "tag": "0058_atomic_address_index_claim",
+      "breakpoints": true
     }
   ]
 }

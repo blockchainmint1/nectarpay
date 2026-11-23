@@ -38,3 +38,36 @@ export function addressReusable(
     return created < nowMs - RECYCLE_AFTER_OPEN_MS && expires < nowMs - RECYCLE_AFTER_EXPIRY_MS;
   });
 }
+
+type Sale = { status: string; created_at: string; expires_at: string | null };
+
+/**
+ * Pick the first candidate address that may go to a new sale. `sales` holds
+ * every sale on those addresses, on any EVM network (one address serves
+ * Ethereum, Base and BSC alike), so an open sale on another network blocks it.
+ * Index 0 and addresses not derivable from the current wallet are never used.
+ */
+export function pickRecyclableAddress<C extends { address: string; address_index: number | null }>(
+  candidates: C[],
+  sales: Array<Sale & { address: string }>,
+  derivable: Set<string>,
+  nowMs: number,
+): C | null {
+  const byAddress = new Map<string, Sale[]>();
+  for (const s of sales) {
+    const key = s.address.toLowerCase();
+    const list = byAddress.get(key) ?? [];
+    list.push(s);
+    byAddress.set(key, list);
+  }
+  const seen = new Set<string>();
+  for (const c of candidates) {
+    const key = c.address.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    if ((c.address_index ?? 0) < 1) continue;
+    if (!derivable.has(key)) continue;
+    if (addressReusable(byAddress.get(key) ?? [], nowMs)) return c;
+  }
+  return null;
+}

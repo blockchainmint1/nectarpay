@@ -6,7 +6,7 @@ const at = "2026-11-09T19:00:00Z";
 describe("risky-change alerts", () => {
   it("covers every monitored change", () => {
     for (const kind of ["webhook_changed", "admin_granted", "store_admin_added", "api_key_created", "terminal_paired", "code_lockout"]) {
-      const { subject, lines } = describeSecurityEvent({ kind, detail: {}, created_at: at }, { storeName: "Kira Gray" });
+      const { subject, lines } = describeSecurityEvent({ kind, detail: {}, created_at: at }, { storeName: "Sample Store" });
       expect(subject.length).toBeGreaterThan(5);
       expect(lines.length).toBeGreaterThan(0);
     }
@@ -15,7 +15,7 @@ describe("risky-change alerts", () => {
   it("never puts the webhook secret in the alert", () => {
     const { lines } = describeSecurityEvent(
       { kind: "webhook_changed", detail: { old_url: "https://a.test/h", new_url: "https://evil.test/h", secret_changed: true, secret: "whsec_TOPSECRET" }, created_at: at },
-      { storeName: "Kira Gray", actorEmail: "x@y.com" },
+      { storeName: "Sample Store", actorEmail: "x@y.com" },
     );
     expect(lines.join("\n")).not.toContain("TOPSECRET");
     expect(lines.join("\n")).toContain("https://evil.test/h");

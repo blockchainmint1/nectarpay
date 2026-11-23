@@ -230,13 +230,10 @@ async function resolveSweepAddress(
       const { getNetwork } = await import("@/lib/chains/networks");
       const net = getNetwork("btc");
       if (!net || net.kind !== "btc-like") throw new Error("btc network missing");
-      const index = Math.max(1, Number(btcCfg.next_address_index ?? 0));
-      const address = deriveBtcLikeAddress(xpub, net, index);
-      await supabaseAdmin
-        .from("chain_configs")
-        .update({ next_address_index: index + 1, next_derivation_index: index + 1 })
-        .eq("id", btcCfg.id);
-      return address;
+      // Claimed atomically so a concurrent sale never gets the same address.
+      const { data: index, error: claimErr } = await supabaseAdmin.rpc("claim_address_index", { _config_id: btcCfg.id });
+      if (claimErr || typeof index !== "number") throw new Error("could not reserve an address index");
+      return deriveBtcLikeAddress(xpub, net, index);
     } catch (e) {
       console.warn(`[lightning] BTC xpub derivation failed for store ${storeId}, falling back to manual address:`, (e as Error).message);
     }

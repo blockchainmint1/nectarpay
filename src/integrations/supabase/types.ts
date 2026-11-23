@@ -3377,6 +3377,7 @@ export type Database = {
         }
         Returns: number
       }
+      claim_address_index: { Args: { _config_id: string }; Returns: number }
       create_sticker_invoice: {
         Args: { _amount: number; _code: string; _excluded: string[] }
         Returns: string

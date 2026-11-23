@@ -104,24 +104,23 @@
 - [x] Block script "return links" on checkout (input check, safe render, database rule); 4 booby-trapped test sales cleaned.
 - [x] Remove the Android signing-key helper that printed the key into build logs; remove the outdated package-lock.json.
 - [x] Wallet-key change alerts can't be muted (sign-in email + every linked Telegram) and admins get a copy.
-- [ ] Bobby: check GitHub Actions history for "Generate Android Keystore" runs; delete those logs/artifacts and decide on rotating the APK key.
+- [ ] Bobby: delete old Android build runs in GitHub Actions and decide on replacing the app signing key (details kept privately).
 - [x] Wallet keys can only be changed through the server (browser direct writes removed); owner/full-access team/admin only. Admins kept, but always need the emailed code.
 - [x] Emailed 6-digit code for every wallet-key change except a store's very first key; 2-step login enforced by the database for users who turned it on. Code prompt verified in browser (code sent, nothing saved without it).
 - [x] 4-hour wait before a replacement key takes payments; old wallet keeps getting paid, owner can Cancel. Verified hand-over in an undone practice run and Cancel in the browser.
 - [x] Monitoring: unmutable alerts to owner + admins for webhook changes, new platform/store admins, new API keys, new terminals, code lockouts; webhook alert verified (no secrets in it).
-- [x] Auditor follow-up on booby-trapped return links: all 4 found (probe accounts only); nobody else opened them; no real wallet/admin/team/API-key/webhook changes; closed the hole letting merchants mark their own sales paid (11 fake paid sales, all probe/test stores).
-- [ ] Decide: revoke the 4 probe-store API keys and suspend the probe accounts (awaiting Bobby).
+- [x] Auditor follow-up on booby-trapped return links: all found on test accounts only; no real wallet/admin/team/key/webhook changes; closed the hole letting merchants mark their own sales paid.
+- [ ] Decide what to do with the audit's test accounts (awaiting Bobby).
 - [ ] Real end-to-end replacement with an emailed code typed in, and real alert email arrival: needs Bobby to try it on a test store.
 - [x] Still open from earlier report: free trial fixed and Capacitor upgraded Nov 15; Lightning sweep race moot while Lightning is off.
 - [ ] Solana amount rounding overcharge (e.g. $5 SOL sale asked 0.0649 SOL ≈ $5.63).
 
 ## Lightning node wind-down (Nov 10 2026)
-- [x] Closed the ACINQ channel cooperatively (closing tx 9cb9a2aa…8ffb, ~14,468 sats back to node wallet).
-- [x] Sent 1,472,089 sats to Bobby's address bc1qf0xln3lctddltcgtpenqyj6s36w4smkgtcjrj0 (tx 4eacee1e…1bab).
-- [x] Close confirmed; sent the last 14,171 sats to the same address (tx 7825b2f6…f9d9). Node wallet is at 0.
-- [x] Bobby confirmed he has the 24-word seed.
-- [x] Bobby stopped LND, powered off, snapshotted and destroyed the droplet (Nov 11). Verified from here: SSH closed, P2P port closed, node REST unreachable — nothing is running or billing. Node settings and Admin → Lightning kept so it can be revived later from the snapshot plus the 24-word seed.
-- [ ] Optional cleanup: node-btc.honest.money still points at the dead droplet IP 157.245.49.73 in honest.money's DNS. Harmless, but worth deleting (or repointing when a new node is made).
+- [x] Closed the node's payment channel cooperatively; funds returned to the node wallet.
+- [x] Swept the node wallet to Bobby's own wallet.
+- [x] Close confirmed; swept the remainder. Node wallet is at 0.
+- [x] Node server shut down and removed (Nov 11); verified nothing is running or billing. Settings kept so it can be revived later.
+- [ ] Optional cleanup: remove the old node's DNS name (harmless while it points nowhere).
 
 ## Security re-audit (Nov 15 2026)
 - [x] Upgrade the app shell (Capacitor 8.4.1 → 8.6.2), seroval (1.6.8 → 1.6.12) and zod (3.25 → 4.6.7); 226 tests passed, main pages load.
@@ -134,21 +133,27 @@
 - [x] M3 free-trial clock can no longer be restarted by switching the trial type.
 - [x] M6 merchants can no longer change store owner, admin market/rep/notes, or reactivate a switched-off store (practice run verified).
 - [ ] Rebuild the POS APK with the new app shell: Bobby runs GitHub → Actions → "POS APK" → Run workflow (or pushes to pos-app).
-- [ ] Still open from the audit, not done this round: M4 terminal secrets stored plainly (already unreadable from browsers), M7 address-counter race, M8 plan change not atomic, M9 webhook URL private-network guard, M10 email relay limits, M11 debuggable register app / pinned Tangem SDK.
+- [ ] Still open from the audit, not done this round: M4 terminal secrets stored plainly (already unreadable from browsers), M8 plan change not atomic, M9 webhook URL private-network guard, M10 email relay limits, M11 debuggable register app / pinned Tangem SDK.
 
-## SEEDS BNB Chain payment (Nov 19 2026)
+## Mistaken BNB Chain payments (Nov 19 2026)
 - [x] Fix the Verify payment crash and look up unrecorded payments live on Ethereum, Base, BNB Chain and ZCU.
-- [x] Mark the SEEDS $400 sale (5954d3c4) paid with the 400.44 USDT BNB Chain payment; callbacks delivered (200), owner alerts sent.
+- [x] Mark a merchant's $400 sale paid with its mistaken BNB Chain USDT payment; callbacks delivered, owner alerts sent.
 - [x] Keep BNB Chain hidden from shoppers but watch it for mistaken USDT/USDC payments; exact matches are marked paid (Bobby's choice), others wait for the merchant.
 
 ## Wallet balances
-- [x] Trace SEEDS's $2,000 USDC on Base: five real $400 sales (Nov 18, 19, 21 ×2, 22) paid on Base to address #1, each already recorded as paid (labelled Ethereum).
+- [x] Trace a merchant's unexplained Base USDC: real sales paid on Base, already recorded as paid (relabelled Base).
 - [x] Rebuild the Wallet balances page: live full-scan total, paid-sales comparison, coin mix, per-network cards with funded addresses, empty-address toggle, copy/explorer links; retired networks shown only when holding money.
-- [x] Count each wallet's first address (#0) in Wallet balances when a sale was paid there (mineTXC: 17 Ethereum sales, 1 Bitcoin, 1 TEXITcoin used #0).
+- [x] Count each wallet's first address (#0) in Wallet balances when a sale was paid there.
 - [x] Price BNB so the Wallet balances page stops counting it as $0: the live rates poller now asks CoinMarketCap for BNB and files it under the existing "bsc" chain key (rates_cache has no "bnb" key), and a new test refuses any network whose native coin has no price source. Shows on the live site's next price poll after publishing.
-- [x] Final blockchain check before Ethereum/Base sales expire (mvforlife34's missed $400 USDC on SEEDS, credited by hand).
+- [x] Final blockchain check before Ethereum/Base sales expire (one missed on-time payment credited by hand).
 - [x] Every coin: last look before expiry (TXC/TSD/BTC/LTC/DOGE/ZCU too), expiry runs after the payment scan.
 - [x] Sales whose payment is seen but still confirming wait instead of expiring (24h cap).
 - [x] Late/missed payments on any wallet address land in the merchant's 'payments that didn't match' card, and the merchant can apply them.
-- [x] Five late payments (~$6,036, mineTXC/mineHME): Bobby said mark paid — re-verify on chain, record and settle each.
+- [x] Late payments found in the sweep: Bobby said mark paid — re-verified on chain, recorded and settled each.
 - [x] Three EVM address settings per store (one address / rotate+recycle / rotate+never reuse); recycling waits for the late-payment hour.
+
+## Reviews of Nov 23 changes
+- [x] Address re-use checks every EVM network (an open Base sale blocks re-using that address for Ethereum), in one lookup instead of one per address.
+- [x] Address numbers are handed out atomically, so two sales started at once never share an address (closes audit M7).
+- [x] Remove private details (personal wallet, server, customer and merchant specifics) from these notes and test examples.
+- [ ] Bobby: switch the GitHub repo to private, and delete old Android build runs; older copies of these notes stay in the repo's history until then.

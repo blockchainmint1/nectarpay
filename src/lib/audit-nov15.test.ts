@@ -53,9 +53,9 @@ describe("tap-to-pay payout alerts", () => {
   it("names the new address and when it takes over", () => {
     const { subject, lines } = describeSecurityEvent(
       { kind: "payout_address_changed", detail: { old_address: null, new_address: "0xabc", scheduled: true, activates_at: "2026-11-15T05:00:00Z" }, created_at: "2026-11-15T01:00:00Z" },
-      { storeName: "Kira Gray", actorEmail: "x@y.com" },
+      { storeName: "Sample Store", actorEmail: "x@y.com" },
     );
-    expect(subject).toContain("Kira Gray");
+    expect(subject).toContain("Sample Store");
     expect(lines.join("\n")).toContain("0xabc");
     expect(lines.join("\n")).toContain("Sun, 15 Nov 2026 05:00:00 GMT");
   });
