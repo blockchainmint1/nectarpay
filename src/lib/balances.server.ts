@@ -131,6 +131,13 @@ async function solanaBalance(
 
 // ---------- public API ----------
 
+/** Native coin of an EVM network: Ethereum and Base both use ETH. */
+export function evmNativeSymbol(chain: string): string {
+  if (chain === "bsc") return "BNB";
+  if (chain === "zcu") return "ZCU";
+  return "ETH";
+}
+
 /**
  * Balance for a single derived/static address on `chain`.
  * `enabledStables` limits which token contracts we query.
@@ -177,7 +184,7 @@ export async function getAddressBalance(
         }
       }
     } else if (net.kind === "evm") {
-      row.nativeSymbol = chain === "bsc" ? "BNB" : "ETH";
+      row.nativeSymbol = evmNativeSymbol(chain);
       const { native, tokens } = await evmAddressBalance(
         chain,
         address,

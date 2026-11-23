@@ -140,6 +140,22 @@
   --sidebar-border: rgba(255,255,255,0.08);
   --sidebar-ring: #F6A21E;
 
+  /* Coin colors for wallet balance charts (same in both themes). */
+  --asset-tsd: #F9C33E;
+  --asset-txc: #D4643A;
+  --asset-usdc: #3A8DDE;
+  --asset-usdt: #26A17B;
+  --asset-pyusd: #8FA3D6;
+  --asset-dai: #E3A73C;
+  --asset-eth: #7B8CFF;
+  --asset-base: #3D7BFF;
+  --asset-btc: #F7931A;
+  --asset-ltc: #A6A9AA;
+  --asset-doge: #C2A633;
+  --asset-bnb: #F0B90B;
+  --asset-zcu: #5BC0EB;
+  --asset-other: #6A7182;
+
   /* Brand gradients */
   --gradient-honey: linear-gradient(135deg, #F9C33E, #E8880C);
   --gradient-honey-soft: linear-gradient(180deg, rgba(246,162,30,0.15), transparent);

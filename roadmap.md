@@ -140,3 +140,7 @@
 - [x] Fix the Verify payment crash and look up unrecorded payments live on Ethereum, Base, BNB Chain and ZCU.
 - [x] Mark the SEEDS $400 sale (5954d3c4) paid with the 400.44 USDT BNB Chain payment; callbacks delivered (200), owner alerts sent.
 - [x] Keep BNB Chain hidden from shoppers but watch it for mistaken USDT/USDC payments; exact matches are marked paid (Bobby's choice), others wait for the merchant.
+
+## Wallet balances
+- [x] Trace SEEDS's $2,000 USDC on Base: five real $400 sales (Nov 18, 19, 21 ×2, 22) paid on Base to address #1, each already recorded as paid (labelled Ethereum).
+- [x] Rebuild the Wallet balances page: live full-scan total, paid-sales comparison, coin mix, per-network cards with funded addresses, empty-address toggle, copy/explorer links; retired networks shown only when holding money.

@@ -23,6 +23,18 @@ export interface BalanceChainSummary {
   stables: string[];
   /** False when the store hasn't linked a wallet for this chain yet. */
   configured: boolean;
+  /** Retired platform-wide: never offered, only watched for mistaken payments. */
+  retired: boolean;
+  /** Switched on for new sales. */
+  enabled: boolean;
+}
+
+export interface PaidSalesSummary {
+  count: number;
+  /** Sum of dollar-priced paid sales. */
+  usd: number;
+  /** False when some paid sales were priced in another currency. */
+  allUsd: boolean;
 }
 
 const EVM_SHARED = ["eth", "base", "bsc"] as const;
@@ -56,7 +68,11 @@ function pickConfigRow(
 export const listBalanceChains = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => ListInput.parse(d))
-  .handler(async ({ data, context }): Promise<{ chains: BalanceChainSummary[] }> => {
+  .handler(
+    async ({
+      data,
+      context,
+    }): Promise<{ chains: BalanceChainSummary[]; paidSales: PaidSalesSummary }> => {
     const { data: rows, error } = await context.supabase
       .from("chain_configs")
       .select("chain, xpub, xpub_or_address, enabled, next_address_index, stables")
@@ -85,6 +101,7 @@ export const listBalanceChains = createServerFn({ method: "POST" })
     };
 
     const netModule = await import("./chains/networks");
+    const { isChainRetired } = await import("./network-switch");
     const allNetworks = netModule.ALL_NETWORKS as Record<string, { kind: string; name: string }>;
 
     const chains: BalanceChainSummary[] = [];
@@ -120,10 +137,33 @@ export const listBalanceChains = createServerFn({ method: "POST" })
         lastIndex,
         stables: configured ? ((row?.stables ?? []) as string[]).map((s) => s.toUpperCase()) : [],
         configured,
+        retired: isChainRetired(chain),
+        enabled: !!row?.enabled && !isChainRetired(chain),
       });
     }
-    return { chains };
-  });
+
+    // Every paid sale on record, to compare with what the wallets hold now.
+    const paidSales: PaidSalesSummary = { count: 0, usd: 0, allUsd: true };
+    for (let from = 0; from < 50_000; from += 1000) {
+      const { data: inv, error: invErr } = await context.supabase
+        .from("invoices")
+        .select("fiat_amount, fiat_currency")
+        .eq("store_id", data.storeId)
+        .in("status", ["confirmed", "overpaid"])
+        .order("created_at", { ascending: true })
+        .range(from, from + 999);
+      if (invErr) break;
+      for (const r of inv ?? []) {
+        paidSales.count++;
+        if ((r.fiat_currency ?? "USD").toUpperCase() === "USD") paidSales.usd += Number(r.fiat_amount ?? 0);
+        else paidSales.allUsd = false;
+      }
+      if ((inv ?? []).length < 1000) break;
+    }
+    paidSales.usd = Number(paidSales.usd.toFixed(2));
+    return { chains, paidSales };
+    },
+  );
 
 const PageInput = z.object({
   storeId: z.string().uuid(),
@@ -139,7 +179,13 @@ export const getChainBalances = createServerFn({ method: "POST" })
     async ({
       data,
       context,
-    }): Promise<{ addresses: AddressBalance[]; derived: boolean; totalUsd: number }> => {
+    }): Promise<{
+      addresses: AddressBalance[];
+      derived: boolean;
+      totalUsd: number;
+      /** USD price used for each coin on this page (0 = no live price). */
+      rates: Record<string, number>;
+    }> => {
       const isEvm = (EVM_SHARED as readonly string[]).includes(data.chain);
       let query = context.supabase
         .from("chain_configs")
@@ -165,9 +211,14 @@ export const getChainBalances = createServerFn({ method: "POST" })
 
       const { deriveBtcLikeAddress, deriveEvmAddress, deriveTronAddress } =
         await import("./chains/derive.server");
-      const { getAddressBalance, loadRates } = await import("./balances.server");
+      const { getAddressBalance, loadRates, evmNativeSymbol } = await import("./balances.server");
 
-      const stables = ((cfg.stables ?? []) as string[]).map((s) => s.toUpperCase());
+      // EVM: read every stablecoin we know on this network, not only the ones
+      // switched on for checkout — money that arrived is money in the wallet.
+      const stables =
+        net.kind === "evm"
+          ? net.stables.map((s) => s.symbol.toUpperCase())
+          : ((cfg.stables ?? []) as string[]).map((s) => s.toUpperCase());
 
       let derived = true;
       const entries: { index: number; address: string }[] = [];
@@ -197,7 +248,7 @@ export const getChainBalances = createServerFn({ method: "POST" })
 
       const nativeSymbol =
         net.kind === "evm"
-          ? "ETH"
+          ? evmNativeSymbol(data.chain)
           : net.kind === "solana"
             ? "SOL"
             : net.kind === "tron"
@@ -205,7 +256,7 @@ export const getChainBalances = createServerFn({ method: "POST" })
               : data.chain;
       const omniSymbols =
         net.kind === "btc-like" ? (net.omniStables ?? []).map((t) => t.symbol) : [];
-      const rates = await loadRates([nativeSymbol, "BNB", ...stables, ...omniSymbols]);
+      const rates = await loadRates([nativeSymbol, ...stables, ...omniSymbols]);
 
       // A few at a time: fast, without tripping the free indexers' rate limits.
       const addresses: AddressBalance[] = [];
@@ -218,6 +269,6 @@ export const getChainBalances = createServerFn({ method: "POST" })
         addresses.push(...batch);
       }
       const totalUsd = Number(addresses.reduce((s, a) => s + a.usd, 0).toFixed(2));
-      return { addresses, derived, totalUsd };
+      return { addresses, derived, totalUsd, rates: Object.fromEntries(rates) };
     },
   );
