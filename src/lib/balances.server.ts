@@ -11,6 +11,10 @@ import {
   type EvmNetwork,
 } from "./chains/networks";
 import { getUsdRate } from "./rates.functions";
+import { STABLE_SYMBOLS } from "./rates-symbols";
+import { evmNativeSymbol } from "./chains/native-coin";
+
+export { evmNativeSymbol };
 
 export interface TokenBalance {
   symbol: string;
@@ -131,13 +135,6 @@ async function solanaBalance(
 
 // ---------- public API ----------
 
-/** Native coin of an EVM network: Ethereum and Base both use ETH. */
-export function evmNativeSymbol(chain: string): string {
-  if (chain === "bsc") return "BNB";
-  if (chain === "zcu") return "ZCU";
-  return "ETH";
-}
-
 /**
  * Balance for a single derived/static address on `chain`.
  * `enabledStables` limits which token contracts we query.
@@ -229,7 +226,7 @@ export async function loadRates(symbols: string[]): Promise<Map<string, number>>
   const unique = [...new Set(symbols.map((s) => s.toUpperCase()))];
   await Promise.all(
     unique.map(async (sym) => {
-      if (["USDC", "USDT", "DAI", "PYUSD", "TSD"].includes(sym)) {
+      if (STABLE_SYMBOLS.includes(sym)) {
         map.set(sym, 1);
         return;
       }

@@ -4,18 +4,7 @@
 
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-
-const CMC_ID_MAP: Record<string, number> = {
-  BTC: 1,
-  ETH: 1027,
-  TXC: 32744, // confirmed: https://coinmarketcap.com/currencies/texitcoin/ UCID 32744
-  TRX: 1958,
-  SOL: 5426,
-  LTC: 2,
-  BCH: 1831,
-  DOGE: 74,
-  DASH: 131,
-};
+import { CMC_ID_MAP, STABLE_SYMBOLS } from "./rates-symbols";
 
 export async function pollRates(): Promise<{
   updated: { symbol: string; rate: number; source: string }[];
@@ -43,8 +32,11 @@ export async function pollRates(): Promise<{
         const row = json.data?.[String(CMC_ID_MAP[sym])];
         const price = row?.quote?.USD?.price;
         if (typeof price === "number" && price > 0) {
-          const chainSym = sym === "TRX" ? "tron" : sym.toLowerCase();
-          const chain = chainSym as "btc" | "eth" | "txc" | "tron" | "sol" | "ltc" | "bch" | "doge" | "dash";
+          // BNB the coin is filed under its chain key, the way TRX is filed
+          // under "tron": rates_cache.chain is a chain_kind enum with no "bnb".
+          const chainSym = sym === "TRX" ? "tron" : sym === "BNB" ? "bsc" : sym.toLowerCase();
+          const chain = chainSym as
+            | "btc" | "eth" | "txc" | "tron" | "sol" | "ltc" | "bch" | "doge" | "dash" | "bsc";
           const { error } = await supabaseAdmin
             .from("rates_cache")
             .upsert(
@@ -111,11 +103,11 @@ export async function pollRates(): Promise<{
 export async function getUsdRate(symbol: string): Promise<number> {
   const up = symbol.toUpperCase();
   // Dollar-pegged tokens (incl. Texas Stable Dollar on the TEXITcoin Omni layer).
-  if (["USDC", "USDT", "DAI", "PYUSD", "TSD"].includes(up)) return 1;
+  if (STABLE_SYMBOLS.includes(up)) return 1;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  // TRX is stored under chain="tron"; everything else lowercases.
-  const chain = (up === "TRX" ? "tron" : up.toLowerCase()) as
-    | "btc" | "eth" | "txc" | "base" | "doge" | "isk" | "zcu" | "tron" | "sol" | "ltc" | "bch" | "dash";
+  // TRX is stored under chain="tron" and BNB under "bsc"; everything else lowercases.
+  const chain = (up === "TRX" ? "tron" : up === "BNB" ? "bsc" : up.toLowerCase()) as
+    | "btc" | "eth" | "txc" | "base" | "doge" | "isk" | "zcu" | "tron" | "sol" | "ltc" | "bch" | "dash" | "bsc";
   const { data } = await supabaseAdmin
     .from("rates_cache")
     .select("rate")
