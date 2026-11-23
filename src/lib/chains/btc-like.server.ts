@@ -81,6 +81,39 @@ export async function getAddressTxs(net: BtcLikeNetwork, address: string): Promi
 }
 
 /**
+ * Full transaction history of an address (Esplora pages 25 confirmed txs at a
+ * time), retrying briefly when the public indexer rate-limits. Used for token
+ * balances, which have to be rebuilt from history. Capped at `maxPages`.
+ */
+export async function getAddressTxHistory(
+  net: BtcLikeNetwork,
+  address: string,
+  maxPages = 8,
+): Promise<EsploraTx[]> {
+  if (net.indexer === "blockbook") return getAddressTxs(net, address);
+  const get = async (url: string): Promise<EsploraTx[]> => {
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const res = await fetch(url);
+      if (res.ok) return (await res.json()) as EsploraTx[];
+      if (res.status !== 429 && res.status < 500) throw new Error(`${url} → ${res.status}`);
+      await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
+    }
+    throw new Error(`${url} → unavailable`);
+  };
+  const base = `${net.esploraBase}/address/${encodeURIComponent(address)}`;
+  const byTxid = new Map<string, EsploraTx>();
+  let page = await get(`${base}/txs`);
+  for (let i = 0; i < maxPages; i++) {
+    for (const tx of page) byTxid.set(tx.txid, tx);
+    const confirmed = page.filter((t) => t.status.confirmed);
+    const last = confirmed[confirmed.length - 1];
+    if (confirmed.length < 25 || !last) break;
+    page = await get(`${base}/txs/chain/${last.txid}`);
+  }
+  return [...byTxid.values()];
+}
+
+/**
  * Address equality that tolerates CashAddr prefixes ("bitcoincash:q…" vs
  * "q…"). Base58 chains fall back to exact, case-sensitive comparison.
  */

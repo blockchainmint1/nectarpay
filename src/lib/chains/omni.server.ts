@@ -165,3 +165,53 @@ export async function getOmniCredits(
   const txs = await getAddressTxs(net, address).catch(() => [] as EsploraTx[]);
   return extractOmniIncoming(txs, address, propertyId, decimals, tipHeight);
 }
+
+/**
+ * Omni "sender" of a transaction: the input address that contributed the most
+ * value (Omni Class C rule). Null when no input carries an address.
+ */
+export function omniSenderOf(tx: EsploraTx): string | null {
+  const byAddr = new Map<string, number>();
+  for (const i of tx.vin) {
+    const a = i.prevout?.scriptpubkey_address;
+    if (!a) continue;
+    byAddr.set(a, (byAddr.get(a) ?? 0) + (i.prevout?.value ?? 0));
+  }
+  let best: string | null = null;
+  let max = -1;
+  for (const [a, v] of byAddr) {
+    if (v > max) {
+      max = v;
+      best = a;
+    }
+  }
+  return best;
+}
+
+/**
+ * Token balance of `propertyId` held by `address`, rebuilt from its full
+ * transaction history: credits received minus amounts this address sent.
+ * There is no public Omni balance API for TEXITcoin, so this is the same
+ * decoding the payment watcher relies on. Never negative.
+ */
+export function omniBalanceFromTxs(
+  txs: EsploraTx[],
+  address: string,
+  propertyId: number,
+  decimals: number,
+): number {
+  const credits = extractOmniIncoming(txs, address, propertyId, decimals, 0).reduce(
+    (s, c) => s + c.amount,
+    0,
+  );
+  let debits = 0;
+  for (const tx of txs) {
+    const p = omniPayloadOf(tx);
+    if (!p || p.propertyId !== propertyId) continue;
+    if (p.type !== SEND_TO_MANY && !CREDIT_TYPES.has(p.type)) continue;
+    if (omniSenderOf(tx) !== address) continue;
+    debits += Number(p.amount) / 10 ** decimals;
+  }
+  const bal = credits - debits;
+  return bal > 0 ? Number(bal.toFixed(decimals)) : 0;
+}

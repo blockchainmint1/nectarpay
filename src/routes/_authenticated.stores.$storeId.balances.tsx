@@ -71,7 +71,8 @@ function BalancesPage() {
               chain={c.chain}
               name={c.name}
               derived={c.derived}
-              nextIndex={c.nextIndex}
+              firstIndex={c.firstIndex}
+              lastIndex={c.lastIndex}
               configured={c.configured}
             />
           ))}
@@ -86,19 +87,21 @@ function ChainBalanceCard({
   chain,
   name,
   derived,
-  nextIndex,
+  firstIndex,
+  lastIndex,
   configured,
 }: {
   storeId: string;
   chain: string;
   name: string;
   derived: boolean;
-  nextIndex: number;
+  firstIndex: number;
+  lastIndex: number;
   configured: boolean;
 }) {
   const { storeSlug } = useStoreRef();
   const [open, setOpen] = useState(false);
-  const [start, setStart] = useState(1);
+  const [start, setStart] = useState(firstIndex);
   const load = useServerFn(getChainBalances);
 
   const { data, isFetching, refetch } = useQuery({
@@ -111,7 +114,7 @@ function ChainBalanceCard({
     staleTime: 30_000,
   });
 
-  const highestUsed = Math.max(1, nextIndex - 1);
+  const highestUsed = lastIndex;
 
   if (!configured) {
     return (
@@ -227,8 +230,8 @@ function ChainBalanceCard({
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={start <= 1 || isFetching}
-                      onClick={() => setStart((s) => Math.max(1, s - PAGE_SIZE))}
+                      disabled={start <= firstIndex || isFetching}
+                      onClick={() => setStart((s) => Math.max(firstIndex, s - PAGE_SIZE))}
                     >
                       Previous 5
                     </Button>
@@ -238,7 +241,7 @@ function ChainBalanceCard({
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={isFetching}
+                      disabled={isFetching || start + PAGE_SIZE > highestUsed}
                       onClick={() => setStart((s) => s + PAGE_SIZE)}
                     >
                       Next 5

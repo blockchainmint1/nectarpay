@@ -165,6 +165,17 @@ export async function getAddressBalance(
       const b = await getBtcLikeBalance(net, address);
       row.native = b.confirmed / 10 ** net.decimals;
       row.nativePending = b.unconfirmed / 10 ** net.decimals;
+      // Omni tokens (TSD on TEXITcoin) don't show in the native balance; they
+      // have to be rebuilt from the address history.
+      if (net.omniStables?.length) {
+        const { getAddressTxHistory } = await import("./chains/btc-like.server");
+        const { omniBalanceFromTxs } = await import("./chains/omni.server");
+        const txs = await getAddressTxHistory(net, address);
+        for (const t of net.omniStables) {
+          const amount = omniBalanceFromTxs(txs, address, t.propertyId, t.decimals);
+          if (amount > 0) row.tokens.push({ symbol: t.symbol, amount });
+        }
+      }
     } else if (net.kind === "evm") {
       row.nativeSymbol = chain === "bsc" ? "BNB" : "ETH";
       const { native, tokens } = await evmAddressBalance(

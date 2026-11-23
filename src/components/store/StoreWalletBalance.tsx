@@ -4,10 +4,9 @@ import { Link } from "@tanstack/react-router";
 import { RefreshCw, Wallet } from "lucide-react";
 
 import { listBalanceChains, getChainBalances } from "@/lib/balances.functions";
+import { balancePages } from "@/lib/balance-pages";
 
-const MAX_SCAN = 20;
-
-/** Scans every linked chain (sale addresses #1 and up, never #0) and totals the USD value. */
+/** Scans every sale address on every linked chain and totals the USD value. */
 export function StoreWalletBalance({ storeId, storeSlug }: { storeId: string; storeSlug: string }) {
   const listChains = useServerFn(listBalanceChains);
   const loadChain = useServerFn(getChainBalances);
@@ -18,25 +17,28 @@ export function StoreWalletBalance({ storeId, storeSlug }: { storeId: string; st
     queryFn: async () => {
       const { chains } = await listChains({ data: { storeId } });
       const linked = chains.filter((c) => c.configured);
-      const results = await Promise.allSettled(
-        linked.map((c) =>
-          loadChain({
-            data: {
-              storeId,
-              chain: c.chain,
-              start: c.derived ? 1 : 0,
-              count: c.derived ? Math.min(MAX_SCAN, Math.max(1, c.nextIndex - 1)) : 1,
-            },
-          }),
-        ),
+      const jobs = linked.flatMap((c) =>
+        balancePages(c).map((p) => ({ chain: c.chain, ...p })),
       );
+
       let total = 0;
-      let failed = 0;
-      for (const r of results) {
-        if (r.status === "fulfilled") total += r.value.totalUsd;
-        else failed++;
+      let addresses = 0;
+      const failedChains = new Set<string>();
+      // Three pages in flight at once keeps the free blockchain readers happy.
+      for (let i = 0; i < jobs.length; i += 3) {
+        const results = await Promise.allSettled(
+          jobs.slice(i, i + 3).map((j) => loadChain({ data: { storeId, ...j } })),
+        );
+        results.forEach((r, k) => {
+          const job = jobs[i + k];
+          if (r.status === "fulfilled") {
+            total += r.value.totalUsd;
+            addresses += r.value.addresses.length;
+            if (r.value.addresses.some((a) => a.error) && job) failedChains.add(job.chain);
+          } else if (job) failedChains.add(job.chain);
+        });
       }
-      return { total, chains: linked.length, failed };
+      return { total, chains: linked.length, addresses, failed: failedChains.size };
     },
   });
 
@@ -56,12 +58,16 @@ export function StoreWalletBalance({ storeId, storeSlug }: { storeId: string; st
         </button>
       </div>
       <div className="mt-1 text-2xl font-semibold tabular-nums">
-        {data ? `$${data.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "Scanning…"}
+        {data
+          ? `$${data.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+          : "Scanning…"}
       </div>
       <div className="mt-1 flex items-center justify-between gap-3 text-xs text-muted-foreground">
         <span>
-          {data ? `${data.chains} chain${data.chains === 1 ? "" : "s"} scanned` : "Checking every chain"}
-          {data?.failed ? ` · ${data.failed} unavailable` : ""}
+          {data
+            ? `${data.addresses} address${data.addresses === 1 ? "" : "es"} on ${data.chains} chain${data.chains === 1 ? "" : "s"}`
+            : "Checking every chain"}
+          {data?.failed ? ` · ${data.failed} not reachable` : ""}
         </span>
         <Link to="/stores/$storeId/balances" params={{ storeId: storeSlug }} className="text-primary hover:underline">
           Details
