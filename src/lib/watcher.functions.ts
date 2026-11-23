@@ -20,6 +20,7 @@ import { identifyEvmAsset } from "./chains/evm-asset";
 import { claimStickerCredit } from "./sticker-scan.server";
 import { stickerPaymentInWindow } from "./sticker-settlement";
 import { isSharedEvmInvoice, pickSharedInvoice } from "./evm-shared-address";
+import { planExpiry } from "./expiry-final-check";
 import { BSC_NETWORK } from "./chains/networks";
 import { bscScanRange, getBscStableTransfersTo, getBscTip } from "./bsc-mistake-watch.server";
 
@@ -706,15 +707,39 @@ const UNDERPAID_CUTOFF_MS = 24 * 60 * 60 * 1000;
 async function expireStaleInvoices(): Promise<number> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const nowIso = new Date().toISOString();
-  const { data, error } = await supabaseAdmin
+  const { data: due, error: dueErr } = await supabaseAdmin
     .from("invoices")
-    .update({ status: "expired" })
+    .select("id, chain, address")
     .in("status", ["pending", "detected"])
     .lt("expires_at", nowIso)
-    .select("id");
-  if (error) {
-    console.error("[watcher] expireStaleInvoices failed:", error);
+    .order("expires_at")
+    .limit(200);
+  if (dueErr) {
+    console.error("[watcher] expireStaleInvoices failed:", dueErr);
     return 0;
+  }
+  // Ethereum / Base sales get one last blockchain look before they expire,
+  // so a payment the regular scan missed still settles (see expiry-final-check.ts).
+  const plan = planExpiry(due ?? []);
+  for (let i = 0; i < plan.check.length; i += 4) {
+    await Promise.all(plan.check.slice(i, i + 4).map((id) =>
+      scanEvmInvoiceNow(id).catch((e) => console.error(`[watcher] final check of ${id} failed:`, e)),
+    ));
+  }
+  const expireIds = [...plan.expire, ...plan.check];
+  let data: { id: string }[] | null = [];
+  if (expireIds.length) {
+    const res = await supabaseAdmin
+      .from("invoices")
+      .update({ status: "expired" })
+      .in("id", expireIds)
+      .in("status", ["pending", "detected"]) // a sale the final check just paid stays paid
+      .select("id");
+    if (res.error) {
+      console.error("[watcher] expireStaleInvoices failed:", res.error);
+      return 0;
+    }
+    data = res.data;
   }
 
   // Hard 24h cutoff for underpaid invoices: after that they stop absorbing

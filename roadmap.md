@@ -146,3 +146,5 @@
 - [x] Rebuild the Wallet balances page: live full-scan total, paid-sales comparison, coin mix, per-network cards with funded addresses, empty-address toggle, copy/explorer links; retired networks shown only when holding money.
 - [x] Count each wallet's first address (#0) in Wallet balances when a sale was paid there (mineTXC: 17 Ethereum sales, 1 Bitcoin, 1 TEXITcoin used #0).
 - [x] Price BNB so the Wallet balances page stops counting it as $0: the live rates poller now asks CoinMarketCap for BNB and files it under the existing "bsc" chain key (rates_cache has no "bnb" key), and a new test refuses any network whose native coin has no price source. Shows on the live site's next price poll after publishing.
+- [x] Final blockchain check before Ethereum/Base sales expire (mvforlife34's missed $400 USDC on SEEDS, credited by hand).
+- [ ] Late payments (arrive after a sale expired) on rotating addresses: surface them to the merchant — waiting on Bobby.
