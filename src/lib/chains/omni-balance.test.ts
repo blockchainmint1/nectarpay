@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { EsploraTx } from "./btc-like.server";
 import { omniBalanceFromTxs } from "./omni.server";
-import { balancePages } from "../balance-pages";
+import { balancePages, firstBalanceIndex } from "../balance-pages";
 
 const ME = "TmeAddress";
 const PAYER = "TpayerAddress";
@@ -57,5 +57,15 @@ describe("addresses counted in the wallet balance", () => {
 
   it("includes address #0 for single-address Ethereum stores", () => {
     expect(balancePages({ derived: true, firstIndex: 0, lastIndex: 0 })).toEqual([{ start: 0, count: 1 }]);
+  });
+
+  it("counts address #0 when an older sale was paid there (mineTXC)", () => {
+    expect(firstBalanceIndex({ isEvm: true, evmSingle: false, lowestSaleIndex: 0 })).toBe(0);
+    expect(firstBalanceIndex({ isEvm: false, evmSingle: false, lowestSaleIndex: 0 })).toBe(0);
+  });
+
+  it("starts at #1 when no sale ever used #0", () => {
+    expect(firstBalanceIndex({ isEvm: true, evmSingle: false, lowestSaleIndex: 1 })).toBe(1);
+    expect(firstBalanceIndex({ isEvm: false, evmSingle: false, lowestSaleIndex: null })).toBe(1);
   });
 });

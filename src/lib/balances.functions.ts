@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { AddressBalance } from "./balances.server";
+import { firstBalanceIndex } from "./balance-pages";
 
 const ListInput = z.object({ storeId: z.string().uuid() });
 
@@ -87,17 +88,18 @@ export const listBalanceChains = createServerFn({ method: "POST" })
     const evmSingle =
       (store as { evm_address_rotation?: boolean } | null)?.evm_address_rotation === false;
 
-    // Highest address index any sale on this chain (or EVM family) has used.
-    const maxSaleIndex = async (chains: string[]): Promise<number> => {
+    // Lowest / highest address index any sale on this chain (or EVM family) has used.
+    const saleIndex = async (chains: string[], ascending: boolean): Promise<number | null> => {
       const { data: inv } = await context.supabase
         .from("invoices")
         .select("address_index")
         .eq("store_id", data.storeId)
         .in("chain", chains as never[])
         .not("address_index", "is", null)
-        .order("address_index", { ascending: false })
+        .order("address_index", { ascending })
         .limit(1);
-      return Number((inv?.[0] as { address_index?: number } | undefined)?.address_index ?? 0);
+      const v = (inv?.[0] as { address_index?: number } | undefined)?.address_index;
+      return v === undefined || v === null ? null : Number(v);
     };
 
     const netModule = await import("./chains/networks");
@@ -116,16 +118,12 @@ export const listBalanceChains = createServerFn({ method: "POST" })
         : net.kind !== "solana" && net.kind !== "tron";
       const isEvm = net.kind === "evm";
       const nextIndex = row?.next_address_index ?? 1;
-      const firstIndex = isEvm && evmSingle ? 0 : 1;
+      const family = (EVM_SHARED as readonly string[]).includes(chain) ? [...EVM_SHARED] : [chain];
+      const lowestSale = configured && derived ? await saleIndex(family, true) : null;
+      const firstIndex = firstBalanceIndex({ isEvm, evmSingle, lowestSaleIndex: lowestSale });
       const lastIndex =
         configured && derived
-          ? Math.max(
-              firstIndex,
-              nextIndex - 1,
-              await maxSaleIndex(
-                (EVM_SHARED as readonly string[]).includes(chain) ? [...EVM_SHARED] : [chain],
-              ),
-            )
+          ? Math.max(firstIndex, nextIndex - 1, (await saleIndex(family, false)) ?? 0)
           : 0;
       chains.push({
         chain,
