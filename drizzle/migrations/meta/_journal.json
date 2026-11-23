@@ -393,6 +393,13 @@
       "when": 1794944901014,
       "tag": "0055_durable_invoice_webhooks",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1795457284311,
+      "tag": "0056_invoice_late_payment_check",
+      "breakpoints": true
     }
   ]
 }

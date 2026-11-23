@@ -14,9 +14,17 @@ import {
 const money = (n: number, cur = "USD") =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: cur }).format(n);
 
+const REASON: Record<string, string> = {
+  after_expiry: "Arrived after its sale expired",
+  missed: "Arrived on time but wasn't matched",
+  amount_mismatch: "Amount didn't match one sale",
+  no_open_sale: "No open sale at the time",
+};
+
 /**
- * Payments that reached the store's single Ethereum/Base/BSC address but
- * couldn't be matched to one sale. Hidden when there are none.
+ * Payments that reached a store wallet but no sale took: wrong amounts on the
+ * shared main address, or payments missed or sent after a sale expired.
+ * Hidden when there are none.
  */
 export function UnmatchedPaymentsCard({ storeId }: { storeId: string }) {
   const qc = useQueryClient();
@@ -54,8 +62,9 @@ export function UnmatchedPaymentsCard({ storeId }: { storeId: string }) {
         Payments waiting for a sale ({payments.length})
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        These reached your wallet, but the amount didn't match exactly one sale, so we didn't guess.
-        The money is already in your wallet — pick the sale it was for, or mark it as not a sale.
+        These reached your wallet, but no sale took them — the amount didn't match exactly one sale, or the
+        payment came in after its sale had expired — so we didn't guess. The money is already in your wallet:
+        pick the sale it was for, or mark it as not a sale.
       </p>
       <ul className="mt-4 space-y-3">
         {payments.map((p) => {
@@ -72,6 +81,7 @@ export function UnmatchedPaymentsCard({ storeId }: { storeId: string }) {
                   <span className="ml-2 text-xs text-muted-foreground">on {p.chain.toUpperCase()}</span>
                 </div>
                 <div className="text-xs text-muted-foreground">
+                  {REASON[p.reason] ? `${REASON[p.reason]} · ` : ""}
                   {new Date(p.block_time ?? p.created_at).toLocaleString()}
                 </div>
               </div>
@@ -82,7 +92,7 @@ export function UnmatchedPaymentsCard({ storeId }: { storeId: string }) {
                   value={picked}
                   onChange={(e) => setChoice((c) => ({ ...c, [p.id]: e.target.value }))}
                 >
-                  <option value="">{options.length ? "Choose the sale…" : "No recent unpaid sale on this coin"}</option>
+                  <option value="">{options.length ? "Choose the sale…" : "No recent sale on this address and coin"}</option>
                   {options.map((s) => (
                     <option key={s.id} value={s.id}>
                       {money(Number(s.fiat_amount), s.fiat_currency ?? "USD")} · {Number(s.crypto_amount)} ·{" "}

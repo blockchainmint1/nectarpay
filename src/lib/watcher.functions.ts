@@ -20,7 +20,7 @@ import { identifyEvmAsset } from "./chains/evm-asset";
 import { claimStickerCredit } from "./sticker-scan.server";
 import { stickerPaymentInWindow } from "./sticker-settlement";
 import { isSharedEvmInvoice, pickSharedInvoice } from "./evm-shared-address";
-import { planExpiry } from "./expiry-final-check";
+import { EVM_FINAL_CHECK_CHAINS, LATE_CHECK_DELAY_MS, LATE_CHECK_LOOKBACK_MS, confirmingExpiryCutoff, missedPaymentReason, planExpiry, saleWindow } from "./expiry-final-check";
 import { BSC_NETWORK } from "./chains/networks";
 import { bscScanRange, getBscStableTransfersTo, getBscTip } from "./bsc-mistake-watch.server";
 
@@ -698,9 +698,10 @@ export async function scanEvmInvoiceNow(invoiceId: string): Promise<boolean> {
 
 /**
  * Mark stale unpaid invoices as `expired` so their reserved addresses are
- * released back into the recycler pool. Only touches invoices with zero
- * payment activity — `underpaid` invoices keep their lock because real
- * money landed on that address.
+ * released back into the recycler pool. Rules live in expiry-final-check.ts:
+ * every coin we can re-read gets a last look first, and a sale whose payment
+ * is already seen (`detected`) waits while it confirms instead of expiring.
+ * `underpaid` invoices keep their lock for a day because real money landed.
  */
 const UNDERPAID_CUTOFF_MS = 24 * 60 * 60 * 1000;
 
@@ -710,7 +711,7 @@ async function expireStaleInvoices(): Promise<number> {
   const { data: due, error: dueErr } = await supabaseAdmin
     .from("invoices")
     .select("id, chain, address")
-    .in("status", ["pending", "detected"])
+    .eq("status", "pending")
     .lt("expires_at", nowIso)
     .order("expires_at")
     .limit(200);
@@ -718,22 +719,21 @@ async function expireStaleInvoices(): Promise<number> {
     console.error("[watcher] expireStaleInvoices failed:", dueErr);
     return 0;
   }
-  // Ethereum / Base sales get one last blockchain look before they expire,
-  // so a payment the regular scan missed still settles (see expiry-final-check.ts).
   const plan = planExpiry(due ?? []);
   for (let i = 0; i < plan.check.length; i += 4) {
-    await Promise.all(plan.check.slice(i, i + 4).map((id) =>
-      scanEvmInvoiceNow(id).catch((e) => console.error(`[watcher] final check of ${id} failed:`, e)),
+    await Promise.all(plan.check.slice(i, i + 4).map(({ id, kind }) =>
+      (kind === "evm" ? scanEvmInvoiceNow(id) : scanBtcLikeInvoiceNow(id))
+        .catch((e) => console.error(`[watcher] last look at ${id} failed:`, e)),
     ));
   }
-  const expireIds = [...plan.expire, ...plan.check];
+  const expireIds = [...plan.expire, ...plan.check.map((c) => c.id)];
   let data: { id: string }[] | null = [];
   if (expireIds.length) {
     const res = await supabaseAdmin
       .from("invoices")
       .update({ status: "expired" })
       .in("id", expireIds)
-      .in("status", ["pending", "detected"]) // a sale the final check just paid stays paid
+      .eq("status", "pending") // a sale the last look found paid or confirming stays open
       .select("id");
     if (res.error) {
       console.error("[watcher] expireStaleInvoices failed:", res.error);
@@ -741,6 +741,15 @@ async function expireStaleInvoices(): Promise<number> {
     }
     data = res.data;
   }
+
+  // A payment that was seen but never confirmed must not hold the address forever.
+  const { data: stuck, error: stuckErr } = await supabaseAdmin
+    .from("invoices")
+    .update({ status: "expired" })
+    .eq("status", "detected")
+    .lt("expires_at", confirmingExpiryCutoff(Date.now()).toISOString())
+    .select("id");
+  if (stuckErr) console.error("[watcher] confirming cutoff failed:", stuckErr);
 
   // Hard 24h cutoff for underpaid invoices: after that they stop absorbing
   // later on-chain funds (sweeps, re-used addresses, late partial payments).
@@ -753,7 +762,132 @@ async function expireStaleInvoices(): Promise<number> {
     .select("id");
   if (staleErr) console.error("[watcher] underpaid cutoff failed:", staleErr);
 
-  return (data?.length ?? 0) + (stale?.length ?? 0);
+  return (data?.length ?? 0) + (stuck?.length ?? 0) + (stale?.length ?? 0);
+}
+
+/** Approximate seconds per block, to turn a time window into a block range. */
+const EVM_BLOCK_SECONDS: Record<string, number> = { eth: 12, base: 2, bsc: 3 };
+
+/** Park a payment nobody took so the merchant can apply it (never overwrites). */
+async function parkMissedPayment(row: {
+  store_id: string; chain: string; address: string; tx_hash: string; token_symbol: string | null;
+  amount: number; confirmations: number; block_height: number | null; paidAtMs: number | null;
+  reason: "missed" | "after_expiry";
+}): Promise<boolean> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: claimed } = await supabaseAdmin
+    .from("transactions").select("id").eq("tx_hash", row.tx_hash).limit(1);
+  if (claimed?.length) return false;
+  const { paidAtMs, ...rest } = row;
+  const { data, error } = await supabaseAdmin.from("unmatched_payments").upsert({
+    ...rest,
+    block_time: paidAtMs ? new Date(paidAtMs).toISOString() : null,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "chain,tx_hash,address", ignoreDuplicates: true }).select("id");
+  if (error) console.error("[watcher] could not park missed payment:", error);
+  return !!data?.length;
+}
+
+/**
+ * Once per expired sale, after its late window closed: find payments to its
+ * address in its window that no sale took, and list them for the merchant.
+ * Same coin only; nothing is credited here — the merchant decides.
+ */
+export async function findMissedPaymentsFor(invoiceId: string): Promise<number> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: inv } = await supabaseAdmin
+    .from("invoices")
+    .select("id, store_id, chain, address, token_symbol, status, created_at, expires_at")
+    .eq("id", invoiceId)
+    .maybeSingle();
+  if (!inv?.address || !inv.chain || inv.status !== "expired") return 0;
+  const { data: sticker } = await supabaseAdmin
+    .from("sticker_invoice_guards").select("invoice_id").eq("invoice_id", inv.id).maybeSingle();
+  if (sticker) return 0; // sticker sales recover in-window payments themselves
+  const { startMs } = saleWindow(inv.created_at, inv.expires_at);
+  const token = (inv.token_symbol ?? "").toUpperCase();
+  let parked = 0;
+
+  if (EVM_FINAL_CHECK_CHAINS.includes(inv.chain)) {
+    const key = process.env.ALCHEMY_API_KEY;
+    if (!key) return 0;
+    const nets = token ? EVM_NETWORKS : EVM_NETWORKS.filter((n) => n.symbol === inv.chain);
+    for (const net of nets) {
+      const tip = await getBlockNumber(net, key);
+      const back = Math.ceil((Date.now() - startMs) / 1000 / (EVM_BLOCK_SECONDS[net.symbol] ?? 2)) + 300;
+      const transfers = await alchemyAssetTransfersForAddress(net, key, inv.address, tip - back);
+      for (const t of transfers) {
+        const paidAt = Date.parse(t.metadata?.blockTimestamp ?? "");
+        const reason = missedPaymentReason(Number.isFinite(paidAt) ? paidAt : null, inv.created_at, inv.expires_at);
+        if (!reason) continue;
+        const asset = identifyEvmAsset(net, t.category, t.rawContract.address);
+        if (!asset) continue;
+        if (token ? (asset.isNative || asset.symbol.toUpperCase() !== token) : !asset.isNative) continue;
+        const human = Number(BigInt(t.rawContract.value ?? t.rawContract.rawValue ?? "0")) / 10 ** asset.decimals;
+        if (!Number.isFinite(human) || human <= 0) continue;
+        const blockNum = parseInt(t.blockNum, 16);
+        if (await parkMissedPayment({
+          store_id: inv.store_id, chain: net.symbol, address: inv.address, tx_hash: t.hash,
+          token_symbol: token || null, amount: human, confirmations: Math.max(0, tip - blockNum + 1),
+          block_height: blockNum, paidAtMs: Number.isFinite(paidAt) ? paidAt : null, reason,
+        })) parked++;
+      }
+    }
+  } else if (isBtcLikeChain(inv.chain)) {
+    const chainKey = inv.chain as ChainKind;
+    const net = getNetwork(chainKey) as BtcLikeNetwork;
+    const omni = token ? getOmniToken(chainKey, token) : null;
+    if (token && !omni) return 0;
+    const [tip, txs] = await Promise.all([getTipHeight(net), getAddressTxs(net, inv.address)]);
+    const credits = omni
+      ? extractOmniIncoming(txs, inv.address, omni.propertyId, omni.decimals, tip).map((c) => ({ ...c, human: c.amount }))
+      : extractIncoming(txs, inv.address, tip).map((c) => ({ ...c, human: c.amountSats / 10 ** net.decimals }));
+    for (const c of credits) {
+      const paidAt = c.blockTime == null ? null : c.blockTime * 1000;
+      const reason = missedPaymentReason(paidAt, inv.created_at, inv.expires_at);
+      if (!reason || c.human <= 0) continue;
+      if (await parkMissedPayment({
+        store_id: inv.store_id, chain: chainKey, address: inv.address, tx_hash: c.txid,
+        token_symbol: omni ? token : null, amount: c.human, confirmations: c.confirmations,
+        block_height: null, paidAtMs: paidAt, reason,
+      })) parked++;
+    }
+  }
+  return parked;
+}
+
+const LATE_CHECKS_PER_RUN = 10;
+
+async function findMissedPayments(): Promise<number> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const now = Date.now();
+  const { data: due, error } = await supabaseAdmin
+    .from("invoices")
+    .select("id")
+    .eq("status", "expired")
+    .is("late_checked_at", null)
+    .not("address", "is", null)
+    .lt("expires_at", new Date(now - LATE_CHECK_DELAY_MS).toISOString())
+    .gt("expires_at", new Date(now - LATE_CHECK_LOOKBACK_MS).toISOString())
+    .order("expires_at")
+    .limit(LATE_CHECKS_PER_RUN);
+  if (error) {
+    console.error("[watcher] late-payment check failed:", error);
+    return 0;
+  }
+  let parked = 0;
+  for (const { id } of due ?? []) {
+    try { parked += await findMissedPaymentsFor(id); }
+    catch (e) { console.error(`[watcher] late-payment check of ${id} failed:`, e); }
+    await supabaseAdmin.from("invoices").update({ late_checked_at: new Date().toISOString() }).eq("id", id);
+  }
+  return parked;
+}
+
+/** End of every watcher run: payment scans have just read each coin. */
+async function finishWatcherTick(): Promise<void> {
+  await expireStaleInvoices();
+  await findMissedPayments().catch((e) => console.error("[watcher] late-payment check failed:", e));
 }
 
 export async function runWatcherTick(): Promise<WatcherResult[]> {
@@ -783,8 +917,8 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
   } catch (error) { stickerResult.error = error instanceof Error ? error.message : "Sticker scan failed"; }
   results.push(stickerResult);
 
-  // Release address locks from invoices whose expires_at has passed.
-  await expireStaleInvoices();
+  // Expiry runs at the end of the run (finishWatcherTick), after every coin's
+  // payment scan, so a payment from the last minute is never cut off.
 
   // Wallet keys whose 4-hour wait is over take over now (audit + alert follow).
   try {
@@ -829,7 +963,10 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
     .not("xpub", "is", null)
     .eq("enabled", true);
 
-  if (!configs?.length) return results;
+  if (!configs?.length) {
+    await finishWatcherTick();
+    return results;
+  }
 
   // Group by chain
   const byChain = new Map<string, typeof configs>();
@@ -1330,5 +1467,6 @@ export async function runWatcherTick(): Promise<WatcherResult[]> {
     results.push(r);
   }
 
+  await finishWatcherTick();
   return results;
 }

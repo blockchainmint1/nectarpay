@@ -1074,6 +1074,7 @@ export type Database = {
           kyc_reference: string | null
           kyc_status: Database["public"]["Enums"]["kyc_status"]
           last_viewed_at: string | null
+          late_checked_at: string | null
           payment_program: string | null
           rate: number | null
           redirect_url: string | null
@@ -1109,6 +1110,7 @@ export type Database = {
           kyc_reference?: string | null
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
           last_viewed_at?: string | null
+          late_checked_at?: string | null
           payment_program?: string | null
           rate?: number | null
           redirect_url?: string | null
@@ -1144,6 +1146,7 @@ export type Database = {
           kyc_reference?: string | null
           kyc_status?: Database["public"]["Enums"]["kyc_status"]
           last_viewed_at?: string | null
+          late_checked_at?: string | null
           payment_program?: string | null
           rate?: number | null
           redirect_url?: string | null
