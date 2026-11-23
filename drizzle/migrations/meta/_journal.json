@@ -400,6 +400,13 @@
       "when": 1795457284311,
       "tag": "0056_invoice_late_payment_check",
       "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1795457980840,
+      "tag": "0057_evm_address_reuse_mode",
+      "breakpoints": true
     }
   ]
 }

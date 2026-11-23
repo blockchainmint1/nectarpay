@@ -10,13 +10,13 @@ export const Route = createFileRoute("/docs/address-rotation")({
       {
         name: "description",
         content:
-          "How Nectar.Pay picks a receiving address for every invoice: fresh HD addresses on UTXO chains, recycled addresses on EVM, and shared addresses with amount tagging on Solana and static Tron.",
+          "How Nectar.Pay picks a receiving address for every invoice: fresh HD addresses on UTXO chains, three merchant-chosen settings on EVM, and shared addresses with amount tagging on Solana and static Tron.",
       },
       { property: "og:title", content: "Address derivation & rotation policy · Nectar.Pay" },
       {
         property: "og:description",
         content:
-          "Fresh address per invoice on UTXO chains, gas-aware recycling on EVM, amount-tagged matching on shared-address chains — and why it matters for your privacy and sweep costs.",
+          "Fresh address per invoice on UTXO chains, your choice of one address, recycling or never-reuse on EVM, amount-tagged matching on shared-address chains — and why it matters for your privacy and sweep costs.",
       },
       { property: "og:type", content: "article" },
       { name: "twitter:card", content: "summary" },
@@ -75,9 +75,9 @@ function AddressRotationDoc() {
               new address for every single invoice. Never reused.
             </li>
             <li>
-              <strong>EVM chains (ETH, Base, BSC, ZCU):</strong> HD addresses too, but idle ones are
-              recycled after a cool-down window instead of burning a new address on every unpaid
-              invoice.
+              <strong>EVM chains (ETH, Base, BSC):</strong> your choice of three settings — all sales
+              to your one main address (easiest), rotate and recycle idle addresses (best for
+              infrequent payments), or rotate and never reuse (advanced).
             </li>
             <li>
               <strong>Solana, and Tron when you supply a single T-address:</strong> one shared
@@ -111,31 +111,40 @@ function AddressRotationDoc() {
           </p>
         </Section>
 
-        <Section title="Rotation with recycling (EVM chains)">
-          <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-foreground">
-            <Fuel className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+        <Section title="Three settings for EVM chains">
+          <div className="flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/5 p-4 text-foreground">
+            <Fuel className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <p className="text-sm">
-              EVM is account-based: <strong>every address you receive into must be swept
-              individually, and every sweep costs gas</strong> — per address, per token. A thousand
-              abandoned checkout pages would leave you with a thousand dust accounts to pay gas on.
+              EVM is account-based: <strong>every address you receive into must be emptied
+              individually, and every move costs gas</strong> — per address, per token. That is why
+              you choose how many addresses you want to manage.
             </p>
           </div>
-          <p>
-            So on EVM we still derive from your xpub at <span className="font-mono">m/0/n</span>, but
-            before minting a new index we look for an address on the same store and chain that is
-            safe to reuse. An address qualifies only when:
-          </p>
-          <ul className="list-disc space-y-2 pl-5">
-            <li>it is derivable from your <em>current</em> xpub (addresses from a rotated-out key are never reused);</li>
-            <li>no invoice on it is still live (pending, detected, or underpaid); and</li>
-            <li>every invoice ever issued on it is older than the <strong>1 hour</strong> cool-down.</li>
+          <ul className="list-disc space-y-3 pl-5">
+            <li>
+              <strong>All to one address (easiest, the default for new stores).</strong> Every sale
+              pays your wallet&rsquo;s main address — the first one your wallet shows. Overlapping sales
+              are told apart by a tiny unique amount tail (under a cent), and a payment that matches
+              no single sale waits on your store page for you to apply.
+            </li>
+            <li>
+              <strong>Rotate and recycle (best for infrequent payments).</strong> Each open sale gets
+              its own address from your xpub at <span className="font-mono">m/0/n</span>. An address
+              goes to a later sale only when it is derivable from your <em>current</em> xpub, no sale
+              on it is still open, and its last sale both opened more than an hour ago and finished its
+              <strong> late-payment hour</strong> (expired more than 65 minutes ago). A late payment for
+              the old sale can therefore never be credited to the next shopper. A busy store settles
+              into a small set of addresses that are cheap to empty.
+            </li>
+            <li>
+              <strong>Rotate, never reuse (advanced).</strong> Every sale gets a brand-new address that
+              no other sale will ever use — the cleanest records and best privacy, at the cost of one
+              network fee per address when you empty them.
+            </li>
           </ul>
           <p>
-            Oldest-idle addresses are drained first. The practical effect: a busy store settles into a
-            small working set of addresses that are cheap to sweep, while any address with money in
-            flight is untouchable. The tradeoff is that a payment arriving more than an hour after its
-            invoice went cold may land on an address that has since been assigned to a new invoice —
-            still your money, still your address, but reconciliation is manual.
+            In every setting, a payment that arrives up to an hour after its sale expired is found
+            and listed on your store page so you can apply it.
           </p>
         </Section>
 
@@ -163,10 +172,10 @@ function AddressRotationDoc() {
 
         <Section title="Who sets the policy?">
           <p>
-            Nectar.Pay sets it, per chain, and it is not merchant-configurable today. The policy is
-            driven by the chain&rsquo;s accounting model rather than by preference — a fresh address on
-            EVM is not a privacy upgrade so much as a gas bill, and a shared address on Bitcoin would
-            be a privacy downgrade with no offsetting benefit.
+            On EVM chains you do: pick one of the three settings under your store&rsquo;s wallet
+            settings. On the other chains Nectar.Pay sets it, driven by each chain&rsquo;s accounting
+            model — a shared address on Bitcoin would be a privacy downgrade with no offsetting
+            benefit, and a fresh address there costs nothing.
           </p>
           <p>
             What you <em>do</em> control is the input: supply an xpub and you get rotation; supply a

@@ -151,3 +151,4 @@
 - [x] Sales whose payment is seen but still confirming wait instead of expiring (24h cap).
 - [x] Late/missed payments on any wallet address land in the merchant's 'payments that didn't match' card, and the merchant can apply them.
 - [x] Five late payments (~$6,036, mineTXC/mineHME): Bobby said mark paid — re-verify on chain, record and settle each.
+- [x] Three EVM address settings per store (one address / rotate+recycle / rotate+never reuse); recycling waits for the late-payment hour.

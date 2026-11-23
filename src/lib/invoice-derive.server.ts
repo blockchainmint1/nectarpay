@@ -15,6 +15,7 @@ import {
 } from "@/lib/chains/derive.server";
 import { getUsdRate } from "@/lib/rates.functions";
 import { EVM_SHARED_INDEX, applyTail, pickFreeTail, tailOf } from "@/lib/evm-shared-address";
+import { RECYCLE_AFTER_OPEN_MS, addressReusable } from "./evm-address-mode";
 
 export interface DeriveResult {
   address: string;
@@ -108,7 +109,10 @@ export async function deriveInvoiceAddress(
     // prior expired/cancelled invoice on this store+chain that has NEVER
     // received funds (no pending/detected/underpaid/confirmed/overpaid
     // invoice ever landed on it). Falls back to fresh derivation.
-    const recycled = await findRecyclableEvmAddress(supabaseAdmin, storeId, chain);
+    // "Rotate and never reuse" stores always get a brand-new address.
+    const recycled = (await evmReuseEnabled(supabaseAdmin, storeId))
+      ? await findRecyclableEvmAddress(supabaseAdmin, storeId, chain)
+      : null;
     if (recycled) {
       address = recycled.address;
       index = recycled.address_index ?? index;
@@ -305,29 +309,24 @@ async function applyEvmSharedTail(
 
 /**
  * Find an EVM address from a prior invoice on this store+chain that we can
- * safely hand to a new invoice.
+ * safely hand to a new invoice ("rotate and recycle" stores only).
  *
  * EVM is account-based: each derived address has to be swept individually
- * (gas per address per token), so we aggressively recycle. Rule:
- *   1. The address must have NO currently-active invoice
- *      (pending / detected / underpaid) — that would collide with a live flow.
- *   2. The most recent invoice on the address must be older than the
- *      RECYCLE_AFTER_MS window. After that window, any late on-chain payment
- *      from the prior invoice is treated as out-of-window and credited to the
- *      new invoice (acceptable tradeoff for cheaper sweeps).
+ * (gas per address per token), so we recycle idle addresses. An address
+ * qualifies only when no sale on it is open and every sale on it opened over
+ * an hour ago and expired more than its late-payment hour ago
+ * (addressReusable, src/lib/evm-address-mode.ts) — so a late payment for an
+ * old sale can never be credited to the shopper who got the address next.
  *
  * Returns the recycled address + its original derivation index, or null.
  */
-const EVM_RECYCLE_AFTER_MS = 60 * 60 * 1000; // 1 hour
-const ACTIVE_STATUSES = ["pending", "detected", "underpaid"];
-
 async function findRecyclableEvmAddress(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabaseAdmin: any,
   storeId: string,
   chain: string,
 ): Promise<{ address: string; address_index: number | null } | null> {
-  const cutoffIso = new Date(Date.now() - EVM_RECYCLE_AFTER_MS).toISOString();
+  const cutoffIso = new Date(Date.now() - RECYCLE_AFTER_OPEN_MS).toISOString();
 
   // Candidate addresses: any prior invoice on this store+chain whose most
   // recent activity is at least 1 hour old. Order oldest-first so we drain
@@ -369,14 +368,11 @@ async function findRecyclableEvmAddress(
     // (of any status) within the recycle window.
     const { data: siblings } = await supabaseAdmin
       .from("invoices")
-      .select("status, created_at")
+      .select("status, created_at, expires_at")
       .eq("store_id", storeId)
       .eq("chain", chain)
       .eq("address", c.address);
-    const safe = (siblings ?? []).every(
-      (s: { status: string; created_at: string }) =>
-        !ACTIVE_STATUSES.includes(s.status) && s.created_at < cutoffIso,
-    );
+    const safe = addressReusable(siblings ?? [], Date.now());
     if (safe) {
       return { address: c.address, address_index: c.address_index };
     }
@@ -388,6 +384,15 @@ async function findRecyclableEvmAddress(
 
 
 
+
+/** Rotating stores: false = "rotate and never reuse" (stores.evm_address_reuse). */
+async function evmReuseEnabled(
+  admin: { from: (t: string) => any },
+  storeId: string,
+): Promise<boolean> {
+  const { data } = await admin.from("stores").select("evm_address_reuse").eq("id", storeId).maybeSingle();
+  return (data as { evm_address_reuse?: boolean } | null)?.evm_address_reuse !== false;
+}
 
 /**
  * Per-store switch: when off, EVM invoices all use the main address (#0)

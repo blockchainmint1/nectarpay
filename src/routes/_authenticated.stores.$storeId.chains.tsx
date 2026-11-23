@@ -30,6 +30,7 @@ import { WalletChangeHistory, useWalletChangeHistory, walletHistoryDate } from "
 import { PendingKeyNotice, useKeyChangeSave } from "@/components/store/KeyChangeStepUp";
 import { LIGHTNING_ENABLED } from "@/lib/lightning-switch";
 import { isChainRetired } from "@/lib/network-switch";
+import { evmAddressColumns, evmAddressMode, type EvmAddressMode } from "@/lib/evm-address-mode";
 // Inlined client-safe validators (mirror src/lib/chains/derive.server.ts).
 function isXpubLike(s: string): boolean {
   return /^([xtuvyz]pub)[1-9A-HJ-NP-Za-km-z]{100,120}$/.test(s.trim());
@@ -439,13 +440,34 @@ function ZcuCard({
   );
 }
 
+const EVM_MODE_OPTIONS: Array<{ mode: EvmAddressMode; title: string; tag: string; body: string }> = [
+  {
+    mode: "shared",
+    title: "All to one address",
+    tag: "Easiest",
+    body: "Every sale pays your wallet's main address (the first one your wallet shows), so everything pools in one place. Overlapping sales are told apart by a tiny unique amount (under a cent).",
+  },
+  {
+    mode: "recycle",
+    title: "Rotate and recycle",
+    tag: "Infrequent payments",
+    body: "Each open sale gets its own address. Once a sale is done and its late-payment hour has passed, its address can go to a later sale, so you have only a few addresses to empty.",
+  },
+  {
+    mode: "fresh",
+    title: "Rotate, never reuse",
+    tag: "Advanced",
+    body: "Every sale gets a brand-new address that is never used again — the cleanest records and best privacy, but each address must be emptied separately (a network fee per address).",
+  },
+];
+
 function StoreSettingsCard({ storeId }: { storeId: string }) {
   const { data, refetch } = useQuery({
     queryKey: ["store-payment-settings", storeId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("stores")
-        .select("default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd, preferred_evm_chain, evm_address_rotation")
+        .select("default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd, preferred_evm_chain, evm_address_rotation, evm_address_reuse")
         .eq("id", storeId)
         .single();
       if (error) throw error;
@@ -460,7 +482,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
   const [tsdInstant, setTsdInstant] = useState<boolean>(true);
   const [tsdCap, setTsdCap] = useState<string>("250");
   const [preferredEvm, setPreferredEvm] = useState<string>("base");
-  const [evmRotation, setEvmRotation] = useState<boolean>(true);
+  const [evmMode, setEvmMode] = useState<EvmAddressMode>("shared");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -475,9 +497,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
       setTsdCap(cap == null ? "" : String(cap));
     }
     setPreferredEvm(((data as { preferred_evm_chain?: string }).preferred_evm_chain) ?? "base");
-    setEvmRotation(
-      (data as { evm_address_rotation?: boolean | null }).evm_address_rotation !== false,
-    );
+    setEvmMode(evmAddressMode(data.evm_address_rotation, data.evm_address_reuse));
   }, [data]);
 
 
@@ -500,7 +520,7 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
           tsd_instant: tsdInstant,
           tsd_instant_max_usd: tsdCap.trim() === "" ? null : Number(tsdCap),
           preferred_evm_chain: preferredEvm,
-          evm_address_rotation: evmRotation,
+          ...evmAddressColumns(evmMode),
         })
         .eq("id", storeId);
       if (error) throw error;
@@ -622,20 +642,34 @@ function StoreSettingsCard({ storeId }: { storeId: string }) {
       </div>
 
       <div className="mt-5 border-t border-primary/15 pt-4">
-        <label className="flex items-start gap-3">
-          <Switch checked={evmRotation} onCheckedChange={setEvmRotation} className="mt-0.5" />
-          <div>
-            <div className="text-sm font-medium">Rotate EVM receive addresses</div>
-            <p className="text-xs text-muted-foreground">
-              On: every Ethereum / Base / BSC order gets its own address — best privacy, but each
-              one has to be moved to your main address separately (a network fee per address).
-              Off: all EVM orders are paid to your wallet's main address (the first one your wallet
-              shows), so everything pools in one place you can always see. We tell overlapping
-              orders apart by a tiny unique amount tail (under a cent). A payment that doesn't match
-              exactly one order is held on your store page for you to apply — never guessed.
-            </p>
-          </div>
-        </label>
+        <div className="text-sm font-medium" id="evm-address-mode-label">Ethereum / Base / BSC receive addresses</div>
+        <p className="mt-1 text-xs text-muted-foreground">
+          How each EVM sale picks the address your shopper pays. A payment that doesn't match exactly one
+          sale is held on your store page for you to apply — never guessed.
+        </p>
+        <div role="radiogroup" aria-labelledby="evm-address-mode-label" className="mt-3 grid gap-2 md:grid-cols-3">
+          {EVM_MODE_OPTIONS.map((o) => (
+            <button
+              key={o.mode}
+              type="button"
+              role="radio"
+              aria-checked={evmMode === o.mode}
+              onClick={() => setEvmMode(o.mode)}
+              className={cn(
+                "rounded-md border p-3 text-left transition-colors",
+                evmMode === o.mode
+                  ? "border-primary bg-primary/10"
+                  : "border-border bg-background/40 hover:bg-background/70",
+              )}
+            >
+              <div className="flex items-baseline justify-between gap-2">
+                <span className={cn("text-sm font-medium", evmMode === o.mode ? "text-primary" : "text-foreground")}>{o.title}</span>
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">{o.tag}</span>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">{o.body}</p>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="mt-5 flex justify-end border-t border-primary/15 pt-4">

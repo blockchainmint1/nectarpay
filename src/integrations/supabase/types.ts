@@ -2357,6 +2357,7 @@ export type Database = {
           default_display_currency: string | null
           egiving_discount_pct: number
           egiving_enabled: boolean
+          evm_address_reuse: boolean
           evm_address_rotation: boolean
           ext_ref_label: string | null
           ext_ref_mode: string
@@ -2444,6 +2445,7 @@ export type Database = {
           default_display_currency?: string | null
           egiving_discount_pct?: number
           egiving_enabled?: boolean
+          evm_address_reuse?: boolean
           evm_address_rotation?: boolean
           ext_ref_label?: string | null
           ext_ref_mode?: string
@@ -2531,6 +2533,7 @@ export type Database = {
           default_display_currency?: string | null
           egiving_discount_pct?: number
           egiving_enabled?: boolean
+          evm_address_reuse?: boolean
           evm_address_rotation?: boolean
           ext_ref_label?: string | null
           ext_ref_mode?: string
