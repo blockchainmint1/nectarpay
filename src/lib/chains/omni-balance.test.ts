@@ -59,13 +59,11 @@ describe("addresses counted in the wallet balance", () => {
     expect(balancePages({ derived: true, firstIndex: 0, lastIndex: 0 })).toEqual([{ start: 0, count: 1 }]);
   });
 
-  it("counts address #0 when an older sale was paid there (mineTXC)", () => {
-    expect(firstBalanceIndex({ isEvm: true, evmSingle: false, lowestSaleIndex: 0 })).toBe(0);
-    expect(firstBalanceIndex({ isEvm: false, evmSingle: false, lowestSaleIndex: 0 })).toBe(0);
-  });
-
-  it("starts at #1 when no sale ever used #0", () => {
-    expect(firstBalanceIndex({ isEvm: true, evmSingle: false, lowestSaleIndex: 1 })).toBe(1);
-    expect(firstBalanceIndex({ isEvm: false, evmSingle: false, lowestSaleIndex: null })).toBe(1);
+  it("always starts at the main address #0, whatever the store's sales used", () => {
+    expect(firstBalanceIndex()).toBe(0);
+    const pages = balancePages({ derived: true, firstIndex: firstBalanceIndex(), lastIndex: 56 });
+    expect(pages[0]?.start).toBe(0);
+    const covered = pages.flatMap((p) => Array.from({ length: p.count }, (_, i) => p.start + i));
+    expect(covered).toHaveLength(57);
   });
 });

@@ -21,15 +21,10 @@ export function balancePages(c: BalancePageChain): { start: number; count: numbe
 }
 
 /**
- * First address a wallet balance counts: #0 for single-address EVM stores or
- * when any sale was paid to #0 (older stores' first sales), else #1.
+ * First address a wallet balance counts: always #0, the wallet's main address,
+ * on every network — even when sales rotate from #1, money sent straight to
+ * the main address (or a mistaken payment) is still in the merchant's wallet.
  */
-export function firstBalanceIndex(o: {
-  isEvm: boolean;
-  evmSingle: boolean;
-  lowestSaleIndex: number | null;
-}): number {
-  if (o.isEvm && o.evmSingle) return 0;
-  if (o.lowestSaleIndex !== null && o.lowestSaleIndex <= 0) return 0;
-  return 1;
+export function firstBalanceIndex(): number {
+  return 0;
 }

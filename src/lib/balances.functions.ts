@@ -17,7 +17,7 @@ export interface BalanceChainSummary {
   /** Addresses are derived from an xpub (paged) vs a single static address. */
   derived: boolean;
   nextIndex: number;
-  /** First sale address to count: #0 for single-address EVM stores, else #1. */
+  /** First address to count: always #0, the wallet's main address. */
   firstIndex: number;
   /** Highest address any sale has used (from the counter and the sales themselves). */
   lastIndex: number;
@@ -80,23 +80,15 @@ export const listBalanceChains = createServerFn({ method: "POST" })
       .eq("store_id", data.storeId);
     if (error) throw new Error(error.message);
 
-    const { data: store } = await context.supabase
-      .from("stores")
-      .select("evm_address_rotation")
-      .eq("id", data.storeId)
-      .maybeSingle();
-    const evmSingle =
-      (store as { evm_address_rotation?: boolean } | null)?.evm_address_rotation === false;
-
-    // Lowest / highest address index any sale on this chain (or EVM family) has used.
-    const saleIndex = async (chains: string[], ascending: boolean): Promise<number | null> => {
+    // Highest address index any sale on this chain (or EVM family) has used.
+    const saleIndex = async (chains: string[]): Promise<number | null> => {
       const { data: inv } = await context.supabase
         .from("invoices")
         .select("address_index")
         .eq("store_id", data.storeId)
         .in("chain", chains as never[])
         .not("address_index", "is", null)
-        .order("address_index", { ascending })
+        .order("address_index", { ascending: false })
         .limit(1);
       const v = (inv?.[0] as { address_index?: number } | undefined)?.address_index;
       return v === undefined || v === null ? null : Number(v);
@@ -116,14 +108,12 @@ export const listBalanceChains = createServerFn({ method: "POST" })
         ? ((net.kind === "btc-like" || net.kind === "evm") && isExtendedKey(key)) ||
           (net.kind === "tron" && !key.startsWith("T"))
         : net.kind !== "solana" && net.kind !== "tron";
-      const isEvm = net.kind === "evm";
       const nextIndex = row?.next_address_index ?? 1;
       const family = (EVM_SHARED as readonly string[]).includes(chain) ? [...EVM_SHARED] : [chain];
-      const lowestSale = configured && derived ? await saleIndex(family, true) : null;
-      const firstIndex = firstBalanceIndex({ isEvm, evmSingle, lowestSaleIndex: lowestSale });
+      const firstIndex = firstBalanceIndex();
       const lastIndex =
         configured && derived
-          ? Math.max(firstIndex, nextIndex - 1, (await saleIndex(family, false)) ?? 0)
+          ? Math.max(firstIndex, nextIndex - 1, (await saleIndex(family)) ?? 0)
           : 0;
       chains.push({
         chain,

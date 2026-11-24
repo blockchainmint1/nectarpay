@@ -157,3 +157,6 @@
 - [x] Address numbers are handed out atomically, so two sales started at once never share an address (closes audit M7).
 - [x] Remove private details (personal wallet, server, customer and merchant specifics) from these notes and test examples.
 - [ ] Bobby: switch the GitHub repo to private, and delete old Android build runs; older copies of these notes stay in the repo's history until then.
+
+## Wallet balances
+- [x] Always check address #0 on every monitored network plus every address the store has handed out, on the Wallet balances page and the store's Wallet Balance card (they share one scan); SEEDS checked live: 104 addresses, main TEXITcoin address showed 22,000 TSD that was hidden before; 276 tests passed.
