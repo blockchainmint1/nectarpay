@@ -168,7 +168,7 @@ function Page() {
               "Restaurants",
               "Salons",
               "Retail stores",
-              "Churches & nonprofits",
+              "Charities & nonprofits",
               "Event venues",
               "Service businesses",
               "Crypto-friendly merchants",

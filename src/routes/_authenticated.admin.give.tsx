@@ -34,7 +34,7 @@ function AdminGive() {
       <div>
         <h1 className="text-xl font-semibold">Wallets & Give</h1>
         <p className="text-sm text-muted-foreground">
-          Who can pay with a tap card, and where the church and program shares are allowed to go.
+          Who can pay with a tap card, and where the charitable organization and program shares are allowed to go.
         </p>
       </div>
       <Card className="space-y-1 border-primary/40 bg-primary/5 p-4">
@@ -117,7 +117,7 @@ function WalletsSection() {
   return (
     <section className="space-y-4">
       <SectionHeader icon={<CreditCard className="h-5 w-5" />} title="Wallets & donation recipients"
-        text="Every partner has its own TEXITcoin wallet, which signs its requests. Switch on Gets donations for churches and causes: a Give sale only gets the community discount when the donation goes to one of those wallets plus the NectarGive program wallet."
+        text="Every partner has its own TEXITcoin wallet, which signs its requests. Switch on Gets donations for charities and causes: a Give sale only gets the community discount when the donation goes to one of those wallets plus the NectarGive program wallet."
         onAdd={() => setAdding((a) => !a)} adding={adding} />
 
       {adding && (
@@ -267,7 +267,7 @@ function WalletRow({ p, recipient, open, onToggle, onChange }: { p: Partner; rec
           <div className="flex items-center gap-2 text-sm md:hidden">
             <Switch checked={Boolean(recipient?.active)} onCheckedChange={(v) => void setDonations(v)} aria-label={`${p.name} gets donations (mobile)`} /> Gets donations
           </div>
-          {recipient && <div className="space-y-1"><p className="text-xs text-muted-foreground">Details members see on the public church list</p><CauseDetails r={recipient} onSaved={onChange} /></div>}
+          {recipient && <div className="space-y-1"><p className="text-xs text-muted-foreground">Details members see on the public giving list</p><CauseDetails r={recipient} onSaved={onChange} /></div>}
           {!p.is_default && <Button size="sm" variant="outline" onClick={() => update({ is_default: true })}>Make default</Button>}
         </div>
       )}
@@ -312,13 +312,13 @@ function RecipientsSection() {
   return (
     <section className="space-y-4">
       <SectionHeader icon={<HeartHandshake className="h-5 w-5" />} title="Approved donation recipients"
-        text="A payment only gets the community discount when the non-store shares go to a church listed here plus the NectarGive program wallet above."
+        text="A payment only gets the community discount when the non-store shares go to a charitable organization listed here plus the NectarGive program wallet above."
         onAdd={() => setAdding((a) => !a)} adding={adding} />
 
 
       {adding && (
         <Card className="grid gap-3 p-4 sm:grid-cols-[1fr_2fr_auto] sm:items-center">
-          <Input placeholder="Name (e.g. Christ Church of the Valley)" value={name} onChange={(e) => setName(e.target.value)} />
+          <Input placeholder="Name (e.g. Peoria Food Bank)" value={name} onChange={(e) => setName(e.target.value)} />
           <Input placeholder="TEXITcoin address" value={address} onChange={(e) => setAddress(e.target.value)} className="font-mono" />
           <Button onClick={add}>Add</Button>
         </Card>
@@ -329,7 +329,7 @@ function RecipientsSection() {
           <span>Name</span><span>Type</span><span>Address</span><span>On</span><span />
         </div>
         {q.isLoading ? <p className="p-4 text-sm text-muted-foreground">Loading…</p> : (q.data ?? []).length === 0 ? (
-          <p className="p-4 text-sm text-muted-foreground">No recipients yet. Add at least one church.</p>
+          <p className="p-4 text-sm text-muted-foreground">No recipients yet. Add at least one charitable organization.</p>
         ) : (q.data ?? []).map((r) => {
           const isOpen = open === r.address;
           return (
@@ -337,7 +337,7 @@ function RecipientsSection() {
               <div className="grid cursor-pointer grid-cols-[1fr_auto_auto_2rem] items-center gap-4 px-4 py-3 hover:bg-muted/30 md:grid-cols-[1fr_auto_1.4fr_auto_2rem]"
                 onClick={() => setOpen(isOpen ? null : r.address)}>
                 <span className="font-medium">{r.name}</span>
-                <Pill tone={r.source === "hme_give" ? "good" : "primary"}>{r.source === "hme_give" ? "Old HME Give entry" : "Church"}</Pill>
+                <Pill tone={r.source === "hme_give" ? "good" : "primary"}>{r.source === "hme_give" ? "Old HME Give entry" : "Charity"}</Pill>
                 <span className="hidden truncate font-mono text-xs text-muted-foreground md:block">{r.address.slice(0, 8)}…{r.address.slice(-6)}</span>
                 <div onClick={(e) => e.stopPropagation()}>
                   <Switch checked={r.active} onCheckedChange={(v) => toggle(r.address, v)} aria-label={`${r.name} on`} />
@@ -380,7 +380,7 @@ function CauseDetails({ r, onSaved }: { r: CauseRow; onSaved: () => void }) {
     const { error } = await supabase.from("egiving_recipients")
       .update({ code: c || null, city: city.trim() || null, blurb: blurb.trim() || null, featured })
       .eq("address", r.address);
-    if (error) return toast.error(error.message.includes("egiving_recipients_code_ci") ? "That code is already used by another church." : error.message);
+    if (error) return toast.error(error.message.includes("egiving_recipients_code_ci") ? "That code is already used by another organization." : error.message);
     toast.success("Saved — wallets see it on the public list.");
     onSaved();
   }

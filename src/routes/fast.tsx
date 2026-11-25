@@ -261,7 +261,7 @@ function FastPage() {
             <span>
               <span className="font-medium">Join the Give Back program</span>
               <span className="block text-sm text-muted-foreground">
-                Shoppers using a giving wallet get 10% off; that 10% goes to their church and the program.
+                Shoppers using a giving wallet get 10% off; that 10% goes to their charitable organization and the program.
               </span>
             </span>
           </label>

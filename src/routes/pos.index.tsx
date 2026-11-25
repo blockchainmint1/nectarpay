@@ -1003,7 +1003,7 @@ function buildReceiptPayload(
     lines.push({ text: "Received", right: fmt(totalCents, cur) });
   }
   lines.push({ text: "Status", right: "PAID IN FULL", bold: true });
-  if (eg) text("Church and program contributions are non-refundable.");
+  if (eg) text("Charity and program contributions are non-refundable.");
   dots();
   dots();
   if (status.chain) {

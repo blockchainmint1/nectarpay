@@ -196,11 +196,11 @@ There's no percentage taken from any sale. The terminal kit, including the first
 Switch it on yourself in your store's payment settings. Customers paying in TSD get **10% off**,
 and that one payment is split in a single transaction:
 
-| You receive | The customer's church | The program |
+| You receive | The customer's charity | The program |
 |:---:|:---:|:---:|
 | **90%** | **8%** | **2%** |
 
-Rewards are still earned on the full price. The church and program shares can't be refunded;
+Rewards are still earned on the full price. The charity and program shares can't be refunded;
 only your share can, and the receipt says so.
 
 ## POP rewards

@@ -85,8 +85,8 @@ export const CHAPTERS: Chapter[] = [
         id: "give-pop",
         title: "Optional Give Back and shopper POP rewards",
         body: [
-          "A merchant who opts into Give Back accepts a qualifying TSD community split: 90% to the merchant, 8% to an approved church and 2% to the program, all in one payment. The 10% community share is fixed. A normal payment without Give Back sends the full purchase total to the merchant.",
-          "On a $100 Give Back sale, the merchant receives $90, the church $8 and the program $2. Only the merchant portion can be refunded; the church and program shares are non-refundable. Approved churches are supplied through HME Give's signed list, with the last accepted list kept as a backup.",
+          "A merchant who opts into Give Back accepts a qualifying TSD community split: 90% to the merchant, 8% to an approved charitable organization and 2% to the program, all in one payment. The 10% community share is fixed. A normal payment without Give Back sends the full purchase total to the merchant.",
+          "On a $100 Give Back sale, the merchant receives $90, the charitable organization $8 and the program $2. Only the merchant portion can be refunded; the charitable organization and program shares are non-refundable. Approved charitable organizations are supplied through HME Give's signed list, with the last accepted list kept as a backup.",
           "CryptoPOP rewards use the full sale total, not just the merchant's share: 1 POP per dollar, rounded up, so a $2.50 purchase can earn 3 POP. NectarPay verifies eligibility and CryptoPOP issues the points. POP is not spendable money, and sending a payment is not a guarantee of an immediate award.",
         ],
         bullets: [
@@ -309,13 +309,13 @@ export const CHAPTERS: Chapter[] = [
   {
     id: "giving",
     title: "Giving Program (Give Back)",
-    summary: "Offer shoppers a discount that goes to their church or cause, at no extra cost to them.",
+    summary: "Offer shoppers a discount that goes to their charitable organization or cause, at no extra cost to them.",
     sections: [
       {
         id: "what",
         title: "What it is",
         body: [
-          "When a shopper pays with an eGiving wallet, 10% of the sale goes to an approved church and the giving program, and you receive 90%. Shoppers support their community just by shopping with you.",
+          "When a shopper pays with an eGiving wallet, 10% of the sale goes to an approved charitable organization and the giving program, and you receive 90%. Shoppers support their community just by shopping with you.",
           "The discount is currently fixed at 10% for every store.",
         ],
       },
@@ -332,7 +332,7 @@ export const CHAPTERS: Chapter[] = [
       {
         id: "example",
         title: "Example",
-        body: ["A $100 sale: you get $90, the church gets $8 and the program gets $2. Receipts show the discount and note that the giving portion is non-refundable."],
+        body: ["A $100 sale: you get $90, the charitable organization gets $8 and the program gets $2. Receipts show the discount and note that the giving portion is non-refundable."],
       },
       {
         id: "reports",
@@ -434,7 +434,7 @@ export const CHAPTERS: Chapter[] = [
           "Receive signed webhooks when a sale is paid.",
           "Drop a pay button onto any webpage.",
           "Read the public merchant directory feed.",
-          "Read the signed list of approved eGiving churches.",
+          "Read the signed list of approved eGiving charitable organizations.",
           "Card wallet and POP reward partner connections.",
         ],
         body: ["API keys are created per store under Tech Stuff → API keys."],
@@ -462,7 +462,7 @@ export const GLOSSARY: { term: string; meaning: string }[] = [
   { term: "Underpayment", meaning: "A payment that arrived for less than the sale total." },
   { term: "NFC", meaning: "Near-field communication: the short-range radio used for card taps." },
   { term: "Card partner", meaning: "A wallet company (like CryptoPOP) whose tap cards work on NectarPay terminals." },
-  { term: "Give Back / eGiving", meaning: "The Giving Program that sends part of a sale to an approved church and program." },
+  { term: "Give Back / eGiving", meaning: "The Giving Program that sends part of a sale to an approved charitable organization and program." },
   { term: "POP", meaning: "Reward points earned by shoppers; a real token, but not spendable money." },
   { term: "Terminal / POS", meaning: "The countertop device or app used to take in-person payments." },
   { term: "Payment link", meaning: "A shareable link a customer can open to pay you online." },

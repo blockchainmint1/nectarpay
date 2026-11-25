@@ -59,8 +59,8 @@ function GiveBackPage() {
   }
 
   const merchantPct = 100 - EGIVING_DISCOUNT_PCT;
-  const churchPct = 8;
-  const programPct = EGIVING_DISCOUNT_PCT - churchPct;
+  const causePct = 8;
+  const programPct = EGIVING_DISCOUNT_PCT - causePct;
 
   return (
     <div className="mx-auto max-w-[90rem] px-4 py-10 md:px-8">
@@ -79,9 +79,9 @@ function GiveBackPage() {
         <h1 className="text-2xl font-semibold tracking-tight">Give Back</h1>
       </div>
       <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-        Let customers who give to their church pay you from the same payment. You take the same
-        sale — a slice of what they spend goes to their church and the eGiving program on the way
-        through, and we still mark your share as paid in full.
+        Let customers who give to a charitable organization pay you from the same payment. You take
+        the same sale — a slice of what they spend goes to their charitable organization and the
+        eGiving program on the way through, and we still mark your share as paid in full.
       </p>
 
       <div className="mt-8 max-w-3xl rounded-lg border border-border bg-card/60 p-5">
@@ -92,8 +92,9 @@ function GiveBackPage() {
               <div className="text-sm font-medium">Accept eGiving community payments</div>
               <p className="mt-1 text-xs text-muted-foreground">
                 eGiving customers pay in TSD with one split payment: you receive your share and the
-                rest goes to their church and the eGiving program. Your share counts as paid in
-                full — the difference is recorded as a community discount on the sale.
+                rest goes to their charitable organization and the eGiving program. Your share
+                counts as paid in full — the difference is recorded as a community discount on the
+                sale.
               </p>
             </div>
           </label>
@@ -112,9 +113,9 @@ function GiveBackPage() {
               className="bg-muted text-muted-foreground"
             />
             <p className="mt-1 text-xs text-muted-foreground">
-              Fixed at {EGIVING_DISCOUNT_PCT}% for now — the eGiving wallet sends {churchPct}% to
-              the customer's church and {programPct}% to the program, so every store uses the same
-              split.
+              Fixed at {EGIVING_DISCOUNT_PCT}% for now — the eGiving wallet sends {causePct}% to
+              the customer's charitable organization and {programPct}% to the program, so every
+              store uses the same split.
             </p>
           </div>
         </div>
@@ -131,9 +132,9 @@ function GiveBackPage() {
             <div className="text-sm font-medium">Where a ${merchantPct + EGIVING_DISCOUNT_PCT} sale goes</div>
           </div>
           <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
-            <li>${(merchantPct / 10).toFixed(2)} — your store, marked paid in full</li>
-            <li>${(churchPct / 10).toFixed(2)} — the customer's church</li>
-            <li>${(programPct / 10).toFixed(2)} — the eGiving program</li>
+            <li>${merchantPct.toFixed(2)} — your store, marked paid in full</li>
+            <li>${causePct.toFixed(2)} — the customer's charitable organization</li>
+            <li>${programPct.toFixed(2)} — the eGiving program</li>
           </ul>
           <p className="mt-3 text-xs text-muted-foreground">
             One payment, one tap. Nothing extra to collect and nothing to send on afterward.
@@ -145,8 +146,8 @@ function GiveBackPage() {
           <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
             <li>Works with TSD on TEXITcoin only.</li>
             <li>Customer rewards and your store rewards are earned on the full sale.</li>
-            <li>The church and program shares can't be refunded.</li>
-            <li>Only churches and programs we've approved can receive a share.</li>
+            <li>The charitable organization and program shares can't be refunded.</li>
+            <li>Only charitable organizations and programs we've approved can receive a share.</li>
           </ul>
         </div>
       </div>

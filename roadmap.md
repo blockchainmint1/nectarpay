@@ -160,3 +160,6 @@
 
 ## Wallet balances
 - [x] Always check address #0 on every monitored network plus every address the store has handed out, on the Wallet balances page and the store's Wallet Balance card (they share one scan); SEEDS checked live: 104 addresses, main TEXITcoin address showed 22,000 TSD that was hidden before; 276 tests passed.
+
+## Give Back wording
+- [x] Replace "church" with "charitable organization" (or "charity" where space is tight) on every customer- and merchant-facing screen and email: Give Back page, store page tile, eGiving report, POS receipt line, customer receipt email, Fast Start page, merchant Docs guide, API reference, Admin → Give labels, merchant pitch/manifesto/CryptoPOP training and the README. Database values, internal names and test fixtures unchanged.

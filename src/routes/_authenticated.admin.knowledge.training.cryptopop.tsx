@@ -70,7 +70,7 @@ function Page() {
         </p>
         <h3>Step 1 — Pick three businesses</h3>
         <p>
-          Coffee shops, salons, restaurants, churches, gyms. The ones you already love.
+          Coffee shops, salons, restaurants, charities, gyms. The ones you already love.
           Owner-operated is best.
         </p>
         <h3>Step 2 — Use the 30-second pitch</h3>

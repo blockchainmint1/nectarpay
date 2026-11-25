@@ -50,7 +50,7 @@ export const Route = createFileRoute("/_authenticated/admin/knowledge/manifesto"
 
         <h2>We believe in the operator.</h2>
         <p>
-          Coffee shops, salons, restaurants, churches, mechanics, makers. The people who unlock
+          Coffee shops, salons, restaurants, charities, mechanics, makers. The people who unlock
           the door at 6am and lock it at 9pm. We are here because they deserve a better deal —
           and because no one else is going to give it to them.
         </p>

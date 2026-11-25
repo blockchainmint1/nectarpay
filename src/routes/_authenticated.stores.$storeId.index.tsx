@@ -81,9 +81,9 @@ function StoreDetailPage() {
         </div>
       </Section>
 
-      <Section title="Give Back" hint="Optional — let customers give to their church while paying you.">
+      <Section title="Give Back" hint="Optional — let customers give to a charitable organization while paying you.">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {tile(<HeartHandshake className="h-4 w-4" />, "eGiving community payments", "Turn on split payments: you get paid in full, the rest goes to the customer's church and the eGiving program.", "give-back")}
+          {tile(<HeartHandshake className="h-4 w-4" />, "eGiving community payments", "Turn on split payments: you get paid in full, the rest goes to the customer's charitable organization and the eGiving program.", "give-back")}
         </div>
       </Section>
 

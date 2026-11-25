@@ -117,7 +117,7 @@ function ApiPage() {
         <section id="partners" className="mt-14 scroll-mt-20">
           <h2 className="text-2xl font-semibold tracking-tight">Partner APIs</h2>
           <div className="mt-6 grid gap-4 text-sm md:grid-cols-2">
-            <Endpoint method="GET" path="/api/public/v1/egiving/causes" desc="Signed public list of approved eGiving churches. Optional ?q= (search) and ?code=. Every response is TXC-message-signed; wallets should pin the signer address." />
+            <Endpoint method="GET" path="/api/public/v1/egiving/causes" desc="Signed public list of approved eGiving charitable organizations. Optional ?q= (search) and ?code=. Every response is TXC-message-signed; wallets should pin the signer address." />
             <Endpoint method="POST" path="/api/public/v1/pop/claim" desc="For approved wallet partners: claim the POP reward for a paid sale (HMAC-signed). Each sale can be claimed once." />
           </div>
         </section>

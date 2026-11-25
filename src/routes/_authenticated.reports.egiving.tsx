@@ -33,7 +33,7 @@ function EgivingReport() {
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-3">
         <Tile label="eGiving sales" value={money(salesTotal, currency)} sub={`${sales.length} sale${sales.length === 1 ? "" : "s"}`} />
-        <Tile label="Community discounts" value={money(discountTotal, currency)} sub="given to churches & the program" />
+        <Tile label="Community discounts" value={money(discountTotal, currency)} sub="given to charities & the program" />
         <Tile label="You received" value={money(salesTotal - discountTotal, currency)} sub="in TSD" />
       </div>
 
@@ -119,8 +119,8 @@ function EgivingReport() {
       <Panel title="A note on these numbers" description="So nobody is surprised">
         <p className="text-sm text-muted-foreground">
           Every sale here was marked paid in full. The community discount is the share the customer's
-          payment sent to their church and the eGiving program instead of to you. Check with your
-          accountant on how to record it.
+          payment sent to their charitable organization and the eGiving program instead of to you.
+          Check with your accountant on how to record it.
         </p>
       </Panel>
     </div>
