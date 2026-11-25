@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, type ReactNode } from "react";
 import { toast } from "sonner";
-import { ChevronDown, CreditCard, HeartHandshake, Plus, Store } from "lucide-react";
+import { ChevronDown, CreditCard, HeartHandshake, Plus, Store, Trash2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -44,6 +44,7 @@ function AdminGive() {
         <p className="text-sm text-muted-foreground">Receives the program share: 2% of each Give Back sale (20% of the donation). Built in — it can't be changed here.</p>
       </Card>
       <WalletsSection />
+      <RecipientsSection />
       <MerchantsSection />
     </div>
   );
@@ -73,24 +74,16 @@ function Pill({ children, tone = "muted" }: { children: ReactNode; tone?: "muted
 
 /* ---------------- Approved wallets ---------------- */
 
-type Partner = { id: string; name: string; pay_url: string; card_domains: string[]; wallet_address: string | null; donation_address: string | null; secret_fingerprint: string | null; uses_legacy_secret: boolean; is_default: boolean; active: boolean };
+type Partner = { id: string; name: string; pay_url: string; card_domains: string[]; wallet_address: string | null; secret_fingerprint: string | null; uses_legacy_secret: boolean; is_default: boolean; active: boolean };
 
 function WalletsSection() {
   const q = useQuery({
     queryKey: ["admin", "card-partners"],
     queryFn: async () => {
       const { data, error } = await supabase.from("card_partners")
-        .select("id, name, pay_url, card_domains, wallet_address, donation_address, secret_fingerprint, uses_legacy_secret, is_default, active").order("created_at");
+        .select("id, name, pay_url, card_domains, wallet_address, secret_fingerprint, uses_legacy_secret, is_default, active").order("created_at");
       if (error) throw error;
       return data as Partner[];
-    },
-  });
-  const rq = useQuery({
-    queryKey: ["admin", "egiving-recipients"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("egiving_recipients").select("*").eq("kind", "church");
-      if (error) throw error;
-      return data;
     },
   });
   const [adding, setAdding] = useState(false);
@@ -99,16 +92,14 @@ function WalletsSection() {
   const [url, setUrl] = useState("");
   const [domains, setDomains] = useState("");
   const [wallet, setWallet] = useState("");
-  const [donation, setDonation] = useState("");
 
   async function add() {
     if (wallet.trim() && !/^[A-Za-z0-9]{25,90}$/.test(wallet.trim())) return toast.error("Enter a valid TEXITcoin wallet address.");
-    if (donation.trim() && !/^[A-Za-z0-9]{25,90}$/.test(donation.trim())) return toast.error("Enter a valid donation recipient TSD address.");
     if (!name.trim() || !/^https:\/\/\S+$/.test(url.trim())) return toast.error("Enter a name and an https:// payment address.");
     const { data, error } = await supabase.from("card_partners")
-      .insert({ name: name.trim(), pay_url: url.trim(), card_domains: normalizeDomains(domains), wallet_address: wallet.trim() || null, donation_address: donation.trim() || null, active: false }).select("id").single();
+      .insert({ name: name.trim(), pay_url: url.trim(), card_domains: normalizeDomains(domains), wallet_address: wallet.trim() || null, active: false }).select("id").single();
     if (error) return toast.error(error.message);
-    setName(""); setUrl(""); setDomains(""); setWallet(""); setDonation(""); setAdding(false);
+    setName(""); setUrl(""); setDomains(""); setWallet(""); setAdding(false);
     toast.success("Wallet added. Set its key, then switch it on.");
     await q.refetch();
     if (data) setOpen(data.id);
@@ -116,46 +107,44 @@ function WalletsSection() {
 
   return (
     <section className="space-y-4">
-      <SectionHeader icon={<CreditCard className="h-5 w-5" />} title="Wallets & donation recipients"
-        text="Every partner has its own TEXITcoin wallet, which signs its requests. Switch on Gets donations for charities and causes: a Give sale only gets the community discount when the donation goes to one of those wallets plus the NectarGive program wallet."
+      <SectionHeader icon={<CreditCard className="h-5 w-5" />} title="Wallets"
+        text="Approved partner wallets that can pay with a tap card or send live payment updates to NectarPay. Add or remove wallets here."
         onAdd={() => setAdding((a) => !a)} adding={adding} />
 
       {adding && (
-        <Card className="grid gap-3 p-4 md:grid-cols-[1fr_1.5fr_1.5fr_1.2fr_1.2fr_auto] md:items-center">
+        <Card className="grid gap-3 p-4 md:grid-cols-[1fr_1.5fr_1.5fr_1.3fr_auto] md:items-center">
           <Input placeholder="Wallet name (e.g. HME Wallet)" value={name} onChange={(e) => setName(e.target.value)} />
           <Input placeholder="Payment address (https://…/card/pay)" value={url} onChange={(e) => setUrl(e.target.value)} className="font-mono" />
           <Input placeholder="Card domains (e.g. hmewallet.com)" value={domains} onChange={(e) => setDomains(e.target.value)} />
           <Input placeholder="TEXITcoin wallet (signer)" value={wallet} onChange={(e) => setWallet(e.target.value)} className="font-mono" />
-          <Input placeholder="Donation recipient TSD address" value={donation} onChange={(e) => setDonation(e.target.value)} className="font-mono" />
           <Button onClick={add}>Add wallet</Button>
         </Card>
       )}
 
       <Card className="overflow-hidden p-0">
-        <div className="hidden grid-cols-[1fr_1fr_1.2fr_auto_auto_auto_2rem] gap-4 border-b border-border bg-muted/40 px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground md:grid">
-          <span>Partner</span><span>Card domains</span><span>Wallet</span><span>Donations</span><span>Key</span><span>On</span><span />
+        <div className="hidden grid-cols-[1fr_1fr_1.2fr_auto_auto_2rem] gap-4 border-b border-border bg-muted/40 px-4 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground md:grid">
+          <span>Wallet</span><span>Card domains</span><span>Signer address</span><span>Key</span><span>On</span><span />
         </div>
         {q.isLoading ? <p className="p-4 text-sm text-muted-foreground">Loading…</p> :
           (q.data ?? []).length === 0 ? <p className="p-4 text-sm text-muted-foreground">No wallets yet.</p> :
           (q.data ?? []).map((p) => (
-            <WalletRow key={p.id} p={p} recipient={(rq.data ?? []).find((r) => r.address === (p.donation_address ?? p.wallet_address)) ?? null} open={open === p.id} onToggle={() => setOpen(open === p.id ? null : p.id)} onChange={() => { void q.refetch(); void rq.refetch(); }} />
+            <WalletRow key={p.id} p={p} open={open === p.id} onToggle={() => setOpen(open === p.id ? null : p.id)} onChange={() => { void q.refetch(); }} />
           ))}
       </Card>
     </section>
   );
 }
 
-function WalletRow({ p, recipient, open, onToggle, onChange }: { p: Partner; recipient: Recipient | null; open: boolean; onToggle: () => void; onChange: () => void }) {
+function WalletRow({ p, open, onToggle, onChange }: { p: Partner; open: boolean; onToggle: () => void; onChange: () => void }) {
   const [url, setUrl] = useState(p.pay_url);
   const [domains, setDomains] = useState(p.card_domains.join(", "));
   const [wallet, setWallet] = useState(p.wallet_address ?? "");
-  const [donation, setDonation] = useState(p.donation_address ?? "");
   const [key, setKey] = useState("");
   const [shown, setShown] = useState("");
   const saveKey = useServerFn(setCardPartnerSecret);
   const hasKey = Boolean(p.secret_fingerprint) || p.uses_legacy_secret;
 
-  async function update(patch: Partial<Pick<Partner, "pay_url" | "card_domains" | "wallet_address" | "donation_address" | "active" | "is_default">>) {
+  async function update(patch: Partial<Pick<Partner, "pay_url" | "card_domains" | "wallet_address" | "active" | "is_default">>) {
     if (patch.is_default) {
       const { error } = await supabase.from("card_partners").update({ is_default: false }).eq("is_default", true);
       if (error) return toast.error(error.message);
@@ -166,20 +155,12 @@ function WalletRow({ p, recipient, open, onToggle, onChange }: { p: Partner; rec
     onChange();
   }
 
-  async function setDonations(on: boolean) {
-    const addr = p.donation_address ?? p.wallet_address;
-    if (!addr) return toast.error("Save a donation recipient TSD address (or a wallet) for this partner first.");
-    const { data: existing } = await supabase.from("egiving_recipients").select("kind").eq("address", addr).maybeSingle();
-    if (existing && existing.kind !== "church") {
-      return toast.error("This wallet is the Give program wallet — it already receives the program share, so it can't also be a donation recipient.");
-    }
-    const { error } = existing
-      ? await supabase.from("egiving_recipients").update({ active: on, blocked: false, name: p.name }).eq("address", addr)
-      : await supabase.from("egiving_recipients").insert({ address: addr, kind: "church", name: p.name, active: true });
-    if (error) return toast.error(error.message.includes("egiving_recipients_pkey")
-      ? "This wallet is already on the Give list (it's a program wallet), so it can't also be a donation recipient."
-      : error.message);
-    toast.success(on ? `${p.name} now gets donations.` : `${p.name} no longer gets donations.`);
+  async function remove() {
+    if (p.is_default) return toast.error("Set another wallet as default before removing this one.");
+    if (!confirm(`Remove ${p.name} from approved wallets? Its tap cards and wallet requests will stop working.`)) return;
+    const { error } = await supabase.from("card_partners").delete().eq("id", p.id);
+    if (error) return toast.error(error.message);
+    toast.success(`${p.name} removed.`);
     onChange();
   }
 
@@ -202,16 +183,13 @@ function WalletRow({ p, recipient, open, onToggle, onChange }: { p: Partner; rec
 
   return (
     <div className="border-b border-border/60 last:border-0">
-      <div className="grid cursor-pointer grid-cols-[1fr_auto_2rem] items-center gap-4 px-4 py-3 hover:bg-muted/30 md:grid-cols-[1fr_1fr_1.2fr_auto_auto_auto_2rem]" onClick={onToggle}>
+      <div className="grid cursor-pointer grid-cols-[1fr_auto_2rem] items-center gap-4 px-4 py-3 hover:bg-muted/30 md:grid-cols-[1fr_1fr_1.2fr_auto_auto_2rem]" onClick={onToggle}>
         <div className="flex flex-wrap items-center gap-2 font-medium">
           {p.name}{p.is_default && <Pill tone="primary">Default</Pill>}
         </div>
         <div className="hidden truncate text-sm text-muted-foreground md:block">{p.card_domains.join(", ") || "—"}</div>
-        <div className="hidden truncate font-mono text-xs text-muted-foreground md:block" title={p.donation_address ? `Donations to ${p.donation_address}` : undefined}>
-          {p.donation_address ? `${p.donation_address.slice(0, 8)}…${p.donation_address.slice(-6)}` : p.wallet_address ? `${p.wallet_address.slice(0, 8)}…${p.wallet_address.slice(-6)}` : "—"}
-        </div>
-        <div className="hidden md:block" onClick={(e) => e.stopPropagation()}>
-          <Switch checked={Boolean(recipient?.active)} onCheckedChange={(v) => void setDonations(v)} aria-label={`${p.name} gets donations`} />
+        <div className="hidden truncate font-mono text-xs text-muted-foreground md:block">
+          {p.wallet_address ? `${p.wallet_address.slice(0, 8)}…${p.wallet_address.slice(-6)}` : "—"}
         </div>
         <div className="hidden md:block">{hasKey ? <Pill tone="good">Set</Pill> : <Pill>Missing</Pill>}</div>
         <div onClick={(e) => e.stopPropagation()}>
@@ -224,25 +202,17 @@ function WalletRow({ p, recipient, open, onToggle, onChange }: { p: Partner; rec
           <p className="text-xs text-muted-foreground">
             Key: {p.secret_fingerprint ? <>fingerprint <span className="font-mono">{p.secret_fingerprint}</span></> : p.uses_legacy_secret ? "using the original NFC payment key" : "not set"}
           </p>
-          <div className="grid gap-3 md:grid-cols-[2fr_1.5fr_2fr_2fr_auto] md:items-end">
+          <div className="grid gap-3 md:grid-cols-[2fr_1.5fr_2fr_auto] md:items-end">
             <label className="space-y-1 text-xs text-muted-foreground">Payment address
               <Input value={url} onChange={(e) => setUrl(e.target.value)} className="font-mono" /></label>
             <label className="space-y-1 text-xs text-muted-foreground">Card domains
               <Input value={domains} onChange={(e) => setDomains(e.target.value)} /></label>
             <label className="space-y-1 text-xs text-muted-foreground">TEXITcoin wallet (signs requests)
               <Input value={wallet} onChange={(e) => setWallet(e.target.value)} className="font-mono" /></label>
-            <label className="space-y-1 text-xs text-muted-foreground">Donation recipient TSD address
-              <Input value={donation} onChange={(e) => setDonation(e.target.value)} placeholder="Defaults to the wallet above" className="font-mono" /></label>
             <Button variant="outline" onClick={async () => {
               if (!/^https:\/\/\S+$/.test(url.trim())) return toast.error("Payment address must start with https://");
               if (wallet.trim() && !/^[A-Za-z0-9]{25,90}$/.test(wallet.trim())) return toast.error("Enter a valid TEXITcoin wallet address.");
-              if (donation.trim() && !/^[A-Za-z0-9]{25,90}$/.test(donation.trim())) return toast.error("Enter a valid donation recipient TSD address.");
-              const nextDonation = donation.trim() || null;
-              if (recipient && nextDonation && nextDonation !== recipient.address) {
-                const { error } = await supabase.from("egiving_recipients").update({ address: nextDonation }).eq("address", recipient.address);
-                if (error) return toast.error(error.message);
-              }
-              void update({ pay_url: url.trim(), card_domains: normalizeDomains(domains), wallet_address: wallet.trim() || null, donation_address: nextDonation });
+              void update({ pay_url: url.trim(), card_domains: normalizeDomains(domains), wallet_address: wallet.trim() || null });
             }}>Save</Button>
           </div>
           {shown && (
@@ -264,11 +234,12 @@ function WalletRow({ p, recipient, open, onToggle, onChange }: { p: Partner; rec
               <Input type="password" autoComplete="off" value={key} onChange={(e) => setKey(e.target.value)} className="font-mono" /></label>
             <Button variant="outline" disabled={key.trim().length < 24} onClick={() => storeKey()}>Save key</Button>
           </div>
-          <div className="flex items-center gap-2 text-sm md:hidden">
-            <Switch checked={Boolean(recipient?.active)} onCheckedChange={(v) => void setDonations(v)} aria-label={`${p.name} gets donations (mobile)`} /> Gets donations
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <div>{!p.is_default && <Button size="sm" variant="outline" onClick={() => update({ is_default: true })}>Make default</Button>}</div>
+            <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" disabled={p.is_default} onClick={() => void remove()}>
+              <Trash2 className="mr-1 h-3.5 w-3.5" />Remove wallet
+            </Button>
           </div>
-          {recipient && <div className="space-y-1"><p className="text-xs text-muted-foreground">Details members see on the public giving list</p><CauseDetails r={recipient} onSaved={onChange} /></div>}
-          {!p.is_default && <Button size="sm" variant="outline" onClick={() => update({ is_default: true })}>Make default</Button>}
         </div>
       )}
     </div>
@@ -311,7 +282,7 @@ function RecipientsSection() {
 
   return (
     <section className="space-y-4">
-      <SectionHeader icon={<HeartHandshake className="h-5 w-5" />} title="Approved donation recipients"
+      <SectionHeader icon={<HeartHandshake className="h-5 w-5" />} title="Donation recipients"
         text="A payment only gets the community discount when the non-store shares go to a charitable organization listed here plus the NectarGive program wallet above."
         onAdd={() => setAdding((a) => !a)} adding={adding} />
 
@@ -365,7 +336,6 @@ function RecipientsSection() {
   );
 }
 
-type Recipient = CauseRow & { active: boolean; name: string };
 type CauseRow = { address: string; code: string | null; city: string | null; blurb: string | null; featured: boolean };
 
 function CauseDetails({ r, onSaved }: { r: CauseRow; onSaved: () => void }) {
@@ -422,8 +392,8 @@ function MerchantsSection() {
       <div className="flex gap-3">
         <div className="mt-0.5 text-primary"><Store className="h-5 w-5" /></div>
         <div>
-          <h2 className="text-lg font-semibold">Participating merchants</h2>
-          <p className="max-w-2xl text-sm text-muted-foreground">Stores that accept Give payments at the community discount. {on} of {q.data?.length ?? 0} are in.</p>
+          <h2 className="text-lg font-semibold">Give merchants</h2>
+          <p className="max-w-2xl text-sm text-muted-foreground">Stores that accept Give payments at the community discount (merchants manage this in their store portal, or you can toggle it here). {on} of {q.data?.length ?? 0} are in.</p>
         </div>
       </div>
       <Input placeholder="Find a store" value={filter} onChange={(e) => setFilter(e.target.value)} className="max-w-sm" />
