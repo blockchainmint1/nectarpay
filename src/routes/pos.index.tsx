@@ -19,6 +19,8 @@ import { startTangemPayment, submitTangemPayment } from "@/lib/tangem-pay.functi
 import { Checkbox } from "@/components/ui/checkbox";
 import { marketingConsentText } from "@/lib/customers";
 import { CryptoPopCardScreen } from "@/components/cryptopop-card-screen";
+import { PaymentProgressPanel } from "@/components/payment-progress-panel";
+import { buildProgressView, type WalletProgressInfo } from "@/lib/payment-progress";
 
 function joinNets(names: string[]): string {
   if (names.length <= 1) return names.join("");
@@ -76,6 +78,13 @@ type InvoiceStatus = {
   payment_program?: string | null;
   discount_usd?: number | null;
   discount_pct?: number | null;
+  wallet_progress?: {
+    event: "paying" | "payment_submitted";
+    event_at: string | null;
+    partner_name: string | null;
+    txid: string | null;
+    submitted_at: string | null;
+  } | null;
 };
 
 function egivingInfo(status: InvoiceStatus) {
@@ -153,20 +162,33 @@ interface ReceiptConfig {
 const DEFAULT_RECEIPT: ReceiptConfig = { business_name: null, address: null, logo_url: null, footer: null, tax_id: null };
 
 function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings }) {
-  const [screen, setScreen] = useState<Screen>("amount");
-  const [subtotalCents, setSubtotalCents] = useState(0);
+  const activeSaleKey = `nectarpay.pos.activeSale.${creds.terminalId}`;
+  const restored = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = window.sessionStorage.getItem(activeSaleKey);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as { screen?: Screen; invoice?: InvoiceResp; subtotalCents?: number; finalTipCents?: number; cardSent?: boolean };
+      if (!parsed.invoice?.id || !parsed.screen || !["waiting", "underpaid", "card"].includes(parsed.screen)) return null;
+      return parsed;
+    } catch { return null; }
+  }, [activeSaleKey]);
+
+  const [screen, setScreen] = useState<Screen>(() => restored?.screen ?? "amount");
+  const [subtotalCents, setSubtotalCents] = useState(() => restored?.subtotalCents ?? 0);
   const [tipBps, setTipBps] = useState(0);
   const [customTipCents, setCustomTipCents] = useState<number | null>(null);
-  const [invoice, setInvoice] = useState<InvoiceResp | null>(null);
+  const [invoice, setInvoice] = useState<InvoiceResp | null>(() => restored?.invoice ?? null);
   const [status, setStatus] = useState<InvoiceStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [options, setOptions] = useState<PaymentOption[] | null>(null);
   const [optionsErr, setOptionsErr] = useState<string | null>(null);
-  const [finalTipCents, setFinalTipCents] = useState(0);
+  const [finalTipCents, setFinalTipCents] = useState(() => restored?.finalTipCents ?? 0);
   const [tappedUid, setTappedUid] = useState<string | null>(null);
   const [tappedUrl, setTappedUrl] = useState<string | null>(null);
-  const [cardSent, setCardSent] = useState(false);
+  const [cardSent, setCardSent] = useState(() => restored?.cardSent ?? false);
+  const [pollTrigger, setPollTrigger] = useState(0);
   const [experience, setExperience] = useState<Experience>(DEFAULT_EXPERIENCE);
   const [storeName, setStoreName] = useState<string | null>(null);
   const [receiptCfg, setReceiptCfg] = useState<ReceiptConfig>(DEFAULT_RECEIPT);
@@ -275,6 +297,17 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
   // Poll status while waiting. After confirmation, advance into the optional
   // signature → email-receipt → final receipt sequence based on store settings.
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (invoice && (screen === "waiting" || screen === "underpaid" || screen === "card")) {
+      try {
+        window.sessionStorage.setItem(activeSaleKey, JSON.stringify({ screen, invoice, subtotalCents, finalTipCents, cardSent }));
+      } catch { /* ignore */ }
+    } else {
+      window.sessionStorage.removeItem(activeSaleKey);
+    }
+  }, [activeSaleKey, screen, invoice, subtotalCents, finalTipCents, cardSent]);
+
+  useEffect(() => {
     if (!(screen === "waiting" || screen === "underpaid" || (screen === "card" && cardSent)) || !invoice) return;
     let cancelled = false;
     const tick = async () => {
@@ -295,12 +328,13 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
     void tick();
     const id = setInterval(tick, 1500);
     return () => { cancelled = true; clearInterval(id); };
-  }, [screen, cardSent, invoice, creds, experience.signature_enabled, experience.email_receipt_enabled]);
+  }, [screen, cardSent, invoice, creds, experience.signature_enabled, experience.email_receipt_enabled, pollTrigger]);
 
 
 
 
   const reset = () => {
+    if (typeof window !== "undefined") window.sessionStorage.removeItem(activeSaleKey);
     setSubtotalCents(0); setTipBps(0); setCustomTipCents(null);
     setInvoice(null); setStatus(null); setErr(null);
     setFinalTipCents(0);
@@ -358,7 +392,7 @@ function Sale({ creds, settings }: { creds: TerminalCreds; settings: PosSettings
           />
         )}
         {screen === "waiting" && invoice && (
-          <WaitingScreen invoice={invoice} status={status} onCancel={onCancel} storeName={storeName} />
+          <WaitingScreen invoice={invoice} status={status} onCancel={onCancel} onRefresh={() => setPollTrigger((n) => n + 1)} storeName={storeName} />
         )}
         {screen === "underpaid" && invoice && status && (
           <UnderpaidScreen invoice={invoice} status={status} onCancel={onCancel} storeName={storeName} />
@@ -668,11 +702,12 @@ function paymentUri(chain: string, address: string, amount: number | null, token
 
 
 function WaitingScreen({
-  invoice, status, onCancel, storeName,
-}: { invoice: InvoiceResp; status: InvoiceStatus | null; onCancel: () => void; storeName?: string | null }) {
+  invoice, status, onCancel, onRefresh, storeName,
+}: { invoice: InvoiceResp; status: InvoiceStatus | null; onCancel: () => void; onRefresh: () => void; storeName?: string | null }) {
   const expiresMs = new Date(invoice.expires_at).getTime();
   const [remaining, setRemaining] = useState(() => Math.max(0, expiresMs - Date.now()));
   const [addressOnly, setAddressOnly] = useState(false);
+  const [showOriginalQr, setShowOriginalQr] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState("");
 
   useEffect(() => {
@@ -726,11 +761,25 @@ function WaitingScreen({
   const mm = Math.floor(remaining / 60_000);
   const ss = Math.floor((remaining % 60_000) / 1000).toString().padStart(2, "0");
   const detected = status && (status.status === "detected" || status.status === "underpaid");
+  const walletProgress: WalletProgressInfo | null = status?.wallet_progress
+    ? {
+        event: status.wallet_progress.event,
+        eventAt: status.wallet_progress.event_at,
+        partnerName: status.wallet_progress.partner_name,
+        txid: status.wallet_progress.txid,
+        submittedAt: status.wallet_progress.submitted_at,
+      }
+    : null;
+  const progressView = buildProgressView({
+    invoiceStatus: status?.status ?? "pending",
+    walletProgress,
+    onChainTxHash: status?.tx_hash ?? null,
+  });
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 py-3 text-center">
       <p className="text-[10px] font-bold tracking-[0.25em] text-white/50">
-        {hasWallet ? "SEND PAYMENT" : "SCAN TO PAY"}
+        {progressView.active ? "PAYMENT IN PROGRESS" : hasWallet ? "SEND PAYMENT" : "SCAN TO PAY"}
       </p>
       <div className="mt-1 text-3xl font-black tabular-nums">{fmt(invoice.fiat_amount * 100, invoice.currency)}</div>
       {hasWallet && invoice.crypto_amount != null && (
@@ -739,20 +788,43 @@ function WaitingScreen({
         </div>
       )}
 
-      {qrDataUrl && (
-        <div className="mt-3 rounded-xl bg-white p-3 shadow-2xl">
-          <img src={qrDataUrl} alt="Scan to pay" className="aspect-square w-[min(58vw,300px)]" />
+      {progressView.active && !showOriginalQr ? (
+        <div className="mt-3 flex w-full justify-center">
+          <PaymentProgressPanel
+            variant="pos"
+            invoiceStatus={status?.status ?? "pending"}
+            walletProgress={walletProgress}
+            onChainTxHash={status?.tx_hash ?? null}
+            onRefresh={onRefresh}
+            onShowQr={() => setShowOriginalQr(true)}
+          />
         </div>
-      )}
-      {hasWallet && invoice.address && (
-        <button
-          type="button"
-          onClick={() => { void navigator.clipboard?.writeText(invoice.address!); }}
-          className="mt-2 max-w-[min(58vw,300px)] break-all font-mono text-[9px] leading-snug text-white/55 hover:text-white/80"
-          title="Tap to copy"
-        >
-          {invoice.address}
-        </button>
+      ) : (
+        <>
+          {progressView.active && (
+            <div className="mt-2 flex w-full max-w-sm items-center justify-between gap-2 rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 py-1.5 text-[11px] text-amber-200">
+              <span>Payment already submitted — do not pay again.</span>
+              <button type="button" onClick={() => setShowOriginalQr(false)} className="shrink-0 font-bold underline">
+                Live status
+              </button>
+            </div>
+          )}
+          {qrDataUrl && (
+            <div className="mt-3 rounded-xl bg-white p-3 shadow-2xl">
+              <img src={qrDataUrl} alt="Scan to pay" className="aspect-square w-[min(58vw,300px)]" />
+            </div>
+          )}
+          {hasWallet && invoice.address && (
+            <button
+              type="button"
+              onClick={() => { void navigator.clipboard?.writeText(invoice.address!); }}
+              className="mt-2 max-w-[min(58vw,300px)] break-all font-mono text-[9px] leading-snug text-white/55 hover:text-white/80"
+              title="Tap to copy"
+            >
+              {invoice.address}
+            </button>
+          )}
+        </>
       )}
 
       <div className="mt-2 flex items-center gap-2 text-[10px] font-mono text-white/60">
@@ -760,10 +832,14 @@ function WaitingScreen({
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
           <span className="relative inline-flex size-2 rounded-full bg-amber-400" />
         </span>
-        {detected ? `detected · ${status?.chain ?? ""}` : `listening · ${mm}:${ss}`}
+        {detected
+          ? `detected · ${status?.chain ?? ""}`
+          : progressView.active
+            ? `${progressView.stage === "paying" ? "wallet active" : "verifying"} · ${mm}:${ss}`
+            : `listening · ${mm}:${ss}`}
       </div>
 
-      {hasWallet ? (
+      {!progressView.active && (hasWallet ? (
         <>
           <div className="mt-3 w-full max-w-sm rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 py-2 text-[11px] font-bold text-amber-200">
             ⚠ ONLY SEND {assetLabel} TO THIS ADDRESS
@@ -795,7 +871,7 @@ function WaitingScreen({
         <p className="mt-2 max-w-xs text-[11px] text-white/50">
           Customer scans with any wallet and picks their chain on their phone.
         </p>
-      )}
+      ))}
 
       {hasWallet && invoice.chain === "eth" && (invoice.token_symbol ?? "").toUpperCase() === "USDC" && (
         <TangemTapButton invoiceId={invoice.id} />

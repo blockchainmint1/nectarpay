@@ -172,6 +172,7 @@ import { Route as ApiPublicV1HooksAffiliateSaleRouteImport } from './routes/api/
 import { Route as ApiPublicV1InvoicesIdRouteImport } from './routes/api.public.v1.invoices.$id'
 import { Route as ApiPublicV1LinksSlugRouteImport } from './routes/api.public.v1.links.$slug'
 import { Route as ApiPublicV1PayInvoiceIdRouteImport } from './routes/api/public/v1/pay/$invoiceId'
+import { Route as ApiPublicV1PaymentsProgressRouteImport } from './routes/api/public/v1/payments.progress'
 import { Route as ApiPublicV1PopClaimRouteImport } from './routes/api/public/v1/pop.claim'
 import { Route as ApiPublicV1QrLookupRouteImport } from './routes/api/public/v1/qr.lookup'
 import { Route as ApiPublicV1StatsLiveRouteImport } from './routes/api/public/v1/stats/live'
@@ -1069,6 +1070,12 @@ const ApiPublicV1PayInvoiceIdRoute = ApiPublicV1PayInvoiceIdRouteImport.update({
   path: '/public/v1/pay/$invoiceId',
   getParentRoute: () => ApiRoute,
 } as any)
+const ApiPublicV1PaymentsProgressRoute =
+  ApiPublicV1PaymentsProgressRouteImport.update({
+    id: '/public/v1/payments/progress',
+    path: '/public/v1/payments/progress',
+    getParentRoute: () => ApiRoute,
+  } as any)
 const ApiPublicV1PopClaimRoute = ApiPublicV1PopClaimRouteImport.update({
   id: '/public/v1/pop/claim',
   path: '/public/v1/pop/claim',
@@ -1337,6 +1344,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRouteWithChildren
   '/api/public/v1/links/$slug': typeof ApiPublicV1LinksSlugRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
+  '/api/public/v1/payments/progress': typeof ApiPublicV1PaymentsProgressRoute
   '/api/public/v1/pop/claim': typeof ApiPublicV1PopClaimRoute
   '/api/public/v1/qr/lookup': typeof ApiPublicV1QrLookupRoute
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
@@ -1512,6 +1520,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRouteWithChildren
   '/api/public/v1/links/$slug': typeof ApiPublicV1LinksSlugRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
+  '/api/public/v1/payments/progress': typeof ApiPublicV1PaymentsProgressRoute
   '/api/public/v1/pop/claim': typeof ApiPublicV1PopClaimRoute
   '/api/public/v1/qr/lookup': typeof ApiPublicV1QrLookupRoute
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
@@ -1696,6 +1705,7 @@ export interface FileRoutesById {
   '/api/public/v1/invoices/$id': typeof ApiPublicV1InvoicesIdRouteWithChildren
   '/api/public/v1/links/$slug': typeof ApiPublicV1LinksSlugRoute
   '/api/public/v1/pay/$invoiceId': typeof ApiPublicV1PayInvoiceIdRoute
+  '/api/public/v1/payments/progress': typeof ApiPublicV1PaymentsProgressRoute
   '/api/public/v1/pop/claim': typeof ApiPublicV1PopClaimRoute
   '/api/public/v1/qr/lookup': typeof ApiPublicV1QrLookupRoute
   '/api/public/v1/stats/live': typeof ApiPublicV1StatsLiveRoute
@@ -1880,6 +1890,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/invoices/$id'
     | '/api/public/v1/links/$slug'
     | '/api/public/v1/pay/$invoiceId'
+    | '/api/public/v1/payments/progress'
     | '/api/public/v1/pop/claim'
     | '/api/public/v1/qr/lookup'
     | '/api/public/v1/stats/live'
@@ -2055,6 +2066,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/invoices/$id'
     | '/api/public/v1/links/$slug'
     | '/api/public/v1/pay/$invoiceId'
+    | '/api/public/v1/payments/progress'
     | '/api/public/v1/pop/claim'
     | '/api/public/v1/qr/lookup'
     | '/api/public/v1/stats/live'
@@ -2238,6 +2250,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/invoices/$id'
     | '/api/public/v1/links/$slug'
     | '/api/public/v1/pay/$invoiceId'
+    | '/api/public/v1/payments/progress'
     | '/api/public/v1/pop/claim'
     | '/api/public/v1/qr/lookup'
     | '/api/public/v1/stats/live'
@@ -3456,6 +3469,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1PayInvoiceIdRouteImport
       parentRoute: typeof ApiRoute
     }
+    '/api/public/v1/payments/progress': {
+      id: '/api/public/v1/payments/progress'
+      path: '/public/v1/payments/progress'
+      fullPath: '/api/public/v1/payments/progress'
+      preLoaderRoute: typeof ApiPublicV1PaymentsProgressRouteImport
+      parentRoute: typeof ApiRoute
+    }
     '/api/public/v1/pop/claim': {
       id: '/api/public/v1/pop/claim'
       path: '/public/v1/pop/claim'
@@ -3923,6 +3943,7 @@ interface ApiRouteChildren {
   ApiPublicV1EgivingCausesRoute: typeof ApiPublicV1EgivingCausesRoute
   ApiPublicV1HooksAffiliateSaleRoute: typeof ApiPublicV1HooksAffiliateSaleRoute
   ApiPublicV1PayInvoiceIdRoute: typeof ApiPublicV1PayInvoiceIdRoute
+  ApiPublicV1PaymentsProgressRoute: typeof ApiPublicV1PaymentsProgressRoute
   ApiPublicV1PopClaimRoute: typeof ApiPublicV1PopClaimRoute
   ApiPublicV1QrLookupRoute: typeof ApiPublicV1QrLookupRoute
   ApiPublicV1StatsLiveRoute: typeof ApiPublicV1StatsLiveRoute
@@ -3965,6 +3986,7 @@ const ApiRouteChildren: ApiRouteChildren = {
   ApiPublicV1EgivingCausesRoute: ApiPublicV1EgivingCausesRoute,
   ApiPublicV1HooksAffiliateSaleRoute: ApiPublicV1HooksAffiliateSaleRoute,
   ApiPublicV1PayInvoiceIdRoute: ApiPublicV1PayInvoiceIdRoute,
+  ApiPublicV1PaymentsProgressRoute: ApiPublicV1PaymentsProgressRoute,
   ApiPublicV1PopClaimRoute: ApiPublicV1PopClaimRoute,
   ApiPublicV1QrLookupRoute: ApiPublicV1QrLookupRoute,
   ApiPublicV1StatsLiveRoute: ApiPublicV1StatsLiveRoute,

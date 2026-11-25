@@ -74,6 +74,14 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id/card-
           // (same address/amount/settlement rules) instead of waiting for the watcher.
           const verifySent = async (r: { status?: string; txid?: string | null }) => {
             if (r.status !== "sent" || !r.txid) return;
+            const { recordWalletProgress } = await import("@/lib/payment-progress.server");
+            await recordWalletProgress({
+              invoiceId: inv.id,
+              partnerId: partner.id,
+              partnerName: partner.name,
+              event: "payment_submitted",
+              txid: r.txid,
+            }).catch(() => undefined);
             const { scanBtcLikeInvoiceNow } = await import("@/lib/watcher.functions");
             for (let i = 0; i < 3; i++) {
               const changed = await scanBtcLikeInvoiceNow(inv.id, r.txid).catch(() => false);

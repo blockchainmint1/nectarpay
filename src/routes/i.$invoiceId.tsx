@@ -23,6 +23,8 @@ import { ALL_NETWORKS } from "@/lib/chains/networks";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { KycGate } from "@/components/kyc-gate";
+import { PaymentProgressPanel } from "@/components/payment-progress-panel";
+import { buildProgressView, type WalletProgressInfo } from "@/lib/payment-progress";
 import { cn } from "@/lib/utils";
 import { qrToCanvas } from "@/lib/qr";
 import { buildPaymentUri } from "@/lib/payment-uri";
@@ -117,9 +119,17 @@ function useCountdown(target: string | null) {
   };
 }
 
-function StatusPill({ status }: { status: string }) {
+function StatusPill({ status, walletEvent }: { status: string; walletEvent?: string | null }) {
+  const effective =
+    status === "pending" && walletEvent === "payment_submitted"
+      ? "submitted"
+      : status === "pending" && walletEvent === "paying"
+        ? "paying"
+        : status;
   const conf = {
     pending:   { label: "Waiting for payment", cls: "bg-muted text-muted-foreground", dot: "bg-muted-foreground animate-pulse" },
+    paying:    { label: "Wallet connected",    cls: "bg-warning/15 text-warning",     dot: "bg-warning animate-pulse" },
+    submitted: { label: "Payment submitted",   cls: "bg-warning/15 text-warning",     dot: "bg-warning animate-pulse" },
     detected:  { label: "Payment detected",     cls: "bg-warning/15 text-warning",       dot: "bg-warning animate-pulse" },
     confirmed: { label: "Confirmed",            cls: "bg-success/15 text-success",       dot: "bg-success" },
     underpaid: { label: "Underpaid",            cls: "bg-warning/15 text-warning",       dot: "bg-warning" },
@@ -127,7 +137,7 @@ function StatusPill({ status }: { status: string }) {
     expired:   { label: "Expired",              cls: "bg-destructive/15 text-destructive", dot: "bg-destructive" },
     cancelled: { label: "Cancelled",            cls: "bg-destructive/15 text-destructive", dot: "bg-destructive" },
     failed:    { label: "Failed",               cls: "bg-destructive/15 text-destructive", dot: "bg-destructive" },
-  }[status] ?? { label: status, cls: "bg-muted text-muted-foreground", dot: "bg-muted-foreground" };
+  }[effective] ?? { label: status, cls: "bg-muted text-muted-foreground", dot: "bg-muted-foreground" };
   return (
     <span className={cn("inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium", conf.cls)}>
       <span className={cn("h-1.5 w-1.5 rounded-full", conf.dot)} />
@@ -207,7 +217,7 @@ function CheckoutPage() {
   }, []);
 
 
-  const { data, error, isLoading } = useQuery({
+  const { data, error, isLoading, refetch } = useQuery({
     queryKey: ["public-invoice", invoiceId],
     queryFn: () => fetchInvoice({ data: { id: invoiceId } }),
     refetchInterval: (q) => {
@@ -359,8 +369,9 @@ function CheckoutPage() {
                     txs={txs}
                     requiredConfs={requiredConfs}
                     availableOptions={availableOptions}
-                    canSwitchChain={inv.status === "pending" && txs.length === 0}
+                    canSwitchChain={inv.status === "pending" && txs.length === 0 && !inv.walletProgress?.event}
                     storeName={store?.name ?? null}
+                    onRefresh={() => { void refetch(); }}
                   />
 
                 )}
@@ -405,6 +416,7 @@ function useInvoiceType() {
     redirectUrl: string | null;
     expiresAt: string | null;
     createdAt: string;
+    walletProgress?: WalletProgressInfo | null;
   };
 }
 
@@ -426,6 +438,7 @@ function PayingFrame({
   availableOptions,
   canSwitchChain,
   storeName,
+  onRefresh,
 }: {
   inv: Invoice;
   memo: string | null;
@@ -436,12 +449,19 @@ function PayingFrame({
   availableOptions: CheckoutPaymentOption[];
   canSwitchChain: boolean;
   storeName?: string | null;
+  onRefresh: () => void;
 }) {
   const isDetected = inv.status === "detected" || inv.status === "underpaid";
   const latestTx = txs[0];
   const progress = latestTx ? Math.min(100, (latestTx.confirmations / requiredConfs) * 100) : 0;
   const selectChain = useServerFn(selectInvoiceChain);
   const [switching, setSwitching] = useState<string | null>(null);
+  const [showOriginalQr, setShowOriginalQr] = useState(false);
+  const progressView = buildProgressView({
+    invoiceStatus: inv.status,
+    walletProgress: inv.walletProgress ?? null,
+    onChainTxHash: latestTx?.hash ?? null,
+  });
 
   const currentKey = inv.tokenSymbol ? `${inv.chain}:${inv.tokenSymbol}` : inv.chain;
   const otherOptions = availableOptions.filter((o) => o.key !== currentKey);
@@ -485,7 +505,7 @@ function PayingFrame({
       <div className="order-2 min-w-0 p-4 sm:p-6 md:order-none md:p-8">
 
         <div className="flex items-center justify-between">
-          <StatusPill status={inv.status} />
+          <StatusPill status={inv.status} walletEvent={inv.walletProgress?.event} />
           {countdown && (
             <span
               className={cn(
@@ -633,33 +653,60 @@ function PayingFrame({
           </p>
         </div>
 
-        <div className="rounded-2xl border border-border/60 bg-card p-3">
-          <QrCanvas value={uri} dark={isDark} />
-        </div>
-
-        <a
-          href={uri}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-transform hover:translate-y-[-1px]"
-        >
-          <Wallet className="h-4 w-4" />
-          Open in wallet
-        </a>
-        <p className="text-center text-[11px] leading-snug text-muted-foreground">
-          Scan with your phone or tap to open your installed {inv.tokenSymbol && inv.chain === "eth" ? "EVM" : (CHAIN_LABEL[inv.chain] ?? "crypto")} wallet.
-        </p>
-
-        <label className="mt-1 flex w-full cursor-pointer items-start gap-2 rounded-md border border-border/60 bg-background/40 px-3 py-2 text-left">
-          <input
-            type="checkbox"
-            checked={addressOnlyQr}
-            onChange={(e) => setAddressOnlyQr(e.target.checked)}
-            className="mt-0.5 h-3.5 w-3.5 accent-primary"
+        {progressView.active && !showOriginalQr ? (
+          <PaymentProgressPanel
+            variant="checkout"
+            invoiceStatus={inv.status}
+            walletProgress={inv.walletProgress ?? null}
+            onChainTxHash={latestTx?.hash ?? null}
+            confirmations={latestTx?.confirmations ?? null}
+            requiredConfs={requiredConfs}
+            onRefresh={onRefresh}
+            onShowQr={() => setShowOriginalQr(true)}
           />
-          <span className="text-[11px] leading-snug text-muted-foreground">
-            <span className="font-medium text-foreground">Address-only QR.</span> Turn on if your wallet
-            won't scan — it'll get just the address, and you enter the chain &amp; amount yourself.
-          </span>
-        </label>
+        ) : (
+          <>
+            {progressView.active && (
+              <div className="flex w-full items-center justify-between gap-2 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-[11px] text-warning">
+                <span>Payment already submitted — do not pay again.</span>
+                <button type="button" onClick={() => setShowOriginalQr(false)} className="shrink-0 font-semibold underline">
+                  Live status
+                </button>
+              </div>
+            )}
+            <div className="rounded-2xl border border-border/60 bg-card p-3">
+              <QrCanvas value={uri} dark={isDark} />
+            </div>
+
+            {!progressView.active && (
+              <>
+                <a
+                  href={uri}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-transform hover:translate-y-[-1px]"
+                >
+                  <Wallet className="h-4 w-4" />
+                  Open in wallet
+                </a>
+                <p className="text-center text-[11px] leading-snug text-muted-foreground">
+                  Scan with your phone or tap to open your installed {inv.tokenSymbol && inv.chain === "eth" ? "EVM" : (CHAIN_LABEL[inv.chain] ?? "crypto")} wallet.
+                </p>
+
+                <label className="mt-1 flex w-full cursor-pointer items-start gap-2 rounded-md border border-border/60 bg-background/40 px-3 py-2 text-left">
+                  <input
+                    type="checkbox"
+                    checked={addressOnlyQr}
+                    onChange={(e) => setAddressOnlyQr(e.target.checked)}
+                    className="mt-0.5 h-3.5 w-3.5 accent-primary"
+                  />
+                  <span className="text-[11px] leading-snug text-muted-foreground">
+                    <span className="font-medium text-foreground">Address-only QR.</span> Turn on if your wallet
+                    won't scan — it'll get just the address, and you enter the chain &amp; amount yourself.
+                  </span>
+                </label>
+              </>
+            )}
+          </>
+        )}
 
       </div>
 

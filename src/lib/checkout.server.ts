@@ -24,6 +24,7 @@ export async function readPublicInvoice(data: { id: string }) {
           redirectUrl: null,
           expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
           createdAt: new Date().toISOString(),
+          walletProgress: null,
         },
         store: { name: "payHME demo", website: "https://pay.honest.money" },
         transactions: [] as Array<{ hash: string; amount: number | null; confirmations: number; confirmedAt: string | null; firstSeenAt: string | null }>,
@@ -35,7 +36,7 @@ export async function readPublicInvoice(data: { id: string }) {
     const { data: initialInv, error } = await supabaseAdmin
       .from("invoices")
       .select(
-        "id, chain, token_symbol, fiat_amount, fiat_currency, crypto_amount, rate, address, status, description, redirect_url, expires_at, created_at, store_id, payment_program, discount_usd, discount_pct",
+        "id, chain, token_symbol, fiat_amount, fiat_currency, crypto_amount, rate, address, status, description, redirect_url, expires_at, created_at, store_id, payment_program, discount_usd, discount_pct, wallet_event, wallet_event_at, wallet_partner_name, wallet_txid, wallet_submitted_at",
       )
       .eq("id", data.id)
       .maybeSingle();
@@ -58,7 +59,7 @@ export async function readPublicInvoice(data: { id: string }) {
         const { data: freshInv } = await supabaseAdmin
           .from("invoices")
           .select(
-            "id, chain, token_symbol, fiat_amount, fiat_currency, crypto_amount, rate, address, status, description, redirect_url, expires_at, created_at, store_id, payment_program, discount_usd, discount_pct",
+            "id, chain, token_symbol, fiat_amount, fiat_currency, crypto_amount, rate, address, status, description, redirect_url, expires_at, created_at, store_id, payment_program, discount_usd, discount_pct, wallet_event, wallet_event_at, wallet_partner_name, wallet_txid, wallet_submitted_at",
           )
           .eq("id", data.id)
           .maybeSingle();
@@ -193,6 +194,15 @@ export async function readPublicInvoice(data: { id: string }) {
         discountPct: inv.discount_pct == null ? null : Number(inv.discount_pct),
         expiresAt: inv.expires_at,
         createdAt: inv.created_at,
+        walletProgress: inv.wallet_event
+          ? {
+              event: inv.wallet_event as "paying" | "payment_submitted",
+              eventAt: inv.wallet_event_at,
+              partnerName: inv.wallet_partner_name,
+              txid: inv.wallet_txid,
+              submittedAt: inv.wallet_submitted_at,
+            }
+          : null,
       },
       store: store ? { name: store.name, website: store.website } : null,
       egiving: store?.egiving_enabled

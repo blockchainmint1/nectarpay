@@ -1085,6 +1085,11 @@ export type Database = {
           token_symbol: string | null
           updated_at: string
           view_count: number
+          wallet_event: string | null
+          wallet_event_at: string | null
+          wallet_partner_name: string | null
+          wallet_submitted_at: string | null
+          wallet_txid: string | null
         }
         Insert: {
           address?: string | null
@@ -1121,6 +1126,11 @@ export type Database = {
           token_symbol?: string | null
           updated_at?: string
           view_count?: number
+          wallet_event?: string | null
+          wallet_event_at?: string | null
+          wallet_partner_name?: string | null
+          wallet_submitted_at?: string | null
+          wallet_txid?: string | null
         }
         Update: {
           address?: string | null
@@ -1157,6 +1167,11 @@ export type Database = {
           token_symbol?: string | null
           updated_at?: string
           view_count?: number
+          wallet_event?: string | null
+          wallet_event_at?: string | null
+          wallet_partner_name?: string | null
+          wallet_submitted_at?: string | null
+          wallet_txid?: string | null
         }
         Relationships: [
           {
@@ -1751,6 +1766,51 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      payment_progress_notices: {
+        Row: {
+          event: string
+          id: string
+          invoice_id: string
+          partner_id: string
+          received_at: string
+          request_id: string
+          txid: string | null
+        }
+        Insert: {
+          event: string
+          id?: string
+          invoice_id: string
+          partner_id: string
+          received_at?: string
+          request_id: string
+          txid?: string | null
+        }
+        Update: {
+          event?: string
+          id?: string
+          invoice_id?: string
+          partner_id?: string
+          received_at?: string
+          request_id?: string
+          txid?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_progress_notices_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_progress_notices_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "card_partners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       plans: {
         Row: {

@@ -30,7 +30,7 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id")({
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { data: inv } = await supabaseAdmin
             .from("invoices")
-            .select("id, store_id, status, chain, crypto_amount, address, fiat_amount, fiat_currency, expires_at, updated_at, token_symbol, rate, payment_program, discount_usd, discount_pct")
+            .select("id, store_id, status, chain, crypto_amount, address, fiat_amount, fiat_currency, expires_at, updated_at, token_symbol, rate, payment_program, discount_usd, discount_pct, wallet_event, wallet_event_at, wallet_partner_name, wallet_txid, wallet_submitted_at")
             .eq("id", params.id)
             .maybeSingle();
           if (!inv) return json({ error: "Invoice not found." }, 404);
@@ -63,7 +63,7 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id")({
 
           const { data: freshInv } = await supabaseAdmin
             .from("invoices")
-            .select("id, store_id, status, chain, crypto_amount, address, fiat_amount, fiat_currency, expires_at, updated_at, token_symbol, rate, payment_program, discount_usd, discount_pct")
+            .select("id, store_id, status, chain, crypto_amount, address, fiat_amount, fiat_currency, expires_at, updated_at, token_symbol, rate, payment_program, discount_usd, discount_pct, wallet_event, wallet_event_at, wallet_partner_name, wallet_txid, wallet_submitted_at")
             .eq("id", params.id)
             .maybeSingle();
           const invoice = freshInv ?? inv;
@@ -119,6 +119,15 @@ export const Route = createFileRoute("/api/public/v1/terminals/invoice/$id")({
             payment_program: invoice.payment_program ?? null,
             discount_usd: invoice.payment_program ? discountUsd : null,
             discount_pct: invoice.discount_pct == null ? null : Number(invoice.discount_pct),
+            wallet_progress: invoice.wallet_event
+              ? {
+                  event: invoice.wallet_event,
+                  event_at: invoice.wallet_event_at,
+                  partner_name: invoice.wallet_partner_name,
+                  txid: invoice.wallet_txid,
+                  submitted_at: invoice.wallet_submitted_at,
+                }
+              : null,
           });
 
         } catch (err) {

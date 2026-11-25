@@ -440,7 +440,7 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string, hintTxid?: string
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data: inv } = await supabaseAdmin
     .from("invoices")
-    .select("id, store_id, chain, address, token_symbol, fiat_amount, status, rate, created_at, expires_at, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd, egiving_enabled, egiving_discount_pct)")
+    .select("id, store_id, chain, address, token_symbol, fiat_amount, status, rate, created_at, expires_at, wallet_txid, stores!inner(default_confirmations_required, mempool_max_usd, mempool_accept_fast, mempool_accept_slow, tsd_instant, tsd_instant_max_usd, egiving_enabled, egiving_discount_pct)")
     .eq("id", invoiceId)
     .maybeSingle();
   if (!inv || !inv.address || !isBtcLikeChain(inv.chain)) return false;
@@ -456,8 +456,9 @@ export async function scanBtcLikeInvoiceNow(invoiceId: string, hintTxid?: string
   const omni = inv.token_symbol ? getOmniToken(chainKey, inv.token_symbol as string) : null;
   // A partner-reported txid is only a hint: we fetch that exact tx from the
   // chain ourselves and it must still pass the same address/amount checks.
-  const hinted = hintTxid && /^[0-9a-f]{64}$/i.test(hintTxid) && net.indexer !== "blockbook"
-    ? fetch(`${net.esploraBase}/tx/${hintTxid}`).then((r) => (r.ok ? (r.json() as Promise<EsploraTx>) : null)).catch(() => null)
+  const effectiveHint = hintTxid ?? inv.wallet_txid;
+  const hinted = effectiveHint && /^[0-9a-f]{64}$/i.test(effectiveHint) && net.indexer !== "blockbook"
+    ? fetch(`${net.esploraBase}/tx/${effectiveHint}`).then((r) => (r.ok ? (r.json() as Promise<EsploraTx>) : null)).catch(() => null)
     : Promise.resolve(null);
   const [tip, addrTxs, hintTx] = await Promise.all([getTipHeight(net), getAddressTxs(net, inv.address), hinted]);
   const txs = hintTx && !addrTxs.some((t) => t.txid === hintTx.txid) ? [...addrTxs, hintTx] : addrTxs;

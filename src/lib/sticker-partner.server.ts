@@ -6,7 +6,7 @@ export async function handleStickerPartner(request: Request, payment: boolean | 
   const raw = await request.text();
   if (raw.length > 2048) return json({ error: "Request too large." }, 413);
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data: partners, error: partnerError } = await supabaseAdmin.from("card_partners").select("id, secret, uses_legacy_secret, is_default, active");
+  const { data: partners, error: partnerError } = await supabaseAdmin.from("card_partners").select("id, name, secret, uses_legacy_secret, is_default, active");
   if (partnerError) return json({ error: "Partner authentication unavailable." }, 503);
   const pid = request.headers.get("x-hme-partner");
   const partner = (partners ?? []).find((p) => p.active && (pid ? p.id === pid : p.is_default));
@@ -32,13 +32,24 @@ export async function handleStickerPartner(request: Request, payment: boolean | 
     const { data: invoice, error: invoiceError } = await supabaseAdmin.from("invoices").select("id, store_id, address, chain, token_symbol, status, sticker_invoice_guards!inner(invoice_id)").eq("id", input.invoice_id).maybeSingle();
     if (invoiceError) return signed({ error: "Invoice lookup unavailable." }, 503);
     if (!invoice || invoice.store_id !== merchant.store_id || invoice.address !== enrollment.tsd_address || invoice.chain !== "txc" || invoice.token_symbol !== "TSD") return signed({ error: "Invoice does not match this sticker.", request_id: input.request_id }, 404);
+    const { recordWalletProgress } = await import("./payment-progress.server");
+    await recordWalletProgress({
+      invoiceId: invoice.id,
+      partnerId: partner.id,
+      partnerName: partner.name,
+      requestId: input.request_id,
+      event: "payment_submitted",
+      txid: input.txid,
+    }).catch(() => undefined);
     const { scanBtcLikeInvoiceNow } = await import("./watcher.functions");
     try { await scanBtcLikeInvoiceNow(invoice.id, input.txid); }
     catch { return signed({ error: "Payment verification unavailable. Retry this same invoice and transaction; do not send again.", request_id: input.request_id }, 503); }
     const { data: fresh, error: freshError } = await supabaseAdmin.from("invoices").select("status").eq("id", invoice.id).single();
     const { data: tx, error: txError } = await supabaseAdmin.from("transactions").select("confirmed_at").eq("invoice_id", invoice.id).eq("tx_hash", input.txid).maybeSingle();
     if (freshError || txError || !fresh) return signed({ error: "Payment status unavailable. Retry without sending again." }, 503);
-    return signed({ request_id: input.request_id, code: input.code, invoice_id: invoice.id, txid: input.txid, status: fresh.status, transaction_found: !!tx, paid: !!tx?.confirmed_at && ["confirmed", "overpaid"].includes(fresh.status) });
+    const paid = !!tx?.confirmed_at && ["confirmed", "overpaid"].includes(fresh.status);
+    const verifying = !paid && !["expired", "cancelled", "failed"].includes(fresh.status);
+    return signed({ request_id: input.request_id, code: input.code, invoice_id: invoice.id, txid: input.txid, status: fresh.status, verifying, transaction_found: !!tx, paid });
   }
   const details = {
     request_id: input.request_id, code: input.code, store_id: merchant.store_id,

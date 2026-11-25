@@ -414,6 +414,13 @@
       "when": 1795461953311,
       "tag": "0058_atomic_address_index_claim",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1795623030806,
+      "tag": "0059_wallet_payment_progress",
+      "breakpoints": true
     }
   ]
 }
